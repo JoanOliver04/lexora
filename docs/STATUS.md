@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-26
-**Fase actual:** FASE 0 — Gobierno, documentación y repositorio — `EN PROCESO` (3/8)
+**Fase actual:** FASE 0 — Gobierno, documentación y repositorio — `EN PROCESO` (4/8)
 **Hito actual:** M0 — Gobierno del proyecto operativo — `PENDIENTE`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-0.1 `HECHO` · LEX-0.2 `HECHO` · LEX-0.4 `HECHO`
+**Estado de la tarea:** LEX-0.1 `HECHO` · LEX-0.2 `HECHO` · LEX-0.4 `HECHO` · LEX-0.5 `HECHO`
 **Rama / commit base / HEAD:** `main` / `8d45f29` / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -43,6 +43,16 @@
 | ADR-002 | Supabase Data API con migraciones SQL, tipos generados y repositorios propios; sin ORM. |
 | ADR-003 | El estado de memoria pertenece a (usuario, `PracticeItem`), no al `Concept` ni a la variante visual. |
 | ADR-004 | PWA instalable y online-first; sin cola offline ni resolución de conflictos en la V1. |
+
+### LEX-0.5 — Esqueletos de `ARCHITECTURE.md`, `DATA_MODEL.md` y `FSRS.md` — `HECHO`
+
+- `docs/ARCHITECTURE.md` — capas y regla de dependencia, módulos de negocio, estructura de carpetas, puertos, criterio de Server/Client Components, seguridad en dos barreras y niveles de test.
+- `docs/DATA_MODEL.md` — entidades, diagrama de relaciones, convenciones del esquema y en qué fase aparece cada tabla.
+- `docs/FSRS.md` — puerto y adaptador, versionado de configuración, cola diaria, transacción de repaso con idempotencia y concurrencia, y política de tiempo.
+- Los tres enlazan a los ADR correspondientes y marcan explícitamente sus secciones pendientes.
+- Enlazados desde `README.md`.
+
+**Pendiente en ellos, por diseño:** columnas exactas del esquema (llegan con cada migración), valores de configuración del planificador (fase 5) y política de índices (cuando existan consultas que medir).
 
 ### Frontera público / privado
 
@@ -83,6 +93,10 @@
 | `docs/evidence/README.md` | Creado. Convención `LEX-n.m.md`. |
 | `docs/adrs/README.md` | Creado. Índice, formato y reglas de los ADR. |
 | `docs/adrs/ADR-001…004` | Creados. Decisiones estructurales de la V1. |
+| `docs/ARCHITECTURE.md` | Creado. |
+| `docs/DATA_MODEL.md` | Creado. |
+| `docs/FSRS.md` | Creado. |
+| `README.md` | Actualizado: enlaces a las tres specs técnicas. |
 | `docs/no_visible_en_github/` | Reservado para `MASTER_SPEC.md`, `ROADMAP.md` y material privado. |
 
 Migraciones SQL: ninguna. Todavía no existe base de datos.
@@ -170,17 +184,14 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-0.5**: crear los esqueletos útiles de `docs/ARCHITECTURE.md`,
-`docs/DATA_MODEL.md` y `docs/FSRS.md`, ahora que las decisiones estructurales
-están fijadas en los ADR.
+Ejecutar **LEX-0.3**: ampliar `CLAUDE.md` hasta el protocolo operativo completo.
+Existe una versión mínima funcional; falta el ciclo obligatorio por tarea, el
+formato del informe de cierre, los criterios para detenerse y pedir una decisión
+humana, y el protocolo de pausa.
 
-Deben ser documentos públicos con las decisiones vigentes y las secciones
-pendientes marcadas como tales, no plantillas vacías. Como el resto de la
-documentación publicada, describen decisiones y estructura, no reproducen la
-especificación privada.
-
-**LEX-0.3** sigue pendiente y no está bloqueada: `CLAUDE.md` existe en una versión
-mínima funcional que esa tarea debe ampliar.
+Después quedan **LEX-0.6** (workflow, versionado y entornos), **LEX-0.7**
+(nomenclatura y política de contenido) y **LEX-0.8** (auditoría de M0 y
+checkpoint), esta última dependiente de Q-004.
 
 No debe comenzarse FASE 1 hasta cerrar M0.
 
@@ -206,4 +217,5 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 - Rama: `main`.
 - Remoto: `origin` → `https://github.com/JoanOliver04/lexora.git` (**público**, configurado, sin push ni fetch).
 - Contenido versionado: `.gitignore`, `README.md`, `CLAUDE.md`, `docs/STATUS.md`,
-  `docs/OPEN_QUESTIONS.md`, `docs/evidence/README.md` y `docs/adrs/` con cinco archivos.
+  `docs/OPEN_QUESTIONS.md`, `docs/evidence/README.md`, `docs/ARCHITECTURE.md`,
+  `docs/DATA_MODEL.md`, `docs/FSRS.md` y `docs/adrs/` con cinco archivos.

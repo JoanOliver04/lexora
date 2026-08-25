@@ -50,6 +50,9 @@ compartir mazos ni funciones sociales. Llegarán, si llegan, después de cerrar 
 
 | Documento | Contenido |
 |---|---|
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Capas, regla de dependencia, módulos y puertos. |
+| [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) | Entidades, relaciones y convenciones del esquema. |
+| [`docs/FSRS.md`](docs/FSRS.md) | Integración de la repetición espaciada: puerto, transacción y tiempo. |
 | [`docs/STATUS.md`](docs/STATUS.md) | Estado actual, verificaciones ejecutadas y siguiente acción. |
 | [`docs/OPEN_QUESTIONS.md`](docs/OPEN_QUESTIONS.md) | Decisiones pendientes, con contexto y opciones. |
 | [`docs/adrs/`](docs/adrs/) | Architecture Decision Records. |
