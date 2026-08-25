@@ -1,11 +1,26 @@
-# --- Contenido privado: NO se publica en GitHub ---
-# Instrucciones locales del agente
-CLAUDE.md
-# Documentación de gobierno (MASTER_SPEC, ROADMAP, STATUS, OPEN_QUESTIONS,
-# evidence/) y material privado de Anki. Ver Q-001 y Q-002.
+# =====================================================================
+#  Lexora — .gitignore
+#  El repositorio es PÚBLICO. Todo lo que no aparezca aquí se publica.
+# =====================================================================
+
+# --- Documentación de gobierno privada -------------------------------
+# La especificación maestra y el roadmap contienen el diseño completo del
+# producto y no se publican para evitar que se copien. El resto de la
+# documentación (STATUS, OPEN_QUESTIONS, ADR, evidence) sí es pública.
+# También queda aquí el material privado de Anki usado para pruebas.
 no_visible_en_github/
 
-# --- Dependencias y build (todavía sin usar; preparado para FASE 1) ---
+# --- Entorno y secretos ----------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.supabase/
+supabase/.temp/
+supabase/.branches/
+
+# --- Dependencias y build --------------------------------------------
 node_modules/
 .pnpm-store/
 .next/
@@ -15,18 +30,14 @@ dist/
 coverage/
 *.tsbuildinfo
 
-# --- Entorno y secretos ---
-.env
-.env.*
-!.env.example
-
-# --- Herramientas ---
+# --- Herramientas y artefactos de test -------------------------------
 .vercel/
-supabase/.temp/
 playwright-report/
 test-results/
+blob-report/
+.playwright/
 
-# --- Sistema operativo y editores ---
+# --- Sistema operativo y editores ------------------------------------
 Thumbs.db
 Desktop.ini
 .DS_Store
