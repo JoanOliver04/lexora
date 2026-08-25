@@ -1,6 +1,6 @@
 # Evidencia de tareas
 
-Esta carpeta guarda los informes de evidencia que no caben en una fila de [`../ROADMAP.md`](../ROADMAP.md).
+Esta carpeta guarda los informes de evidencia que no caben en una fila de [`ROADMAP.md`](../no_visible_en_github/ROADMAP.md) *(documento local, no versionado)*.
 
 ## Cuándo crear un archivo aquí
 
@@ -9,7 +9,7 @@ La fila de una tarea en el roadmap guarda un **resumen breve** de evidencia. Se 
 ## Convención de nombres
 
 ```text
-docs/no_visible_en_github/evidence/LEX-n.m.md
+docs/evidence/LEX-n.m.md
 ```
 
 Un archivo por tarea. El ID coincide exactamente con el del roadmap y nunca se reutiliza.

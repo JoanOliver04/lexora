@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-26
-**Fase actual:** FASE 0 — Gobierno, documentación y repositorio — `EN PROCESO` (7/8)
-**Hito actual:** M0 — Gobierno del proyecto operativo — `PENDIENTE`
+**Fase actual:** FASE 0 — Gobierno, documentación y repositorio — `HECHO` (8/8)
+**Hito actual:** M0 — Gobierno del proyecto operativo — `HECHO`. Siguiente: M1 — Fundación técnica.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-0.1 `HECHO` · LEX-0.2 `HECHO` · LEX-0.4 `HECHO` · LEX-0.5 `HECHO` · LEX-0.3 `HECHO` · LEX-0.6 `HECHO` · LEX-0.7 `HECHO`
+**Estado de la tarea:** LEX-0.1 `HECHO` · LEX-0.2 `HECHO` · LEX-0.4 `HECHO` · LEX-0.5 `HECHO` · LEX-0.3 `HECHO` · LEX-0.6 `HECHO` · LEX-0.7 `HECHO` · LEX-0.8 `HECHO`
 **Rama / commit base / HEAD:** `main` / `8d45f29` / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -74,7 +74,7 @@ seguirlo para saber **cómo** trabajar aunque no tenga los documentos privados.
 
 | Herramienta | Versión | Motivo |
 |---|---|---|
-| Node.js | 24.19.0 (`24.x`) | Línea LTS activa y versión por defecto de Vercel. Node 20 llegó a su fin de vida en abril de 2026; Node 22 está en mantenimiento. |
+| Node.js | 24.19.0 (`24.x`) | La spec pide una LTS activa compatible con Vercel, mínimo Node 20. Node 24 es la LTS activa y el default de Vercel: la cumple. Node 20 llegó a fin de vida en abril de 2026; Node 22 está en mantenimiento. |
 | pnpm | 11.24.0 | Última estable. Se activará con `corepack enable pnpm`. |
 
 Fuentes consultadas: índice de distribuciones de Node.js y la página de versiones
@@ -109,6 +109,16 @@ hacer si algo privado llega a confirmarse.
 También añadido `.gitattributes`: normaliza los finales de línea a LF. Sin él, un
 checkout en Windows convierte a CRLF y `.nvmrc`, los scripts de shell y las
 migraciones SQL fallan al ejecutarse en la CI sobre Linux.
+
+### LEX-0.8 — Auditoría de M0 y primer checkpoint — `HECHO`
+
+Informe completo en [`evidence/LEX-0.8.md`](evidence/LEX-0.8.md). Resumen:
+
+- **Enlaces:** 4 rotos encontrados y corregidos, todos por el movimiento de documentos entre `docs/` y la carpeta privada. Segunda pasada: 43 enlaces, 0 rotos.
+- **Historial:** revisado por completo, no solo el árbol actual. Ni la especificación, ni el roadmap, ni material privado han estado versionados en ningún commit. Sin credenciales.
+- **Coherencia:** terminología, modos de práctica y estados de tarea consistentes entre documentos. La versión de Node **no** contradice la especificación: pedía una LTS activa compatible con Vercel, y Node 24 lo es.
+- **Excepción registrada:** no se ha hecho revisión cruzada independiente. M0 no contiene código ni políticas de acceso, pero la excepción queda visible en lugar de fingirse.
+- **Checkpoint:** etiqueta local `v0.1.0-m0`. Sin `push`: sigue siendo Q-004.
 
 ### Frontera público / privado
 
@@ -157,6 +167,7 @@ migraciones SQL fallan al ejecutarse en la CI sobre Linux.
 | `.gitattributes` | Creado. Normaliza finales de línea a LF. |
 | `docs/GLOSSARY.md` | Creado. |
 | `docs/CONTENT_POLICY.md` | Creado. |
+| `docs/evidence/LEX-0.8.md` | Creado. Informe de auditoría de M0. |
 | `README.md` | Actualizado: enlaces a las tres specs técnicas. |
 | `docs/no_visible_en_github/` | Reservado para `MASTER_SPEC.md`, `ROADMAP.md` y material privado. |
 
@@ -245,16 +256,23 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-0.8**, la última tarea de FASE 0: auditar el hito M0 y crear el
-primer checkpoint versionado. Comprobar que todos los enlaces internos resuelven,
-que no hay contradicciones entre documentos, que el árbol está limpio y que nada
-privado se ha colado en el historial.
+**M0 cerrado.** La siguiente tarea es **LEX-1.1**: crear la aplicación Next.js con
+App Router, TypeScript estricto y pnpm, fijando las versiones acordadas en
+`WORKFLOW.md`.
 
-**Depende de Q-004:** la tarea incluye decidir si se hace el primer `push`. El
-remoto sigue sin contactar.
+**Está bloqueada por Q-003.** Antes de empezar hay que preparar la máquina:
 
-Cerrar M0 habilita la FASE 1, que a su vez está bloqueada por Q-003: hay que
-instalar Node 24.19.0, pnpm 11.24.0 y la CLI de Supabase, y arrancar Docker.
+```text
+1. Instalar Node 24.19.0            (hoy hay v22.22.2)
+2. corepack enable pnpm             (pnpm 11.24.0)
+3. Arrancar Docker Desktop          (el daemon no responde)
+4. Instalar la CLI de Supabase
+```
+
+Los pasos 3 y 4 solo hacen falta a partir de LEX-1.7, pero conviene resolverlos a
+la vez.
+
+Queda además **Q-004** abierta: el primer `push` sigue sin autorizar.
 
 ---
 
