@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-26
-**Fase actual:** FASE 0 — Gobierno, documentación y repositorio — `EN PROCESO` (4/8)
+**Fase actual:** FASE 0 — Gobierno, documentación y repositorio — `EN PROCESO` (5/8)
 **Hito actual:** M0 — Gobierno del proyecto operativo — `PENDIENTE`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-0.1 `HECHO` · LEX-0.2 `HECHO` · LEX-0.4 `HECHO` · LEX-0.5 `HECHO`
+**Estado de la tarea:** LEX-0.1 `HECHO` · LEX-0.2 `HECHO` · LEX-0.4 `HECHO` · LEX-0.5 `HECHO` · LEX-0.3 `HECHO`
 **Rama / commit base / HEAD:** `main` / `8d45f29` / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -54,6 +54,18 @@
 
 **Pendiente en ellos, por diseño:** columnas exactas del esquema (llegan con cada migración), valores de configuración del planificador (fase 5) y política de índices (cuando existan consultas que medir).
 
+### LEX-0.3 — `CLAUDE.md` operativo completo — `HECHO`
+
+Ampliado de una versión mínima al protocolo completo, en siete secciones: orden
+de lectura obligatorio, ciclo por tarea con los tres estados y qué cuenta como
+evidencia, formato del informe de cierre, criterios para detenerse y abrir un
+`Q-nnn`, reglas innegociables agrupadas por proceso / arquitectura / datos y
+seguridad / operaciones, Definition of Done, y protocolo de pausa hacia Expyria.
+
+Remite a la especificación y al roadmap en lugar de reproducirlos, y advierte de
+que ambos son locales y no versionados. Un agente sin contexto previo puede
+seguirlo para saber **cómo** trabajar aunque no tenga los documentos privados.
+
 ### Frontera público / privado
 
 | Contenido | Ubicación | ¿En Git? |
@@ -87,7 +99,7 @@
 |---|---|
 | `.gitignore` | Reescrito para repositorio público. |
 | `README.md` | Creado. Presentación, modelo conceptual, stack y alcance. |
-| `CLAUDE.md` | Reescrito y versionado. |
+| `CLAUDE.md` | Ampliado al protocolo operativo completo. |
 | `docs/STATUS.md` | Creado. |
 | `docs/OPEN_QUESTIONS.md` | Creado. Q-001…Q-004. |
 | `docs/evidence/README.md` | Creado. Convención `LEX-n.m.md`. |
@@ -184,14 +196,13 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-0.3**: ampliar `CLAUDE.md` hasta el protocolo operativo completo.
-Existe una versión mínima funcional; falta el ciclo obligatorio por tarea, el
-formato del informe de cierre, los criterios para detenerse y pedir una decisión
-humana, y el protocolo de pausa.
+Ejecutar **LEX-0.6**: fijar el workflow, el versionado y la política de entornos.
+Convención de ramas y de mensajes de commit, versiones concretas de Node y del
+gestor de paquetes, política de migraciones SQL por Git, y separación entre
+entorno local, previews y producción.
 
-Después quedan **LEX-0.6** (workflow, versionado y entornos), **LEX-0.7**
-(nomenclatura y política de contenido) y **LEX-0.8** (auditoría de M0 y
-checkpoint), esta última dependiente de Q-004.
+Después queda **LEX-0.7** (nomenclatura y política de contenido) y **LEX-0.8**
+(auditoría de M0 y primer checkpoint), que cierra el hito y depende de Q-004.
 
 No debe comenzarse FASE 1 hasta cerrar M0.
 
