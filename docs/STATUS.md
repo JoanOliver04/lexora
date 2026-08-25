@@ -156,17 +156,30 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-0.4 — Crear ADR-001…004**:
+Ejecutar **LEX-0.4 — Crear ADR-001…004**, los cuatro Architecture Decision
+Records que fijan las decisiones estructurales de la V1: estilo de arquitectura,
+estrategia de acceso a datos, unidad que programa FSRS y alcance de la PWA.
 
-- ADR-001 — Monolito modular con Clean Architecture pragmática.
-- ADR-002 — Supabase Data API sin ORM en V1.
-- ADR-003 — FSRS programa `PracticeItem`, no `Concept`.
-- ADR-004 — PWA online-first, sin estudio offline en V1.
-
-Los ADR son públicos y deben describir decisiones y sus razones sin reproducir
+Cada ADR debe explicar el porqué e incluir al menos una alternativa descartada
+con su motivo. Son públicos: describen decisiones y razones, no reproducen
 secciones de la especificación privada.
 
 No debe comenzarse FASE 1 hasta cerrar M0.
+
+---
+
+## Qué no debe aparecer en este documento
+
+Este archivo es público y se actualiza en cada tarea. Nunca debe contener:
+
+- títulos, descripciones o criterios de tareas futuras del roadmap privado;
+- contenido copiado de `MASTER_SPEC.md`;
+- URLs de proyecto, *project refs*, claves o cadenas de conexión de Supabase;
+- correos, rutas locales de la máquina del propietario o identificadores personales;
+- nombres o contenido de los mazos privados de Anki usados como material de prueba;
+- salidas de comandos sin revisar, que puedan arrastrar cualquiera de los anteriores.
+
+Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ---
 

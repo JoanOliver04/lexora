@@ -15,6 +15,10 @@
 | Q-003 | Herramientas de desarrollo ausentes | `ABIERTA` | LEX-1.1, LEX-1.7 |
 | Q-004 | Primer push al remoto público | `ABIERTA` | LEX-0.8 |
 
+> Este archivo es público. Se aplican las mismas exclusiones que en
+> [`STATUS.md`](STATUS.md): sin credenciales, sin datos personales, sin contenido
+> copiado de los documentos privados y sin detalle de tareas futuras del roadmap.
+
 ---
 
 ## Q-001 — Visibilidad de `CLAUDE.md`
