@@ -103,7 +103,7 @@ Inspección del entorno realizada en LEX-0.1:
 | Herramienta | Estado |
 |---|---|
 | Git 2.39.0 | Presente |
-| Node.js v22.22.2 | Presente, cumple el mínimo Node 20 |
+| Node.js v22.22.2 | Presente, pero **por debajo de la versión fijada** (24.19.0, ver `WORKFLOW.md`) |
 | npm 10.9.7 | Presente |
 | corepack 0.34.6 | Presente |
 | pnpm | **Ausente** |
@@ -116,9 +116,10 @@ base de datos local, migraciones, seeds y pgTAP.
 
 ### Acciones necesarias antes de FASE 1
 
-1. Activar pnpm: `corepack enable pnpm`. Decidir la versión exacta para `packageManager`.
-2. Arrancar Docker Desktop y verificar que `docker info` responde.
-3. Instalar Supabase CLI y fijar su versión.
+1. Instalar **Node 24.19.0**, la línea LTS activa fijada en LEX-0.6. La instalada es v22.22.2.
+2. Activar **pnpm 11.24.0**: `corepack enable pnpm`.
+3. Arrancar Docker Desktop y verificar que `docker info` responde.
+4. Instalar la CLI de Supabase y fijar su versión.
 
 ### Recomendación
 

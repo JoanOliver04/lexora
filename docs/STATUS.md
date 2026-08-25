@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-26
-**Fase actual:** FASE 0 — Gobierno, documentación y repositorio — `EN PROCESO` (5/8)
+**Fase actual:** FASE 0 — Gobierno, documentación y repositorio — `EN PROCESO` (6/8)
 **Hito actual:** M0 — Gobierno del proyecto operativo — `PENDIENTE`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-0.1 `HECHO` · LEX-0.2 `HECHO` · LEX-0.4 `HECHO` · LEX-0.5 `HECHO` · LEX-0.3 `HECHO`
+**Estado de la tarea:** LEX-0.1 `HECHO` · LEX-0.2 `HECHO` · LEX-0.4 `HECHO` · LEX-0.5 `HECHO` · LEX-0.3 `HECHO` · LEX-0.6 `HECHO`
 **Rama / commit base / HEAD:** `main` / `8d45f29` / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -66,6 +66,30 @@ Remite a la especificación y al roadmap en lugar de reproducirlos, y advierte d
 que ambos son locales y no versionados. Un agente sin contexto previo puede
 seguirlo para saber **cómo** trabajar aunque no tenga los documentos privados.
 
+### LEX-0.6 — Workflow, versionado y política de entornos — `HECHO`
+
+`docs/WORKFLOW.md` creado, con `.nvmrc` fijando la versión local de Node.
+
+**Versiones fijadas**, comprobadas contra la documentación oficial el 2026-08-26:
+
+| Herramienta | Versión | Motivo |
+|---|---|---|
+| Node.js | 24.19.0 (`24.x`) | Línea LTS activa y versión por defecto de Vercel. Node 20 llegó a su fin de vida en abril de 2026; Node 22 está en mantenimiento. |
+| pnpm | 11.24.0 | Última estable. Se activará con `corepack enable pnpm`. |
+
+Fuentes consultadas: índice de distribuciones de Node.js y la página de versiones
+soportadas de Vercel, que ofrece 24.x (por defecto), 22.x y 20.x.
+
+**Otras decisiones:** ramas `<tipo>/lex-<fase>-<tarea>-<slug>`; Conventional
+Commits con el ID de tarea como ámbito; commits y comentarios de código en
+inglés, documentación en español; migraciones SQL versionadas sin excepción;
+tres entornos con variables separadas y la regla de que ninguna preview apunta a
+datos de producción; procedimiento escrito para emergencias en producción;
+SemVer con `0.x` hasta la V1.
+
+> **Consecuencia para Q-003:** la máquina tiene Node v22.22.2. Hay que instalar
+> Node 24.19.0 antes de la fase 1.
+
 ### Frontera público / privado
 
 | Contenido | Ubicación | ¿En Git? |
@@ -108,6 +132,8 @@ seguirlo para saber **cómo** trabajar aunque no tenga los documentos privados.
 | `docs/ARCHITECTURE.md` | Creado. |
 | `docs/DATA_MODEL.md` | Creado. |
 | `docs/FSRS.md` | Creado. |
+| `docs/WORKFLOW.md` | Creado. |
+| `.nvmrc` | Creado. Fija Node 24.19.0 en local. |
 | `README.md` | Actualizado: enlaces a las tres specs técnicas. |
 | `docs/no_visible_en_github/` | Reservado para `MASTER_SPEC.md`, `ROADMAP.md` y material privado. |
 
@@ -158,7 +184,7 @@ git check-ignore -v docs/no_visible_en_github/MASTER_SPEC.md
 
 Corresponden a Joan:
 
-1. **Q-003** — instalar pnpm y Supabase CLI, arrancar Docker Desktop, confirmar versiones.
+1. **Q-003** — instalar Node 24.19.0, pnpm 11.24.0 y la CLI de Supabase, y arrancar Docker Desktop. La máquina tiene hoy Node v22.22.2.
 2. **Q-004** — autorizar `git push -u origin main` y confirmar que el remoto está vacío.
 3. Asegurar una copia de seguridad de `docs/no_visible_en_github/` fuera del proyecto: Git no protege esos archivos.
 
@@ -196,13 +222,13 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-0.6**: fijar el workflow, el versionado y la política de entornos.
-Convención de ramas y de mensajes de commit, versiones concretas de Node y del
-gestor de paquetes, política de migraciones SQL por Git, y separación entre
-entorno local, previews y producción.
+Ejecutar **LEX-0.7**: cerrar la nomenclatura y la política de contenido inicial.
+Términos del dominio fijados de forma consistente entre código, base de datos y
+documentación; y la regla de que el material privado de estudio se importa en la
+cuenta del propietario, nunca como semilla pública del repositorio.
 
-Después queda **LEX-0.7** (nomenclatura y política de contenido) y **LEX-0.8**
-(auditoría de M0 y primer checkpoint), que cierra el hito y depende de Q-004.
+Después queda **LEX-0.8**, que audita el hito M0 y crea el primer checkpoint.
+Depende de Q-004.
 
 No debe comenzarse FASE 1 hasta cerrar M0.
 
