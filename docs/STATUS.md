@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-26
-**Fase actual:** FASE 0 — Gobierno, documentación y repositorio — `EN PROCESO` (6/8)
+**Fase actual:** FASE 0 — Gobierno, documentación y repositorio — `EN PROCESO` (7/8)
 **Hito actual:** M0 — Gobierno del proyecto operativo — `PENDIENTE`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-0.1 `HECHO` · LEX-0.2 `HECHO` · LEX-0.4 `HECHO` · LEX-0.5 `HECHO` · LEX-0.3 `HECHO` · LEX-0.6 `HECHO`
+**Estado de la tarea:** LEX-0.1 `HECHO` · LEX-0.2 `HECHO` · LEX-0.4 `HECHO` · LEX-0.5 `HECHO` · LEX-0.3 `HECHO` · LEX-0.6 `HECHO` · LEX-0.7 `HECHO`
 **Rama / commit base / HEAD:** `main` / `8d45f29` / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -90,6 +90,26 @@ SemVer con `0.x` hasta la V1.
 > **Consecuencia para Q-003:** la máquina tiene Node v22.22.2. Hay que instalar
 > Node 24.19.0 antes de la fase 1.
 
+### LEX-0.7 — Nomenclatura y política de contenido — `HECHO`
+
+`docs/GLOSSARY.md` — un término, un significado, en dominio, esquema, interfaz y
+documentación. Fija que **`Card` no es una entidad**: es el término que ve el
+usuario, mientras el modelo usa `PracticeItem`. Incluye la tabla de equivalencias
+interfaz/modelo, los cuatro conceptos de idioma separados, convenciones de nombres
+para base de datos, TypeScript, ficheros, modos de práctica, estados y
+valoraciones, y qué idioma se usa en cada capa del proyecto.
+
+`docs/CONTENT_POLICY.md` — qué puede vivir en un repositorio público. El material
+privado de estudio se importa en la cuenta del propietario y nunca se versiona,
+ni como fixture ni como semilla, por privacidad y porque parte procede de fuentes
+de terceros. Las fixtures de test son originales y cubren la forma del archivo,
+no el idioma. Lista de prohibiciones, comprobación previa a cada commit y qué
+hacer si algo privado llega a confirmarse.
+
+También añadido `.gitattributes`: normaliza los finales de línea a LF. Sin él, un
+checkout en Windows convierte a CRLF y `.nvmrc`, los scripts de shell y las
+migraciones SQL fallan al ejecutarse en la CI sobre Linux.
+
 ### Frontera público / privado
 
 | Contenido | Ubicación | ¿En Git? |
@@ -134,6 +154,9 @@ SemVer con `0.x` hasta la V1.
 | `docs/FSRS.md` | Creado. |
 | `docs/WORKFLOW.md` | Creado. |
 | `.nvmrc` | Creado. Fija Node 24.19.0 en local. |
+| `.gitattributes` | Creado. Normaliza finales de línea a LF. |
+| `docs/GLOSSARY.md` | Creado. |
+| `docs/CONTENT_POLICY.md` | Creado. |
 | `README.md` | Actualizado: enlaces a las tres specs técnicas. |
 | `docs/no_visible_en_github/` | Reservado para `MASTER_SPEC.md`, `ROADMAP.md` y material privado. |
 
@@ -222,15 +245,16 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-0.7**: cerrar la nomenclatura y la política de contenido inicial.
-Términos del dominio fijados de forma consistente entre código, base de datos y
-documentación; y la regla de que el material privado de estudio se importa en la
-cuenta del propietario, nunca como semilla pública del repositorio.
+Ejecutar **LEX-0.8**, la última tarea de FASE 0: auditar el hito M0 y crear el
+primer checkpoint versionado. Comprobar que todos los enlaces internos resuelven,
+que no hay contradicciones entre documentos, que el árbol está limpio y que nada
+privado se ha colado en el historial.
 
-Después queda **LEX-0.8**, que audita el hito M0 y crea el primer checkpoint.
-Depende de Q-004.
+**Depende de Q-004:** la tarea incluye decidir si se hace el primer `push`. El
+remoto sigue sin contactar.
 
-No debe comenzarse FASE 1 hasta cerrar M0.
+Cerrar M0 habilita la FASE 1, que a su vez está bloqueada por Q-003: hay que
+instalar Node 24.19.0, pnpm 11.24.0 y la CLI de Supabase, y arrancar Docker.
 
 ---
 

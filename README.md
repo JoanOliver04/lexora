@@ -53,6 +53,8 @@ compartir mazos ni funciones sociales. Llegarán, si llegan, después de cerrar 
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Capas, regla de dependencia, módulos y puertos. |
 | [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) | Entidades, relaciones y convenciones del esquema. |
 | [`docs/FSRS.md`](docs/FSRS.md) | Integración de la repetición espaciada: puerto, transacción y tiempo. |
+| [`docs/GLOSSARY.md`](docs/GLOSSARY.md) | Términos del dominio y convenciones de nombres. |
+| [`docs/CONTENT_POLICY.md`](docs/CONTENT_POLICY.md) | Qué contenido puede vivir en un repositorio público. |
 | [`docs/WORKFLOW.md`](docs/WORKFLOW.md) | Ramas, commits, versiones fijadas, migraciones y entornos. |
 | [`docs/STATUS.md`](docs/STATUS.md) | Estado actual, verificaciones ejecutadas y siguiente acción. |
 | [`docs/OPEN_QUESTIONS.md`](docs/OPEN_QUESTIONS.md) | Decisiones pendientes, con contexto y opciones. |
@@ -65,4 +67,5 @@ repositorio de forma deliberada.
 
 ## Licencia
 
-Todavía sin decidir. Hasta que exista un archivo `LICENSE`, se reservan todos los derechos.
+Todavía sin decidir. Hasta que exista un archivo `LICENSE`, se reservan todos los
+derechos. Ver [`docs/CONTENT_POLICY.md`](docs/CONTENT_POLICY.md).
