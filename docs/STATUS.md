@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-26
-**Fase actual:** FASE 0 — Gobierno, documentación y repositorio — `EN PROCESO` (2/8)
+**Fase actual:** FASE 0 — Gobierno, documentación y repositorio — `EN PROCESO` (3/8)
 **Hito actual:** M0 — Gobierno del proyecto operativo — `PENDIENTE`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-0.1 `HECHO` · LEX-0.2 `HECHO`
+**Estado de la tarea:** LEX-0.1 `HECHO` · LEX-0.2 `HECHO` · LEX-0.4 `HECHO`
 **Rama / commit base / HEAD:** `main` / `8d45f29` / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -30,6 +30,19 @@
 - Reescrito `CLAUDE.md` como protocolo operativo versionado.
 - Definida la frontera público/privado: **es privado el diseño, es público el método** (Q-002).
 - `.gitignore` ampliado para un repositorio público: secretos, entorno, artefactos de build y test.
+
+### LEX-0.4 — Crear ADR-001…004 — `HECHO`
+
+- Cuatro Architecture Decision Records creados en `docs/adrs/`, más un índice con el formato y las reglas de sustitución.
+- Cada ADR incluye contexto, decisión, alternativas descartadas con su motivo, consecuencias aceptadas, forma de verificación y condiciones para reabrirlo.
+- Redactados desde las decisiones, sin reproducir secciones de la especificación privada.
+
+| ADR | Decisión |
+|---|---|
+| ADR-001 | Monolito modular con Clean Architecture pragmática y organización feature-first. |
+| ADR-002 | Supabase Data API con migraciones SQL, tipos generados y repositorios propios; sin ORM. |
+| ADR-003 | El estado de memoria pertenece a (usuario, `PracticeItem`), no al `Concept` ni a la variante visual. |
+| ADR-004 | PWA instalable y online-first; sin cola offline ni resolución de conflictos en la V1. |
 
 ### Frontera público / privado
 
@@ -68,7 +81,8 @@
 | `docs/STATUS.md` | Creado. |
 | `docs/OPEN_QUESTIONS.md` | Creado. Q-001…Q-004. |
 | `docs/evidence/README.md` | Creado. Convención `LEX-n.m.md`. |
-| `docs/adrs/.gitkeep` | Creado. Directorio preparado para LEX-0.4. |
+| `docs/adrs/README.md` | Creado. Índice, formato y reglas de los ADR. |
+| `docs/adrs/ADR-001…004` | Creados. Decisiones estructurales de la V1. |
 | `docs/no_visible_en_github/` | Reservado para `MASTER_SPEC.md`, `ROADMAP.md` y material privado. |
 
 Migraciones SQL: ninguna. Todavía no existe base de datos.
@@ -156,13 +170,17 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-0.4 — Crear ADR-001…004**, los cuatro Architecture Decision
-Records que fijan las decisiones estructurales de la V1: estilo de arquitectura,
-estrategia de acceso a datos, unidad que programa FSRS y alcance de la PWA.
+Ejecutar **LEX-0.5**: crear los esqueletos útiles de `docs/ARCHITECTURE.md`,
+`docs/DATA_MODEL.md` y `docs/FSRS.md`, ahora que las decisiones estructurales
+están fijadas en los ADR.
 
-Cada ADR debe explicar el porqué e incluir al menos una alternativa descartada
-con su motivo. Son públicos: describen decisiones y razones, no reproducen
-secciones de la especificación privada.
+Deben ser documentos públicos con las decisiones vigentes y las secciones
+pendientes marcadas como tales, no plantillas vacías. Como el resto de la
+documentación publicada, describen decisiones y estructura, no reproducen la
+especificación privada.
+
+**LEX-0.3** sigue pendiente y no está bloqueada: `CLAUDE.md` existe en una versión
+mínima funcional que esa tarea debe ampliar.
 
 No debe comenzarse FASE 1 hasta cerrar M0.
 
@@ -188,4 +206,4 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 - Rama: `main`.
 - Remoto: `origin` → `https://github.com/JoanOliver04/lexora.git` (**público**, configurado, sin push ni fetch).
 - Contenido versionado: `.gitignore`, `README.md`, `CLAUDE.md`, `docs/STATUS.md`,
-  `docs/OPEN_QUESTIONS.md`, `docs/evidence/README.md`, `docs/adrs/.gitkeep`.
+  `docs/OPEN_QUESTIONS.md`, `docs/evidence/README.md` y `docs/adrs/` con cinco archivos.
