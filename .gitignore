@@ -1,5 +1,35 @@
-# Instrucciones locales de Claude
+# --- Contenido privado: NO se publica en GitHub ---
+# Instrucciones locales del agente
 CLAUDE.md
-
-# Contenido privado (no se sube a GitHub)
+# Documentación de gobierno (MASTER_SPEC, ROADMAP, STATUS, OPEN_QUESTIONS,
+# evidence/) y material privado de Anki. Ver Q-001 y Q-002.
 no_visible_en_github/
+
+# --- Dependencias y build (todavía sin usar; preparado para FASE 1) ---
+node_modules/
+.pnpm-store/
+.next/
+out/
+build/
+dist/
+coverage/
+*.tsbuildinfo
+
+# --- Entorno y secretos ---
+.env
+.env.*
+!.env.example
+
+# --- Herramientas ---
+.vercel/
+supabase/.temp/
+playwright-report/
+test-results/
+
+# --- Sistema operativo y editores ---
+Thumbs.db
+Desktop.ini
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
