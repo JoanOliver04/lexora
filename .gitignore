@@ -23,12 +23,22 @@ supabase/.branches/
 # --- Dependencias y build --------------------------------------------
 node_modules/
 .pnpm-store/
+.pnp
+.pnp.*
 .next/
 out/
 build/
 dist/
 coverage/
 *.tsbuildinfo
+
+# Lo regenera Next.js en cada build; no se versiona.
+next-env.d.ts
+
+# --- Registros de depuracion -----------------------------------------
+npm-debug.log*
+yarn-debug.log*
+.pnpm-debug.log*
 
 # --- Herramientas y artefactos de test -------------------------------
 .vercel/

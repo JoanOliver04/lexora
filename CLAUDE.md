@@ -169,3 +169,23 @@ propietario comunique que `DEV-5.13` está desbloqueado:
 
 El criterio: cualquiera debe poder retomar Lexora leyendo `docs/STATUS.md`, sin
 reconstruir la conversación.
+
+---
+
+## 8. Bloque gestionado por Next.js
+
+Lo que sigue lo escribe y lo vuelve a añadir `next dev` por su cuenta. No se edita
+a mano: borrarlo solo consigue que reaparezca y deje el árbol sucio. Su aviso es
+pertinente, porque Next.js 16 trae cambios que rompen respecto a versiones
+anteriores y la documentación exacta de la versión instalada vive dentro del
+propio paquete.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
