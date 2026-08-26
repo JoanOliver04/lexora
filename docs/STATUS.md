@@ -182,13 +182,13 @@ Migraciones SQL: ninguna. Todavía no existe base de datos.
 | Herramienta | Estado | Versión |
 |---|---|---|
 | Git | Presente | 2.39.0.windows.2 |
-| Node.js | Presente | v22.22.2 (LTS activa; cumple el mínimo Node 20) |
-| npm | Presente | 10.9.7 |
+| Node.js | Presente | **24.19.0**, gestionado con nvm-windows |
+| npm | Presente | 11.17.0 |
 | corepack | Presente | 0.34.6 |
-| pnpm | **Ausente** | — (activable con `corepack enable pnpm`) |
+| pnpm | Presente | 11.24.0, vía corepack |
 | Docker CLI | Presente | 20.10.24 |
-| Docker daemon | **No responde** | `docker info` falla; Docker Desktop no está en ejecución |
-| Supabase CLI | **Ausente** | — |
+| Docker daemon | **No responde** | La aplicación arranca y WSL 2 corre, pero el motor no expone su tubería. Ver Q-003 |
+| Supabase CLI | Pendiente | Se instalará como dependencia del proyecto en LEX-1.7 |
 
 ### Estado de Git en la inspección inicial
 
@@ -218,7 +218,7 @@ git check-ignore -v docs/no_visible_en_github/MASTER_SPEC.md
 
 Corresponden a Joan:
 
-1. **Q-003** — instalar Node 24.19.0, pnpm 11.24.0 y la CLI de Supabase, y arrancar Docker Desktop. La máquina tiene hoy Node v22.22.2.
+1. **Q-003** — Node y pnpm ya resueltos. Queda **Docker Desktop**: abrir su ventana y ver qué está pidiendo. No bloquea LEX-1.1.
 2. **Q-004** — autorizar `git push -u origin main` y confirmar que el remoto está vacío.
 3. Asegurar una copia de seguridad de `docs/no_visible_en_github/` fuera del proyecto: Git no protege esos archivos.
 
@@ -256,23 +256,19 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-**M0 cerrado.** La siguiente tarea es **LEX-1.1**: crear la aplicación Next.js con
-App Router, TypeScript estricto y pnpm, fijando las versiones acordadas en
-`WORKFLOW.md`.
+**M0 cerrado. El entorno ya permite empezar.**
 
-**Está bloqueada por Q-003.** Antes de empezar hay que preparar la máquina:
+| Herramienta | Estado |
+|---|---|
+| Node.js 24.19.0 | ✅ Instalado y activo |
+| pnpm 11.24.0 | ✅ Instalado |
+| npm 11.17.0 | ✅ |
+| Docker Desktop | ⚠️ El motor no responde. Ver Q-003 |
+| CLI de Supabase | Se añadirá como dependencia del proyecto en LEX-1.7 |
 
-```text
-1. Instalar Node 24.19.0            (hoy hay v22.22.2)
-2. corepack enable pnpm             (pnpm 11.24.0)
-3. Arrancar Docker Desktop          (el daemon no responde)
-4. Instalar la CLI de Supabase
-```
-
-Los pasos 3 y 4 solo hacen falta a partir de LEX-1.7, pero conviene resolverlos a
-la vez.
-
-Queda además **Q-004** abierta: el primer `push` sigue sin autorizar.
+Siguiente tarea: **LEX-1.1** — crear la aplicación Next.js con App Router,
+TypeScript estricto y pnpm. Ya no está bloqueada: Docker solo hace falta a partir
+de LEX-1.7.
 
 ---
 

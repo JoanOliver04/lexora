@@ -12,7 +12,7 @@
 |---|---|---|---|
 | Q-001 | Visibilidad de `CLAUDE.md` | `RESUELTA` | LEX-0.3 |
 | Q-002 | Qué documentación es pública y cuál no | `RESUELTA` | LEX-0.2, LEX-0.4, LEX-0.5, LEX-10.4 |
-| Q-003 | Herramientas de desarrollo ausentes | `ABIERTA` | LEX-1.1, LEX-1.7 |
+| Q-003 | Herramientas de desarrollo ausentes | `ABIERTA` — parcialmente resuelta | LEX-1.7 |
 | Q-004 | Primer push al remoto público | `ABIERTA` | LEX-0.8 |
 
 > Este archivo es público. Se aplican las mismas exclusiones que en
@@ -92,40 +92,68 @@ sus razones, no copiar secciones de `MASTER_SPEC.md`.
 
 ## Q-003 — Herramientas de desarrollo ausentes
 
-**Estado:** `ABIERTA`
-**Fecha:** 2026-08-26
-**Bloquea:** LEX-1.1, LEX-1.7.
+**Estado:** `ABIERTA` — parcialmente resuelta el 2026-08-26.
+**Bloquea:** LEX-1.7 y siguientes. **Ya no bloquea LEX-1.1.**
 
-### Contexto
+### Situación actual
 
-Inspección del entorno realizada en LEX-0.1:
+| Herramienta | Estado | Versión |
+|---|---|---|
+| Git | ✅ | 2.39.0.windows.2 |
+| Node.js | ✅ **Resuelto** | 24.19.0, instalado con nvm-windows |
+| npm | ✅ | 11.17.0 |
+| pnpm | ✅ **Resuelto** | 11.24.0, vía corepack |
+| Docker Desktop | ⚠️ **Sin resolver** | Arranca, pero el motor no expone su tubería |
+| Supabase CLI | ✅ **Decidido** | Se instalará como dependencia del proyecto, no global |
 
-| Herramienta | Estado |
-|---|---|
-| Git 2.39.0 | Presente |
-| Node.js v22.22.2 | Presente, pero **por debajo de la versión fijada** (24.19.0, ver `WORKFLOW.md`) |
-| npm 10.9.7 | Presente |
-| corepack 0.34.6 | Presente |
-| pnpm | **Ausente** |
-| Docker CLI 20.10.24 | Presente |
-| Docker daemon | **No responde** |
-| Supabase CLI | **Ausente** |
+### Lo resuelto
 
-El stack aprobado fija pnpm como gestor de paquetes y Supabase CLI + Docker para
-base de datos local, migraciones, seeds y pgTAP.
+Node 24.19.0 instalado con `nvm install` y activado con `nvm use`. El enlace
+`C:
+vm4w
+odejs` apunta correctamente a esa versión, y cualquier terminal nueva
+resuelve `node -v` a `v24.19.0`.
 
-### Acciones necesarias antes de FASE 1
+pnpm 11.24.0 activado con `corepack enable pnpm` y fijado con `corepack prepare`.
 
-1. Instalar **Node 24.19.0**, la línea LTS activa fijada en LEX-0.6. La instalada es v22.22.2.
-2. Activar **pnpm 11.24.0**: `corepack enable pnpm`.
-3. Arrancar Docker Desktop y verificar que `docker info` responde.
-4. Instalar la CLI de Supabase y fijar su versión.
+**Aviso permanente:** existe además una instalación independiente de Node 22.22.2
+en `C:\Program Files
+odejs`, hecha con winget. En el PATH del sistema va
+*después* del enlace de nvm, así que no interfiere. Pero si algún día una terminal
+devuelve `v22.22.2`, la causa es esa: basta con volver a ejecutar `nvm use 24.19.0`.
+No se ha desinstalado porque hay paquetes npm globales de otros proyectos
+—Angular CLI, Firebase Tools— que dependen de ella.
 
-### Recomendación
+### Lo que sigue sin resolver: Docker
 
-Que las ejecute Joan y confirme las versiones resultantes. Son instalaciones
-globales en su máquina, no decisiones de arquitectura, y un agente no debe
-instalarlas sin autorización.
+Docker Desktop arranca y sus distribuciones de WSL 2 están en ejecución, pero el
+motor Linux no responde tras más de tres minutos:
+
+```text
+ERROR: Error response from daemon:
+open \.\pipe\docker_engine_linux: The system cannot find the file specified.
+```
+
+Causas habituales, en orden de probabilidad: la aplicación está mostrando una
+ventana que espera una acción —aceptar términos, iniciar sesión o una
+actualización pendiente—, el motor se ha quedado a medio arrancar, o la versión
+instalada (CLI 20.10.24, de 2023) necesita actualizarse.
+
+**Requiere que el propietario abra la ventana de Docker Desktop y vea qué pide.**
+Un agente no puede resolverlo desde la línea de comandos.
+
+No bloquea LEX-1.1 ni las tareas de fundación que no tocan la base de datos.
+
+### Decisión sobre la CLI de Supabase
+
+La documentación oficial ofrece dos vías en Windows: instalación global con Scoop,
+o dependencia de desarrollo del proyecto.
+
+**Se elige la dependencia del proyecto.** Motivos: la versión queda fijada en el
+lockfile, lo que es coherente con la política de versiones exactas de
+`WORKFLOW.md`; un clon limpio obtiene la misma versión sin instalar nada global; y
+evita añadir Scoop como gestor de paquetes adicional a la máquina. Se añadirá en
+LEX-1.7 y se invocará como `pnpm supabase <comando>`.
 
 ---
 

@@ -65,6 +65,13 @@ y archivos generados incluidos—, y `docs/STATUS.md` actualizado.
 |---|---|---|
 | Node.js | **24.19.0** | `.nvmrc` (local) y `engines.node: "24.x"` en `package.json` |
 | pnpm | **11.24.0** | `packageManager: "pnpm@11.24.0"`, activado con `corepack enable pnpm` |
+| CLI de Supabase | Por fijar en LEX-1.7 | Dependencia de desarrollo del proyecto, no instalación global |
+
+**Por qué la CLI de Supabase como dependencia del proyecto.** La documentación
+oficial ofrece en Windows la instalación global con Scoop o la dependencia de
+proyecto. Se elige la segunda: fija la versión en el lockfile, un clon limpio
+obtiene exactamente la misma sin instalar nada global, y no obliga a añadir otro
+gestor de paquetes a la máquina. Se invoca como `pnpm supabase <comando>`.
 
 **Por qué Node 24.** Es la línea LTS activa —Krypton— y la versión por defecto de
 Vercel, que ofrece 24.x, 22.x y 20.x. Node 20 llegó al final de su vida en abril
