@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-26
-**Fase actual:** FASE 0 — Gobierno, documentación y repositorio — `HECHO` (8/8)
-**Hito actual:** M0 — Gobierno del proyecto operativo — `HECHO`. Siguiente: M1 — Fundación técnica.
+**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (1/14)
+**Hito actual:** M1 — Fundación técnica reproducible — `EN PROCESO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-0.1 `HECHO` · LEX-0.2 `HECHO` · LEX-0.4 `HECHO` · LEX-0.5 `HECHO` · LEX-0.3 `HECHO` · LEX-0.6 `HECHO` · LEX-0.7 `HECHO` · LEX-0.8 `HECHO`
-**Rama / commit base / HEAD:** `main` / `8d45f29` / ver «Estado de git»
+**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 `HECHO`**
+**Rama / commit base / HEAD:** `main` / `4a628be` (`v0.1.0-m0`) / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -15,110 +15,42 @@
 
 ## Terminado en esta sesión
 
-### LEX-0.1 — Inspeccionar e inicializar de forma segura el repositorio local — `HECHO`
+### LEX-1.1 — Aplicación Next.js con App Router — `HECHO`
 
-- Inventario del árbol previo realizado sin sobrescribir ningún archivo.
-- Repositorio Git inicializado con rama `main`.
-- Remoto `origin` configurado por autorización expresa de Joan; todavía no contactado.
-- Versiones de herramientas comprobadas (tabla más abajo).
-- `docs/STATUS.md` creado.
-- No se ha ejecutado `create-next-app`, no se han instalado dependencias y no se ha creado ningún servicio externo.
+Informe completo en [`evidence/LEX-1.1.md`](evidence/LEX-1.1.md).
 
-### LEX-0.2 — Integrar la documentación canónica — `HECHO`
-
-- Creados `docs/STATUS.md`, `docs/OPEN_QUESTIONS.md`, `docs/evidence/README.md`, `docs/adrs/` y `README.md`.
-- Reescrito `CLAUDE.md` como protocolo operativo versionado.
-- Definida la frontera público/privado: **es privado el diseño, es público el método** (Q-002).
-- `.gitignore` ampliado para un repositorio público: secretos, entorno, artefactos de build y test.
-
-### LEX-0.4 — Crear ADR-001…004 — `HECHO`
-
-- Cuatro Architecture Decision Records creados en `docs/adrs/`, más un índice con el formato y las reglas de sustitución.
-- Cada ADR incluye contexto, decisión, alternativas descartadas con su motivo, consecuencias aceptadas, forma de verificación y condiciones para reabrirlo.
-- Redactados desde las decisiones, sin reproducir secciones de la especificación privada.
-
-| ADR | Decisión |
+| Paquete | Versión |
 |---|---|
-| ADR-001 | Monolito modular con Clean Architecture pragmática y organización feature-first. |
-| ADR-002 | Supabase Data API con migraciones SQL, tipos generados y repositorios propios; sin ORM. |
-| ADR-003 | El estado de memoria pertenece a (usuario, `PracticeItem`), no al `Concept` ni a la variante visual. |
-| ADR-004 | PWA instalable y online-first; sin cola offline ni resolución de conflictos en la V1. |
+| Next.js | 16.3.3 (Turbopack por defecto) |
+| React / React DOM | 19.2.8 |
+| TypeScript | 5.9.3, `strict: true` |
+| ESLint | 9.39.5 con `eslint-config-next` |
+| Tailwind CSS | 4.3.3 |
 
-### LEX-0.5 — Esqueletos de `ARCHITECTURE.md`, `DATA_MODEL.md` y `FSRS.md` — `HECHO`
+**Verificado, no supuesto.** En el árbol de trabajo: `pnpm install`, `pnpm lint`,
+`pnpm build` y `tsc --noEmit` en verde; el servidor de desarrollo responde HTTP 200
+con HTML renderizado. Y en un **clon limpio** desde cero:
+`pnpm install --frozen-lockfile`, `build`, `tsc --noEmit` y `lint`, los cuatro en
+verde.
 
-- `docs/ARCHITECTURE.md` — capas y regla de dependencia, módulos de negocio, estructura de carpetas, puertos, criterio de Server/Client Components, seguridad en dos barreras y niveles de test.
-- `docs/DATA_MODEL.md` — entidades, diagrama de relaciones, convenciones del esquema y en qué fase aparece cada tabla.
-- `docs/FSRS.md` — puerto y adaptador, versionado de configuración, cola diaria, transacción de repaso con idempotencia y concurrencia, y política de tiempo.
-- Los tres enlazan a los ADR correspondientes y marcan explícitamente sus secciones pendientes.
-- Enlazados desde `README.md`.
+**Dos hallazgos que afectan a tareas posteriores:**
 
-**Pendiente en ellos, por diseño:** columnas exactas del esquema (llegan con cada migración), valores de configuración del planificador (fase 5) y política de índices (cuando existan consultas que medir).
+1. `tsc --noEmit` **falla en un clon limpio** hasta que Next genera los tipos de
+   rutas: el layout raíz usa `LayoutProps`, que vive en `.next/types/`. La CI
+   (LEX-1.12) y los scripts (LEX-1.2) deben ejecutar `next typegen` antes de la
+   comprobación de tipos.
+2. `next dev` **añade por su cuenta un bloque a `CLAUDE.md`**. Se conserva y se
+   enmarca: borrarlo solo consigue que reaparezca y deje el árbol sucio.
 
-### LEX-0.3 — `CLAUDE.md` operativo completo — `HECHO`
+**Decisión:** no se adopta TypeScript 7.0.2, la reescritura nativa. Next.js
+documenta un mínimo de 5.1 y no la menciona; adoptarla ahora sería riesgo sin
+contrapartida.
 
-Ampliado de una versión mínima al protocolo completo, en siete secciones: orden
-de lectura obligatorio, ciclo por tarea con los tres estados y qué cuenta como
-evidencia, formato del informe de cierre, criterios para detenerse y abrir un
-`Q-nnn`, reglas innegociables agrupadas por proceso / arquitectura / datos y
-seguridad / operaciones, Definition of Done, y protocolo de pausa hacia Expyria.
+### FASE 0 — cerrada (8/8)
 
-Remite a la especificación y al roadmap en lugar de reproducirlos, y advierte de
-que ambos son locales y no versionados. Un agente sin contexto previo puede
-seguirlo para saber **cómo** trabajar aunque no tenga los documentos privados.
-
-### LEX-0.6 — Workflow, versionado y política de entornos — `HECHO`
-
-`docs/WORKFLOW.md` creado, con `.nvmrc` fijando la versión local de Node.
-
-**Versiones fijadas**, comprobadas contra la documentación oficial el 2026-08-26:
-
-| Herramienta | Versión | Motivo |
-|---|---|---|
-| Node.js | 24.19.0 (`24.x`) | La spec pide una LTS activa compatible con Vercel, mínimo Node 20. Node 24 es la LTS activa y el default de Vercel: la cumple. Node 20 llegó a fin de vida en abril de 2026; Node 22 está en mantenimiento. |
-| pnpm | 11.24.0 | Última estable. Se activará con `corepack enable pnpm`. |
-
-Fuentes consultadas: índice de distribuciones de Node.js y la página de versiones
-soportadas de Vercel, que ofrece 24.x (por defecto), 22.x y 20.x.
-
-**Otras decisiones:** ramas `<tipo>/lex-<fase>-<tarea>-<slug>`; Conventional
-Commits con el ID de tarea como ámbito; commits y comentarios de código en
-inglés, documentación en español; migraciones SQL versionadas sin excepción;
-tres entornos con variables separadas y la regla de que ninguna preview apunta a
-datos de producción; procedimiento escrito para emergencias en producción;
-SemVer con `0.x` hasta la V1.
-
-> **Consecuencia para Q-003:** la máquina tiene Node v22.22.2. Hay que instalar
-> Node 24.19.0 antes de la fase 1.
-
-### LEX-0.7 — Nomenclatura y política de contenido — `HECHO`
-
-`docs/GLOSSARY.md` — un término, un significado, en dominio, esquema, interfaz y
-documentación. Fija que **`Card` no es una entidad**: es el término que ve el
-usuario, mientras el modelo usa `PracticeItem`. Incluye la tabla de equivalencias
-interfaz/modelo, los cuatro conceptos de idioma separados, convenciones de nombres
-para base de datos, TypeScript, ficheros, modos de práctica, estados y
-valoraciones, y qué idioma se usa en cada capa del proyecto.
-
-`docs/CONTENT_POLICY.md` — qué puede vivir en un repositorio público. El material
-privado de estudio se importa en la cuenta del propietario y nunca se versiona,
-ni como fixture ni como semilla, por privacidad y porque parte procede de fuentes
-de terceros. Las fixtures de test son originales y cubren la forma del archivo,
-no el idioma. Lista de prohibiciones, comprobación previa a cada commit y qué
-hacer si algo privado llega a confirmarse.
-
-También añadido `.gitattributes`: normaliza los finales de línea a LF. Sin él, un
-checkout en Windows convierte a CRLF y `.nvmrc`, los scripts de shell y las
-migraciones SQL fallan al ejecutarse en la CI sobre Linux.
-
-### LEX-0.8 — Auditoría de M0 y primer checkpoint — `HECHO`
-
-Informe completo en [`evidence/LEX-0.8.md`](evidence/LEX-0.8.md). Resumen:
-
-- **Enlaces:** 4 rotos encontrados y corregidos, todos por el movimiento de documentos entre `docs/` y la carpeta privada. Segunda pasada: 43 enlaces, 0 rotos.
-- **Historial:** revisado por completo, no solo el árbol actual. Ni la especificación, ni el roadmap, ni material privado han estado versionados en ningún commit. Sin credenciales.
-- **Coherencia:** terminología, modos de práctica y estados de tarea consistentes entre documentos. La versión de Node **no** contradice la especificación: pedía una LTS activa compatible con Vercel, y Node 24 lo es.
-- **Excepción registrada:** no se ha hecho revisión cruzada independiente. M0 no contiene código ni políticas de acceso, pero la excepción queda visible en lugar de fingirse.
-- **Checkpoint:** etiqueta local `v0.1.0-m0`. Sin `push`: sigue siendo Q-004.
+M0 completo: repositorio, documentación de gobierno, ADR-001…004, specs técnicas,
+protocolo del agente, workflow, glosario y política de contenido. Auditoría en
+[`evidence/LEX-0.8.md`](evidence/LEX-0.8.md). Etiqueta `v0.1.0-m0`.
 
 ### Frontera público / privado
 
@@ -168,6 +100,12 @@ Informe completo en [`evidence/LEX-0.8.md`](evidence/LEX-0.8.md). Resumen:
 | `docs/GLOSSARY.md` | Creado. |
 | `docs/CONTENT_POLICY.md` | Creado. |
 | `docs/evidence/LEX-0.8.md` | Creado. Informe de auditoría de M0. |
+| `docs/evidence/LEX-1.1.md` | Creado. Informe de la aplicación Next.js. |
+| `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` | Creados. Versiones fijadas. |
+| `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs` | Creados. |
+| `src/app/`, `public/` | Creados por el andamiaje. La página de ejemplo se sustituye en LEX-1.13. |
+| `.gitignore` | Ampliado con lo que necesita Next.js. |
+| `CLAUDE.md` | Bloque gestionado por `next dev`, conservado y enmarcado. |
 | `README.md` | Actualizado: enlaces a las tres specs técnicas. |
 | `docs/no_visible_en_github/` | Reservado para `MASTER_SPEC.md`, `ROADMAP.md` y material privado. |
 
@@ -256,19 +194,19 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-**M0 cerrado. El entorno ya permite empezar.**
+Ejecutar **LEX-1.2** — calidad base y scripts canónicos: `format`, `format:check`,
+`lint`, `typecheck`, `test` y `build`, con Prettier y los ajustes de TypeScript
+que endurezcan lo que `strict` no cubre.
 
-| Herramienta | Estado |
-|---|---|
-| Node.js 24.19.0 | ✅ Instalado y activo |
-| pnpm 11.24.0 | ✅ Instalado |
-| npm 11.17.0 | ✅ |
-| Docker Desktop | ⚠️ El motor no responde. Ver Q-003 |
-| CLI de Supabase | Se añadirá como dependencia del proyecto en LEX-1.7 |
+**Incorporar el hallazgo de LEX-1.1:** el script `typecheck` debe ejecutar
+`next typegen` antes de `tsc --noEmit`, o fallará en cualquier entorno limpio.
 
-Siguiente tarea: **LEX-1.1** — crear la aplicación Next.js con App Router,
-TypeScript estricto y pnpm. Ya no está bloqueada: Docker solo hace falta a partir
-de LEX-1.7.
+Después: LEX-1.3 (estructura modular y reglas de dependencia), LEX-1.4 (validación
+de entorno con Zod), LEX-1.5 (internacionalización) y LEX-1.6 (sistema visual).
+Ninguna necesita Docker.
+
+**LEX-1.7 sí lo necesita** y sigue bloqueada por Q-003: hay que abrir la ventana de
+Docker Desktop y ver qué está pidiendo.
 
 ---
 
