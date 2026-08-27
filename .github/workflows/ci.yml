@@ -122,6 +122,15 @@ jobs:
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
 
+      - name: Levantar Supabase local
+        # El trabajo E2E prueba la aplicacion como se despliega, y la aplicacion
+        # depende de la base de datos: `/api/health` responde 503 sin ella.
+        #
+        # Faltaba en la primera version de esta CI, y en local no se notaba
+        # porque la base de datos siempre esta encendida. Lo encontro la propia
+        # CI en LEX-1.13, que es exactamente para lo que existe.
+        run: pnpm exec supabase start -x studio,imgproxy,vector,logflare
+
       - name: Instalar Chromium
         # Solo Chromium. Firefox y WebKit se anadiran cuando exista producto que
         # pueda romperse de forma distinta en cada motor; hoy solo alargarian

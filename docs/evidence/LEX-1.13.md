@@ -122,7 +122,29 @@ pnpm e2e      14 passed (29.6s)
 Prueba manual: 200/ok con base en marcha, 503/degraded con base detenida
 ```
 
-## 7. Fuera de alcance
+## 7. La CI encontró un hueco que en local era invisible
+
+El trabajo de extremo a extremo falló en la primera ejecución:
+
+```text
+expone la comprobación de salud sin filtrar detalles internos
+  Expected: 200
+  Received: 503
+```
+
+**El trabajo E2E no levantaba la base de datos.** En local no se notaba, porque
+aquí siempre está encendida; en un runner limpio, el health check decía la verdad
+—que no la alcanza— y el test lo detectó.
+
+Es exactamente para lo que existe una CI: el fallo no estaba en el health check ni
+en el test, sino en un supuesto que solo se sostenía en la máquina de desarrollo.
+
+La corrección fue añadir Supabase al trabajo E2E, no relajar el test. Un test que
+acepta 200 o 503 indistintamente deja de comprobar nada, y el trabajo E2E prueba
+la aplicación como se despliega: la aplicación depende de la base de datos. Desde
+la fase 2 habría hecho falta igualmente.
+
+## 8. Fuera de alcance
 
 - Landing de producto con capturas y demo → LEX-10.3 y LEX-10.4.
 - Métricas y observabilidad → LEX-9.6, con Sentry.
