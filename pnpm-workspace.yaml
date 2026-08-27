@@ -1,4 +1,19 @@
+# Scripts de instalacion (postinstall) de dependencias.
+#
+# Denegar es el valor por defecto deliberado: un postinstall ejecuta codigo
+# arbitrario de un tercero en esta maquina y en la CI, durante `pnpm install`.
+# Cada `true` de esta lista tiene que poder justificarse con algo concreto que
+# se rompa sin el.
+#
+# Ninguno de estos hace falta para construir Lexora; comprobado ejecutando
+# `pnpm build` con los cuatro denegados:
+#   sharp            optimizacion de imagenes; Next.js trae su propio pipeline
+#   unrs-resolver    resolucion de modulos del linter; funciona sin binario nativo
+#   @parcel/watcher  vigilancia de ficheros en desarrollo; hay alternativa en JS
+#   @swc/core        el binario por plataforma ya llega como dependencia opcional
 allowBuilds:
+  "@parcel/watcher": false
+  "@swc/core": false
   sharp: false
   unrs-resolver: false
 minimumReleaseAgeExclude:
@@ -14,3 +29,10 @@ minimumReleaseAgeExclude:
   - "@next/swc-win32-x64-msvc@16.3.3"
   - eslint-config-next@16.3.3
   - next@16.3.3
+  - "@eloqnt/config@0.0.2"
+  - "@eloqnt/format-json@0.0.3"
+  - "@eloqnt/format-po@0.0.3"
+  - icu-minify@4.14.0
+  - next-intl-swc-plugin-extractor@4.14.0
+  - next-intl@4.14.0
+  - use-intl@4.14.0

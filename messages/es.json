@@ -1,0 +1,17 @@
+{
+  "Metadata": {
+    "title": "Lexora",
+    "description": "Aprende y mantén tu inglés A1–B2 con recuperación activa y repetición espaciada."
+  },
+  "Home": {
+    "title": "Lexora",
+    "tagline": "Aprende y mantén tu inglés con recuperación activa.",
+    "explanation": "Reconocer una palabra no es lo mismo que ser capaz de producirla. Lexora programa cada competencia por separado.",
+    "status": "En desarrollo temprano."
+  },
+  "LocaleSwitcher": {
+    "label": "Idioma de la interfaz",
+    "es": "Español",
+    "en": "English"
+  }
+}
