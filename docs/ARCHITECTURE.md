@@ -187,6 +187,14 @@ tabla sin políticas queda abierta a Internet.**
 `getSession()` está prohibido por lint: devuelve lo que diga la cookie, sin
 verificar su firma. Para cualquier decisión de permisos se usa `getClaims()`.
 
+**El invariante está comprobado.** `supabase/tests/database/010-rls-enabled.sql`
+falla si alguna tabla de `public` no tiene RLS habilitado, y nombra cuál. Hoy pasa
+sin comprobar nada porque no hay tablas; a partir de la primera migración, olvidar
+`enable row level security` rompe la suite en lugar de pasar inadvertido.
+
+Comprueba que RLS está *habilitado*, no que las políticas sean correctas. Lo
+segundo se prueba tabla por tabla, con un caso de dueño y otro de no-dueño.
+
 *Pendiente:* detalle de políticas por tabla, a medida que las fases 2 a 5 las creen.
 
 ## Validación

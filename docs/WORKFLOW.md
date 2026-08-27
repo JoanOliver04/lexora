@@ -101,6 +101,7 @@ despliegue de preview antes de tocar producción.
 | `pnpm e2e` / `e2e:ui` | Playwright contra el build de producción, en escritorio y en emulación del Poco F5. |
 | `pnpm db:start` / `db:stop` / `db:status` | Entorno Supabase local. |
 | `pnpm db:reset` | Recrea la base desde cero: migraciones y semillas. |
+| `pnpm db:test` | pgTAP. Incluye el invariante de que toda tabla de `public` tiene RLS. |
 | `pnpm db:types` | Regenera `database.types.ts`. **En el mismo commit que la migración.** |
 | `pnpm check` | Todas las puertas en cadena, **salvo E2E**: levanta un servidor y tarda, así que se ejecuta aparte. |
 
