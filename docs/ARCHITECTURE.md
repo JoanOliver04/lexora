@@ -39,6 +39,11 @@ infrastructure ─────────────────┘───�
 Supabase, Vercel ni `ts-fsrs`. Si lo hiciera, la lógica dejaría de poder probarse
 sin levantar media aplicación.
 
+**Y está comprobada por ESLint, no solo escrita aquí.** El bloque de
+`no-restricted-imports` de `eslint.config.mjs` hace que una importación prohibida
+falle el lint, y con él `pnpm check` y la CI. Cada mensaje de error explica el
+porqué y remite al ADR correspondiente.
+
 Corolario práctico: ninguna Server Action ni Route Handler contiene reglas de
 negocio ni consultas SQL. Llaman a un caso de uso.
 
@@ -105,8 +110,10 @@ tests/
   fixtures/
 ```
 
-*Pendiente:* la estructura se materializa en la fase 1. Hasta entonces es un
-compromiso, no un hecho verificable.
+Las carpetas de cada módulo **se crean cuando el módulo se implementa**, no por
+anticipado: un árbol de directorios vacíos no es arquitectura, y contradiría el
+criterio de no repetir las cuatro capas en módulos triviales. La convención está
+documentada en `src/modules/README.md` y `src/shared/README.md`.
 
 ## Puertos principales
 
