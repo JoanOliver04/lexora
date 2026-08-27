@@ -1,0 +1,17 @@
+{
+  "Metadata": {
+    "title": "Lexora",
+    "description": "Learn and keep your A1–B2 English with active recall and spaced repetition."
+  },
+  "Home": {
+    "title": "Lexora",
+    "tagline": "Learn and keep your English through active recall.",
+    "explanation": "Recognising a word is not the same as being able to produce it. Lexora schedules each skill separately.",
+    "status": "Early development."
+  },
+  "LocaleSwitcher": {
+    "label": "Interface language",
+    "es": "Español",
+    "en": "English"
+  }
+}

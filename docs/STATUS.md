@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-27
-**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (4/14)
+**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (5/14)
 **Hito actual:** M1 — Fundación técnica reproducible — `EN PROCESO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.4 `HECHO`**
+**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.5 `HECHO`**
 **Rama / commit base / HEAD:** `main` / `4a628be` (`v0.1.0-m0`) / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -14,6 +14,36 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-1.5 — Internacionalización ES/EN — `HECHO`
+
+Informe completo en [`evidence/LEX-1.5.md`](evidence/LEX-1.5.md).
+
+`next-intl@4.14.0` con enrutado por prefijo. En Next.js 16 el archivo de
+middleware se llama `src/proxy.ts`. Los textos viven en `messages/`, ninguno
+dentro de un componente.
+
+**Comprobado en ejecución**, con el servidor arrancado:
+
+```text
+/es   HTTP 200   lang="es"   texto en español
+/en   HTTP 200   lang="en"   texto en inglés
+/     HTTP 307   redirige al idioma por defecto
+/fr   HTTP 404   no una página en blanco
+```
+
+`lang` no es cosmético: los lectores de pantalla lo usan para elegir la voz. Una
+página en español anunciada como `lang="en"` se lee con acento inglés.
+
+**La separación de los cuatro idiomas está en el código, no solo en el glosario.**
+El tipo se llama `UiLocale` y no `Locale` a propósito: el nombre corto invitaría a
+reutilizarlo para el idioma estudiado, que es justo el error a evitar.
+
+**Scripts de instalación denegados.** `next-intl` arrastró `@parcel/watcher` y
+`@swc/core`, y pnpm exigió decidir. Los cuatro de la lista quedan a `false`: un
+`postinstall` ejecuta código de terceros durante `pnpm install`, aquí y en la CI.
+Comprobado que el build pasa sin ninguno. El razonamiento está escrito junto a la
+lista.
 
 ### LEX-1.4 — Validación de entorno con Zod — `HECHO`
 
@@ -187,6 +217,10 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 | `src/env/` | Creado: `server.ts`, `client.ts`, `shared.ts`, `env.d.ts`. |
 | `.env.example` | Creado. Plantilla documentada sin valores reales. |
 | `CLAUDE.md` | Aviso: no editar textos en español con `Set-Content` de PowerShell. |
+| `docs/evidence/LEX-1.5.md` | Creado. Informe de internacionalización. |
+| `src/i18n/`, `src/proxy.ts`, `messages/` | Creados. |
+| `src/app/[locale]/` | Layout y página movidos bajo el segmento de idioma. |
+| `pnpm-workspace.yaml` | Scripts de instalación denegados, con el motivo escrito. |
 | `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` | Creados. Versiones fijadas. |
 | `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs` | Creados. |
 | `src/app/`, `public/` | Creados por el andamiaje. La página de ejemplo se sustituye en LEX-1.13. |
@@ -263,6 +297,11 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Riesgos o deuda conocida
 
+- **Al mover o renombrar una ruta, `pnpm typecheck` falla hasta borrar `.next`.**
+  Los tipos generados describen el árbol anterior y se quejan de ficheros que ya no
+  existen. No es un error del código: es caché. La CI no lo sufre porque parte de
+  un árbol limpio.
+
 - **La regla de dependencia no tiene regresión automática.** Se ha verificado a
   mano y la salida está registrada, pero nada impide que un cambio futuro en
   `eslint.config.mjs` la desactive sin que se note. Cerrar en LEX-1.9 con un test
@@ -291,14 +330,12 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-1.5** — internacionalización ES/EN con `next-intl`: enrutado por
-locale, mensajes separados del código y ningún texto visible incrustado en un
-componente.
+Ejecutar **LEX-1.6** — sistema visual base: tokens de color, espacio, radio,
+tipografía y elevación; temas claro, oscuro y sistema; y los componentes mínimos
+sobre los que se construirá el resto.
 
-Después **LEX-1.6** (sistema visual base). Ninguna necesita Docker.
-
-**LEX-1.7 sigue bloqueada por Q-003.** Docker Desktop arranca pero su motor no
-responde; hace falta abrir su ventana y ver qué pide.
+Es la última tarea de FASE 1 que no necesita Docker. Después, **LEX-1.7 exige
+resolver Q-003**.
 
 ---
 
