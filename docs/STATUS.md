@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-27
-**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (7/14)
+**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (8/14)
 **Hito actual:** M1 — Fundación técnica reproducible — `EN PROCESO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.6 y LEX-1.9 `HECHO`**
+**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.6, LEX-1.9 y LEX-1.11 `HECHO`**
 **Rama / commit base / HEAD:** `main` / `4a628be` (`v0.1.0-m0`) / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -14,6 +14,26 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-1.11 — Configurar Playwright — `HECHO`
+
+Informe completo en [`evidence/LEX-1.11.md`](evidence/LEX-1.11.md).
+
+Dos perfiles: escritorio y **Poco F5 real** —393×873 px CSS, densidad 2.75—, no un
+móvil genérico. Los fallos responsive aparecen en anchos concretos, y probar en 375
+no dice nada sobre el teléfono donde esto se va a usar.
+
+Se prueba contra el **build de producción**, no contra el servidor de desarrollo:
+difieren en renderizado estático y manejo de errores.
+
+**12 tests en verde**, 6 casos por 2 dispositivos: idiomas con su `lang`,
+redirección de la raíz, 404 en idioma inexistente, conmutador de idioma, tema que
+sobrevive a una recarga y ausencia de errores de consola.
+
+**`exactOptionalPropertyTypes` atrapó un error real.** `workers: undefined` no
+compila: la opción distingue omitir una clave de asignarle `undefined`, y Playwright
+no acepta lo segundo. Corregido omitiéndola. Una opción estricta activada en
+LEX-1.2 pillando un fallo concreto a la semana siguiente.
 
 ### LEX-1.9 — Vitest y React Testing Library — `HECHO`
 
@@ -290,6 +310,8 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 | `vitest.config.mts`, `vitest.setup.ts` | Creados. |
 | `tests/unit/architecture/layer-rules.test.ts` | Creado. Regresión de la regla de dependencia. |
 | `src/shared/presentation/components/button.test.tsx` | Creado. Prueba el arnés de componentes. |
+| `docs/evidence/LEX-1.11.md` | Creado. Informe de Playwright. |
+| `playwright.config.ts`, `tests/e2e/landing.spec.ts` | Creados. |
 | `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` | Creados. Versiones fijadas. |
 | `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs` | Creados. |
 | `src/app/`, `public/` | Creados por el andamiaje. La página de ejemplo se sustituye en LEX-1.13. |
@@ -395,25 +417,22 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-**Se acabó lo que se podía hacer sin Docker.**
+**Se ha agotado todo lo que se puede hacer sin Docker.** Ocho de las catorce tareas
+de FASE 1 están cerradas; las seis restantes —Supabase local, clientes SSR, pgTAP,
+la CI que los ejecuta, la landing con health check y el cierre del hito— necesitan
+una base de datos en marcha.
 
-Las seis tareas de FASE 1 que no dependían de la base de datos están cerradas. Las
-ocho restantes —Supabase local, clientes SSR, pgTAP, y la CI que los ejecuta—
-necesitan un motor de contenedores en marcha.
-
-**Q-003 es ahora el único bloqueo real del proyecto.** Docker Desktop arranca y sus
+**Q-003 es el único bloqueo del proyecto.** Docker Desktop arranca y sus
 distribuciones de WSL 2 corren, pero el motor Linux no expone su tubería:
 
 ```text
 open \\.\pipe\docker_engine_linux: The system cannot find the file specified
 ```
 
-Hace falta abrir la ventana de Docker Desktop y ver qué está pidiendo: aceptar
-términos, iniciar sesión o instalar una actualización. La versión instalada es de
-2023.
+Hace falta abrir la ventana de Docker Desktop y ver qué pide: aceptar términos,
+iniciar sesión o instalar una actualización. La versión instalada es de 2023.
 
-Se puede adelantar **LEX-1.11** (configurar Playwright), que no necesita base de
-datos, pero deja la fase igualmente sin cerrar.
+Cuando esté resuelto, la siguiente tarea es **LEX-1.7**.
 
 ---
 
