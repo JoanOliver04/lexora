@@ -1,7 +1,7 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-27
-**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (11/14)
+**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (12/14)
 **Hito actual:** M1 — Fundación técnica reproducible — `EN PROCESO`
 **Tarea activa:** ninguna
 **Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.11 `HECHO`**, salvo LEX-1.12 a LEX-1.14
@@ -14,6 +14,44 @@
 ---
 
 ## Terminado en esta sesión
+
+### Q-004 resuelta — el repositorio es público
+
+`main` y la etiqueta `v0.1.0-m0` publicadas en
+[JoanOliver04/lexora](https://github.com/JoanOliver04/lexora). 33 commits, 89
+ficheros.
+
+Comprobado **antes** de publicar, porque en un repositorio público el historial es
+permanente: remoto vacío, ficheros auditados, `.env.example` sin valores reales y
+ninguna clave en el historial completo. Una coincidencia de `sb_secret_` resultó
+ser el texto de aviso del propio `.env.example`; se verificó en lugar de suponerlo.
+
+### LEX-1.12 — CI en GitHub Actions — `HECHO`
+
+Informe completo en [`evidence/LEX-1.12.md`](evidence/LEX-1.12.md).
+[Pull Request #1](https://github.com/JoanOliver04/lexora/pull/1).
+
+Tres trabajos en paralelo, **verde a la primera**:
+
+```text
+✓ Calidad           35s    formato, lint, tipos, contraste, tests, build
+✓ Extremo a extremo 1m2s   Playwright sobre Chromium
+✓ Base de datos     2m23s  migraciones desde vacío, pgTAP, tipos alineados
+```
+
+**Dos detalles vienen de hallazgos previos, no de una plantilla.** `next typegen`
+antes de `tsc`, sin lo cual el trabajo habría fallado en la primera ejecución por
+un motivo ajeno al código. Y el control de que `database.types.ts` corresponde al
+esquema: cuando se separan, el compilador aprueba consultas que la base rechazará
+en ejecución.
+
+**Un resultado que merece un matiz:** los tipos regenerados en Linux coincidieron
+byte a byte con los generados en Windows. No estaba garantizado —los finales de
+línea son la causa habitual de que no coincida— y confirma que el `.gitattributes`
+de LEX-1.6 hace su trabajo.
+
+**El control de tipos se probó fallando**, simulando la deriva en local: mismo
+resultado, sin ensuciar el historial del PR ni gastar minutos.
 
 ### LEX-1.10 — pgTAP y arnés de base de datos — `HECHO`
 
@@ -401,6 +439,8 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 | `eslint.config.mjs` | Regla que prohíbe `getSession()`. |
 | `docs/evidence/LEX-1.10.md` | Creado. Informe del arnés de base de datos. |
 | `supabase/tests/database/` | Creado. Arnés pgTAP e invariante de RLS. |
+| `docs/evidence/LEX-1.12.md` | Creado. Informe de la CI. |
+| `.github/workflows/ci.yml` | Creado. Tres trabajos. |
 | `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` | Creados. Versiones fijadas. |
 | `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs` | Creados. |
 | `src/app/`, `public/` | Creados por el andamiaje. La página de ejemplo se sustituye en LEX-1.13. |
@@ -469,7 +509,7 @@ Corresponden a Joan:
 | Q-001 | Visibilidad de `CLAUDE.md` | `RESUELTA` — público | — |
 | Q-002 | Qué documentación es pública | `RESUELTA` — privado el diseño, público el método | — |
 | Q-003 | Herramientas de desarrollo | `RESUELTA` | — |
-| Q-004 | Primer push al remoto público | `ABIERTA` | LEX-0.8 |
+| Q-004 | Primer push al remoto público | `RESUELTA` | — |
 
 Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
@@ -505,20 +545,14 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-1.12** — CI en GitHub Actions. Encadena todas las puertas que ya
-existen: formato, lint, tipos, contraste, tests unitarios, build, base de datos
-limpia con migraciones, pgTAP y E2E.
+Ejecutar **LEX-1.13** — landing mínima y health check. Sustituir la página de
+demostración por una landing real y añadir un punto de comprobación que confirme
+que la aplicación responde y alcanza la base de datos.
 
-Es la tarea que convierte «pasa en mi máquina» en «pasa en una máquina limpia».
-Dos cosas que la CI debe hacer y que aquí ya se sabe que hacen falta:
-`next typegen` antes de la comprobación de tipos, y comprobar que
-`database.types.ts` está alineado con las migraciones.
+Después, **LEX-1.14** cierra el hito M1: verificar que un clon limpio instala,
+levanta, prueba y compila con los comandos documentados.
 
-Después: LEX-1.13 (landing y health check) y LEX-1.14 (clon limpio y cierre de M1).
-
-Sigue abierta **Q-004**: el primer `push` continúa sin autorizar. **La CI no puede
-ejecutarse hasta que el repositorio esté en GitHub**, así que LEX-1.12 se puede
-escribir y revisar, pero no verificar de verdad, hasta entonces.
+Sin bloqueos ni preguntas abiertas.
 
 ---
 
