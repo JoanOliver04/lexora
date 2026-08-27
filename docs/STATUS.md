@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-27
-**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (5/14)
+**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (6/14)
 **Hito actual:** M1 — Fundación técnica reproducible — `EN PROCESO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.5 `HECHO`**
+**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.6 `HECHO`**
 **Rama / commit base / HEAD:** `main` / `4a628be` (`v0.1.0-m0`) / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -14,6 +14,33 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-1.6 — Sistema visual base — `HECHO`
+
+Informe completo en [`evidence/LEX-1.6.md`](evidence/LEX-1.6.md).
+
+Tokens en oklch nombrados por su papel, no por su aspecto. Temas claro, oscuro y
+seguir-al-sistema. Tres componentes base: `Button`, `Input`, `Label`.
+
+**El contraste se comprueba, no se afirma.** `scripts/check-contrast.mjs` lee los
+tokens del propio CSS, convierte a sRGB y calcula la relación WCAG. Se
+autocomprueba antes de nada: si blanco/negro no da 21:1, aborta, porque un informe
+con la matemática mal da confianza falsa.
+
+**Encontró un fallo real.** `--color-border-strong` daba 1.81:1 en claro y 2.26:1
+en oscuro, muy por debajo del mínimo de 3:1 que WCAG exige a los componentes. A ojo
+parecía correcto en ambos temas. Corregido; las 18 combinaciones pasan. Queda
+integrado en `pnpm check`, así que un cambio de paleta que rompa el contraste falla
+la CI.
+
+**Sin destello de tema.** Script síncrono en el `<head>`, verificado sobre el HTML
+servido: posición 1494, `<body>` en 1914.
+
+**Una regla de lint tenía razón.** La primera versión leía `localStorage` en un
+efecto y llamaba a `setState`; el compilador de React lo rechazó. En vez de
+silenciarlo, se reescribió con `useSyncExternalStore`, que es la API para esto. De
+paso arregló algo que no se buscaba: cambiar el tema en una pestaña ahora se
+refleja en las demás.
 
 ### LEX-1.5 — Internacionalización ES/EN — `HECHO`
 
@@ -221,6 +248,11 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 | `src/i18n/`, `src/proxy.ts`, `messages/` | Creados. |
 | `src/app/[locale]/` | Layout y página movidos bajo el segmento de idioma. |
 | `pnpm-workspace.yaml` | Scripts de instalación denegados, con el motivo escrito. |
+| `docs/evidence/LEX-1.6.md` | Creado. Informe del sistema visual. |
+| `src/app/globals.css` | Reescrito: tokens, temas y accesibilidad base. |
+| `src/shared/presentation/theme/` | Creado. Script sin destello, almacén y selector. |
+| `src/shared/presentation/components/` | Creado. `Button`, `Input`, `Label`. |
+| `scripts/check-contrast.mjs` | Creado. Comprobación WCAG ejecutable. |
 | `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` | Creados. Versiones fijadas. |
 | `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs` | Creados. |
 | `src/app/`, `public/` | Creados por el andamiaje. La página de ejemplo se sustituye en LEX-1.13. |
@@ -330,12 +362,25 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-1.6** — sistema visual base: tokens de color, espacio, radio,
-tipografía y elevación; temas claro, oscuro y sistema; y los componentes mínimos
-sobre los que se construirá el resto.
+**Se acabó lo que se podía hacer sin Docker.**
 
-Es la última tarea de FASE 1 que no necesita Docker. Después, **LEX-1.7 exige
-resolver Q-003**.
+Las seis tareas de FASE 1 que no dependían de la base de datos están cerradas. Las
+ocho restantes —Supabase local, clientes SSR, pgTAP, y la CI que los ejecuta—
+necesitan un motor de contenedores en marcha.
+
+**Q-003 es ahora el único bloqueo real del proyecto.** Docker Desktop arranca y sus
+distribuciones de WSL 2 corren, pero el motor Linux no expone su tubería:
+
+```text
+open \\.\pipe\docker_engine_linux: The system cannot find the file specified
+```
+
+Hace falta abrir la ventana de Docker Desktop y ver qué está pidiendo: aceptar
+términos, iniciar sesión o instalar una actualización. La versión instalada es de
+2023.
+
+Se puede adelantar **LEX-1.11** (configurar Playwright), que no necesita base de
+datos, pero deja la fase igualmente sin cerrar.
 
 ---
 

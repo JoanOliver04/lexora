@@ -1,26 +1,125 @@
 @import "tailwindcss";
 
+/* ===========================================================================
+   Sistema visual de Lexora
+   ---------------------------------------------------------------------------
+   Los colores se definen por su PAPEL, no por su aspecto: `--color-surface`,
+   no `--color-gris-claro`. Un token con nombre de color obliga a renombrarlo
+   el dia que cambie la paleta, y en la practica nadie lo renombra: acaba
+   habiendo un `--color-azul` que es verde.
+
+   Esto es el SISTEMA, no la identidad de marca. `MASTER_SPEC.md` deja la
+   identidad visual para cuando exista producto. La paleta actual es neutra a
+   proposito.
+
+   Espacio de color: oklch. Es perceptualmente uniforme, asi que dos colores
+   con la misma luminosidad se ven igual de claros, cosa que no ocurre en hsl.
+   =========================================================================== */
+
+@theme {
+  /* --- Tipografia ------------------------------------------------------- */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* --- Radio ------------------------------------------------------------ */
+  --radius-control: 0.5rem;
+  --radius-surface: 0.75rem;
+
+  /* --- Elevacion -------------------------------------------------------- */
+  --shadow-raised: 0 1px 2px oklch(0% 0 0 / 0.06), 0 2px 8px oklch(0% 0 0 / 0.06);
+  --shadow-overlay: 0 8px 32px oklch(0% 0 0 / 0.12);
+
+  /* --- Duraciones ------------------------------------------------------- */
+  --duration-instant: 80ms;
+  --duration-quick: 160ms;
+}
+
+/* ---------------------------------------------------------------------------
+   Tema claro. Es el valor por defecto: si el script de tema no llega a
+   ejecutarse, la pagina se ve bien igualmente.
+   --------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-canvas: oklch(99% 0 0);
+  --color-surface: oklch(100% 0 0);
+  --color-surface-sunken: oklch(96.5% 0.002 240);
+
+  --color-ink: oklch(18% 0.008 240);
+  --color-ink-muted: oklch(46% 0.012 240);
+  --color-ink-subtle: oklch(58% 0.012 240);
+
+  --color-border: oklch(90% 0.006 240);
+  --color-border-strong: oklch(62% 0.012 240);
+
+  --color-accent: oklch(48% 0.16 255);
+  --color-accent-hover: oklch(42% 0.16 255);
+  --color-on-accent: oklch(100% 0 0);
+
+  --color-danger: oklch(48% 0.19 25);
+  --color-on-danger: oklch(100% 0 0);
+
+  --color-focus: oklch(52% 0.19 255);
+
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ---------------------------------------------------------------------------
+   Tema oscuro.
+
+   Los colores NO son los del tema claro invertidos. En oscuro, un acento muy
+   saturado vibra sobre el fondo y cansa; se sube la luminosidad y se baja algo
+   el croma. Y el fondo no es negro puro: el contraste maximo con texto blanco
+   produce halos al leer textos largos.
+   --------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  --color-canvas: oklch(17% 0.006 240);
+  --color-surface: oklch(21% 0.007 240);
+  --color-surface-sunken: oklch(14% 0.006 240);
+
+  --color-ink: oklch(96% 0.004 240);
+  --color-ink-muted: oklch(74% 0.01 240);
+  --color-ink-subtle: oklch(62% 0.01 240);
+
+  --color-border: oklch(30% 0.008 240);
+  --color-border-strong: oklch(52% 0.012 240);
+
+  --color-accent: oklch(76% 0.13 255);
+  --color-accent-hover: oklch(83% 0.12 255);
+  --color-on-accent: oklch(17% 0.02 255);
+
+  --color-danger: oklch(72% 0.16 25);
+  --color-on-danger: oklch(17% 0.02 25);
+
+  --color-focus: oklch(78% 0.14 255);
+
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* El foco visible no se elimina nunca. Quien navega con teclado necesita
+     saber donde esta; sin esto la aplicacion es inservible sin raton. */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  /* Respetar a quien pide menos movimiento no es un detalle de cortesia: el
+     movimiento provoca mareo y migrana a personas con trastornos vestibulares.
+     Se reduce a casi cero en lugar de a cero exacto, porque algunos navegadores
+     no disparan los eventos de fin de transicion con duracion 0. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
