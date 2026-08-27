@@ -13,7 +13,7 @@
 | Q-001 | Visibilidad de `CLAUDE.md` | `RESUELTA` | LEX-0.3 |
 | Q-002 | Qué documentación es pública y cuál no | `RESUELTA` | LEX-0.2, LEX-0.4, LEX-0.5, LEX-10.4 |
 | Q-003 | Herramientas de desarrollo ausentes | `RESUELTA` | — |
-| Q-004 | Primer push al remoto público | `ABIERTA` | LEX-0.8 |
+| Q-004 | Primer push al remoto público | `RESUELTA` | — |
 
 > Este archivo es público. Se aplican las mismas exclusiones que en
 > [`STATUS.md`](STATUS.md): sin credenciales, sin datos personales, sin contenido
@@ -128,31 +128,35 @@ la máquina no necesita otro gestor de paquetes. Se invoca como
 
 ## Q-004 — Primer push al remoto público
 
-**Estado:** `ABIERTA`
-**Fecha:** 2026-08-26
-**Bloquea:** LEX-0.8.
+**Estado:** `RESUELTA`
+**Abierta:** 2026-08-26 · **Resuelta:** 2026-08-27 por Joan.
 
-### Contexto
+### Resolución
 
-Remoto configurado: `https://github.com/JoanOliver04/lexora.git`, **público**.
-Nunca contactado: no se ha ejecutado `push`, `fetch` ni `ls-remote`.
+Autorizado. `main` y la etiqueta `v0.1.0-m0` publicadas en
+`https://github.com/JoanOliver04/lexora`: 33 commits, 89 ficheros.
 
-Con el `.gitignore` actual, un push publicaría únicamente `.gitignore`,
-`README.md`, `CLAUDE.md`, `docs/STATUS.md`, `docs/OPEN_QUESTIONS.md`,
-`docs/evidence/README.md` y `docs/adrs/.gitkeep`.
+### Comprobación previa a publicar
 
-### Preguntas
+Un repositorio público conserva el historial de forma permanente, también en los
+forks, así que la comprobación se hizo antes y no después:
 
-1. ¿Se autoriza `git push -u origin main`?
-2. ¿El repositorio remoto está vacío, o tiene commits que obligarían a resolver una divergencia?
-3. Al ser público desde el primer día: ¿se acepta que todo el historial futuro sea
-   permanentemente visible, incluidos los commits de trabajo en curso?
+| Comprobación | Resultado |
+|---|---|
+| Remoto existe y está vacío | Sí; sin divergencia que resolver |
+| Ficheros versionados | 89, auditados por carpeta |
+| `.env.example` con valores reales | No; solo `localhost` y `127.0.0.1` |
+| Claves conocidas en **todo** el historial | Limpio |
+| `docs/no_visible_en_github/` | Fuera, como estaba previsto |
 
-### Recomendación
+Una coincidencia que hubo que descartar: `sb_secret_` aparece en el historial. Es
+el texto de aviso de `.env.example` —«la clave secreta (`sb_secret_…`) NO se
+define aquí»— con puntos suspensivos, no una clave. Se verificó antes de seguir,
+en lugar de suponerlo.
 
-Autorizar el push. El contenido actual es correcto para un repositorio público y
-no contiene datos privados. Antes de cada push posterior, comprobar
-`git ls-files` para confirmar que no se ha colado nada de la carpeta privada.
+### Consecuencia
+
+Desbloquea LEX-1.12: una CI solo se puede dar por buena viéndola correr.
 
 ---
 
