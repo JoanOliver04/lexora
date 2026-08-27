@@ -44,6 +44,11 @@ sin levantar media aplicación.
 falle el lint, y con él `pnpm check` y la CI. Cada mensaje de error explica el
 porqué y remite al ADR correspondiente.
 
+**Y la regla, a su vez, tiene su propio test.**
+`tests/unit/architecture/layer-rules.test.ts` ejecuta ESLint sobre código que la
+viola y exige que falle, de modo que desactivarla por descuido rompe la suite en
+lugar de pasar inadvertido.
+
 Corolario práctico: ninguna Server Action ni Route Handler contiene reglas de
 negocio ni consultas SQL. Llaman a un caso de uso.
 
