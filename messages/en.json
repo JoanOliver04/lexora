@@ -13,5 +13,11 @@
     "label": "Interface language",
     "es": "Español",
     "en": "English"
+  },
+  "Theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
   }
 }

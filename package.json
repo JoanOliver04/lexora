@@ -16,7 +16,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "next typegen && tsc --noEmit",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm build"
+    "contrast": "node scripts/check-contrast.mjs",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm contrast && pnpm build"
   },
   "dependencies": {
     "next": "16.3.3",

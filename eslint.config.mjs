@@ -26,6 +26,15 @@ const eslintConfig = defineConfig([
     },
   },
 
+  // Scripts de linea de comandos: aqui `console.log` es la salida del programa,
+  // no depuracion olvidada.
+  {
+    files: ["scripts/**/*.{mjs,ts}"],
+    rules: {
+      "no-console": "off",
+    },
+  },
+
   // -------------------------------------------------------------------------
   // Regla de dependencia entre capas (ADR-001).
   //

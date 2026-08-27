@@ -13,5 +13,11 @@
     "label": "Idioma de la interfaz",
     "es": "Español",
     "en": "English"
+  },
+  "Theme": {
+    "label": "Tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
   }
 }

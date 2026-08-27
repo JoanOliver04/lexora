@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { routing } from "@/i18n/routing";
+import { ThemeScript } from "@/shared/presentation/theme/theme-script";
 
 import "../globals.css";
 
@@ -60,7 +61,14 @@ export default async function LocaleLayout({
   return (
     // `lang` se corresponde con el idioma servido: los lectores de pantalla lo
     // usan para elegir la voz y la pronunciacion correctas.
-    <html lang={locale}>
+    //
+    // `suppressHydrationWarning` esta aqui porque `ThemeScript` escribe
+    // `data-theme` en el elemento antes de que React hidrate. Es la unica
+    // diferencia esperada entre servidor y cliente, y esta acotada a este nodo.
+    <html lang={locale} suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
