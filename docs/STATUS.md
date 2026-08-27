@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-27
-**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (10/14)
+**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (11/14)
 **Hito actual:** M1 — Fundación técnica reproducible — `EN PROCESO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.9 y LEX-1.11 `HECHO`**
+**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.11 `HECHO`**, salvo LEX-1.12 a LEX-1.14
 **Rama / commit base / HEAD:** `main` / `4a628be` (`v0.1.0-m0`) / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -14,6 +14,28 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-1.10 — pgTAP y arnés de base de datos — `HECHO`
+
+Informe completo en [`evidence/LEX-1.10.md`](evidence/LEX-1.10.md).
+
+En LEX-1.8 quedó escrito que una tabla sin políticas queda abierta a Internet.
+Afirmar eso obliga a poder demostrarlo: sin pgTAP, «RLS protege los datos» es una
+frase en un documento.
+
+`supabase/tests/database/` con `pnpm db:test`. Dos ficheros: el arnés y un
+**invariante permanente** —toda tabla de `public` tiene RLS habilitado—.
+
+**Hoy no hay tablas y la prueba pasa sin comprobar nada. Ese es el momento correcto
+de escribirla:** desde la primera migración de la fase 2, olvidar
+`enable row level security` rompe la suite en lugar de pasar inadvertido.
+Escribirla después sería escribirla mirando lo que hay en vez de lo que debería
+haber.
+
+**Probada en los tres estados.** Tabla sin RLS: falla y **nombra la tabla**. La
+misma tabla con RLS: pasa. Sonda retirada: pasa. El segundo paso es el que da valor
+al primero — sin él, la prueba podría estar detectando simplemente «existe una
+tabla» y habría pasado por buena.
 
 ### LEX-1.8 — Clientes Supabase SSR — `HECHO`
 
@@ -377,6 +399,8 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 | `src/shared/infrastructure/supabase/{browser,server}-client.ts`, `session.ts` | Creados. |
 | `src/proxy.ts` | Encadena idioma y renovación de sesión. |
 | `eslint.config.mjs` | Regla que prohíbe `getSession()`. |
+| `docs/evidence/LEX-1.10.md` | Creado. Informe del arnés de base de datos. |
+| `supabase/tests/database/` | Creado. Arnés pgTAP e invariante de RLS. |
 | `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` | Creados. Versiones fijadas. |
 | `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs` | Creados. |
 | `src/app/`, `public/` | Creados por el andamiaje. La página de ejemplo se sustituye en LEX-1.13. |
@@ -481,14 +505,20 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-1.10** — pgTAP y arnés de pruebas de base de datos. Es la
-herramienta con la que se demostrará, en las fases siguientes, que un usuario no
-puede leer ni escribir los datos de otro. Sin ella, RLS es una afirmación.
+Ejecutar **LEX-1.12** — CI en GitHub Actions. Encadena todas las puertas que ya
+existen: formato, lint, tipos, contraste, tests unitarios, build, base de datos
+limpia con migraciones, pgTAP y E2E.
 
-Después: LEX-1.12 (CI), LEX-1.13 (landing y health check) y LEX-1.14 (clon limpio
-y cierre de M1).
+Es la tarea que convierte «pasa en mi máquina» en «pasa en una máquina limpia».
+Dos cosas que la CI debe hacer y que aquí ya se sabe que hacen falta:
+`next typegen` antes de la comprobación de tipos, y comprobar que
+`database.types.ts` está alineado con las migraciones.
 
-Sigue abierta **Q-004**: el primer `push` continúa sin autorizar.
+Después: LEX-1.13 (landing y health check) y LEX-1.14 (clon limpio y cierre de M1).
+
+Sigue abierta **Q-004**: el primer `push` continúa sin autorizar. **La CI no puede
+ejecutarse hasta que el repositorio esté en GitHub**, así que LEX-1.12 se puede
+escribir y revisar, pero no verificar de verdad, hasta entonces.
 
 ---
 

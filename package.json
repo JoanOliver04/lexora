@@ -26,6 +26,7 @@
     "db:stop": "supabase stop",
     "db:status": "supabase status",
     "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
     "db:types": "supabase gen types typescript --local > src/shared/infrastructure/supabase/database.types.ts",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm contrast && pnpm test && pnpm build"
   },
