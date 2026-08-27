@@ -65,7 +65,7 @@ y archivos generados incluidos—, y `docs/STATUS.md` actualizado.
 |---|---|---|
 | Node.js | **24.19.0** | `.nvmrc` (local) y `engines.node: "24.x"` en `package.json` |
 | pnpm | **11.24.0** | `packageManager: "pnpm@11.24.0"`, activado con `corepack enable pnpm` |
-| CLI de Supabase | Por fijar en LEX-1.7 | Dependencia de desarrollo del proyecto, no instalación global |
+| CLI de Supabase | **2.116.0** | Dependencia de desarrollo del proyecto, no instalación global |
 
 **Por qué la CLI de Supabase como dependencia del proyecto.** La documentación
 oficial ofrece en Windows la instalación global con Scoop o la dependencia de
@@ -99,6 +99,9 @@ despliegue de preview antes de tocar producción.
 | `pnpm contrast` | Comprueba el contraste WCAG de los tokens de color. |
 | `pnpm test` / `test:watch` / `test:coverage` | Vitest. Entorno `node` por defecto; `jsdom` con `@vitest-environment jsdom` en la cabecera del fichero. |
 | `pnpm e2e` / `e2e:ui` | Playwright contra el build de producción, en escritorio y en emulación del Poco F5. |
+| `pnpm db:start` / `db:stop` / `db:status` | Entorno Supabase local. |
+| `pnpm db:reset` | Recrea la base desde cero: migraciones y semillas. |
+| `pnpm db:types` | Regenera `database.types.ts`. **En el mismo commit que la migración.** |
 | `pnpm check` | Todas las puertas en cadena, **salvo E2E**: levanta un servidor y tarda, así que se ejecuta aparte. |
 
 ## 5. Migraciones de base de datos
@@ -113,7 +116,7 @@ despliegue de preview antes de tocar producción.
 
 | Entorno | Base de datos | Quién la crea | Datos |
 |---|---|---|---|
-| `local` | Supabase local vía CLI y contenedores | El desarrollador | Semillas deterministas, sin datos personales |
+| `local` | Supabase local vía CLI y contenedores, puertos 54321–54324 | El desarrollador | Semillas deterministas, sin datos personales |
 | `preview` | Aislada de producción | Configurada en la fase 10 | Datos de prueba |
 | `production` | Proyecto Supabase de producción | El propietario | Datos reales |
 

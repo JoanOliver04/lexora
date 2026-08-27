@@ -1,0 +1,15 @@
+-- Datos semilla del entorno local.
+--
+-- Deliberadamente vacío por ahora: no existe ninguna tabla todavía. Las
+-- primeras semillas llegan en la fase 2, con el catálogo de idiomas y el curso
+-- de referencia.
+--
+-- Reglas para cuando se rellene:
+--   · Deterministas. Los identificadores no se generan al azar, o dos ejecuciones
+--     de la suite dejan bases distintas y los tests se vuelven inestables.
+--   · Sin datos personales. Ni reales ni verosímiles.
+--   · Sin material de estudio privado del propietario. Ver docs/CONTENT_POLICY.md.
+--
+-- El archivo existe aunque esté vacío porque, sin él, cada `supabase start` y
+-- cada `db reset` avisan de que no lo encuentran, y un aviso permanente que se
+-- aprende a ignorar acaba tapando uno que importa.

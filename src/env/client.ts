@@ -19,6 +19,13 @@ import { formatEnvError, shouldSkipValidation } from "./shared";
  */
 const clientSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.url().default("http://localhost:3000"),
+
+  // Supabase. La clave *publishable* esta pensada para vivir en el navegador:
+  // no concede permisos por si misma, porque quien decide que puede leer o
+  // escribir cada usuario es Row Level Security dentro de PostgreSQL. La clave
+  // secreta NO esta aqui ni puede estarlo: ver `./server.ts`.
+  NEXT_PUBLIC_SUPABASE_URL: z.url(),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
 });
 
 type ClientEnv = z.infer<typeof clientSchema>;
@@ -26,10 +33,19 @@ type ClientEnv = z.infer<typeof clientSchema>;
 function loadClientEnv(): ClientEnv {
   const raw = {
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   };
 
   if (shouldSkipValidation) {
-    return clientSchema.parse({});
+    // Con la validacion saltada no hay valores por defecto razonables para la
+    // conexion: se devuelven marcadores evidentes. Si alguno acaba en una
+    // peticion real, el fallo sera ruidoso, que es lo que se quiere.
+    return {
+      NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
+      NEXT_PUBLIC_SUPABASE_URL: "http://skipped.invalid",
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "skipped",
+    };
   }
 
   const parsed = clientSchema.safeParse(raw);
