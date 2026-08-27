@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
-**Última actualización:** 2026-08-26
-**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (1/14)
+**Última actualización:** 2026-08-27
+**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (2/14)
 **Hito actual:** M1 — Fundación técnica reproducible — `EN PROCESO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 `HECHO`**
+**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 y LEX-1.2 `HECHO`**
 **Rama / commit base / HEAD:** `main` / `4a628be` (`v0.1.0-m0`) / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -14,6 +14,32 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-1.2 — Calidad base y scripts canónicos — `HECHO`
+
+Informe completo en [`evidence/LEX-1.2.md`](evidence/LEX-1.2.md).
+
+Scripts: `lint`, `lint:fix`, `format`, `format:check`, `typecheck`, `check`, más
+los de Next. **`typecheck` ejecuta `next typegen` antes de `tsc`**, que es el
+arreglo del hallazgo de LEX-1.1.
+
+TypeScript endurecido sobre `strict`: `noUncheckedIndexedAccess`,
+`exactOptionalPropertyTypes`, `noImplicitOverride`, `noFallthroughCasesInSwitch`,
+`noPropertyAccessFromIndexSignature` y `forceConsistentCasingInFileNames` —esta
+última porque la CI corre en Linux y Windows no distingue mayúsculas—. `target`
+subido a `ES2022`, que cubren todos los navegadores que Next.js documenta.
+
+Prettier 3.9.6 con `eslint-config-prettier`. Reglas propias: `no-explicit-any` como
+error, `no-unused-vars` con excepción para `_`, `no-console` como aviso.
+
+**Markdown excluido del formateador, tras probarlo.** Prettier alinea las tablas
+rellenando con espacios: un cambio de tres líneas en `STATUS.md` producía un diff
+de 134. El código se formatea; la documentación se escribe a mano.
+
+**ESLint 10 probado y descartado.** Toda la línea 9.x está fuera de soporte, lo que
+justificaba intentarlo, pero `eslint-plugin-react` —que arrastra
+`eslint-config-next`— usa una API que la 10 eliminó y el lint revienta. Se vuelve a
+9.39.5. Deuda registrada más abajo.
 
 ### LEX-1.1 — Aplicación Next.js con App Router — `HECHO`
 
@@ -101,6 +127,11 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 | `docs/CONTENT_POLICY.md` | Creado. |
 | `docs/evidence/LEX-0.8.md` | Creado. Informe de auditoría de M0. |
 | `docs/evidence/LEX-1.1.md` | Creado. Informe de la aplicación Next.js. |
+| `docs/evidence/LEX-1.2.md` | Creado. Informe de calidad y scripts. |
+| `.prettierrc.json`, `.prettierignore` | Creados. |
+| `eslint.config.mjs` | Reglas propias del proyecto y `eslint-config-prettier`. |
+| `tsconfig.json` | Seis opciones estrictas añadidas; `target` a ES2022. |
+| `docs/WORKFLOW.md` | Sección de scripts canónicos. |
 | `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` | Creados. Versiones fijadas. |
 | `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs` | Creados. |
 | `src/app/`, `public/` | Creados por el andamiaje. La página de ejemplo se sustituye en LEX-1.13. |
@@ -176,6 +207,12 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 ---
 
 ## Riesgos o deuda conocida
+
+- **ESLint corre sobre una línea sin soporte (9.39.5).** No recibirá correcciones de
+  seguridad. Bloqueante: `eslint-plugin-react` no soporta ESLint 10. Riesgo bajo —es
+  una herramienta de desarrollo, no se despliega y no procesa entrada no confiable—.
+  Revisar al actualizar Next.js o antes de LEX-9.9. Para comprobarlo:
+  `pnpm add -D eslint@10 && pnpm lint`.
 
 - **El repositorio es público desde el primer commit.** Cualquier archivo confirmado
   una sola vez queda permanentemente en el historial y en los forks, aunque se borre

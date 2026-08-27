@@ -1,0 +1,26 @@
+# Generado o gestionado por herramientas
+pnpm-lock.yaml
+.next/
+out/
+build/
+dist/
+coverage/
+node_modules/
+next-env.d.ts
+
+# Documentación privada: fuera del repositorio, no se formatea
+docs/no_visible_en_github/
+
+# Markdown, excluido a proposito.
+#
+# Prettier alinea las tablas rellenando con espacios hasta la celda mas ancha.
+# El resultado se renderiza igual en GitHub, pero cambiar una sola celda reformatea
+# la tabla entera: `docs/STATUS.md` se reescribe en cada tarea y el diff pasaria de
+# tres lineas a ciento treinta. Se pierde la revisabilidad a cambio de nada.
+#
+# El codigo si se formatea. La documentacion se escribe a mano.
+*.md
+
+# El bloque que Next.js gestiona dentro de CLAUDE.md se reescribe solo;
+# formatearlo provoca un diff en cada arranque de `next dev`.
+CLAUDE.md
