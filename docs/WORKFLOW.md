@@ -97,6 +97,7 @@ despliegue de preview antes de tocar producción.
 | `pnpm format` / `pnpm format:check` | Prettier. **Markdown queda excluido a propósito**; ver `.prettierignore`. |
 | `pnpm typecheck` | `next typegen && tsc --noEmit`. El paso de generación de tipos **no es opcional**: sin él, la comprobación falla en cualquier entorno limpio. |
 | `pnpm contrast` | Comprueba el contraste WCAG de los tokens de color. |
+| `pnpm test` / `test:watch` / `test:coverage` | Vitest. Entorno `node` por defecto; `jsdom` con `@vitest-environment jsdom` en la cabecera del fichero. |
 | `pnpm check` | Todas las puertas en cadena. Es lo que debe ejecutar la CI. |
 
 ## 5. Migraciones de base de datos

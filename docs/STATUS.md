@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-27
-**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (6/14)
+**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (7/14)
 **Hito actual:** M1 — Fundación técnica reproducible — `EN PROCESO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.6 `HECHO`**
+**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.6 y LEX-1.9 `HECHO`**
 **Rama / commit base / HEAD:** `main` / `4a628be` (`v0.1.0-m0`) / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -14,6 +14,39 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-1.9 — Vitest y React Testing Library — `HECHO`
+
+Informe completo en [`evidence/LEX-1.9.md`](evidence/LEX-1.9.md).
+
+Vitest 4.1.11 con entorno `node` por defecto y `jsdom` a petición: la mayor parte
+del código de Lexora no necesita un DOM y levantarlo en cada fichero cuesta tiempo
+en cada ejecución.
+
+**Cierra la deuda de LEX-1.3.** La regla de dependencia entre capas estaba
+comprobada a mano, lo que demuestra que funcionaba aquel día pero no impide que un
+cambio futuro la desactive en silencio. Ahora
+`tests/unit/architecture/layer-rules.test.ts` ejecuta ESLint sobre código que la
+viola y exige que falle. Once casos, incluidos los que **deben** pasar.
+
+**El test de regresión se probó rompiendo la regla.** Uno que nunca ha fallado no
+está probado:
+
+```text
+Regla neutralizada:   4 failed | 10 passed
+Regla restaurada:    14 passed
+```
+
+Fallan exactamente los cuatro casos del dominio y ninguno más.
+
+El primer intento de neutralizarla **no funcionó** —creé una clave duplicada y en
+un literal de JavaScript gana la última—, y los tests siguieron pasando. Un
+experimento que sale bien cuando esperabas que fallara es la señal de que el
+experimento está mal.
+
+**`test` añadido a `pnpm check`**, lo que salda la desviación registrada en
+LEX-1.2. Y una dependencia menos: `vite-tsconfig-paths` era redundante, Vite ya
+resuelve los alias de forma nativa.
 
 ### LEX-1.6 — Sistema visual base — `HECHO`
 
@@ -253,6 +286,10 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 | `src/shared/presentation/theme/` | Creado. Script sin destello, almacén y selector. |
 | `src/shared/presentation/components/` | Creado. `Button`, `Input`, `Label`. |
 | `scripts/check-contrast.mjs` | Creado. Comprobación WCAG ejecutable. |
+| `docs/evidence/LEX-1.9.md` | Creado. Informe del arnés de tests. |
+| `vitest.config.mts`, `vitest.setup.ts` | Creados. |
+| `tests/unit/architecture/layer-rules.test.ts` | Creado. Regresión de la regla de dependencia. |
+| `src/shared/presentation/components/button.test.tsx` | Creado. Prueba el arnés de componentes. |
 | `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` | Creados. Versiones fijadas. |
 | `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs` | Creados. |
 | `src/app/`, `public/` | Creados por el andamiaje. La página de ejemplo se sustituye en LEX-1.13. |
@@ -334,10 +371,6 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
   existen. No es un error del código: es caché. La CI no lo sufre porque parte de
   un árbol limpio.
 
-- **La regla de dependencia no tiene regresión automática.** Se ha verificado a
-  mano y la salida está registrada, pero nada impide que un cambio futuro en
-  `eslint.config.mjs` la desactive sin que se note. Cerrar en LEX-1.9 con un test
-  que ejecute ESLint sobre fixtures y espere los errores.
 
 - **ESLint corre sobre una línea sin soporte (9.39.5).** No recibirá correcciones de
   seguridad. Bloqueante: `eslint-plugin-react` no soporta ESLint 10. Riesgo bajo —es

@@ -17,7 +17,10 @@
     "format:check": "prettier --check .",
     "typecheck": "next typegen && tsc --noEmit",
     "contrast": "node scripts/check-contrast.mjs",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm contrast && pnpm build"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm contrast && pnpm test && pnpm build"
   },
   "dependencies": {
     "next": "16.3.3",
@@ -29,14 +32,21 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.2",
+    "@testing-library/user-event": "14.6.6",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "6.1.0",
+    "@vitest/coverage-v8": "4.1.11",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.3",
     "eslint-config-prettier": "10.1.8",
+    "jsdom": "30.0.1",
     "prettier": "3.9.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "4.1.11"
   }
 }
