@@ -5,9 +5,12 @@
   },
   "Home": {
     "title": "Lexora",
-    "tagline": "Aprende y mantén tu inglés con recuperación activa.",
-    "explanation": "Reconocer una palabra no es lo mismo que ser capaz de producirla. Lexora programa cada competencia por separado.",
-    "status": "En desarrollo temprano."
+    "tagline": "Aprende y mantén tu inglés A1–B2 con recuperación activa.",
+    "problem": "Reconocer una palabra al verla no es lo mismo que recuperarla cuando quieres hablar o escribir. Son capacidades distintas y se olvidan a ritmos distintos.",
+    "approach": "Lexora separa cada concepto en las competencias que lo componen y programa cada una por separado, con repetición espaciada. Saber reconocer una palabra no marca como dominada su producción.",
+    "statusTitle": "Estado",
+    "status": "En desarrollo temprano. Todavía no hay cuentas ni contenido: esta página es la fundación técnica del proyecto.",
+    "repository": "Ver el código en GitHub"
   },
   "LocaleSwitcher": {
     "label": "Idioma de la interfaz",
