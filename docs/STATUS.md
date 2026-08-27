@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
-**Última actualización:** 2026-08-26
-**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (1/14)
+**Última actualización:** 2026-08-27
+**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (4/14)
 **Hito actual:** M1 — Fundación técnica reproducible — `EN PROCESO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 `HECHO`**
+**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.4 `HECHO`**
 **Rama / commit base / HEAD:** `main` / `4a628be` (`v0.1.0-m0`) / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -14,6 +14,80 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-1.4 — Validación de entorno con Zod — `HECHO`
+
+Informe completo en [`evidence/LEX-1.4.md`](evidence/LEX-1.4.md).
+
+`src/env/` valida el entorno **al cargar el módulo**, no en la primera petición que
+use la variable: es preferible que la aplicación no arranque a que arranque mal.
+Servidor y cliente en módulos separados; `src/env/server.ts` importa `server-only`.
+`.env.example` documentado, sin un solo valor real.
+
+**La separación se comprobó, no se dio por hecha.** Un error aquí no da un fallo
+visible, da una clave publicada:
+
+1. Se metió una variable de servidor con un valor reconocible, se consumió desde un
+   Server Component y se construyó: **no aparece en `.next/static` ni en ningún
+   artefacto del build.**
+2. Se creó un componente `"use client"` que la importaba: **el build falla** con la
+   traza de importación completa, señalando quién provocaba la fuga.
+
+Ambas sondas retiradas; `pnpm check` en verde después.
+
+**Un choque resuelto sin rendirse.** `noPropertyAccessFromIndexSignature` obliga a
+`process.env["X"]`, pero Next.js sustituye `process.env.X` de forma textual. En vez
+de desactivar la opción, `src/env/env.d.ts` declara las variables públicas como
+propiedades reales. Las de servidor **no** se declaran, a propósito: obliga a
+escribirlas de otra forma y eso recuerda que no son intercambiables.
+
+Solo hay dos variables todavía. Es correcto: el entregable es el mecanismo. Las de
+Supabase llegan en LEX-1.7, cuando existan de verdad.
+
+### LEX-1.3 — Estructura modular y reglas de dependencia — `HECHO`
+
+Informe completo en [`evidence/LEX-1.3.md`](evidence/LEX-1.3.md).
+
+**La regla de dependencia de ADR-001 ya no es solo documentación: falla el lint.**
+Tres grupos de reglas `no-restricted-imports` impiden que `domain` importe React,
+Next.js, Supabase, `ts-fsrs` o cualquier otra capa; que `application` toque
+infraestructura o presentación; y que un componente o una ruta llame a un
+repositorio. Cada mensaje de error explica el porqué y cita el ADR.
+
+**Probada rompiéndola:** se crearon tres ficheros con violaciones deliberadas y el
+lint detectó las cuatro, tanto en forma relativa como con el alias `@/`. Después se
+retiraron. La salida exacta está en el informe.
+
+**No se han creado 32 carpetas vacías.** Los módulos se crean cuando se
+implementan; `src/modules/README.md` documenta cuáles existirán y en qué fase, y
+`src/shared/README.md` fija el criterio para promover algo a compartido: que lo
+necesiten dos módulos ya, no que probablemente haga falta.
+
+### LEX-1.2 — Calidad base y scripts canónicos — `HECHO`
+
+Informe completo en [`evidence/LEX-1.2.md`](evidence/LEX-1.2.md).
+
+Scripts: `lint`, `lint:fix`, `format`, `format:check`, `typecheck`, `check`, más
+los de Next. **`typecheck` ejecuta `next typegen` antes de `tsc`**, que es el
+arreglo del hallazgo de LEX-1.1.
+
+TypeScript endurecido sobre `strict`: `noUncheckedIndexedAccess`,
+`exactOptionalPropertyTypes`, `noImplicitOverride`, `noFallthroughCasesInSwitch`,
+`noPropertyAccessFromIndexSignature` y `forceConsistentCasingInFileNames` —esta
+última porque la CI corre en Linux y Windows no distingue mayúsculas—. `target`
+subido a `ES2022`, que cubren todos los navegadores que Next.js documenta.
+
+Prettier 3.9.6 con `eslint-config-prettier`. Reglas propias: `no-explicit-any` como
+error, `no-unused-vars` con excepción para `_`, `no-console` como aviso.
+
+**Markdown excluido del formateador, tras probarlo.** Prettier alinea las tablas
+rellenando con espacios: un cambio de tres líneas en `STATUS.md` producía un diff
+de 134. El código se formatea; la documentación se escribe a mano.
+
+**ESLint 10 probado y descartado.** Toda la línea 9.x está fuera de soporte, lo que
+justificaba intentarlo, pero `eslint-plugin-react` —que arrastra
+`eslint-config-next`— usa una API que la 10 eliminó y el lint revienta. Se vuelve a
+9.39.5. Deuda registrada más abajo.
 
 ### LEX-1.1 — Aplicación Next.js con App Router — `HECHO`
 
@@ -101,6 +175,18 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 | `docs/CONTENT_POLICY.md` | Creado. |
 | `docs/evidence/LEX-0.8.md` | Creado. Informe de auditoría de M0. |
 | `docs/evidence/LEX-1.1.md` | Creado. Informe de la aplicación Next.js. |
+| `docs/evidence/LEX-1.2.md` | Creado. Informe de calidad y scripts. |
+| `.prettierrc.json`, `.prettierignore` | Creados. |
+| `eslint.config.mjs` | Reglas propias del proyecto y `eslint-config-prettier`. |
+| `tsconfig.json` | Seis opciones estrictas añadidas; `target` a ES2022. |
+| `docs/WORKFLOW.md` | Sección de scripts canónicos. |
+| `docs/evidence/LEX-1.3.md` | Creado. Informe de las reglas de dependencia. |
+| `src/modules/README.md`, `src/shared/README.md` | Creados. Convención de módulos y capas. |
+| `docs/ARCHITECTURE.md` | Anotado que la regla de dependencia es exigible por lint. |
+| `docs/evidence/LEX-1.4.md` | Creado. Informe de validación de entorno. |
+| `src/env/` | Creado: `server.ts`, `client.ts`, `shared.ts`, `env.d.ts`. |
+| `.env.example` | Creado. Plantilla documentada sin valores reales. |
+| `CLAUDE.md` | Aviso: no editar textos en español con `Set-Content` de PowerShell. |
 | `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` | Creados. Versiones fijadas. |
 | `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs` | Creados. |
 | `src/app/`, `public/` | Creados por el andamiaje. La página de ejemplo se sustituye en LEX-1.13. |
@@ -177,6 +263,17 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Riesgos o deuda conocida
 
+- **La regla de dependencia no tiene regresión automática.** Se ha verificado a
+  mano y la salida está registrada, pero nada impide que un cambio futuro en
+  `eslint.config.mjs` la desactive sin que se note. Cerrar en LEX-1.9 con un test
+  que ejecute ESLint sobre fixtures y espere los errores.
+
+- **ESLint corre sobre una línea sin soporte (9.39.5).** No recibirá correcciones de
+  seguridad. Bloqueante: `eslint-plugin-react` no soporta ESLint 10. Riesgo bajo —es
+  una herramienta de desarrollo, no se despliega y no procesa entrada no confiable—.
+  Revisar al actualizar Next.js o antes de LEX-9.9. Para comprobarlo:
+  `pnpm add -D eslint@10 && pnpm lint`.
+
 - **El repositorio es público desde el primer commit.** Cualquier archivo confirmado
   una sola vez queda permanentemente en el historial y en los forks, aunque se borre
   después. Comprobar `git status` antes de cada commit.
@@ -194,19 +291,14 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-1.2** — calidad base y scripts canónicos: `format`, `format:check`,
-`lint`, `typecheck`, `test` y `build`, con Prettier y los ajustes de TypeScript
-que endurezcan lo que `strict` no cubre.
+Ejecutar **LEX-1.5** — internacionalización ES/EN con `next-intl`: enrutado por
+locale, mensajes separados del código y ningún texto visible incrustado en un
+componente.
 
-**Incorporar el hallazgo de LEX-1.1:** el script `typecheck` debe ejecutar
-`next typegen` antes de `tsc --noEmit`, o fallará en cualquier entorno limpio.
+Después **LEX-1.6** (sistema visual base). Ninguna necesita Docker.
 
-Después: LEX-1.3 (estructura modular y reglas de dependencia), LEX-1.4 (validación
-de entorno con Zod), LEX-1.5 (internacionalización) y LEX-1.6 (sistema visual).
-Ninguna necesita Docker.
-
-**LEX-1.7 sí lo necesita** y sigue bloqueada por Q-003: hay que abrir la ventana de
-Docker Desktop y ver qué está pidiendo.
+**LEX-1.7 sigue bloqueada por Q-003.** Docker Desktop arranca pero su motor no
+responde; hace falta abrir su ventana y ver qué pide.
 
 ---
 

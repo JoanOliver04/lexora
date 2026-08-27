@@ -87,6 +87,17 @@ runtime; lo que se fija aquí es la línea mayor y el entorno local.
 el registro de cambios del roadmap, se ejecuta la suite completa y se verifica el
 despliegue de preview antes de tocar producción.
 
+## 4 bis. Scripts canónicos
+
+| Script | Qué hace |
+|---|---|
+| `pnpm dev` | Servidor de desarrollo. |
+| `pnpm build` | Build de producción. |
+| `pnpm lint` / `pnpm lint:fix` | ESLint. |
+| `pnpm format` / `pnpm format:check` | Prettier. **Markdown queda excluido a propósito**; ver `.prettierignore`. |
+| `pnpm typecheck` | `next typegen && tsc --noEmit`. El paso de generación de tipos **no es opcional**: sin él, la comprobación falla en cualquier entorno limpio. |
+| `pnpm check` | Las cuatro puertas en cadena. Es lo que debe ejecutar la CI. |
+
 ## 5. Migraciones de base de datos
 
 - Toda modificación de esquema va en una **migración SQL versionada** dentro del repositorio. Sin excepciones.
