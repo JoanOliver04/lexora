@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-27
-**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (9/14)
+**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (10/14)
 **Hito actual:** M1 — Fundación técnica reproducible — `EN PROCESO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.7, LEX-1.9 y LEX-1.11 `HECHO`**
+**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.9 y LEX-1.11 `HECHO`**
 **Rama / commit base / HEAD:** `main` / `4a628be` (`v0.1.0-m0`) / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -14,6 +14,35 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-1.8 — Clientes Supabase SSR — `HECHO`
+
+Informe completo en [`evidence/LEX-1.8.md`](evidence/LEX-1.8.md).
+
+Tres clientes: navegador, servidor —con `server-only`— y renovación de sesión en el
+proxy. Patrón oficial consultado en la documentación, no escrito de memoria.
+
+**Ningún cliente privilegiado.** Los tres usan la misma clave publishable. La
+identidad la aporta la cookie; los permisos los decide RLS. Corolario incómodo pero
+necesario: esa clave está en el bundle que descarga cualquiera, así que **una tabla
+sin políticas queda abierta a Internet**, no protegida por la interfaz.
+
+**`getSession()` prohibido por lint.** Devuelve lo que diga la cookie sin verificar
+su firma; confiar en ella para decidir permisos es preguntarle al visitante quién
+dice ser y creerle. No lo dejé como norma escrita: una regla lo rechaza en todo
+`src/`, y una excepción legítima tendrá que justificarse en el diff.
+
+**El proxy encadena dos pasos y el orden importa.** El idioma primero —puede
+redirigir—, y la sesión se renueva sobre esa misma respuesta. Crear una respuesta
+nueva descartaría la decisión de idioma, con un síntoma sutil: sesión renovada,
+usuario en el idioma que no eligió.
+
+**Dos barreras, comprobadas por separado.** La regla de capas salta antes que
+`server-only`; para probar la segunda hubo que esquivar la primera poniendo la sonda
+dentro de `infrastructure/`. Comprobar solo la primera no habría bastado: quien
+escribe código de infraestructura no está cubierto por ella.
+
+Los 12 tests E2E siguen en verde con el proxy modificado.
 
 ### LEX-1.7 — Supabase local — `HECHO`. Cierra Q-003.
 
@@ -344,6 +373,10 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 | `src/shared/infrastructure/supabase/` | Creado. Tipos generados y su README. |
 | `src/env/client.ts`, `.env.example` | Variables de Supabase añadidas. |
 | `vitest.config.mts` | Tiempos límite subidos, con el motivo escrito. |
+| `docs/evidence/LEX-1.8.md` | Creado. Informe de los clientes SSR. |
+| `src/shared/infrastructure/supabase/{browser,server}-client.ts`, `session.ts` | Creados. |
+| `src/proxy.ts` | Encadena idioma y renovación de sesión. |
+| `eslint.config.mjs` | Regla que prohíbe `getSession()`. |
 | `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` | Creados. Versiones fijadas. |
 | `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs` | Creados. |
 | `src/app/`, `public/` | Creados por el andamiaje. La página de ejemplo se sustituye en LEX-1.13. |
@@ -448,16 +481,12 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-**Sin bloqueos técnicos.** Ejecutar **LEX-1.8** — clientes Supabase SSR separados
-para navegador y servidor, según el patrón oficial de `@supabase/ssr`.
+Ejecutar **LEX-1.10** — pgTAP y arnés de pruebas de base de datos. Es la
+herramienta con la que se demostrará, en las fases siguientes, que un usuario no
+puede leer ni escribir los datos de otro. Sin ella, RLS es una afirmación.
 
-Es una tarea con implicaciones de seguridad: el cliente de servidor maneja la
-sesión mediante cookies y el de navegador no debe poder acceder a nada que no
-autorice RLS. La separación tendrá que comprobarse, no suponerse, igual que se
-hizo con las variables de entorno en LEX-1.4.
-
-Después: LEX-1.10 (pgTAP), LEX-1.12 (CI), LEX-1.13 (landing y health check) y
-LEX-1.14 (clon limpio y cierre de M1).
+Después: LEX-1.12 (CI), LEX-1.13 (landing y health check) y LEX-1.14 (clon limpio
+y cierre de M1).
 
 Sigue abierta **Q-004**: el primer `push` continúa sin autorizar.
 

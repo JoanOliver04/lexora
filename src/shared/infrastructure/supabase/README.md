@@ -1,5 +1,44 @@
 # Supabase — infraestructura compartida
 
+## Qué cliente usar y dónde
+
+| Contexto | Cliente | Fichero |
+|---|---|---|
+| Componente de cliente, navegador | `createSupabaseBrowserClient()` | `browser-client.ts` |
+| Server Component, Server Action, Route Handler | `createSupabaseServerClient()` | `server-client.ts` |
+| Proxy | `refreshSupabaseSession()` | `session.ts` |
+
+**Los tres usan la misma clave publishable.** No hay un cliente privilegiado, y no
+debería haberlo: la identidad la aporta la cookie de sesión y los permisos los
+decide Row Level Security dentro de PostgreSQL. Un cliente con clave privilegiada
+saltaría RLS por completo, de modo que cualquier descuido en una consulta
+expondría datos de otros usuarios.
+
+Corolario: **RLS no es una capa de seguridad más, es la capa.** La clave
+publishable está en el bundle que descarga cualquiera. Una tabla sin políticas
+queda abierta a Internet.
+
+## Una instancia por petición
+
+`createSupabaseServerClient()` lee las cookies de la petición en curso.
+Reutilizar una instancia entre peticiones serviría a un usuario la sesión de
+otro, y no daría ningún error visible. Crear un cliente es barato; crearlo una
+sola vez sale carísimo.
+
+## `getClaims()`, nunca `getSession()`
+
+`getSession()` devuelve lo que haya en la cookie sin comprobar que sea auténtico.
+Una cookie la escribe el navegador, y el navegador está bajo el control de quien
+lo usa: confiar en ella para decidir permisos equivale a preguntarle al visitante
+quién dice ser y creerle.
+
+`getClaims()` verifica la firma del token contra las claves públicas del proyecto.
+
+**Está impuesto por lint.** `eslint.config.mjs` rechaza cualquier llamada a
+`getSession()` en `src/`. Un caso legítimo tendrá que desactivar la regla en esa
+línea y explicar por qué, que es exactamente lo que se quiere: que la excepción
+deje rastro en el diff.
+
 ## `database.types.ts`
 
 **Generado. No se edita a mano.**
