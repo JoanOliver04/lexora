@@ -26,6 +26,36 @@ const eslintConfig = defineConfig([
     },
   },
 
+  // -------------------------------------------------------------------------
+  // Prohibido `getSession()`.
+  //
+  // Devuelve lo que haya en la cookie sin comprobar que sea autentico. Una
+  // cookie la escribe el navegador, y el navegador esta bajo el control de quien
+  // lo usa: confiar en ella para decidir permisos equivale a preguntarle al
+  // visitante quien dice ser y creerle.
+  //
+  // `getClaims()` verifica la firma del token contra las claves publicas del
+  // proyecto. Es la diferencia entre leer un carne y comprobarlo.
+  //
+  // La regla se aplica en todo el proyecto, no solo en el servidor. En un
+  // componente de cliente el riesgo es menor, pero un caso legitimo tendra que
+  // desactivarla en esa linea y explicar por que, que es exactamente lo que se
+  // quiere: que la excepcion deje rastro en el diff.
+  // -------------------------------------------------------------------------
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "CallExpression[callee.property.name='getSession']",
+          message:
+            "getSession() no verifica la firma del token: devuelve lo que diga la cookie. Usa getClaims() para cualquier decision de permisos.",
+        },
+      ],
+    },
+  },
+
   // Scripts de linea de comandos: aqui `console.log` es la salida del programa,
   // no depuracion olvidada.
   {

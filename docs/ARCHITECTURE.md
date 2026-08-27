@@ -175,6 +175,18 @@ Dos barreras, no una:
 La segunda existe porque la primera puede fallar. Se prueba que un usuario no
 puede leer, escribir ni borrar datos de otro, con tests contra la base de datos.
 
+**Ningún cliente de base de datos usa una clave privilegiada.** Navegador,
+servidor y proxy usan la misma clave publishable; la identidad la aporta la cookie
+de sesión y los permisos los decide RLS. Un cliente privilegiado saltaría RLS por
+completo, y entonces un descuido en una consulta dejaría de ser detectable en la
+revisión.
+
+Corolario: la clave publishable está en el bundle que descarga cualquiera. **Una
+tabla sin políticas queda abierta a Internet.**
+
+`getSession()` está prohibido por lint: devuelve lo que diga la cookie, sin
+verificar su firma. Para cualquier decisión de permisos se usa `getClaims()`.
+
 *Pendiente:* detalle de políticas por tabla, a medida que las fases 2 a 5 las creen.
 
 ## Validación
