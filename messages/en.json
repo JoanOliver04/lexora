@@ -5,9 +5,12 @@
   },
   "Home": {
     "title": "Lexora",
-    "tagline": "Learn and keep your English through active recall.",
-    "explanation": "Recognising a word is not the same as being able to produce it. Lexora schedules each skill separately.",
-    "status": "Early development."
+    "tagline": "Learn and keep your A1–B2 English through active recall.",
+    "problem": "Recognising a word when you see it is not the same as recalling it when you want to speak or write. They are different abilities, and they fade at different rates.",
+    "approach": "Lexora splits each concept into the skills it is made of and schedules each one separately, with spaced repetition. Being able to recognise a word does not mark its production as learned.",
+    "statusTitle": "Status",
+    "status": "Early development. There are no accounts or content yet: this page is the project's technical foundation.",
+    "repository": "View the code on GitHub"
   },
   "LocaleSwitcher": {
     "label": "Interface language",

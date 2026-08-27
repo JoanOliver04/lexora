@@ -104,6 +104,7 @@ src/
       styles/
   i18n/
   env/
+  composition/              Raíz de composición: une casos de uso con adaptadores
 
 supabase/
   migrations/
@@ -151,6 +152,26 @@ Dos de ellos existen por motivos concretos:
 | Route Handler | Importación y exportación, *callbacks*, cualquier cosa que necesite contrato HTTP. |
 
 Los datos privados de un usuario nunca entran en cachés compartidas.
+
+## La raíz de composición
+
+`src/composition/` resuelve una tensión real de la regla de dependencia: la
+presentación no puede importar infraestructura, pero **alguien** tiene que unir un
+caso de uso con su implementación concreta.
+
+Ese alguien es esta carpeta, y solo ella. Aquí se permite conocer ambos lados
+porque su única responsabilidad es el cableado: no hay lógica de negocio, ni
+consultas, ni decisiones.
+
+```text
+src/app/api/health/route.ts  →  src/composition/health.ts
+                                    ├→ application/…  (puerto y caso de uso)
+                                    └→ infrastructure/…  (implementación)
+```
+
+La alternativa habría sido una excepción de lint para las rutas. Es peor: una
+excepción abre la puerta a que la siguiente ruta meta una consulta directamente, y
+entonces la regla deja de significar nada.
 
 ## Acceso a datos
 

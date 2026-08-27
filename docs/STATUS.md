@@ -1,7 +1,7 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-27
-**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (12/14)
+**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (13/14)
 **Hito actual:** M1 — Fundación técnica reproducible — `EN PROCESO`
 **Tarea activa:** ninguna
 **Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.11 `HECHO`**, salvo LEX-1.12 a LEX-1.14
@@ -14,6 +14,38 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-1.13 — Landing mínima y health check — `HECHO`
+
+Informe completo en [`evidence/LEX-1.13.md`](evidence/LEX-1.13.md).
+
+Landing real en ES/EN que explica el problema y el enfoque, con los tokens de
+LEX-1.6. Sigue sin identidad visual: la definitiva es LEX-10.3.
+
+**El health check obligó a una decisión de arquitectura.** La ruta necesita
+alcanzar la base de datos, pero la regla de LEX-1.3 prohíbe que `src/app/**`
+importe infraestructura. La salida fácil era una excepción de lint para las rutas;
+es la peor opción, porque abre la puerta a que la siguiente ruta meta una consulta
+directamente y la regla deje de significar nada.
+
+Creado **`src/composition/`**, la raíz de composición: la única carpeta que conoce
+ambos lados, porque su única responsabilidad es el cableado. Encaja con las reglas
+existentes sin tocarlas. Toda ruta futura que necesite datos pasará por aquí, y
+resolverlo ahora con un caso trivial evita resolverlo con prisa cuando el caso sea
+la sesión de estudio.
+
+**Comprobado apagando la base de datos**, porque un health check que solo se ha
+visto decir «ok» no está probado:
+
+```text
+Base en marcha:  HTTP 200  {"status":"ok","app":true,"database":true}
+Base detenida:   HTTP 503  {"status":"degraded","app":true,"database":false}
+```
+
+`degraded` y no `error`: la aplicación está sirviendo la respuesta. 503 y no 200
+con un campo: los supervisores miran el código de estado. Y un test E2E comprueba
+que el cuerpo **no contiene** `postgres`, `supabase`, `127.0.0.1`, `54321` ni
+`version` — un health check hablador es reconocimiento gratuito.
 
 ### Q-004 resuelta — el repositorio es público
 
@@ -441,6 +473,11 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 | `supabase/tests/database/` | Creado. Arnés pgTAP e invariante de RLS. |
 | `docs/evidence/LEX-1.12.md` | Creado. Informe de la CI. |
 | `.github/workflows/ci.yml` | Creado. Tres trabajos. |
+| `docs/evidence/LEX-1.13.md` | Creado. Informe de landing y health check. |
+| `src/composition/health.ts` | Creado. Raíz de composición. |
+| `src/shared/application/health/`, `src/shared/infrastructure/health/` | Creados. Puerto, caso de uso y sonda. |
+| `src/app/api/health/route.ts` | Creado. |
+| `src/app/[locale]/page.tsx` | Landing real en lugar de la página de demostración. |
 | `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` | Creados. Versiones fijadas. |
 | `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs` | Creados. |
 | `src/app/`, `public/` | Creados por el andamiaje. La página de ejemplo se sustituye en LEX-1.13. |
@@ -545,14 +582,13 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-1.13** — landing mínima y health check. Sustituir la página de
-demostración por una landing real y añadir un punto de comprobación que confirme
-que la aplicación responde y alcanza la base de datos.
+Ejecutar **LEX-1.14**, la última de FASE 1: verificar que un clon limpio instala,
+levanta la base de datos, prueba y compila con los comandos documentados, y cerrar
+el hito **M1**.
 
-Después, **LEX-1.14** cierra el hito M1: verificar que un clon limpio instala,
-levanta, prueba y compila con los comandos documentados.
-
-Sin bloqueos ni preguntas abiertas.
+Es una auditoría, no desarrollo. Debe hacerse sobre un clon recién sacado de
+GitHub, no sobre este árbol, porque lo que se comprueba es precisamente que no
+haga falta nada que solo exista en esta máquina.
 
 ---
 

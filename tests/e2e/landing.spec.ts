@@ -63,6 +63,25 @@ test.describe("landing", () => {
     );
   });
 
+  test("expone la comprobación de salud sin filtrar detalles internos", async ({ request }) => {
+    const response = await request.get("/api/health");
+
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toEqual({ status: "ok", app: true, database: true });
+
+    // No debe cachearse: una respuesta guardada seguiría diciendo "ok" un cuarto
+    // de hora después de que todo se cayera.
+    expect(response.headers()["cache-control"]).toContain("no-store");
+
+    // Y no debe contar más de la cuenta. Este punto es público y sin
+    // autenticación: versiones, hosts o mensajes de error serían un mapa
+    // gratuito para quien busca por dónde entrar.
+    const body = await response.text();
+    for (const leak of ["postgres", "supabase", "127.0.0.1", "54321", "version"]) {
+      expect(body.toLowerCase()).not.toContain(leak);
+    }
+  });
+
   test("no hay errores de consola al cargar", async ({ page }) => {
     const errors: string[] = [];
     page.on("console", (message: ConsoleMessage) => {
