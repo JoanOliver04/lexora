@@ -98,7 +98,8 @@ despliegue de preview antes de tocar producción.
 | `pnpm typecheck` | `next typegen && tsc --noEmit`. El paso de generación de tipos **no es opcional**: sin él, la comprobación falla en cualquier entorno limpio. |
 | `pnpm contrast` | Comprueba el contraste WCAG de los tokens de color. |
 | `pnpm test` / `test:watch` / `test:coverage` | Vitest. Entorno `node` por defecto; `jsdom` con `@vitest-environment jsdom` en la cabecera del fichero. |
-| `pnpm check` | Todas las puertas en cadena. Es lo que debe ejecutar la CI. |
+| `pnpm e2e` / `e2e:ui` | Playwright contra el build de producción, en escritorio y en emulación del Poco F5. |
+| `pnpm check` | Todas las puertas en cadena, **salvo E2E**: levanta un servidor y tarda, así que se ejecuta aparte. |
 
 ## 5. Migraciones de base de datos
 
