@@ -125,6 +125,11 @@ Registra la pregunta y sigue con lo que no dependa de ella.
 - Nunca uses el material privado del propietario como fixture público o seed.
 - Nunca copies contenido de `docs/no_visible_en_github/` a un archivo versionado.
 
+**Entorno de esta máquina**
+
+- **No edites archivos con texto en español usando `Get-Content`/`Set-Content` de PowerShell.** Windows PowerShell 5.1 lee UTF-8 sin BOM como ANSI y corrompe los acentos al reescribir. Usa las herramientas de edición de ficheros.
+- Node y pnpm se resuelven a través de nvm-windows. Una terminal que devuelva una versión distinta de la fijada en `.nvmrc` necesita `nvm use`.
+
 **Operaciones**
 
 - Nunca publiques, despliegues a producción ni apliques una migración destructiva sin autorización explícita.

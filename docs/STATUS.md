@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-27
-**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (3/14)
+**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (4/14)
 **Hito actual:** M1 — Fundación técnica reproducible — `EN PROCESO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1, LEX-1.2 y LEX-1.3 `HECHO`**
+**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.4 `HECHO`**
 **Rama / commit base / HEAD:** `main` / `4a628be` (`v0.1.0-m0`) / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -14,6 +14,35 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-1.4 — Validación de entorno con Zod — `HECHO`
+
+Informe completo en [`evidence/LEX-1.4.md`](evidence/LEX-1.4.md).
+
+`src/env/` valida el entorno **al cargar el módulo**, no en la primera petición que
+use la variable: es preferible que la aplicación no arranque a que arranque mal.
+Servidor y cliente en módulos separados; `src/env/server.ts` importa `server-only`.
+`.env.example` documentado, sin un solo valor real.
+
+**La separación se comprobó, no se dio por hecha.** Un error aquí no da un fallo
+visible, da una clave publicada:
+
+1. Se metió una variable de servidor con un valor reconocible, se consumió desde un
+   Server Component y se construyó: **no aparece en `.next/static` ni en ningún
+   artefacto del build.**
+2. Se creó un componente `"use client"` que la importaba: **el build falla** con la
+   traza de importación completa, señalando quién provocaba la fuga.
+
+Ambas sondas retiradas; `pnpm check` en verde después.
+
+**Un choque resuelto sin rendirse.** `noPropertyAccessFromIndexSignature` obliga a
+`process.env["X"]`, pero Next.js sustituye `process.env.X` de forma textual. En vez
+de desactivar la opción, `src/env/env.d.ts` declara las variables públicas como
+propiedades reales. Las de servidor **no** se declaran, a propósito: obliga a
+escribirlas de otra forma y eso recuerda que no son intercambiables.
+
+Solo hay dos variables todavía. Es correcto: el entregable es el mecanismo. Las de
+Supabase llegan en LEX-1.7, cuando existan de verdad.
 
 ### LEX-1.3 — Estructura modular y reglas de dependencia — `HECHO`
 
@@ -154,6 +183,10 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 | `docs/evidence/LEX-1.3.md` | Creado. Informe de las reglas de dependencia. |
 | `src/modules/README.md`, `src/shared/README.md` | Creados. Convención de módulos y capas. |
 | `docs/ARCHITECTURE.md` | Anotado que la regla de dependencia es exigible por lint. |
+| `docs/evidence/LEX-1.4.md` | Creado. Informe de validación de entorno. |
+| `src/env/` | Creado: `server.ts`, `client.ts`, `shared.ts`, `env.d.ts`. |
+| `.env.example` | Creado. Plantilla documentada sin valores reales. |
+| `CLAUDE.md` | Aviso: no editar textos en español con `Set-Content` de PowerShell. |
 | `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` | Creados. Versiones fijadas. |
 | `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs` | Creados. |
 | `src/app/`, `public/` | Creados por el andamiaje. La página de ejemplo se sustituye en LEX-1.13. |
@@ -258,13 +291,11 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-Ejecutar **LEX-1.4** — validación de la configuración y de las variables de
-entorno con Zod: un módulo que valide el entorno al arrancar y falle rápido y con
-un mensaje claro si falta algo, separando lo que puede llegar al cliente de lo que
-solo existe en servidor. Incluye crear `.env.example` sin valores reales.
+Ejecutar **LEX-1.5** — internacionalización ES/EN con `next-intl`: enrutado por
+locale, mensajes separados del código y ningún texto visible incrustado en un
+componente.
 
-Después: LEX-1.5 (internacionalización ES/EN) y LEX-1.6 (sistema visual base).
-Ninguna necesita Docker.
+Después **LEX-1.6** (sistema visual base). Ninguna necesita Docker.
 
 **LEX-1.7 sigue bloqueada por Q-003.** Docker Desktop arranca pero su motor no
 responde; hace falta abrir su ventana y ver qué pide.
