@@ -21,6 +21,19 @@ export default defineConfig({
     // cabecera.
     environment: "node",
     globals: false,
+
+    // Los valores por defecto de Vitest (5 s) bastan cuando la maquina esta
+    // libre. No cuando arranca la base de datos local: los contenedores de
+    // Supabase compiten por CPU y disco, y en una ejecucion se midieron 45
+    // segundos solo para levantar el entorno jsdom, con el consiguiente fallo
+    // de un test que en si mismo tarda milisegundos.
+    //
+    // Subir el limite no esconde lentitud del codigo propio: ninguno de estos
+    // tests hace trabajo real durante ese tiempo. Lo que evita es un fallo
+    // intermitente que no dice nada sobre el codigo y que, repetido, ensena a
+    // desconfiar de la suite.
+    testTimeout: 15_000,
+    hookTimeout: 30_000,
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/*.test.{ts,tsx}", "tests/unit/**/*.test.{ts,tsx}"],
     coverage: {

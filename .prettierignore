@@ -1,5 +1,9 @@
 # Generado o gestionado por herramientas
 pnpm-lock.yaml
+
+# Lo genera la CLI de Supabase desde el esquema. Formatearlo produciria un diff
+# en cada regeneracion, y el fichero no se edita a mano nunca.
+src/shared/infrastructure/supabase/database.types.ts
 .next/
 out/
 build/

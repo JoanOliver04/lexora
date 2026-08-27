@@ -1,10 +1,10 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-27
-**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (8/14)
+**Fase actual:** FASE 1 — Fundación técnica — `EN PROCESO` (9/14)
 **Hito actual:** M1 — Fundación técnica reproducible — `EN PROCESO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.6, LEX-1.9 y LEX-1.11 `HECHO`**
+**Estado de la tarea:** FASE 0 completa (LEX-0.1…0.8) · **LEX-1.1 a LEX-1.7, LEX-1.9 y LEX-1.11 `HECHO`**
 **Rama / commit base / HEAD:** `main` / `4a628be` (`v0.1.0-m0`) / ver «Estado de git»
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -14,6 +14,33 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-1.7 — Supabase local — `HECHO`. Cierra Q-003.
+
+Informe completo en [`evidence/LEX-1.7.md`](evidence/LEX-1.7.md).
+
+**El bloqueo no era configuración.** Docker Desktop estaba en la 4.18.0, de marzo
+de 2023, sobre un WSL con kernel de 2026. `dockerd` moría al instante y su registro
+solo contenía `EOF`: ni una línea de error, que es la firma de una incompatibilidad
+de binarios. Actualizado a 4.88.1 por Joan; el motor arranca en 30 segundos.
+
+CLI de Supabase 2.116.0 **como dependencia del proyecto**, no global. Scripts
+`db:start`, `db:stop`, `db:status`, `db:reset` y `db:types`.
+
+Variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+añadidas al esquema de **cliente**: la clave publishable está pensada para vivir en
+el navegador, porque quien concede permisos es RLS dentro de PostgreSQL. **La clave
+secreta no está en ninguna parte del repositorio**, ni comentada.
+
+`database.types.ts` generado y excluido de los formateadores. Se regenera en el
+mismo commit que la migración que lo cambia; separarlos hace que el compilador
+apruebe consultas que la base rechazará.
+
+**Dos incidencias registradas porque volverán a pasar:** el primer `supabase start`
+y el primer `db reset` fallaron y funcionaron al reintentar sin cambiar nada
+—contenedores asentándose tras la primera descarga—. Y un test falló bajo carga,
+con la puesta en marcha de jsdom tardando 45 s en vez de menos de uno; tiempos
+límite subidos a 15 s y 30 s, con el motivo escrito.
 
 ### LEX-1.11 — Configurar Playwright — `HECHO`
 
@@ -312,6 +339,11 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 | `src/shared/presentation/components/button.test.tsx` | Creado. Prueba el arnés de componentes. |
 | `docs/evidence/LEX-1.11.md` | Creado. Informe de Playwright. |
 | `playwright.config.ts`, `tests/e2e/landing.spec.ts` | Creados. |
+| `docs/evidence/LEX-1.7.md` | Creado. Informe de Supabase local. |
+| `supabase/config.toml`, `supabase/seed.sql` | Creados. |
+| `src/shared/infrastructure/supabase/` | Creado. Tipos generados y su README. |
+| `src/env/client.ts`, `.env.example` | Variables de Supabase añadidas. |
+| `vitest.config.mts` | Tiempos límite subidos, con el motivo escrito. |
 | `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` | Creados. Versiones fijadas. |
 | `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `postcss.config.mjs` | Creados. |
 | `src/app/`, `public/` | Creados por el andamiaje. La página de ejemplo se sustituye en LEX-1.13. |
@@ -336,8 +368,8 @@ Migraciones SQL: ninguna. Todavía no existe base de datos.
 | corepack | Presente | 0.34.6 |
 | pnpm | Presente | 11.24.0, vía corepack |
 | Docker CLI | Presente | 20.10.24 |
-| Docker daemon | **No responde** | La aplicación arranca y WSL 2 corre, pero el motor no expone su tubería. Ver Q-003 |
-| Supabase CLI | Pendiente | Se instalará como dependencia del proyecto en LEX-1.7 |
+| Docker | Operativo | Desktop 4.88.1, motor 29.7.2, 12 CPU, 8 GB |
+| CLI de Supabase | Presente | 2.116.0, dependencia del proyecto |
 
 ### Estado de Git en la inspección inicial
 
@@ -379,7 +411,7 @@ Corresponden a Joan:
 |---|---|---|---|
 | Q-001 | Visibilidad de `CLAUDE.md` | `RESUELTA` — público | — |
 | Q-002 | Qué documentación es pública | `RESUELTA` — privado el diseño, público el método | — |
-| Q-003 | pnpm, Docker y Supabase CLI | `ABIERTA` | LEX-1.1, LEX-1.7 |
+| Q-003 | Herramientas de desarrollo | `RESUELTA` | — |
 | Q-004 | Primer push al remoto público | `ABIERTA` | LEX-0.8 |
 
 Ninguna impide continuar con LEX-0.3 a LEX-0.7.
@@ -406,7 +438,6 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 - **`MASTER_SPEC.md` y `ROADMAP.md` quedan fuera de Git:** sin historial, sin copia de
   seguridad y sin revisión por PR. Riesgo real de pérdida por borrado accidental.
 - El remoto `origin` está configurado pero no verificado: no se sabe si está vacío.
-- Docker no operativo impide validar el flujo de Supabase local.
 - `MASTER_SPEC.md` §22 sigue redactada suponiendo que toda la documentación se
   versiona. La desviación está registrada en Q-002 y en el registro de cambios del
   roadmap, no propagada en silencio.
@@ -417,22 +448,18 @@ Ninguna impide continuar con LEX-0.3 a LEX-0.7.
 
 ## Siguiente acción exacta
 
-**Se ha agotado todo lo que se puede hacer sin Docker.** Ocho de las catorce tareas
-de FASE 1 están cerradas; las seis restantes —Supabase local, clientes SSR, pgTAP,
-la CI que los ejecuta, la landing con health check y el cierre del hito— necesitan
-una base de datos en marcha.
+**Sin bloqueos técnicos.** Ejecutar **LEX-1.8** — clientes Supabase SSR separados
+para navegador y servidor, según el patrón oficial de `@supabase/ssr`.
 
-**Q-003 es el único bloqueo del proyecto.** Docker Desktop arranca y sus
-distribuciones de WSL 2 corren, pero el motor Linux no expone su tubería:
+Es una tarea con implicaciones de seguridad: el cliente de servidor maneja la
+sesión mediante cookies y el de navegador no debe poder acceder a nada que no
+autorice RLS. La separación tendrá que comprobarse, no suponerse, igual que se
+hizo con las variables de entorno en LEX-1.4.
 
-```text
-open \\.\pipe\docker_engine_linux: The system cannot find the file specified
-```
+Después: LEX-1.10 (pgTAP), LEX-1.12 (CI), LEX-1.13 (landing y health check) y
+LEX-1.14 (clon limpio y cierre de M1).
 
-Hace falta abrir la ventana de Docker Desktop y ver qué pide: aceptar términos,
-iniciar sesión o instalar una actualización. La versión instalada es de 2023.
-
-Cuando esté resuelto, la siguiente tarea es **LEX-1.7**.
+Sigue abierta **Q-004**: el primer `push` continúa sin autorizar.
 
 ---
 
