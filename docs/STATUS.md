@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-28
-**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (1/11)
+**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (2/11)
 **Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
-**Tarea activa:** **LEX-2.2** — seeds de idiomas; hecha en local, pendiente de push + PR + CI + merge
-**Estado de la tarea:** LEX-2.1 `HECHO` · LEX-2.2 `EN PROCESO`
-**Rama / commit base / HEAD:** `feat/lex-2-2-language-seeds`, a partir de `main`; sin empujar
+**Tarea activa:** ninguna
+**Estado de la tarea:** LEX-2.1 `HECHO` · LEX-2.2 `HECHO` · siguiente LEX-2.3
+**Rama / commit base / HEAD:** `main`, con LEX-2.2 fusionado (PR [#6](https://github.com/JoanOliver04/lexora/pull/6))
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -15,9 +15,9 @@
 
 ## Terminado en esta sesión
 
-### LEX-2.2 — Seeds de idiomas y curso de referencia — `EN PROCESO`
+### LEX-2.2 — Seeds de idiomas y curso de referencia — `HECHO`
 
-Informe completo en [`evidence/LEX-2.2.md`](evidence/LEX-2.2.md).
+Informe completo en [`evidence/LEX-2.2.md`](evidence/LEX-2.2.md). PR #6, CI verde.
 
 Seed de `languages` en `supabase/seed.sql`: tres filas (`es`/`es`, `en`/`en`,
 `en`/`en-GB`) con UUID fijos y `on conflict (code, locale) do nothing` —
@@ -32,7 +32,8 @@ declarada en el informe §1 por si Joan esperaba una fila real.
 - `030-languages-seed.sql` (nuevo): 5 asserciones — 3 filas, pares correctos,
   UUID fijo, `on conflict do nothing` no añade filas, las 3 activas.
 - `020-…` reescrito para no depender del seed (idiomas sintéticos `zz`); cada
-  `throws_like` re-verificado fallando por su constraint.
+  `throws_like` re-verificado fallando por su constraint. `030` comprueba las 3
+  filas por su UUID fijo, no el total de la tabla.
 
 ```text
 pnpm db:reset   migración + seed desde vacío; 3 filas con sus UUID fijos
@@ -41,8 +42,6 @@ pnpm db:types   sin cambios (el seed no toca el esquema)
 pnpm check      exit 0
 pnpm e2e        14 passed
 ```
-
-**Falta para `HECHO`:** push, PR, CI verde, merge.
 
 ### LEX-2.1 — Migración de identidad y curso — `HECHO`
 
@@ -153,12 +152,11 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-**LEX-2.2** está `EN PROCESO`. Seed, tests y `DATA_MODEL.md` hechos y
-committeados en la rama `feat/lex-2-2-language-seeds`; falta el cierre formal:
-push, PR, CI verde, merge, y marcar `HECHO` en el roadmap y este archivo.
+Ninguna tarea `EN PROCESO`. FASE 2 en 2/11.
 
-Después: **LEX-2.3** — políticas RLS por operación y tests de aislamiento dueño /
-no-dueño (pgTAP) sobre las cuatro tablas de LEX-2.1; `languages` de solo lectura.
+Siguiente: **LEX-2.3** — políticas RLS por operación y tests de aislamiento dueño
+/ no-dueño (pgTAP) sobre `profiles`, `courses`, `course_settings`; `languages`
+con política de solo lectura. Aplica el gate §12.3.
 
 ---
 
@@ -208,12 +206,12 @@ LEX-2.2 (rama):     pnpm check exit 0 · e2e 14/14
 ### CI
 
 ```text
-run 33182455688   CI   main            push          success   merge de PR #4 (LEX-2.1)
 run 33182960329   CI   main            push          success   merge de PR #5 (LEX-2.1 docs)
+run 33188502934   CI   feat/lex-2-2-…  pull_request  success   PR #6 (LEX-2.2)
+run 33188727474   CI   main            push          success   merge de PR #6
 ```
 
 Todas con los tres trabajos (Calidad, Base de datos, Extremo a extremo) en verde.
-La CI de la rama de LEX-2.2 está pendiente.
 
 ---
 
@@ -267,13 +265,15 @@ Ninguna abierta.
 
 ## Siguiente acción exacta
 
-**Cerrar LEX-2.2.** `git push -u origin feat/lex-2-2-language-seeds`, abrir el PR
-(ID en el título), esperar CI verde (los tres trabajos), fusionar a `main`.
-Entonces marcar LEX-2.2 `HECHO` en el roadmap y actualizar este archivo.
+Empezar **LEX-2.3** — políticas RLS por operación y tests de aislamiento dueño /
+no-dueño (pgTAP) sobre `profiles`, `courses`, `course_settings`; `languages` con
+política de **solo lectura** (catálogo de referencia, MASTER_SPEC §15.2).
 
-Después: **LEX-2.3** — políticas RLS por operación y tests de aislamiento dueño /
-no-dueño (pgTAP) sobre `profiles`, `languages`, `courses`, `course_settings`;
-`languages` de solo lectura. Aplica el gate §12.3.
+Las cuatro tablas ya tienen RLS habilitado (LEX-2.1) sin políticas, así que hoy
+deniegan todo. LEX-2.3 añade las políticas `SELECT`/`INSERT`/`UPDATE`/`DELETE`
+por `auth.uid()` propietario y prueba que el usuario A no alcanza los datos de B
+ni directamente ni por relación (FK/UUID conocido). Aplica el gate §12.3.
+Decidir también si se activa `force row level security`.
 
 ---
 
@@ -296,9 +296,8 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 - Rama por defecto: `main`, sincronizada con `origin/main`.
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
-- LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs). Ramas borradas.
-- **Rama de trabajo actual:** `feat/lex-2-2-language-seeds`, a partir de `main`,
-  con el seed de idiomas de LEX-2.2. Sin empujar.
+- LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs).
+  Ramas borradas.
 - Contenido versionado: aplicación Next.js completa, `supabase/` (config, seed,
   tests, **migrations** — una: `20260828143434_identity_and_course`), CI,
   documentación en `docs/` y ADR.

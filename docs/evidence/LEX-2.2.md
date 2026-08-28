@@ -1,7 +1,7 @@
 # LEX-2.2 — Seeds de idiomas y curso de referencia
 
 **Fecha:** 2026-08-28
-**Rama:** `feat/lex-2-2-language-seeds`
+**Rama:** `feat/lex-2-2-language-seeds` — PR [#6](https://github.com/JoanOliver04/lexora/pull/6)
 **Estado resultante:** `HECHO`
 
 ---
@@ -117,7 +117,8 @@ Migraciones añadidas: **ninguna** (el seed no es una migración de esquema).
 
 ## 7. Estado del árbol Git
 
-Rama `feat/lex-2-2-language-seeds` a partir de `main`. Pendiente de push, PR y CI.
+Fusionada a `main` vía PR #6. CI verde sobre la rama (run `33188502934`) y sobre
+`main` tras el merge (run `33188727474`), los tres trabajos. Rama borrada.
 
 ## 8. Siguiente tarea
 
