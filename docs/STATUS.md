@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-28
-**Fase actual:** FASE 1 — Fundación técnica — 13/14 (`EN PROCESO` por LEX-1.14)
-**Hito actual:** M1 — Fundación técnica reproducible — `PENDIENTE` de cierre formal
-**Tarea activa:** **LEX-1.14** — auditoría completada; falta push, PR, CI verde sobre la rama y merge
-**Estado de la tarea:** FASE 0 `HECHO` (8/8) · FASE 1 13/14 · LEX-1.14 `EN PROCESO`
-**Rama / commit base / HEAD:** `docs/lex-1-14-clean-clone-m1`, partiendo de `main` (`451d668`); 1 commit por delante de `main`, sin empujar
+**Fase actual:** FASE 1 — Fundación técnica — `HECHO` (14/14)
+**Hito actual:** M1 — Fundación técnica reproducible — `HECHO`
+**Tarea activa:** ninguna
+**Estado de la tarea:** FASE 0 `HECHO` (8/8) · FASE 1 `HECHO` (14/14) · M1 cerrado
+**Rama / commit base / HEAD:** `main`, con LEX-1.14 fusionado (PR [#3](https://github.com/JoanOliver04/lexora/pull/3)); etiqueta `v0.2.0-m1`
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -13,9 +13,9 @@
 
 ---
 
-## Trabajo de esta sesión
+## Terminado en esta sesión
 
-### LEX-1.14 — Verificar clon limpio y cerrar M1 — `EN PROCESO`
+### LEX-1.14 — Verificar clon limpio y cerrar M1 — `HECHO`
 
 Informe completo en [`evidence/LEX-1.14.md`](evidence/LEX-1.14.md).
 
@@ -36,8 +36,9 @@ pnpm e2e                          14 passed  (escritorio + Poco F5)
 pnpm start                        / → 307 → /es · /es → 200 lang="es" · /api/health → 200 ok
 ```
 
-**CI verde registrada:** run `33103009623` sobre `main`, `success`, 2 m 39 s,
-commit `451d668`. Runner Linux frío: es la prueba del camino desde cero real.
+**CI verde registrada:** run `33103009623` sobre `main` (`success`, 2 m 39 s,
+commit `451d668`) y run `33170219084` sobre la rama de cierre (PR #3, `success`,
+2 m 45 s). Runner Linux frío: es la prueba del camino desde cero real.
 
 **Límite declarado:** la máquina local ya tenía imágenes de Docker, store de pnpm
 y navegadores de Playwright en caché. El clon local prueba reproducibilidad en
@@ -50,10 +51,9 @@ describía un estado anterior a FASE 1 y se ha reescrito; el roadmap privado ten
 la cabecera de FASE 1, la sección «siguiente tarea» y varios contadores
 desactualizados. Detalle en el informe §5.
 
-### FASE 1 — 13/14, cierre en curso
+### FASE 1 — cerrada (14/14)
 
-LEX-1.1…1.13 `HECHO`; LEX-1.14 `EN PROCESO` (falta merge + CI). Cada tarea tiene
-su informe en [`evidence/`](evidence/):
+M1 completo. Cada tarea tiene su informe en [`evidence/`](evidence/):
 
 | Tarea | Entregable |
 |---|---|
@@ -70,7 +70,7 @@ su informe en [`evidence/`](evidence/):
 | LEX-1.11 | Playwright: escritorio y Poco F5 real, contra build de producción |
 | LEX-1.12 | CI en GitHub Actions, tres trabajos; cierra Q-004 |
 | LEX-1.13 | Landing ES/EN y health check que no filtra; raíz de composición |
-| LEX-1.14 | Clon limpio verificado en local; cierre pendiente de merge + CI |
+| LEX-1.14 | Clon limpio verificado; PR #3 con CI verde; M1 cerrado |
 
 ### FASE 0 — cerrada (8/8)
 
@@ -94,18 +94,10 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-**LEX-1.14** está `EN PROCESO`. La auditoría y las correcciones están hechas y
-committeadas en la rama `docs/lex-1-14-clean-clone-m1`; falta el cierre formal:
+Ninguna tarea de FASE 0 ni FASE 1 queda abierta.
 
-1. Autorización de Joan para empujar la rama y abrir el PR.
-2. `git push -u origin docs/lex-1-14-clean-clone-m1` + PR con el ID en el título.
-3. CI verde sobre la rama.
-4. Merge a `main`.
-5. Marcar LEX-1.14 `HECHO` y M1 cerrado en el roadmap; decidir la etiqueta
-   `v0.2.0-m1`.
-
-Después, la siguiente fase es **FASE 2 — Identidad, onboarding y curso**
-(`PENDIENTE`, 0/11), que empieza por LEX-2.1.
+La siguiente fase es **FASE 2 — Identidad, onboarding y curso** (`PENDIENTE`,
+0/11). Su primera tarea es LEX-2.1.
 
 ---
 
@@ -115,7 +107,7 @@ Después, la siguiente fase es **FASE 2 — Identidad, onboarding y curso**
 |---|---|
 | `docs/evidence/LEX-1.14.md` | Creado. Informe de la verificación del clon limpio. |
 | `README.md` | Añadida sección «Puesta en marcha local»; corregida la nota de estado. |
-| `docs/STATUS.md` | Reescrito: instantánea de FASE 1 en 13/14, sin narrativa de FASE 0. |
+| `docs/STATUS.md` | Reescrito: instantánea de M1 cerrado, sin narrativa de FASE 0. |
 
 Migraciones SQL: ninguna. Todavía no existe base de datos con tablas; `db:reset`
 aplica cero migraciones y una semilla vacía.
@@ -151,9 +143,11 @@ pnpm db:test PASS  (pgTAP, Files=2 Tests=2)
 ### CI
 
 ```text
-run 33103009623   CI   main   push   success   2m39s   2026-08-27T18:20:53Z
-commit 451d668
+run 33103009623   CI   main                     push          success   2m39s   commit 451d668
+run 33170219084   CI   docs/lex-1-14-clean-…    pull_request  success   2m45s   PR #3
 ```
+
+Ambas con los tres trabajos (Calidad, Base de datos, Extremo a extremo) en verde.
 
 ---
 
@@ -161,13 +155,10 @@ commit 451d668
 
 Corresponden a Joan:
 
-1. **Autorizar el push de la rama `docs/lex-1-14-clean-clone-m1` y su PR**, y la
-   fusión a `main` tras CI verde.
-2. **Decidir si se crea y publica la etiqueta `v0.2.0-m1`.** WORKFLOW §8 la
-   contempla al cerrar un hito desplegable; empujarla al remoto público requiere
-   autorización explícita (la de Q-004 cubría solo aquel primer push).
-3. Mantener una copia de seguridad de `docs/no_visible_en_github/` fuera del
+1. Mantener una copia de seguridad de `docs/no_visible_en_github/` fuera del
    proyecto: Git no protege esos archivos.
+2. Antes de FASE 2, revisar el gate de migraciones y RLS (roadmap §12.3): LEX-2.1
+   crea el primer esquema real.
 
 ---
 
@@ -180,7 +171,7 @@ Corresponden a Joan:
 | Q-003 | Herramientas de desarrollo | `RESUELTA` |
 | Q-004 | Primer push al remoto público | `RESUELTA` |
 
-Ninguna abierta. Tras cerrar LEX-1.14, FASE 2 puede empezar sin bloqueos.
+Ninguna abierta. FASE 2 puede empezar sin bloqueos.
 
 ---
 
@@ -208,16 +199,14 @@ Ninguna abierta. Tras cerrar LEX-1.14, FASE 2 puede empezar sin bloqueos.
 
 ## Siguiente acción exacta
 
-**Cerrar LEX-1.14.** Con la autorización de Joan: `git push -u origin
-docs/lex-1-14-clean-clone-m1`, abrir el PR (ID en el título), esperar CI verde,
-fusionar a `main`. Entonces marcar LEX-1.14 `HECHO` y M1 cerrado en el roadmap,
-actualizar este archivo y decidir la etiqueta `v0.2.0-m1`.
+Empezar **FASE 2** por **LEX-2.1** — diseñar la migración de `profiles`,
+`languages`, `courses` y `course_settings`: UUID, claves foráneas, checks,
+timestamps, timezone IANA, locales y rangos de configuración, con
+`DATA_MODEL.md` actualizado.
 
-Después, y solo después, empezar **FASE 2** por **LEX-2.1** — la migración de
-`profiles`, `languages`, `courses` y `course_settings`: UUID, claves foráneas,
-checks, timestamps, timezone IANA, locales y rangos de configuración, con
-`DATA_MODEL.md` actualizado. Es la primera tarea que crea esquema; aplica el gate
-de migraciones, PostgreSQL y RLS (roadmap §12.3) además del general.
+Es la primera tarea que crea esquema. Aplica el gate de migraciones, PostgreSQL
+y RLS (roadmap §12.3) además del general. Revisión cruzada recomendada
+(roadmap §3.6): modelo de datos y migraciones principales.
 
 ---
 
@@ -238,11 +227,10 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main`, en `451d668`, sincronizada con `origin/main`.
+- Rama por defecto: `main`, sincronizada con `origin/main`.
 - Remoto: `origin` → `https://github.com/JoanOliver04/lexora.git` (**público**).
-  33 commits publicados, etiqueta `v0.1.0-m0` publicada.
-- Rama de trabajo actual: `docs/lex-1-14-clean-clone-m1`, 1 commit por delante de
-  `main`, **sin empujar**. Contiene los cambios de LEX-1.14 (README, STATUS,
-  evidencia).
+  Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
+- LEX-1.14 se fusionó vía PR #3 (`docs/lex-1-14-clean-clone-m1`). Rama borrada
+  tras el merge.
 - Contenido versionado: aplicación Next.js completa, `supabase/` (config, seed,
   tests), CI, documentación en `docs/` y ADR.

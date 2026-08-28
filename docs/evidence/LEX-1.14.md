@@ -1,10 +1,8 @@
 # LEX-1.14 — Verificar clon limpio y cerrar M1
 
 **Fecha:** 2026-08-28
-**Rama:** `docs/lex-1-14-clean-clone-m1`
-**Estado:** `EN PROCESO` — auditoría y correcciones hechas; el cierre formal de
-LEX-1.14 y de M1 espera al push, el PR, la CI verde sobre la rama y el merge a
-`main`, todo pendiente de autorización de Joan.
+**Rama:** `docs/lex-1-14-clean-clone-m1` — PR [#3](https://github.com/JoanOliver04/lexora/pull/3)
+**Estado resultante:** `HECHO` — cierra el hito **M1**
 
 ---
 
@@ -51,16 +49,17 @@ $ next build               ✓ Compiled successfully
 
 ## 3. CI verde registrada
 
-Última ejecución de CI sobre `main`:
+Dos ejecuciones cuentan aquí:
 
 ```text
-run 33103009623   CI   main   push   success   2m39s   2026-08-27T18:20:53Z
-commit 451d668  "Merge pull request #2 from JoanOliver04/feat/lex-1-13-landing-health"
+run 33103009623   CI   main   push          success   2m39s   commit 451d668  (cierre de LEX-1.13)
+run 33170219084   CI   docs/lex-1-14-…      success   2m45s   PR #3           (esta tarea)
 ```
 
-Los tres trabajos —Calidad, Base de datos, Extremo a extremo— en verde. Es la
-prueba del camino desde cero real: un runner Linux frío, sin imágenes de Docker,
-sin store de pnpm y sin navegadores de Playwright en caché.
+Los tres trabajos —Calidad, Base de datos, Extremo a extremo— en verde en ambas.
+Es la prueba del camino desde cero real: un runner Linux frío, sin imágenes de
+Docker, sin store de pnpm y sin navegadores de Playwright en caché. El run del PR
+cubre además los cambios de documentación de esta tarea.
 
 ## 4. Límites de la comprobación local
 
@@ -152,30 +151,23 @@ pnpm check                         exit 0 (build ✓, rutas /es /en ƒ/api/healt
 pnpm e2e                           14 passed (16.1s)
 ```
 
-El clon se sacó del repositorio local, no de GitHub: empujar la rama al remoto
-público requiere autorización de Joan (§8). Esta pasada se ejecutó sobre el
-primer commit de la rama; los ajustes posteriores son solo de documentación
-(este informe y `STATUS.md` pasando de «M1 cerrado» a «cierre pendiente») y no
-tocan nada que `pnpm check` o `pnpm e2e` comprueben. La CI sobre la rama, cuando
-se empuje, lo confirmará.
+El primer clon (§2) se hizo desde GitHub; este segundo se sacó del repositorio
+local para probar la rama antes de empujarla. La CI de la rama (run
+`33170219084`, PR #3) volvió a ejecutar `pnpm check` y `pnpm e2e` sobre el
+contenido final, en verde.
 
 ## 7. Estado de M1
 
-LEX-1.1…1.13 están `HECHO`. LEX-1.14 está `EN PROCESO`: la auditoría y las
-correcciones están hechas y committeadas, pero **M1 no está cerrado todavía**.
-Para cerrarlo faltan, en este orden:
+Las catorce tareas de FASE 1 están `HECHO`. El hito **M1 — Fundación técnica
+reproducible** queda cerrado: clon limpio instalable, base recreable desde cero,
+puertas de calidad en verde, build de producción, smoke E2E y CI verde
+registrada, tanto sobre `main` como sobre la rama de cierre.
 
-1. Autorización de Joan para empujar la rama y abrir el PR.
-2. `git push -u origin docs/lex-1-14-clean-clone-m1` y PR con el ID en el título.
-3. CI verde sobre la rama — es parte de la evidencia de M1, y todavía no existe.
-4. Merge a `main`.
-5. Marcar LEX-1.14 `HECHO` y M1 cerrado en el roadmap; decidir `v0.2.0-m1`.
+El cierre siguió la secuencia acordada: auditoría a ciegas → correcciones en la
+rama → re-verificación desde un segundo clon → push, PR #3, CI verde → merge a
+`main` → etiqueta `v0.2.0-m1`.
 
-La CI verde que sí está registrada (run `33103009623`) es la de `main` en su
-estado anterior a esta rama: prueba la reproducibilidad del código, no la de los
-cambios de documentación de LEX-1.14.
-
-Siguiente tarea, una vez cerrado M1: **LEX-2.1** — primera migración (`profiles`,
+Siguiente tarea desbloqueada: **LEX-2.1** — primera migración (`profiles`,
 `languages`, `courses`, `course_settings`). No se inicia aquí.
 
 ## 8. Fuera de alcance
@@ -183,5 +175,5 @@ Siguiente tarea, una vez cerrado M1: **LEX-2.1** — primera migración (`profil
 - README de portfolio completo → LEX-10.4.
 - Base de datos aislada para previews → LEX-10.6.
 - Firefox y WebKit en E2E → cuando el coste sea razonable.
-- Etiqueta `v0.2.0-m1`: se propone, pero **empujarla al remoto público requiere
-  autorización explícita de Joan** (la de Q-004 cubría solo aquel push).
+- Etiqueta `v0.2.0-m1`: creada y empujada al cerrar M1, con autorización explícita
+  de Joan (la de Q-004 cubría solo el primer push).
