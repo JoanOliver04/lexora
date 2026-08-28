@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-28
-**Fase actual:** FASE 1 — Fundación técnica — `HECHO` (14/14)
-**Hito actual:** M1 — Fundación técnica reproducible — `HECHO`
-**Tarea activa:** ninguna
-**Estado de la tarea:** FASE 0 `HECHO` (8/8) · FASE 1 `HECHO` (14/14) · M1 cerrado
-**Rama / commit base / HEAD:** `main`, con LEX-1.14 fusionado (PR [#3](https://github.com/JoanOliver04/lexora/pull/3)); etiqueta `v0.2.0-m1`
+**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (0/11)
+**Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
+**Tarea activa:** **LEX-2.1** — migración de identidad y curso; hecha en local, pendiente de push + PR + CI + merge
+**Estado de la tarea:** FASE 1 `HECHO` (14/14) · LEX-2.1 `EN PROCESO`
+**Rama / commit base / HEAD:** `feat/lex-2-1-identity-course-schema`, a partir de `main` (`f1c27ac`); sin empujar
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,36 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-2.1 — Migración de identidad y curso — `EN PROCESO`
+
+Informe completo en [`evidence/LEX-2.1.md`](evidence/LEX-2.1.md).
+
+Primera migración con tablas: `profiles`, `languages`, `courses`,
+`course_settings`. Estructura, claves, CHECK, enums (`ui_locale`, `cefr_level`),
+timestamps con trigger de `updated_at`, y un trigger `BEFORE` que exige que
+`profiles.timezone` sea un nombre real de `pg_timezone_names`. RLS habilitado en
+las cuatro tablas, sin políticas todavía (deniega todo).
+
+**Deliberadamente fuera:** políticas RLS y tests de aislamiento dueño/no-dueño →
+LEX-2.3; creación del perfil → LEX-2.4; semillas → LEX-2.2.
+
+**Decisiones:** `languages.locale` NOT NULL (un idioma base guarda `locale =
+code`), lo que evita depender de `NULLS NOT DISTINCT` y hace difícil mezclar
+idioma y variante. FK compuesta `course_settings(course_id, user_id)` →
+`courses(id, owner_id)`: una fila de settings para quien no es el dueño del curso
+no se puede insertar.
+
+```text
+pnpm db:reset   migración aplicada desde vacío (x3), sin pasos manuales
+pnpm db:test    000 ok · 010 ok · 020 ok — All tests successful, 33 tests
+pnpm db:types   database.types.ts regenerado (enums incluidos), mismo commit
+pnpm check      exit 0
+```
+
+Funciones trigger sin `search_path` mutable y sin `SECURITY DEFINER` (gate §12.3).
+
+**Falta para `HECHO`:** push de la rama, PR, CI verde, merge a `main`.
 
 ### LEX-1.14 — Verificar clon limpio y cerrar M1 — `HECHO`
 
@@ -94,10 +124,16 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea de FASE 0 ni FASE 1 queda abierta.
+**LEX-2.1** está `EN PROCESO`. La migración, sus tests pgTAP, los tipos
+regenerados y `DATA_MODEL.md` están hechos y committeados en la rama
+`feat/lex-2-1-identity-course-schema`; falta el cierre formal:
 
-La siguiente fase es **FASE 2 — Identidad, onboarding y curso** (`PENDIENTE`,
-0/11). Su primera tarea es LEX-2.1.
+1. `git push -u origin feat/lex-2-1-identity-course-schema` + PR con el ID en el título.
+2. CI verde sobre la rama (los tres trabajos, incluido el de base de datos).
+3. Merge a `main`.
+4. Marcar LEX-2.1 `HECHO` en el roadmap y actualizar este archivo.
+
+Después: **LEX-2.2** (semillas de idiomas y curso de referencia).
 
 ---
 
@@ -105,12 +141,15 @@ La siguiente fase es **FASE 2 — Identidad, onboarding y curso** (`PENDIENTE`,
 
 | Archivo | Cambio |
 |---|---|
-| `docs/evidence/LEX-1.14.md` | Creado. Informe de la verificación del clon limpio. |
-| `README.md` | Añadida sección «Puesta en marcha local»; corregida la nota de estado. |
-| `docs/STATUS.md` | Reescrito: instantánea de M1 cerrado, sin narrativa de FASE 0. |
+| `supabase/migrations/20260828143434_identity_and_course.sql` | Creado. `profiles`, `languages`, `courses`, `course_settings`; enums `ui_locale`, `cefr_level`; triggers de `updated_at` y de zona horaria IANA; RLS habilitado. |
+| `supabase/tests/database/020-identity-course-schema.sql` | Creado. 31 asserciones pgTAP de estructura y CHECK. |
+| `src/shared/infrastructure/supabase/database.types.ts` | Regenerado desde el esquema. |
+| `docs/DATA_MODEL.md` | Añadido el esquema exacto de las cuatro tablas. |
+| `docs/evidence/LEX-2.1.md` | Creado. |
+| `docs/evidence/LEX-1.14.md`, `README.md` | LEX-1.14 (cerrada antes en esta sesión). |
 
-Migraciones SQL: ninguna. Todavía no existe base de datos con tablas; `db:reset`
-aplica cero migraciones y una semilla vacía.
+Migraciones SQL: **1** (`20260828143434_identity_and_course`). No añade semillas;
+`db:reset` la aplica desde vacío sin pasos manuales.
 
 ---
 
@@ -126,18 +165,14 @@ aplica cero migraciones y una semilla vacía.
 | Docker | Desktop 4.88.1, motor 29.7.2 |
 | CLI de Supabase | 2.116.0, dependencia de desarrollo del proyecto |
 
-### Puertas de calidad — clon limpio, 2026-08-28
+### Puertas de calidad — 2026-08-28
 
 ```text
-pnpm check   exit 0
-  prettier --check .            All matched files use Prettier code style!
-  eslint                        sin hallazgos
-  next typegen && tsc --noEmit  ✓ Types generated successfully
-  check-contrast.mjs            18/18 combinaciones
-  vitest run                    3 archivos, 17 tests
-  next build                    ✓ Compiled successfully  (/es, /en, ƒ /api/health)
-pnpm e2e     14 passed  (escritorio-chromium + movil-poco-f5)
-pnpm db:test PASS  (pgTAP, Files=2 Tests=2)
+LEX-1.14 (clon limpio):  pnpm check exit 0 · pnpm e2e 14/14 · pnpm db:test PASS
+LEX-2.1  (rama):          pnpm check exit 0
+  pnpm db:reset   migración aplicada desde vacío (x3), sin pasos manuales
+  pnpm db:test    000 ok · 010 ok · 020 ok — All tests successful, 33 tests
+  pnpm db:types   database.types.ts regenerado, mismo commit que la migración
 ```
 
 ### CI
@@ -145,9 +180,12 @@ pnpm db:test PASS  (pgTAP, Files=2 Tests=2)
 ```text
 run 33103009623   CI   main                     push          success   2m39s   commit 451d668
 run 33170219084   CI   docs/lex-1-14-clean-…    pull_request  success   2m45s   PR #3
+run 33170582552   CI   docs/lex-1-14-clean-…    pull_request  success   2m45s   PR #3 (2º commit)
+run 33170766238   CI   main                     push          success           merge de PR #3
 ```
 
-Ambas con los tres trabajos (Calidad, Base de datos, Extremo a extremo) en verde.
+Todas con los tres trabajos (Calidad, Base de datos, Extremo a extremo) en verde.
+La CI de la rama de LEX-2.1 está pendiente.
 
 ---
 
@@ -155,10 +193,11 @@ Ambas con los tres trabajos (Calidad, Base de datos, Extremo a extremo) en verde
 
 Corresponden a Joan:
 
-1. Mantener una copia de seguridad de `docs/no_visible_en_github/` fuera del
+1. **Revisar el PR de LEX-2.1** (migración del primer esquema) antes de fusionar:
+   gate §12.3, y revisión cruzada del modelo de datos si hay otro agente
+   disponible (§3.6).
+2. Mantener una copia de seguridad de `docs/no_visible_en_github/` fuera del
    proyecto: Git no protege esos archivos.
-2. Antes de FASE 2, revisar el gate de migraciones y RLS (roadmap §12.3): LEX-2.1
-   crea el primer esquema real.
 
 ---
 
@@ -171,7 +210,7 @@ Corresponden a Joan:
 | Q-003 | Herramientas de desarrollo | `RESUELTA` |
 | Q-004 | Primer push al remoto público | `RESUELTA` |
 
-Ninguna abierta. FASE 2 puede empezar sin bloqueos.
+Ninguna abierta.
 
 ---
 
@@ -199,14 +238,13 @@ Ninguna abierta. FASE 2 puede empezar sin bloqueos.
 
 ## Siguiente acción exacta
 
-Empezar **FASE 2** por **LEX-2.1** — diseñar la migración de `profiles`,
-`languages`, `courses` y `course_settings`: UUID, claves foráneas, checks,
-timestamps, timezone IANA, locales y rangos de configuración, con
-`DATA_MODEL.md` actualizado.
+**Cerrar LEX-2.1.** `git push -u origin feat/lex-2-1-identity-course-schema`,
+abrir el PR (ID en el título), esperar CI verde (los tres trabajos), fusionar a
+`main`. Entonces marcar LEX-2.1 `HECHO` en el roadmap y actualizar este archivo.
 
-Es la primera tarea que crea esquema. Aplica el gate de migraciones, PostgreSQL
-y RLS (roadmap §12.3) además del general. Revisión cruzada recomendada
-(roadmap §3.6): modelo de datos y migraciones principales.
+Después: **LEX-2.2** — semillas de `languages` (`es`, `en`, `en-GB`) y curso de
+referencia, idempotentes, sin datos personales; y **LEX-2.3** — políticas RLS y
+tests de aislamiento dueño / no-dueño sobre las cuatro tablas de LEX-2.1.
 
 ---
 
@@ -227,10 +265,10 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main`, sincronizada con `origin/main`.
-- Remoto: `origin` → `https://github.com/JoanOliver04/lexora.git` (**público**).
+- Rama por defecto: `main` en `f1c27ac`, sincronizada con `origin/main`.
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
-- LEX-1.14 se fusionó vía PR #3 (`docs/lex-1-14-clean-clone-m1`). Rama borrada
-  tras el merge.
+- LEX-1.14 se fusionó vía PR #3 (`docs/lex-1-14-clean-clone-m1`), rama borrada.
+- **Rama de trabajo actual:** `feat/lex-2-1-identity-course-schema`, a partir de
+  `main`, con la migración de LEX-2.1. Sin empujar.
 - Contenido versionado: aplicación Next.js completa, `supabase/` (config, seed,
-  tests), CI, documentación en `docs/` y ADR.
+  tests, **migrations**), CI, documentación en `docs/` y ADR.
