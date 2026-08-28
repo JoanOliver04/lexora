@@ -67,6 +67,74 @@ Cuatro conceptos de idioma se mantienen separados a propósito: idioma de la
 interfaz, idioma de apoyo, idioma estudiado y variante regional del contenido.
 Mezclarlos es la vía rápida a un modelo que no admite un segundo par de idiomas.
 
+#### Esquema exacto (migración `20260828143434_identity_and_course`, LEX-2.1)
+
+Estados cerrados como enums de PostgreSQL: `ui_locale` (`es`, `en`) y
+`cefr_level` (`A1`, `A2`, `B1`, `B2`).
+
+**`profiles`** — extensión uno a uno de `auth.users`.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | `uuid` PK | `= auth.users(id)`, `on delete cascade` |
+| `display_name` | `text` NULL | CHECK: nulo, o 1–80 caracteres tras recortar |
+| `ui_locale` | `ui_locale` NOT NULL | por defecto `es` |
+| `timezone` | `text` NOT NULL | por defecto `Europe/Madrid`; un trigger `BEFORE` exige que sea un nombre real de `pg_timezone_names` |
+| `onboarding_completed_at` | `timestamptz` NULL | lo fija el onboarding (LEX-2.7/2.8) |
+| `created_at`, `updated_at` | `timestamptz` NOT NULL | `updated_at` lo mantiene un trigger |
+
+**`languages`** — catálogo de referencia. Semillas en LEX-2.2.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | `uuid` PK | `gen_random_uuid()` |
+| `code` | `text` NOT NULL | ISO base, CHECK `^[a-z]{2,3}$` |
+| `locale` | `text` NOT NULL | etiqueta completa: un idioma base guarda `locale = code` (`es`/`es`); una variante guarda `en`/`en-GB`. CHECK: `locale = code` **o** `locale LIKE code || '-%'` |
+| `name_key` | `text` NOT NULL | clave de traducción de interfaz, no vacía |
+| `active` | `boolean` NOT NULL | por defecto `true` |
+| `created_at`, `updated_at` | `timestamptz` NOT NULL | |
+| | | UNIQUE `(code, locale)` |
+
+`locale` es NOT NULL a propósito: mantiene `(code, locale)` como clave única
+simple y hace estructuralmente difícil confundir «idioma» y «variante regional».
+
+**`courses`** — un par origen→destino de un solo dueño.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | `uuid` PK | |
+| `owner_id` | `uuid` NOT NULL | → `profiles(id)` `on delete cascade`; índice |
+| `title` | `text` NOT NULL | CHECK 1–120 caracteres tras recortar |
+| `source_language_id` | `uuid` NOT NULL | → `languages(id)` |
+| `target_language_id` | `uuid` NOT NULL | → `languages(id)`; CHECK distinto de `source` |
+| `target_locale` | `text` NOT NULL | por defecto `en-GB` |
+| `declared_level` | `cefr_level` NULL | nivel académico declarado; no bloquea contenido |
+| `start_level` | `cefr_level` NULL | nivel por el que se empieza dentro de la app |
+| `active` | `boolean` NOT NULL | por defecto `true` |
+| `created_at`, `updated_at` | `timestamptz` NOT NULL | |
+| | | UNIQUE `(id, owner_id)` — destino de la FK compuesta de `course_settings` |
+
+**`course_settings`** — una fila por curso.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `course_id` | `uuid` PK | |
+| `user_id` | `uuid` NOT NULL | denormalizado; **siempre** `= courses.owner_id` |
+| `daily_new_limit` | `integer` NOT NULL | por defecto 5; CHECK 0–100 |
+| `maximum_reviews_per_day` | `integer` NULL | NULL = sin límite; CHECK 0–2000 |
+| `requested_retention` | `numeric(3,2)` NULL | CHECK 0.70–0.97 (rango de FSRS) |
+| `show_interval_preview` | `boolean` NOT NULL | por defecto `true` |
+| `scheduler_config_version` | `integer` NOT NULL | por defecto 1; lo refina la fase 5 |
+| `created_at`, `updated_at` | `timestamptz` NOT NULL | |
+| | | FK compuesta `(course_id, user_id)` → `courses(id, owner_id)` `on delete cascade` |
+
+La FK compuesta convierte «`user_id` es el dueño del curso» en una garantía
+estructural: no se puede insertar una fila de settings para otro usuario.
+
+**RLS:** habilitado en las cuatro tablas por esta migración, sin políticas
+todavía (deniega todo). Las políticas explícitas por operación y los tests de
+aislamiento dueño / no-dueño son **LEX-2.3**.
+
 ### Biblioteca
 
 | Tabla | Papel |
@@ -128,7 +196,7 @@ No se crean tablas vacías por anticipación.
 
 | Fase | Tablas |
 |---|---|
-| 2 | `profiles`, `languages`, `courses`, `course_settings` |
+| 2 | `profiles`, `languages`, `courses`, `course_settings` — creadas en LEX-2.1 |
 | 3 | `decks`, `concepts`, `deck_concepts`, `practice_items`, `tags`, `concept_tags` |
 | 4 | `import_jobs`, `import_job_errors` |
 | 5 | `learning_states`, `study_sessions`, `review_logs` |

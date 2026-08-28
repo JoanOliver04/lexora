@@ -34,7 +34,174 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      course_settings: {
+        Row: {
+          course_id: string
+          created_at: string
+          daily_new_limit: number
+          maximum_reviews_per_day: number | null
+          requested_retention: number | null
+          scheduler_config_version: number
+          show_interval_preview: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          daily_new_limit?: number
+          maximum_reviews_per_day?: number | null
+          requested_retention?: number | null
+          scheduler_config_version?: number
+          show_interval_preview?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          daily_new_limit?: number
+          maximum_reviews_per_day?: number | null
+          requested_retention?: number | null
+          scheduler_config_version?: number
+          show_interval_preview?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_settings_course_owner_fk"
+            columns: ["course_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          active: boolean
+          created_at: string
+          declared_level: Database["public"]["Enums"]["cefr_level"] | null
+          id: string
+          owner_id: string
+          source_language_id: string
+          start_level: Database["public"]["Enums"]["cefr_level"] | null
+          target_language_id: string
+          target_locale: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          declared_level?: Database["public"]["Enums"]["cefr_level"] | null
+          id?: string
+          owner_id: string
+          source_language_id: string
+          start_level?: Database["public"]["Enums"]["cefr_level"] | null
+          target_language_id: string
+          target_locale?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          declared_level?: Database["public"]["Enums"]["cefr_level"] | null
+          id?: string
+          owner_id?: string
+          source_language_id?: string
+          start_level?: Database["public"]["Enums"]["cefr_level"] | null
+          target_language_id?: string
+          target_locale?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courses_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courses_source_language_id_fkey"
+            columns: ["source_language_id"]
+            isOneToOne: false
+            referencedRelation: "languages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courses_target_language_id_fkey"
+            columns: ["target_language_id"]
+            isOneToOne: false
+            referencedRelation: "languages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      languages: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          id: string
+          locale: string
+          name_key: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          id?: string
+          locale: string
+          name_key: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+          locale?: string
+          name_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          onboarding_completed_at: string | null
+          timezone: string
+          ui_locale: Database["public"]["Enums"]["ui_locale"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          onboarding_completed_at?: string | null
+          timezone?: string
+          ui_locale?: Database["public"]["Enums"]["ui_locale"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          onboarding_completed_at?: string | null
+          timezone?: string
+          ui_locale?: Database["public"]["Enums"]["ui_locale"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -43,7 +210,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      cefr_level: "A1" | "A2" | "B1" | "B2"
+      ui_locale: "es" | "en"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -173,7 +341,10 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      cefr_level: ["A1", "A2", "B1", "B2"],
+      ui_locale: ["es", "en"],
+    },
   },
 } as const
 
