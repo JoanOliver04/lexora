@@ -1,7 +1,7 @@
 # LEX-2.1 — Migración de `profiles`, `languages`, `courses`, `course_settings`
 
 **Fecha:** 2026-08-28
-**Rama:** `feat/lex-2-1-identity-course-schema`
+**Rama:** `feat/lex-2-1-identity-course-schema` — PR [#4](https://github.com/JoanOliver04/lexora/pull/4)
 **Estado resultante:** `HECHO`
 
 ---
@@ -171,8 +171,8 @@ Migraciones añadidas: **1**.
 
 ## 7. Estado del árbol Git
 
-Rama `feat/lex-2-1-identity-course-schema` a partir de `main` (`f1c27ac`).
-Pendiente de push, PR y CI verde.
+Fusionada a `main` vía PR #4. CI verde sobre la rama (run `33182207944`) y sobre
+`main` tras el merge (run `33182455688`), los tres trabajos. Rama borrada.
 
 ## 8. Siguiente tarea
 
