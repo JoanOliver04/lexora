@@ -8,8 +8,9 @@ Su idea central es que **reconocer una palabra no es lo mismo que poder producir
 cada concepto se descompone en competencias distintas, y cada competencia tiene su
 propio estado de memoria.
 
-> ⚠️ **Estado: en desarrollo temprano.** Fase 0 de 10. Todavía no hay aplicación
-> ejecutable ni demo pública. Este repositorio se irá construyendo por hitos
+> ⚠️ **Estado: en desarrollo temprano.** Fase 1 de 10 (fundación técnica). La
+> aplicación ya se instala, se compila y arranca en local, pero todavía no tiene
+> funciones de producto ni demo pública. Este repositorio se construye por hitos
 > pequeños y verificables.
 
 ## Modelo conceptual
@@ -45,6 +46,32 @@ instalable · interfaz en español e inglés.
 **No incluye:** IA generativa o correctora, evaluación automática de pronunciación,
 generación de audio, funcionamiento completo sin conexión, aplicaciones nativas,
 compartir mazos ni funciones sociales. Llegarán, si llegan, después de cerrar la V1.
+
+## Puesta en marcha local
+
+Requisitos: **Node 24** (la versión exacta está en `.nvmrc`; con `nvm` basta
+`nvm use`), **pnpm 11** (`corepack enable pnpm`) y **Docker** en marcha, que es lo
+que necesita la base de datos local de Supabase.
+
+```bash
+pnpm install --frozen-lockfile   # dependencias exactas del lockfile
+pnpm db:start                     # levanta Supabase local; imprime URL y clave publishable
+cp .env.example .env.local        # y pega en .env.local los dos valores que imprimió db:start
+pnpm db:reset                     # aplica migraciones y semillas desde una base limpia
+```
+
+A partir de ahí:
+
+| Comando | Qué hace |
+|---|---|
+| `pnpm dev` | Servidor de desarrollo en `http://localhost:3000`. |
+| `pnpm check` | Todas las puertas de calidad en cadena: formato, lint, tipos, contraste, tests y build. |
+| `pnpm e2e` | Pruebas de extremo a extremo (Playwright) contra el build de producción. |
+| `pnpm db:test` | Pruebas de esquema y RLS (pgTAP). |
+| `pnpm db:stop` | Detiene la base de datos local. |
+
+El detalle de ramas, commits, versiones fijadas, migraciones y entornos está en
+[`docs/WORKFLOW.md`](docs/WORKFLOW.md).
 
 ## Documentación
 
