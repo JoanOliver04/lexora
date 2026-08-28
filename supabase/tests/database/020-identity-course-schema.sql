@@ -5,6 +5,10 @@
 -- guardián de zona horaria. El aislamiento entre usuarios (dueño / no dueño)
 -- es LEX-2.3 y no se prueba aquí.
 --
+-- **Independiente del seed.** Crea sus propios idiomas sintéticos (`zz`) en vez
+-- de apoyarse en las filas que siembra `seed.sql` (`es`, `en`, `en-GB`): un
+-- test no debe romperse porque cambie el contenido del seed.
+--
 -- El estilo sigue a 000-setup.sql y 010-rls-enabled.sql: un fichero por
 -- área, `begin`/`rollback`, y cada CHECK se prueba rechazando un valor
 -- inválido además de aceptar uno válido — un guardián que nunca ha dicho que
@@ -94,29 +98,32 @@ select is(
 );
 
 -- --- languages: base o variante, nunca una mezcla -------------------------
+--
+-- Idiomas sintéticos `zz`, para no chocar con el seed. `zz` es un código
+-- reservado a uso privado en ISO 639, así que nunca colisionará con datos reales.
 
 select lives_ok(
   $$ insert into public.languages (code, locale, name_key)
-     values ('en', 'en-GB', 'language.en_gb') $$,
-  'languages acepta una variante regional bien formada (en / en-GB)'
+     values ('zz', 'zz', 'language.zz') $$,
+  'languages acepta un idioma base (locale = code)'
 );
 
 select lives_ok(
   $$ insert into public.languages (code, locale, name_key)
-     values ('es', 'es', 'language.es') $$,
-  'languages acepta un idioma base (locale = code)'
+     values ('zz', 'zz-ZZ', 'language.zz_zz') $$,
+  'languages acepta una variante regional bien formada (zz / zz-ZZ)'
 );
 
 select throws_like(
   $$ insert into public.languages (code, locale, name_key)
-     values ('en', 'fr-FR', 'language.broken') $$,
+     values ('zz', 'yy-YY', 'language.broken') $$,
   '%languages_locale_base_or_variant%',
   'languages rechaza una variante cuyo prefijo no es su code'
 );
 
 select throws_like(
   $$ insert into public.languages (code, locale, name_key)
-     values ('en', 'en-GB', 'language.dup') $$,
+     values ('zz', 'zz-ZZ', 'language.dup') $$,
   '%languages_code_locale_unique%',
   'languages rechaza (code, locale) duplicado'
 );
@@ -127,7 +134,7 @@ select throws_like(
   $$ insert into public.courses (owner_id, title, source_language_id, target_language_id)
      select '00000000-0000-0000-0000-000000000001', 'Roto',
             l.id, l.id
-       from public.languages l where l.locale = 'es' $$,
+       from public.languages l where l.code = 'zz' and l.locale = 'zz' $$,
   '%courses_source_target_distinct%',
   'courses rechaza el mismo idioma como origen y destino'
 );
@@ -137,7 +144,7 @@ select throws_like(
      select '00000000-0000-0000-0000-000000000001', '   ',
             s.id, t.id
        from public.languages s, public.languages t
-      where s.locale = 'es' and t.locale = 'en-GB' $$,
+      where s.locale = 'zz' and t.locale = 'zz-ZZ' $$,
   '%courses_title_length%',
   'courses rechaza un título en blanco'
 );
@@ -149,7 +156,7 @@ select '00000000-0000-0000-0000-0000000000c1',
        'Inglés A1–B2',
        s.id, t.id
   from public.languages s, public.languages t
- where s.locale = 'es' and t.locale = 'en-GB';
+ where s.locale = 'zz' and t.locale = 'zz-ZZ';
 
 -- --- course_settings: rangos y dueño ------------------------------------
 
@@ -190,7 +197,7 @@ select '00000000-0000-0000-0000-0000000000c2',
        'Segundo curso',
        s.id, t.id
   from public.languages s, public.languages t
- where s.locale = 'es' and t.locale = 'en-GB';
+ where s.locale = 'zz' and t.locale = 'zz-ZZ';
 
 select throws_ok(
   $$ insert into public.course_settings (course_id, user_id)

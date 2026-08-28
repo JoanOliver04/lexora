@@ -98,6 +98,11 @@ Estados cerrados como enums de PostgreSQL: `ui_locale` (`es`, `en`) y
 `locale` es NOT NULL a propósito: mantiene `(code, locale)` como clave única
 simple y hace estructuralmente difícil confundir «idioma» y «variante regional».
 
+_Semillas (LEX-2.2, `supabase/seed.sql`):_ tres filas con UUID fijos —
+`es`/`es`, `en`/`en`, `en`/`en-GB` — insertadas con `on conflict (code, locale)
+do nothing`. El seed solo se aplica en local y en CI, nunca en preview ni
+producción. El idioma de **interfaz** no vive aquí: es `profiles.ui_locale`.
+
 **`courses`** — un par origen→destino de un solo dueño.
 
 | Columna | Tipo | Notas |
@@ -113,6 +118,12 @@ simple y hace estructuralmente difícil confundir «idioma» y «variante region
 | `active` | `boolean` NOT NULL | por defecto `true` |
 | `created_at`, `updated_at` | `timestamptz` NOT NULL | |
 | | | UNIQUE `(id, owner_id)` — destino de la FK compuesta de `course_settings` |
+
+_Curso de referencia (LEX-2.2):_ no hay fila sembrada en `courses` — un curso
+tiene `owner_id NOT NULL` y lo crea el onboarding por usuario (LEX-2.7). El
+«curso de referencia» es esta definición, fuente única para onboarding y demo:
+`source` = fila `es`/`es`, `target` = fila `en`/`en`, `target_locale` = `en-GB`,
+`start_level` recomendado `A1`, `daily_new_limit` 5.
 
 **`course_settings`** — una fila por curso.
 
