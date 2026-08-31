@@ -158,7 +158,9 @@ Migraciones: **1** (`20260831215553_active_course`).
 
 ## 9. Estado del árbol Git
 
-Rama `feat/lex-2-9-app-shell` desde `main`. Pendiente de commit, PR y CI.
+Rama `feat/lex-2-9-app-shell` desde `main` (`a6fc6c8`). PR #16 fusionada a
+`main` (merge `a444755`); CI verde en los tres trabajos, runs `33445445077`
+(PR) y `33445695615` (merge). Rama borrada.
 
 ## 10. Siguiente tarea
 

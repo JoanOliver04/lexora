@@ -5,7 +5,7 @@
 **Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
 **Tarea activa:** ninguna
 **Estado de la tarea:** LEX-2.1…2.9 `HECHO` · siguiente LEX-2.10
-**Rama / commit base / HEAD:** rama `feat/lex-2-9-app-shell` desde `main` (`a6fc6c8`); LEX-2.8 ya en `main` (PR #14, `ce72ff9`; cierre docs PR #15, `a6fc6c8`)
+**Rama / commit base / HEAD:** `main` en `a444755` (PR #16, LEX-2.9). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -463,8 +463,7 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 2 en 9/11. LEX-2.1…2.8 en `main` (`a6fc6c8`);
-LEX-2.9 en rama `feat/lex-2-9-app-shell`, pendiente de commit/PR/CI.
+Ninguna tarea `EN PROCESO`. FASE 2 en 9/11. LEX-2.1…2.9 en `main` (`a444755`).
 
 Siguiente: **LEX-2.10** — completar manejo de estados y accesibilidad de
 identidad. Depende de LEX-2.5…2.9.
@@ -566,7 +565,7 @@ añaden migración.
 | Docker | Desktop 4.88.1, motor 29.7.2 |
 | CLI de Supabase | 2.116.0, dependencia de desarrollo del proyecto |
 
-### Puertas de calidad — LEX-2.9 (2026-09-01, rama `feat/lex-2-9-app-shell`)
+### Puertas de calidad — LEX-2.9 (2026-09-01, PR #16, ya en `main`)
 
 ```text
 pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 12 ficheros/79, build)
@@ -602,14 +601,15 @@ nuevos aplicados.
 ### CI
 
 ```text
+run 33445695615   CI   main   push          success   merge de PR #16 (LEX-2.9)
+run 33445445077   CI   feat/lex-2-9-…       pull_request   success   PR #16 (LEX-2.9)
 run 33443403540   CI   main   push          success   merge de PR #15 (cierre docs LEX-2.8)
 run 33442806409   CI   main   push          success   merge de PR #14 (LEX-2.8)
 run 33442548467   CI   feat/lex-2-8-…       pull_request   success   PR #14 (LEX-2.8)
 run 33440461002   CI   main   push          success   merge de PR #13 (LEX-2.7)
-run 33440193476   CI   feat/lex-2-7-…       pull_request   success   PR #13 (LEX-2.7)
 ```
 
-LEX-2.1…2.8 en `main` (`ce72ff9`), CI verde en el PR y en el merge de cada tarea.
+LEX-2.1…2.9 en `main` (`a444755`), CI verde en el PR y en el merge de cada tarea.
 
 ---
 
@@ -689,12 +689,10 @@ Ninguna abierta.
 
 ## Siguiente acción exacta
 
-1. Commit de LEX-2.9 en `feat/lex-2-9-app-shell`, abrir PR, esperar CI verde
-   (tres trabajos), fusionar.
-2. Empezar **LEX-2.10** — completar manejo de estados y accesibilidad de
-   identidad: loading/empty/error/success, foco y anuncios, traducciones
-   completas, formularios sin errores críticos de accesibilidad. Depende de
-   LEX-2.5…2.9. No iniciarla antes de cerrar el punto 1.
+Empezar **LEX-2.10** — completar manejo de estados y accesibilidad de identidad:
+loading/empty/error/success, foco y anuncios, traducciones completas,
+formularios sin errores críticos de accesibilidad. Depende de LEX-2.5…2.9
+(`HECHO`). Rama `feat/lex-2-10-…` desde `main` (`a444755`).
 
 Decisiones vivas: `force row level security` **no** activado (LEX-2.3); creación
 de perfil = caso de uso, **no** trigger (ADR-005); errores de autenticación con
@@ -725,13 +723,12 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main` en `a6fc6c8` (PR #14 LEX-2.8 + PR #15 cierre docs).
+- Rama por defecto: `main` en `a444755` (PR #16, LEX-2.9).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
-- Rama de trabajo actual: `feat/lex-2-9-app-shell` desde `a6fc6c8`. LEX-2.9
-  implementado; pendiente de commit, PR y CI.
+- Sin rama de trabajo activa.
 - LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs);
   LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10; LEX-2.5 → PR #11;
-  LEX-2.6 → PR #12; LEX-2.7 → PR #13; LEX-2.8 → PR #14 (+ #15 cierre docs).
+  LEX-2.6 → PR #12; LEX-2.7 → PR #13; LEX-2.8 → PR #14 (+ #15 cierre docs); LEX-2.9 → PR #16.
   Ramas borradas.
 - Contenido versionado: aplicación Next.js completa (módulos `identity` y
   `courses`), `supabase/` (config, seed, tests, **migrations** — cuatro:
