@@ -207,7 +207,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      complete_onboarding: {
+        Args: {
+          p_daily_new_limit: number
+          p_declared_level: Database["public"]["Enums"]["cefr_level"]
+          p_start_level: Database["public"]["Enums"]["cefr_level"]
+          p_ui_locale: Database["public"]["Enums"]["ui_locale"]
+        }
+        Returns: string
+      }
     }
     Enums: {
       cefr_level: "A1" | "A2" | "B1" | "B2"

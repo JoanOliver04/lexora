@@ -169,6 +169,22 @@ activa: ningún cliente se conecta como propietario de la tabla (LEX-1.8). Tests
 de aislamiento dueño / no-dueño / anon / service_role en
 `supabase/tests/database/040-identity-course-rls.sql`.
 
+**Funciones (migración `20260831204649_onboarding_rpc`, LEX-2.7):**
+
+| Función | Papel |
+|---|---|
+| `public.complete_onboarding(ui_locale, cefr_level, cefr_level, integer) → uuid` | Operación atómica e idempotente del onboarding (ADR-002: las operaciones complejas van en una función SQL probada). Resuelve el par de idiomas del catálogo por `(code, locale)`; busca el curso más antiguo del `owner_id` y lo actualiza (`active = true`), o inserta uno con `title` en el idioma de interfaz; upsert de `course_settings`; fija `profiles.ui_locale` y `onboarding_completed_at` (esta última una sola vez). Devuelve el id del curso. |
+
+`complete_onboarding` es **SECURITY INVOKER** con `search_path` fijado: corre
+bajo la identidad de quien llama, así que cada escritura pasa las políticas RLS
+de arriba; no puede tocar filas de otro usuario. `p_daily_new_limit` fuera de
+`0..100` lo rechaza el CHECK de `course_settings`. Permisos: `revoke execute …
+from public, anon` + `grant … to authenticated` — Supabase concede EXECUTE
+sobre toda función nueva de `public` a `anon`/`authenticated`/`service_role` por
+privilegios por defecto, de modo que `revoke from public` a secas dejaría a
+`anon` pudiendo ejecutarla. Cobertura: `supabase/tests/database/060-onboarding-rpc.sql`
+(dueño, no-dueño, anon, idempotencia con valores distintos).
+
 ### Biblioteca
 
 | Tabla | Papel |

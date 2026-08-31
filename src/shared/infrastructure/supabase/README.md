@@ -58,3 +58,24 @@ alineación a partir de LEX-1.12.
 
 Está excluido de Prettier y de ESLint: formatear un fichero generado produce un
 diff en cada regeneración y no aporta nada.
+
+## Funciones nuevas: `revoke execute` de `public` **y** de `anon`
+
+Cada función SQL nueva en `public` nace ejecutable por todo el mundo por dos
+vías: el `EXECUTE` a `PUBLIC` de PostgreSQL, y —además— unos privilegios por
+defecto que Supabase deja puestos para conceder `EXECUTE` sobre toda función
+nueva de `public` a `anon`, `authenticated` y `service_role`. Por eso un
+`revoke execute on function … from public` **no basta**: `anon` conserva el
+permiso por la segunda vía y puede llamar a la función sin sesión.
+
+El patrón correcto para una función que exige sesión (LEX-2.7,
+`complete_onboarding`):
+
+```sql
+revoke execute on function public.mi_funcion(...) from public, anon;
+grant  execute on function public.mi_funcion(...) to authenticated;
+```
+
+Se probó por rotura: `060-onboarding-rpc.sql` cazó el hueco en la primera
+pasada (`anon` entraba en la función y fallaba dentro, `28000`, en vez de que
+la denegara el privilegio, `42501`).
