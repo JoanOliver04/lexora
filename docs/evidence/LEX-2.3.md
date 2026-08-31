@@ -173,10 +173,11 @@ Migraciones añadidas: **1** (`20260831162304_identity_and_course_rls`).
 
 ## 8. Estado del árbol Git
 
-Rama `feat/lex-2-3-rls-policies` (`afd2d60`) desde `main` (`462e016`).
-PR [#8](https://github.com/JoanOliver04/lexora/pull/8). CI verde, run
-`33416229043` (`pull_request`): Calidad 40 s, Base de datos 2 m 17 s, Extremo a
-extremo 2 m 16 s. Merge pendiente por Joan.
+Rama `feat/lex-2-3-rls-policies` desde `main` (`462e016`),
+PR [#8](https://github.com/JoanOliver04/lexora/pull/8), fusionada a `main`
+(merge `ec9223d`). CI verde: run `33416229043` (`pull_request`) y `33422803840`
+(`push` sobre `main` tras el merge), tres trabajos cada una. Rama borrada.
+Cierre documental en la rama `docs/lex-2-3-close`.
 
 ## 9. Siguiente tarea
 
