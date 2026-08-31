@@ -13,8 +13,8 @@
     "repository": "View the code on GitHub"
   },
   "App": {
-    "title": "Your space",
-    "placeholder": "Your study day will live here. We're still building it."
+    "courseLabel": "Your course",
+    "placeholder": "Your study day will live here: reviews, new items and the button to start the session. We're still building it."
   },
   "Onboarding": {
     "title": "Set up your course",

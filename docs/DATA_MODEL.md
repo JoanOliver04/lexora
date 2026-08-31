@@ -85,7 +85,21 @@ Estados cerrados como enums de PostgreSQL: `ui_locale` (`es`, `en`) y
 | `ui_locale` | `ui_locale` NOT NULL | por defecto `es` |
 | `timezone` | `text` NOT NULL | por defecto `Europe/Madrid`; un trigger `BEFORE` exige que sea un nombre real de `pg_timezone_names` |
 | `onboarding_completed_at` | `timestamptz` NULL | lo fija el onboarding (LEX-2.7/2.8) |
+| `active_course_id` | `uuid` NULL | curso que la interfaz prioriza (LEX-2.9). NULL = usar el más antiguo. |
 | `created_at`, `updated_at` | `timestamptz` NOT NULL | `updated_at` lo mantiene un trigger |
+
+_Curso activo (migración `20260831215553_active_course`, LEX-2.9):_
+`active_course_id` lleva una **FK compuesta** `(active_course_id, id) →
+courses (id, owner_id)` con `on delete set null (active_course_id)`. La
+columna `id` en la FK ata el curso activo al propio usuario igual que
+`course_settings(course_id, user_id)` ata la configuración al dueño: un
+`update` que apunte al curso de otro falla con `23503`, no «devuelve vacío al
+leer». **La lista de columnas en `set null` es obligatoria**: sin ella,
+`on delete set null` pondría a NULL también `id` —la PK— y el borrado del
+curso fallaría (sintaxis de PostgreSQL 15+). Lo fija el onboarding
+(`complete_onboarding`, vía `coalesce`) y, más adelante, un selector. Las
+políticas RLS de `profiles` (LEX-2.3) ya cubren la columna; no hay política
+nueva. Aislamiento probado en `supabase/tests/database/070-active-course.sql`.
 
 _Creación de la fila (LEX-2.4):_ la asegura un **caso de uso de la capa de
 aplicación** (`ensureProfile`) a la entrada del área autenticada, bajo la
@@ -173,7 +187,7 @@ de aislamiento dueño / no-dueño / anon / service_role en
 
 | Función | Papel |
 |---|---|
-| `public.complete_onboarding(ui_locale, cefr_level, cefr_level, integer) → uuid` | Operación atómica e idempotente del onboarding (ADR-002: las operaciones complejas van en una función SQL probada). Resuelve el par de idiomas del catálogo por `(code, locale)`; busca el curso más antiguo del `owner_id` y lo actualiza (`active = true`), o inserta uno con `title` en el idioma de interfaz; upsert de `course_settings`; fija `profiles.ui_locale` y `onboarding_completed_at` (esta última una sola vez). Devuelve el id del curso. |
+| `public.complete_onboarding(ui_locale, cefr_level, cefr_level, integer) → uuid` | Operación atómica e idempotente del onboarding (ADR-002: las operaciones complejas van en una función SQL probada). Resuelve el par de idiomas del catálogo por `(code, locale)`; busca el curso más antiguo del `owner_id` y lo actualiza (`active = true`), o inserta uno con `title` en el idioma de interfaz; upsert de `course_settings`; fija `profiles.ui_locale`, `onboarding_completed_at` (una sola vez) y `active_course_id` (vía `coalesce`, LEX-2.9). Devuelve el id del curso. |
 
 `complete_onboarding` es **SECURITY INVOKER** con `search_path` fijado: corre
 bajo la identidad de quien llama, así que cada escritura pasa las políticas RLS

@@ -13,8 +13,8 @@
     "repository": "Ver el código en GitHub"
   },
   "App": {
-    "title": "Área privada",
-    "placeholder": "Aquí irá tu día de estudio. Todavía lo estamos construyendo."
+    "courseLabel": "Tu curso",
+    "placeholder": "Aquí irá tu día de estudio: repasos, ítems nuevos y el botón para empezar la sesión. Todavía lo estamos construyendo."
   },
   "Onboarding": {
     "title": "Prepara tu curso",

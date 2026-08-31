@@ -64,7 +64,8 @@ test.describe("área autenticada", () => {
     await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
     await expect(page).toHaveURL("/es/app");
-    await expect(page.getByRole("heading", { name: "Área privada" })).toBeVisible();
+    // El shell muestra el curso activo; con onboarding por defecto (es) es "Inglés".
+    await expect(page.getByRole("heading", { name: "Inglés" })).toBeVisible();
 
     // Salir desde dentro del área privada.
     await page.getByRole("button", { name: "Cerrar sesión" }).click();
