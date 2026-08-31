@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-31
-**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (6/11)
+**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (7/11)
 **Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-2.1…2.6 `HECHO` · siguiente LEX-2.7
-**Rama / commit base / HEAD:** rama `feat/lex-2-6-route-protection` desde `main` (`88287f0`); LEX-2.6 pendiente de commit, PR y CI. LEX-2.5 ya en `main` (PR #11, `88287f0`)
+**Estado de la tarea:** LEX-2.1…2.7 `HECHO` · siguiente LEX-2.8
+**Rama / commit base / HEAD:** rama `feat/lex-2-7-onboarding` desde `main` (`c0c9594`); LEX-2.6 ya en `main` (PR #12, `c0c9594`)
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,70 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-2.7 — Dominio y caso de uso de onboarding — `HECHO`
+
+Informe completo en [`evidence/LEX-2.7.md`](evidence/LEX-2.7.md).
+
+Módulo `courses` (nuevo). El onboarding (`MASTER_SPEC.md` §9.3) valida las
+cuatro elecciones reales del usuario —idioma de interfaz `es`/`en`, nivel
+académico declarado, nivel de inicio, límite de ítems nuevos diarios 0..100— y
+provisiona el curso en **una operación atómica e idempotente**. El idioma de
+apoyo (español), el objetivo (inglés `en-GB`) y el paso 7 son fijos/operación,
+no entrada.
+
+- **Dominio** (`domain/onboarding.ts`): `validateOnboardingSelection` puro
+  —enum estricto, entero en rango, acumula todas las pegas—, tipos `UiLocale` /
+  `CefrLevel`, constantes del curso de referencia. Sin dependencias.
+- **Aplicación** (`application/complete-onboarding.ts`): puerto
+  `OnboardingRepository.completeOnboarding(userId, selection)`, caso de uso
+  (valida → delega), `CompleteOnboardingError`.
+- **Infraestructura** (`infrastructure/supabase-onboarding-repository.ts`): una
+  sola llamada `client.rpc("complete_onboarding", …)`.
+- **Composición** (`src/composition/onboarding.ts`):
+  `completeOnboardingForCurrentUser(rawSelection)` — `userId` de `getClaims()`,
+  nunca de un parámetro. Sin llamador: lo consume LEX-2.8.
+
+**Migración `20260831204649_onboarding_rpc.sql`:** función
+`public.complete_onboarding(ui_locale, cefr_level, cefr_level, integer)
+returns uuid`, **SECURITY INVOKER** (cada escritura pasa las políticas RLS de
+LEX-2.3), `search_path` fijado. Resuelve el par de idiomas del catálogo por
+`(code, locale)` —los UUID del seed no llegan a la aplicación—; busca el curso
+más antiguo del `owner_id` y lo actualiza, o inserta uno; upsert de
+`course_settings`; fija `ui_locale` y `onboarding_completed_at` (una sola vez,
+`coalesce`). `title` en el idioma de interfaz solo al insertar. Rama de
+actualización fuerza `active = true`. `revoke execute … from public, anon` +
+`grant … to authenticated` (Supabase concede EXECUTE a `anon` por privilegios
+por defecto: `revoke from public` a secas no basta).
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 12 ficheros/72, build)
+pnpm db:reset  3 migraciones + seed desde vacío, sin pasos manuales
+pnpm db:test   7 ficheros, 115 asserciones, PASS  (060: dueño C + no-dueño D + anon)
+pnpm db:types  database.types.ts regenerado: aparece complete_onboarding (mismo commit)
+pnpm e2e       28 passed (sin pantallas nuevas; el módulo aún no tiene llamador)
+```
+
+**Ida y vuelta real por PostgREST** (la única costura que pgTAP y los unitarios
+no tocan): alta por `/auth/v1/signup` → `POST /rest/v1/rpc/complete_onboarding`
+con el token → `HTTP 200` + uuid; segunda llamada con otros valores → **mismo**
+uuid, y ganan los valores nuevos (`declared_level A2`, `daily_new_limit 12`,
+`ui_locale en`), `title` sin cambiar, `active true`, `onboarding_completed_at`
+intacto.
+
+**Verificación por rotura:** en la primera pasada, `060` con solo
+`revoke … from public` falló la asserción de `anon` (`28000`, no `42501`) —
+`anon` seguía teniendo EXECUTE por los privilegios por defecto de Supabase.
+Añadido `revoke … from anon` → PASS.
+
+**Decisión:** `courses.title` se escribe en el idioma de interfaz elegido
+(`case p_ui_locale when 'en' then 'English' else 'Inglés' end`) solo en la
+rama de inserción. Alternativa descartada: un `name_key` como en `languages`,
+que añade indirección para un único string y no aporta hasta que haya varios
+cursos. Queda como fila permanente y visible.
+
+**Fuera de alcance (declarado):** los mazos base vacíos y la importación del
+paso 7 de §9.3 —`decks` no existe hasta FASE 3—; las pantallas —LEX-2.8.
 
 ### LEX-2.6 — Proteger rutas y mantener sesión SSR — `HECHO`
 
@@ -314,11 +378,11 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 2 en 5/11. LEX-2.3/2.4 en `main`;
-LEX-2.5 en rama `feat/lex-2-5-auth-flows`, pendiente de commit/PR/CI.
+Ninguna tarea `EN PROCESO`. FASE 2 en 7/11. LEX-2.1…2.6 en `main` (`c0c9594`);
+LEX-2.7 en rama `feat/lex-2-7-onboarding`, pendiente de commit/PR/CI.
 
-Siguiente: **LEX-2.6** — proteger rutas y mantener sesión SSR. Aplica el gate
-§12.6. Depende de LEX-2.5.
+Siguiente: **LEX-2.8** — pantallas de onboarding. Consume
+`completeOnboardingForCurrentUser`. Depende de LEX-2.7.
 
 ---
 
@@ -364,10 +428,21 @@ Siguiente: **LEX-2.6** — proteger rutas y mantener sesión SSR. Aplica el gate
 | `messages/{es,en}.json` | LEX-2.6: namespace `App`. |
 | `tests/e2e/protected.spec.ts` | LEX-2.6: creado. 3 casos × 2 dispositivos. |
 | `docs/evidence/LEX-2.6.md` | Creado. |
+| `supabase/migrations/20260831204649_onboarding_rpc.sql` | LEX-2.7: creado. Función `complete_onboarding` SECURITY INVOKER, idempotente. |
+| `supabase/tests/database/060-onboarding-rpc.sql` | LEX-2.7: creado. 32 asserciones: dueño C, no-dueño D, anon; idempotencia con valores distintos. |
+| `src/modules/courses/domain/onboarding.{ts,test.ts}` | LEX-2.7: creado. Validación pura + constantes del curso de referencia. |
+| `src/modules/courses/application/complete-onboarding.{ts,test.ts}` | LEX-2.7: creado. Puerto `OnboardingRepository` + caso de uso. |
+| `src/modules/courses/infrastructure/supabase-onboarding-repository.ts` | LEX-2.7: creado. Adaptador `client.rpc`. |
+| `src/composition/onboarding.ts` | LEX-2.7: creado. `completeOnboardingForCurrentUser`. |
+| `src/shared/infrastructure/supabase/database.types.ts` | LEX-2.7: regenerado; aparece `complete_onboarding`. |
+| `src/shared/infrastructure/supabase/README.md` | LEX-2.7: nota sobre los privilegios EXECUTE por defecto de Supabase. |
+| `docs/DATA_MODEL.md` | LEX-2.7: entrada de `complete_onboarding`. |
+| `docs/evidence/LEX-2.7.md` | Creado. |
 
-Migraciones SQL: **2** (`20260828143434_identity_and_course`, LEX-2.1;
-`20260831162304_identity_and_course_rls`, LEX-2.3). LEX-2.2 y LEX-2.4…2.6 no
-añaden migración.
+Migraciones SQL: **3** (`20260828143434_identity_and_course`, LEX-2.1;
+`20260831162304_identity_and_course_rls`, LEX-2.3;
+`20260831204649_onboarding_rpc`, LEX-2.7). LEX-2.2 y LEX-2.4…2.6 no añaden
+migración.
 
 ---
 
@@ -383,33 +458,34 @@ añaden migración.
 | Docker | Desktop 4.88.1, motor 29.7.2 |
 | CLI de Supabase | 2.116.0, dependencia de desarrollo del proyecto |
 
-### Puertas de calidad — LEX-2.6 (2026-08-31, rama `feat/lex-2-6-route-protection`)
+### Puertas de calidad — LEX-2.7 (2026-08-31, rama `feat/lex-2-7-onboarding`)
 
 ```text
-pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 8 ficheros/54, build)
-pnpm db:test   000 · 010 · 020 · 030 · 040 · 050 — All tests successful, 83 asserciones
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 12 ficheros/72, build)
+pnpm db:reset  3 migraciones + seed desde vacío
+pnpm db:test   000 · 010 · 020 · 030 · 040 · 050 · 060 — All tests successful, 115 asserciones
 pnpm e2e       28 passed (14 portada + 8 auth + 6 puerta)
-pnpm db:types  sin cambios
+pnpm db:types  regenerado: Functions.complete_onboarding (Args tipados + Returns string)
 ```
 
-LEX-2.6 no añade migración. El `matcher` corregido se comprobó contra un
-servidor de producción: `/es/app` sin sesión → `307 /es/login?next=%2Fes%2Fapp`
-con `cache-control: private, no-store`; antes lo cazaba solo el layout, sin `next`.
+Ida y vuelta real por PostgREST: `POST /rest/v1/rpc/complete_onboarding` con
+token de sesión → `HTTP 200` + uuid; segunda llamada → mismo uuid, valores
+nuevos aplicados.
+
+Nota e2e: el primer `pnpm e2e` completo dio 1 fallo (`movil-poco-f5`, alta,
+`__next_error__`, transitorio de GoTrue bajo carga en paralelo; nada importa el
+módulo nuevo). Re-ejecución del spec: 8/8. Re-ejecución completa: 28/28.
 
 ### CI
 
 ```text
+run 33434371986   CI   main   push          success   merge de PR #12 (LEX-2.6)
 run 33432315336   CI   main   push          success   merge de PR #11 (LEX-2.5)
-run 33432052387   CI   feat/lex-2-5-…       pull_request   success   PR #11 (LEX-2.5)
 run 33429565060   CI   main   push          success   merge de PR #10 (LEX-2.4)
 ```
 
-LEX-2.3, LEX-2.4 y LEX-2.5 en `main` (`88287f0`), CI verde en cada merge.
-**LEX-2.6 todavía sin CI:** rama sin subir, pendiente PR.
-
-Nota: el primer intento de CI sobre el merge de PR #10 falló en «Levantar
-Supabase local» por `toomanyrequests` / puerto 54322 ocupado en el runner
-(infra, no el código). Reintentado en verde.
+LEX-2.1…2.6 en `main` (`c0c9594`), CI verde en cada merge.
+**LEX-2.7 todavía sin CI:** rama sin subir, pendiente PR.
 
 ---
 
@@ -468,29 +544,32 @@ Ninguna abierta.
   con ≥1 política».** Una tabla de FASE 3 podría habilitar RLS y olvidar las
   políticas: quedaría en deny-all silencioso. Ampliar la invariante es trabajo de
   FASE 3 (ver `evidence/LEX-2.3.md` §7).
-- **LEX-2.3 y LEX-2.4 sin revisión cruzada independiente** (§3.6, políticas RLS
-  y ADR-005). No hay segundo agente disponible. Deuda visible. En LEX-2.4, al no
-  añadir función `SECURITY DEFINER`, la superficie que esa revisión cubriría no
-  crece.
-- **`ensureProfileForCurrentUser()` sin llamador todavía.** Es el punto de
-  entrada que consumirán LEX-2.5 (tras el alta) y LEX-2.6 (protección de rutas).
-  Hasta entonces no hay área autenticada, así que nada depende del perfil.
+- **LEX-2.3…2.7 sin revisión cruzada independiente** (§3.6: políticas RLS,
+  ADR-005, sesión SSR, redirects, y ahora la función `complete_onboarding`).
+  No hay segundo agente disponible. Deuda visible. `complete_onboarding` es
+  SECURITY INVOKER (no DEFINER), así que corre con las políticas del propio
+  usuario y no amplía la superficie que esa revisión cubriría.
+- **`completeOnboardingForCurrentUser()` sin llamador todavía.** Punto de
+  entrada que consume LEX-2.8 (pantallas). El `(app)/layout.tsx` ya asegura el
+  perfil antes de que se pueda llamar, así que el FK `courses_owner_id_fkey`
+  está cubierto por el flujo real.
 
 ---
 
 ## Siguiente acción exacta
 
-1. Commit de LEX-2.6 en `feat/lex-2-6-route-protection`, abrir PR, esperar CI
-   verde (tres trabajos), fusionar.
-2. Empezar **LEX-2.7** — dominio y caso de uso de onboarding: valida idioma de
-   interfaz/apoyo/objetivo, nivel declarado, nivel inicial y límite de nuevos;
-   operación idempotente que crea curso + configuración. Depende de LEX-2.1. No
-   iniciarla antes de cerrar el punto 1.
+1. Commit de LEX-2.7 en `feat/lex-2-7-onboarding`, abrir PR, esperar CI verde
+   (tres trabajos), fusionar.
+2. Empezar **LEX-2.8** — pantallas de onboarding: consume
+   `completeOnboardingForCurrentUser`. Depende de LEX-2.7. No iniciarla antes de
+   cerrar el punto 1.
 
 Decisiones vivas: `force row level security` **no** activado (LEX-2.3); creación
 de perfil = caso de uso, **no** trigger (ADR-005); errores de autenticación con
 clave estable + traducción en presentación (LEX-2.5); área privada con doble
-barrera —proxy + layout de `(app)`— y `next` en poder del proxy (LEX-2.6).
+barrera —proxy + layout de `(app)`— y `next` en poder del proxy (LEX-2.6);
+operaciones atómicas en función SQL SECURITY INVOKER tras un puerto, idioma de
+apoyo/objetivo fijos en la V1 (LEX-2.7).
 
 ---
 
@@ -511,14 +590,14 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main`, sincronizada con `origin/main` (`e0b768d`).
+- Rama por defecto: `main` en `c0c9594` (PR #12, LEX-2.6).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
-- Rama de trabajo actual: `feat/lex-2-6-route-protection`, LEX-2.6 sin commit.
-  Sin subir, sin PR.
+- Rama de trabajo actual: `feat/lex-2-7-onboarding` desde `c0c9594`. LEX-2.7
+  implementado; pendiente de commit, PR y CI.
 - LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs);
-  LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10; LEX-2.5 → PR #11.
-  Ramas borradas.
-- Contenido versionado: aplicación Next.js completa (incl. módulo `identity`),
-  `supabase/` (config, seed, tests, **migrations** — dos:
-  `20260828143434_identity_and_course`, `20260831162304_identity_and_course_rls`),
-  CI, documentación en `docs/` y ADR (001–005).
+  LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10; LEX-2.5 → PR #11;
+  LEX-2.6 → PR #12. Ramas borradas.
+- Contenido versionado: aplicación Next.js completa (módulos `identity` y
+  `courses`), `supabase/` (config, seed, tests, **migrations** — tres:
+  `20260828143434_identity_and_course`, `20260831162304_identity_and_course_rls`,
+  `20260831204649_onboarding_rpc`), CI, documentación en `docs/` y ADR (001–005).
