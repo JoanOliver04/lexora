@@ -12,6 +12,10 @@
     "status": "En desarrollo temprano. Todavía no hay cuentas ni contenido: esta página es la fundación técnica del proyecto.",
     "repository": "Ver el código en GitHub"
   },
+  "App": {
+    "title": "Área privada",
+    "placeholder": "Aquí irá tu día de estudio. Todavía lo estamos construyendo."
+  },
   "Auth": {
     "errors": {
       "email-required": "Escribe tu correo.",

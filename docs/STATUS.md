@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-31
-**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (5/11)
+**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (6/11)
 **Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-2.1…2.5 `HECHO` · siguiente LEX-2.6
-**Rama / commit base / HEAD:** rama `feat/lex-2-5-auth-flows` desde `main` (`e0b768d`); LEX-2.5 pendiente de commit, PR y CI. LEX-2.4 ya en `main` (PR #10, `e0b768d`)
+**Estado de la tarea:** LEX-2.1…2.6 `HECHO` · siguiente LEX-2.7
+**Rama / commit base / HEAD:** rama `feat/lex-2-6-route-protection` desde `main` (`88287f0`); LEX-2.6 pendiente de commit, PR y CI. LEX-2.5 ya en `main` (PR #11, `88287f0`)
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,42 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-2.6 — Proteger rutas y mantener sesión SSR — `HECHO`
+
+Informe completo en [`evidence/LEX-2.6.md`](evidence/LEX-2.6.md).
+
+Dos barreras para el área autenticada:
+
+- **Proxy** (`src/proxy.ts`) — comodidad: ruta privada sin sesión → redirige a
+  `/{locale}/login?next=<ruta segura>` y marca la respuesta
+  `Cache-Control: private, no-store`.
+- **Layout de `(app)`** (`src/app/[locale]/(app)/layout.tsx`) — barrera de
+  verdad: `getCurrentUserId()` en el servidor en cada render; sin sesión,
+  redirige a `login` **a secas** (el `next` lo posee el proxy); con sesión,
+  `ensureProfileForCurrentUser()` — cierra la ventana de ADR-005. `force-dynamic`.
+
+`refreshSupabaseSession` ahora devuelve `{ response, userId }` (un solo
+`getClaims()` por petición).
+
+**Corregido un fallo latente del `matcher` de `proxy.ts`** (desde LEX-1.5): `\.`
+en la cadena JavaScript se quedaba en `.` («cualquier carácter»), y el negative
+lookahead descartaba toda ruta con contenido: **el proxy solo se ejecutaba en
+`/`**. La renovación de sesión de LEX-1.8 no llegaba a correr en `/{locale}/…`.
+Corregido a `.*\\..*`. Comprobado contra un servidor de producción.
+
+`isProtectedPath` (aplicación, puro): hoy solo `/{locale}/app` y lo que cuelgue;
+comprueba el pathname tal cual y decodificado (evasión por %-encoding). Marcador
+de posición en `/{locale}/app`; la home real es LEX-2.9.
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste, vitest 8 ficheros/54, build)
+pnpm db:test   6 ficheros, 83 asserciones, PASS
+pnpm e2e       28 passed (14 portada + 8 auth + 6 puerta)
+pnpm db:types  sin cambios
+```
+
+Sin migración. Renovación de token en expiración: comprobación manual / FASE 9.
 
 ### LEX-2.5 — Registro, login, logout y recuperación — `HECHO`
 
@@ -321,10 +357,17 @@ Siguiente: **LEX-2.6** — proteger rutas y mantener sesión SSR. Aplica el gate
 | `supabase/config.toml` | LEX-2.5: `site_url` local → `http://localhost:3000`; `additional_redirect_urls`. |
 | `tests/e2e/auth.spec.ts` | LEX-2.5: creado. 4 casos × 2 dispositivos. |
 | `docs/evidence/LEX-2.5.md` | Creado. |
+| `src/proxy.ts` | LEX-2.6: puerta de rutas privadas + `Cache-Control` + corrección del `matcher`. |
+| `src/shared/infrastructure/supabase/session.ts` | LEX-2.6: `refreshSupabaseSession` devuelve `{ response, userId }`. |
+| `src/modules/identity/application/protected-paths.{ts,test.ts}` | LEX-2.6: creado. `isProtectedPath`. |
+| `src/app/[locale]/(app)/{layout,app/page}.tsx` | LEX-2.6: creado. Barrera autoritativa + marcador de posición. |
+| `messages/{es,en}.json` | LEX-2.6: namespace `App`. |
+| `tests/e2e/protected.spec.ts` | LEX-2.6: creado. 3 casos × 2 dispositivos. |
+| `docs/evidence/LEX-2.6.md` | Creado. |
 
 Migraciones SQL: **2** (`20260828143434_identity_and_course`, LEX-2.1;
-`20260831162304_identity_and_course_rls`, LEX-2.3). LEX-2.2, LEX-2.4 y LEX-2.5
-no añaden migración.
+`20260831162304_identity_and_course_rls`, LEX-2.3). LEX-2.2 y LEX-2.4…2.6 no
+añaden migración.
 
 ---
 
@@ -340,27 +383,29 @@ no añaden migración.
 | Docker | Desktop 4.88.1, motor 29.7.2 |
 | CLI de Supabase | 2.116.0, dependencia de desarrollo del proyecto |
 
-### Puertas de calidad — LEX-2.5 (2026-08-31, rama `feat/lex-2-5-auth-flows`)
+### Puertas de calidad — LEX-2.6 (2026-08-31, rama `feat/lex-2-6-route-protection`)
 
 ```text
-pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 7 ficheros/48, build)
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 8 ficheros/54, build)
 pnpm db:test   000 · 010 · 020 · 030 · 040 · 050 — All tests successful, 83 asserciones
-pnpm e2e       22 passed (14 portada + 8 auth)
+pnpm e2e       28 passed (14 portada + 8 auth + 6 puerta)
 pnpm db:types  sin cambios
 ```
 
-LEX-2.5 no añade migración. Verificación por rotura: `resolveSafeRedirect`
-devolviendo siempre `raw` → fallan sus 6 casos de rechazo; restaurado, PASS.
+LEX-2.6 no añade migración. El `matcher` corregido se comprobó contra un
+servidor de producción: `/es/app` sin sesión → `307 /es/login?next=%2Fes%2Fapp`
+con `cache-control: private, no-store`; antes lo cazaba solo el layout, sin `next`.
 
 ### CI
 
 ```text
-run 33429565060   CI   main   push   success   merge de PR #10 (LEX-2.4) — «Base de datos» reintentado tras flake de red del runner
-run 33422803840   CI   main   push   success   merge de PR #8 (LEX-2.3)
+run 33432315336   CI   main   push          success   merge de PR #11 (LEX-2.5)
+run 33432052387   CI   feat/lex-2-5-…       pull_request   success   PR #11 (LEX-2.5)
+run 33429565060   CI   main   push          success   merge de PR #10 (LEX-2.4)
 ```
 
-LEX-2.3 y LEX-2.4 en `main` (`e0b768d`). **LEX-2.5 todavía sin CI:** rama sin
-subir, pendiente PR.
+LEX-2.3, LEX-2.4 y LEX-2.5 en `main` (`88287f0`), CI verde en cada merge.
+**LEX-2.6 todavía sin CI:** rama sin subir, pendiente PR.
 
 Nota: el primer intento de CI sobre el merge de PR #10 falló en «Levantar
 Supabase local» por `toomanyrequests` / puerto 54322 ocupado en el runner
@@ -435,20 +480,17 @@ Ninguna abierta.
 
 ## Siguiente acción exacta
 
-1. Commit de LEX-2.5 en `feat/lex-2-5-auth-flows`, abrir PR, esperar CI verde
-   (tres trabajos), fusionar.
-2. Empezar **LEX-2.6** — proteger rutas y mantener sesión SSR: el usuario
-   anónimo no alcanza el área privada (redirección a `login` con `next`),
-   cookies de sesión seguras, renovación/cierre comprobados, páginas privadas
-   fuera de caché compartida. A la entrada del área autenticada se llama a
-   `ensureProfileForCurrentUser()` (cierra la ventana sin perfil de ADR-005).
-   Aplica el gate §12.6. Depende de LEX-2.5. No iniciarla antes de cerrar el
-   punto 1.
+1. Commit de LEX-2.6 en `feat/lex-2-6-route-protection`, abrir PR, esperar CI
+   verde (tres trabajos), fusionar.
+2. Empezar **LEX-2.7** — dominio y caso de uso de onboarding: valida idioma de
+   interfaz/apoyo/objetivo, nivel declarado, nivel inicial y límite de nuevos;
+   operación idempotente que crea curso + configuración. Depende de LEX-2.1. No
+   iniciarla antes de cerrar el punto 1.
 
 Decisiones vivas: `force row level security` **no** activado (LEX-2.3); creación
 de perfil = caso de uso, **no** trigger (ADR-005); errores de autenticación con
-clave estable + traducción en presentación, sin revelar si un correo existe
-(LEX-2.5).
+clave estable + traducción en presentación (LEX-2.5); área privada con doble
+barrera —proxy + layout de `(app)`— y `next` en poder del proxy (LEX-2.6).
 
 ---
 
@@ -471,10 +513,11 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 - Rama por defecto: `main`, sincronizada con `origin/main` (`e0b768d`).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
-- Rama de trabajo actual: `feat/lex-2-5-auth-flows`, LEX-2.5 sin commit.
+- Rama de trabajo actual: `feat/lex-2-6-route-protection`, LEX-2.6 sin commit.
   Sin subir, sin PR.
 - LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs);
-  LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10. Ramas borradas.
+  LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10; LEX-2.5 → PR #11.
+  Ramas borradas.
 - Contenido versionado: aplicación Next.js completa (incl. módulo `identity`),
   `supabase/` (config, seed, tests, **migrations** — dos:
   `20260828143434_identity_and_course`, `20260831162304_identity_and_course_rls`),

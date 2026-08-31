@@ -6,7 +6,7 @@
 |---|---|---|
 | Componente de cliente, navegador | `createSupabaseBrowserClient()` | `browser-client.ts` |
 | Server Component, Server Action, Route Handler | `createSupabaseServerClient()` | `server-client.ts` |
-| Proxy | `refreshSupabaseSession()` | `session.ts` |
+| Proxy | `refreshSupabaseSession()` — renueva el token y devuelve `{ response, userId }` | `session.ts` |
 
 **Los tres usan la misma clave publishable.** No hay un cliente privilegiado, y no
 debería haberlo: la identidad la aporta la cookie de sesión y los permisos los
