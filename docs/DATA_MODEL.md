@@ -5,9 +5,13 @@ Las decisiones que lo condicionan están en
 [ADR-002](adrs/ADR-002-supabase-sin-orm.md) y
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado:** ninguna tabla existe todavía. Este documento describe el modelo
-> acordado; las columnas exactas, restricciones e índices se fijan en las
-> migraciones SQL de cada fase, que son la fuente de verdad del esquema.
+> **Estado:** existen las cuatro tablas de identidad y curso (`profiles`,
+> `languages`, `courses`, `course_settings`), con sus políticas RLS
+> (migraciones `20260828143434_identity_and_course` y
+> `20260831162304_identity_and_course_rls`). El resto del modelo descrito aquí
+> es lo acordado; las columnas exactas, restricciones, índices y políticas se
+> fijan en las migraciones SQL de cada fase, que son la fuente de verdad del
+> esquema.
 
 ## La distinción que lo explica todo
 
@@ -142,9 +146,20 @@ tiene `owner_id NOT NULL` y lo crea el onboarding por usuario (LEX-2.7). El
 La FK compuesta convierte «`user_id` es el dueño del curso» en una garantía
 estructural: no se puede insertar una fila de settings para otro usuario.
 
-**RLS:** habilitado en las cuatro tablas por esta migración, sin políticas
-todavía (deniega todo). Las políticas explícitas por operación y los tests de
-aislamiento dueño / no-dueño son **LEX-2.3**.
+**RLS (migración `20260831162304_identity_and_course_rls`, LEX-2.3):**
+
+| Tabla | Política |
+|---|---|
+| `profiles` | `SELECT`/`INSERT`/`UPDATE` para `authenticated` con `auth.uid() = id`. **Sin `DELETE`:** el ciclo de vida del perfil va por la cascada de `auth.users`; el borrado de cuenta es FASE 8. |
+| `courses` | `SELECT`/`INSERT`/`UPDATE`/`DELETE` para `authenticated` con `auth.uid() = owner_id`. |
+| `course_settings` | `SELECT`/`INSERT`/`UPDATE`/`DELETE` para `authenticated` con `auth.uid() = user_id` (una columna basta: la FK compuesta ya ata `user_id` al dueño del curso). |
+| `languages` | Solo lectura: `SELECT` `using (true)` para `anon` y `authenticated`. Sin políticas de escritura (solo `postgres` siembra). `using (true)` y no `using (active)` porque `courses` referencia esta tabla por FK. |
+
+`auth.uid()` se envuelve en subconsulta escalar (`(select auth.uid())`) para que
+PostgreSQL lo evalúe una vez por sentencia. `force row level security` **no** se
+activa: ningún cliente se conecta como propietario de la tabla (LEX-1.8). Tests
+de aislamiento dueño / no-dueño / anon / service_role en
+`supabase/tests/database/040-identity-course-rls.sql`.
 
 ### Biblioteca
 
