@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 /**
  * Puerta del área autenticada (LEX-2.6).
@@ -13,6 +13,21 @@ function uniqueEmail(): string {
 }
 
 const PASSWORD = "e2e-passw0rd";
+
+/**
+ * Deja al usuario en curso con el onboarding hecho, para que `/{locale}/app`
+ * sea alcanzable. El detalle del formulario se prueba en `onboarding.spec.ts`;
+ * aquí solo hay que cruzar la puerta.
+ */
+async function completeOnboarding(page: Page): Promise<void> {
+  await page.goto("/es/onboarding");
+  await page
+    .getByRole("group", { name: "¿Qué nivel de inglés dirías que tienes?" })
+    .getByRole("radio", { name: "A1 — Principiante" })
+    .check();
+  await page.getByRole("button", { name: "Crear mi curso" }).click();
+  await expect(page).toHaveURL("/es/app");
+}
 
 test.describe("área autenticada", () => {
   test("un anónimo es redirigido a login conservando el destino", async ({ page }) => {
@@ -32,6 +47,10 @@ test.describe("área autenticada", () => {
     await page.getByLabel("Contraseña").fill(PASSWORD);
     await page.getByRole("button", { name: "Crear cuenta" }).click();
     await expect(page).toHaveURL("/es");
+
+    // El usuario recién creado no tiene curso: se hace el onboarding una vez
+    // para que `/es/app` deje de rebotar a `/es/onboarding`.
+    await completeOnboarding(page);
 
     await page.getByRole("button", { name: "Cerrar sesión" }).click();
     await expect(page).toHaveURL("/es/login");

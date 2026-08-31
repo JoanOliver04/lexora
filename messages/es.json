@@ -16,6 +16,37 @@
     "title": "Área privada",
     "placeholder": "Aquí irá tu día de estudio. Todavía lo estamos construyendo."
   },
+  "Onboarding": {
+    "title": "Prepara tu curso",
+    "intro": "Unos pocos ajustes y empiezas. Podrás cambiarlos más adelante.",
+    "uiLocaleLabel": "Idioma de la interfaz",
+    "uiLocaleEs": "Español",
+    "uiLocaleEn": "English",
+    "supportLabel": "Idioma de apoyo",
+    "supportValue": "Español",
+    "targetLabel": "Idioma que vas a estudiar",
+    "targetValue": "Inglés (en-GB)",
+    "declaredLevelLabel": "¿Qué nivel de inglés dirías que tienes?",
+    "declaredLevelNote": "Es orientativo: no certifica tu dominio ni bloquea contenido. Solo ayuda a ordenar lo que ves.",
+    "startLevelLabel": "¿Desde qué nivel quieres empezar?",
+    "startLevelHint": "A1 repasa desde el principio a ritmo rápido. Es lo recomendado para asentar las bases.",
+    "dailyNewLimitLabel": "Ítems nuevos por día",
+    "dailyNewLimitHint": "Recomendamos 5. Puedes ajustarlo cuando quieras.",
+    "levelA1": "A1 — Principiante",
+    "levelA2": "A2 — Básico",
+    "levelB1": "B1 — Intermedio",
+    "levelB2": "B2 — Intermedio alto",
+    "submit": "Crear mi curso",
+    "submitting": "Creando…",
+    "genericError": "No hemos podido crear el curso. Revisa los datos e inténtalo de nuevo.",
+    "errors": {
+      "uiLocale_invalid": "Elige un idioma de interfaz.",
+      "declaredLevel_invalid": "Elige tu nivel actual.",
+      "startLevel_invalid": "Elige desde qué nivel quieres empezar.",
+      "dailyNewLimit_notInteger": "Escribe un número entero de ítems nuevos.",
+      "dailyNewLimit_outOfRange": "Los ítems nuevos por día deben estar entre 0 y 100."
+    }
+  },
   "Auth": {
     "errors": {
       "email-required": "Escribe tu correo.",

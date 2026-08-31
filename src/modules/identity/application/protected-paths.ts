@@ -3,14 +3,14 @@ import { routing } from "@/i18n/routing";
 /**
  * Qué rutas pertenecen al área autenticada.
  *
- * Hoy solo `/{locale}/app` y lo que cuelgue de ella. Las fases siguientes
- * añaden segmentos aquí (mazos, estudio, ajustes…). El prefijo de idioma ya
- * está puesto cuando el proxy llama a esto.
+ * Hoy `/{locale}/app` (y lo que cuelgue) y `/{locale}/onboarding`. Las fases
+ * siguientes añaden segmentos aquí (mazos, estudio, ajustes…). El prefijo de
+ * idioma ya está puesto cuando el proxy llama a esto.
  *
  * Se comprueba el `pathname` tal cual y también decodificado: `/{locale}/%61pp`
  * no debe colarse por no parecerse a `/{locale}/app`.
  */
-const PROTECTED_SEGMENTS = ["app"];
+const PROTECTED_SEGMENTS = ["app", "onboarding"];
 
 const PATTERN = new RegExp(
   `^/(${routing.locales.join("|")})/(${PROTECTED_SEGMENTS.join("|")})(/|$)`,

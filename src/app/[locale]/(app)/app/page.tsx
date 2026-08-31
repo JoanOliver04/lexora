@@ -1,16 +1,26 @@
+import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { logoutAction } from "@/app/[locale]/(auth)/actions";
+import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Button } from "@/shared/presentation/components";
 
 /**
  * Marcador de posición del área autenticada. Solo existe para que la puerta de
  * `(app)/layout.tsx` tenga algo que proteger y se pueda probar de extremo a
  * extremo. La home real —selector de curso incluido— es LEX-2.9.
+ *
+ * Antes de pintar: quien no ha completado el onboarding no tiene curso, así que
+ * se le manda a `/onboarding`. Cuando LEX-2.9/2.10 construyan el shell real,
+ * esta comprobación se centraliza; hoy vive en la única página de `(app)`.
  */
 export default async function AppHome({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  if (!(await hasCompletedOnboardingForCurrentUser())) {
+    redirect(`/${locale}/onboarding`);
+  }
   const t = await getTranslations("App");
   const tAuth = await getTranslations("Auth");
 

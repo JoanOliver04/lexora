@@ -3,6 +3,7 @@ import {
   completeOnboarding,
 } from "@/modules/courses/application/complete-onboarding";
 import { createSupabaseOnboardingRepository } from "@/modules/courses/infrastructure/supabase-onboarding-repository";
+import { createSupabaseProfileRepository } from "@/modules/identity/infrastructure/supabase-profile-repository";
 import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/server-client";
 
 /**
@@ -39,4 +40,22 @@ export async function completeOnboardingForCurrentUser(
   }
 
   return completeOnboarding(createSupabaseOnboardingRepository(client), userId, rawSelection);
+}
+
+/**
+ * ¿El usuario **autenticado en la petición en curso** ha terminado el
+ * onboarding? La usan las páginas de `(app)` para decidir entre mostrar la
+ * aplicación o mandar al onboarding. Sin sesión válida → `false` (la puerta de
+ * `(app)/layout.tsx` ya habrá redirigido a `login` antes de llegar aquí).
+ */
+export async function hasCompletedOnboardingForCurrentUser(): Promise<boolean> {
+  const client = await createSupabaseServerClient();
+
+  const { data, error } = await client.auth.getClaims();
+  const userId = data?.claims.sub;
+  if (error || !userId) {
+    return false;
+  }
+
+  return createSupabaseProfileRepository(client).hasCompletedOnboarding(userId);
 }
