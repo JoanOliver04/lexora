@@ -42,5 +42,25 @@ export function createSupabaseProfileRepository(
 
       return data.length > 0 ? "created" : "already-existed";
     },
+
+    async hasCompletedOnboarding(userId: string): Promise<boolean> {
+      // `maybeSingle`: sin fila (perfil aún no asegurado) devuelve `data: null`
+      // sin lanzar. La política `profiles_select_own` (LEX-2.3) limita la
+      // lectura a la fila propia.
+      const { data, error } = await client
+        .from("profiles")
+        .select("onboarding_completed_at")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (error) {
+        throw new EnsureProfileError(
+          `no se pudo leer el estado de onboarding (código ${error.code ?? "desconocido"})`,
+          { cause: error },
+        );
+      }
+
+      return data?.onboarding_completed_at != null;
+    },
   };
 }

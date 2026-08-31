@@ -10,6 +10,12 @@ describe("isProtectedPath", () => {
     expect(isProtectedPath("/es/app/decks")).toBe(true);
   });
 
+  it("protege también el onboarding", () => {
+    expect(isProtectedPath("/es/onboarding")).toBe(true);
+    expect(isProtectedPath("/en/onboarding")).toBe(true);
+    expect(isProtectedPath("/es/onboardingx")).toBe(false);
+  });
+
   it("no confunde una ruta que solo empieza igual", () => {
     expect(isProtectedPath("/es/apple")).toBe(false);
     expect(isProtectedPath("/es/application")).toBe(false);

@@ -16,6 +16,7 @@ import {
 
 class InMemoryProfiles implements ProfileRepository {
   private readonly ids = new Set<string>();
+  private readonly onboarded = new Set<string>();
 
   ensureExists(userId: string): Promise<EnsureProfileOutcome> {
     if (this.ids.has(userId)) {
@@ -23,6 +24,14 @@ class InMemoryProfiles implements ProfileRepository {
     }
     this.ids.add(userId);
     return Promise.resolve("created");
+  }
+
+  hasCompletedOnboarding(userId: string): Promise<boolean> {
+    return Promise.resolve(this.onboarded.has(userId));
+  }
+
+  markOnboarded(userId: string): void {
+    this.onboarded.add(userId);
   }
 
   get size(): number {
@@ -72,6 +81,7 @@ describe("ensureProfile", () => {
   it("propaga como EnsureProfileError el fallo del repositorio", async () => {
     const brokenRepository: ProfileRepository = {
       ensureExists: () => Promise.reject(new EnsureProfileError("base de datos inalcanzable")),
+      hasCompletedOnboarding: () => Promise.resolve(false),
     };
 
     await expect(ensureProfile(brokenRepository, "user-1")).rejects.toBeInstanceOf(

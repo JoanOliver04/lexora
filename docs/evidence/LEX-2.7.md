@@ -91,7 +91,7 @@ guardián último; el dominio solo permite un mensaje claro antes de llegar all�
 
 ## 4. Tests
 
-### Unitarios (`pnpm test` → 12 ficheros, 72 tests, PASS)
+### Unitarios (`pnpm test` → 10 ficheros, 72 tests, PASS)
 
 - `domain/onboarding.test.ts` (13): acepta cada `ui_locale` × cada nivel; los
   dos extremos del rango de límite; rechaza locale/nivel/entero inválidos;
@@ -161,7 +161,7 @@ actualización); `onboarding_completed_at` es el de la primera.
 ## 5. Puertas
 
 ```text
-pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 12 ficheros/72, build)
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 10 ficheros/72, build)
 pnpm db:reset  3 migraciones + seed desde vacío, sin pasos manuales
 pnpm db:test   000 · 010 · 020 · 030 · 040 · 050 · 060 — All tests successful, 115 asserciones
 pnpm db:types  regenerado; git diff = Functions.complete_onboarding (Args tipados + Returns string)
@@ -228,8 +228,9 @@ Migraciones: **1** (`20260831204649_onboarding_rpc`).
 
 ## 9. Estado del árbol Git
 
-Rama `feat/lex-2-7-onboarding` desde `main` (`c0c9594`). Pendiente de commit,
-PR y CI.
+Rama `feat/lex-2-7-onboarding` desde `main` (`c0c9594`). PR #13 fusionada a
+`main` (merge `0cfdc70`); CI verde en los tres trabajos, runs `33440193476`
+(PR) y `33440461002` (merge). Rama borrada.
 
 ## 10. Siguiente tarea
 
