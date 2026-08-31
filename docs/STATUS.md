@@ -5,7 +5,7 @@
 **Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
 **Tarea activa:** ninguna
 **Estado de la tarea:** LEX-2.1…2.8 `HECHO` · siguiente LEX-2.9
-**Rama / commit base / HEAD:** rama `feat/lex-2-8-onboarding-ui` desde `main` (`0cfdc70`); LEX-2.7 ya en `main` (PR #13, `0cfdc70`)
+**Rama / commit base / HEAD:** `main` en `ce72ff9` (PR #14, LEX-2.8). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -421,8 +421,7 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 2 en 8/11. LEX-2.1…2.7 en `main` (`0cfdc70`);
-LEX-2.8 en rama `feat/lex-2-8-onboarding-ui`, pendiente de commit/PR/CI.
+Ninguna tarea `EN PROCESO`. FASE 2 en 8/11. LEX-2.1…2.8 en `main` (`ce72ff9`).
 
 Siguiente: **LEX-2.9** — shell autenticado y selector de curso activo. Depende
 de LEX-2.8.
@@ -511,7 +510,7 @@ añaden migración.
 | Docker | Desktop 4.88.1, motor 29.7.2 |
 | CLI de Supabase | 2.116.0, dependencia de desarrollo del proyecto |
 
-### Puertas de calidad — LEX-2.8 (2026-08-31, rama `feat/lex-2-8-onboarding-ui`)
+### Puertas de calidad — LEX-2.8 (2026-08-31, PR #14, ya en `main`)
 
 ```text
 pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 11 ficheros/75, build)
@@ -539,13 +538,13 @@ nuevos aplicados.
 ### CI
 
 ```text
+run 33442806409   CI   main   push          success   merge de PR #14 (LEX-2.8)
+run 33442548467   CI   feat/lex-2-8-…       pull_request   success   PR #14 (LEX-2.8)
 run 33440461002   CI   main   push          success   merge de PR #13 (LEX-2.7)
 run 33440193476   CI   feat/lex-2-7-…       pull_request   success   PR #13 (LEX-2.7)
-run 33434371986   CI   main   push          success   merge de PR #12 (LEX-2.6)
 ```
 
-LEX-2.1…2.7 en `main` (`0cfdc70`), CI verde en cada merge.
-**LEX-2.8 todavía sin CI:** rama sin subir, pendiente PR.
+LEX-2.1…2.8 en `main` (`ce72ff9`), CI verde en el PR y en el merge de cada tarea.
 
 ---
 
@@ -623,11 +622,11 @@ Ninguna abierta.
 
 ## Siguiente acción exacta
 
-1. Commit de LEX-2.8 en `feat/lex-2-8-onboarding-ui`, abrir PR, esperar CI verde
-   (tres trabajos), fusionar.
-2. Empezar **LEX-2.9** — shell autenticado y selector de curso activo: home
-   privada asociada al curso, curso activo persistido, cambio que no da acceso a
-   un UUID ajeno. Depende de LEX-2.8. No iniciarla antes de cerrar el punto 1.
+Empezar **LEX-2.9** — shell autenticado y selector de curso activo: home
+privada asociada al curso, curso activo persistido, cambio que no da acceso a
+un UUID ajeno. Depende de LEX-2.8 (`HECHO`). Rama `feat/lex-2-9-…` desde
+`main` (`ce72ff9`). Aquí la comprobación `hasCompletedOnboardingForCurrentUser()`,
+hoy repetida por página en `(app)`, sube a un punto único.
 
 Decisiones vivas: `force row level security` **no** activado (LEX-2.3); creación
 de perfil = caso de uso, **no** trigger (ADR-005); errores de autenticación con
@@ -656,13 +655,12 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main` en `0cfdc70` (PR #13, LEX-2.7).
+- Rama por defecto: `main` en `ce72ff9` (PR #14, LEX-2.8).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
-- Rama de trabajo actual: `feat/lex-2-8-onboarding-ui` desde `0cfdc70`. LEX-2.8
-  implementado; pendiente de commit, PR y CI.
+- Sin rama de trabajo activa.
 - LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs);
   LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10; LEX-2.5 → PR #11;
-  LEX-2.6 → PR #12; LEX-2.7 → PR #13. Ramas borradas.
+  LEX-2.6 → PR #12; LEX-2.7 → PR #13; LEX-2.8 → PR #14. Ramas borradas.
 - Contenido versionado: aplicación Next.js completa (módulos `identity` y
   `courses`), `supabase/` (config, seed, tests, **migrations** — tres:
   `20260828143434_identity_and_course`, `20260831162304_identity_and_course_rls`,
