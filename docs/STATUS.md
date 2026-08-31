@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
-**Última actualización:** 2026-08-28
-**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (2/11)
+**Última actualización:** 2026-08-31
+**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (3/11)
 **Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-2.1 `HECHO` · LEX-2.2 `HECHO` · siguiente LEX-2.3
-**Rama / commit base / HEAD:** `main`, con LEX-2.2 fusionado (PR [#6](https://github.com/JoanOliver04/lexora/pull/6))
+**Estado de la tarea:** LEX-2.1 · LEX-2.2 · LEX-2.3 `HECHO` · siguiente LEX-2.4
+**Rama / commit base / HEAD:** rama `feat/lex-2-3-rls-policies` desde `main` (`462e016`); LEX-2.3 pendiente de commit, PR y CI
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,49 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-2.3 — RLS y tests de aislamiento de las tablas base — `HECHO`
+
+Informe completo en [`evidence/LEX-2.3.md`](evidence/LEX-2.3.md).
+
+Migración `20260831162304_identity_and_course_rls.sql`: 14 políticas RLS por
+operación sobre las cuatro tablas que LEX-2.1 dejó con RLS habilitado y sin
+políticas (deny-all).
+
+- **`profiles`:** `SELECT`/`INSERT`/`UPDATE` para `authenticated` con
+  `auth.uid() = id`. **Sin `DELETE`** a propósito: el ciclo de vida del perfil
+  va por la cascada de `auth.users`; el borrado de cuenta es FASE 8. (STATUS
+  anterior decía «SELECT/INSERT/UPDATE/DELETE»; el matiz queda aquí y en el
+  informe: `courses` y `course_settings` sí tienen las cuatro.)
+- **`courses`:** las cuatro operaciones con `auth.uid() = owner_id`.
+- **`course_settings`:** las cuatro con `auth.uid() = user_id` (una columna: la
+  FK compuesta ya ata `user_id` al dueño del curso).
+- **`languages`:** solo lectura, `SELECT using (true)` para `anon` y
+  `authenticated`. `using (true)` y no `using (active)` porque `courses`
+  referencia esta tabla por FK. Sin políticas de escritura.
+- `(select auth.uid())` envuelto para que se evalúe como InitPlan.
+- **`force row level security` NO activado:** ningún cliente se conecta como
+  propietario de la tabla (LEX-1.8) y `postgres` tiene `BYPASSRLS` (comprobado).
+  Decisión técnica declarada en el comentario de la migración, no un `Q-nnn`.
+
+Test `040-identity-course-rls.sql` (nuevo), autocontenido con idiomas `zz` y dos
+usuarios: `set local role` + `request.jwt.claims`, 36 asserciones. Cada bloque
+fija `auth.uid()` antes de nada y empareja cada denegación con su permiso, para
+que un JWT que no llegara a `auth.uid()` no dé un falso verde. Cubre A/B/anon/
+service_role, acceso directo y por UUID conocido del curso ajeno.
+
+```text
+pnpm db:reset   2 migraciones + seed desde vacío, sin pasos manuales
+pnpm db:test    5 ficheros, 74 asserciones, PASS
+pnpm db:types   sin cambios; git diff de database.types.ts vacío
+pnpm check      exit 0
+pnpm e2e        14 passed
+```
+
+**Verificación por rotura:** debilitar `courses_select_own`/`courses_delete_own`
+a `using (true)` → fallan exactamente las 5 asserciones de aislamiento de
+`courses` (incluida una que detecta el borrado real del curso de B), ninguna
+otra. Restaurado → PASS.
 
 ### LEX-2.2 — Seeds de idiomas y curso de referencia — `HECHO`
 
@@ -152,11 +195,11 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 2 en 2/11.
+Ninguna tarea `EN PROCESO`. FASE 2 en 3/11. LEX-2.3 pendiente de commit/PR/CI.
 
-Siguiente: **LEX-2.3** — políticas RLS por operación y tests de aislamiento dueño
-/ no-dueño (pgTAP) sobre `profiles`, `courses`, `course_settings`; `languages`
-con política de solo lectura. Aplica el gate §12.3.
+Siguiente: **LEX-2.4** — creación idempotente de perfil ligada a `auth.users`:
+reintento seguro, perfil no duplicable, comportamiento de error probado, y
+decisión trigger / caso de uso documentada. Depende de LEX-2.1 y LEX-2.3.
 
 ---
 
@@ -172,12 +215,15 @@ con política de solo lectura. Aplica el gate §12.3.
 | `supabase/seed.sql` | LEX-2.2: 3 filas de `languages` con UUID fijos, `on conflict do nothing`. |
 | `supabase/tests/database/030-languages-seed.sql` | LEX-2.2: creado. Estado e idempotencia del seed. |
 | `supabase/tests/database/020-…` | LEX-2.2: reescrito para no depender del seed. |
-| `docs/DATA_MODEL.md` | LEX-2.1: esquema de las 4 tablas. LEX-2.2: notas del seed y del curso de referencia. |
+| `docs/DATA_MODEL.md` | LEX-2.1: esquema de las 4 tablas. LEX-2.2: notas del seed y del curso de referencia. LEX-2.3: cabecera de estado y sección RLS reescritas con el conjunto de políticas real. |
 | `docs/evidence/LEX-2.2.md` | Creado. |
 | `docs/evidence/LEX-1.14.md`, `README.md` | LEX-1.14 (cerrada antes en esta sesión). |
+| `supabase/migrations/20260831162304_identity_and_course_rls.sql` | LEX-2.3: creado. 14 políticas RLS por operación. |
+| `supabase/tests/database/040-identity-course-rls.sql` | LEX-2.3: creado. 36 asserciones de aislamiento dueño / no-dueño / anon / service_role. |
+| `docs/evidence/LEX-2.3.md` | Creado. |
 
-Migraciones SQL: **1** (`20260828143434_identity_and_course`, LEX-2.1). LEX-2.2
-no añade migración: el seed no es un cambio de esquema.
+Migraciones SQL: **2** (`20260828143434_identity_and_course`, LEX-2.1;
+`20260831162304_identity_and_course_rls`, LEX-2.3). LEX-2.2 no añade migración.
 
 ---
 
@@ -193,25 +239,27 @@ no añade migración: el seed no es un cambio de esquema.
 | Docker | Desktop 4.88.1, motor 29.7.2 |
 | CLI de Supabase | 2.116.0, dependencia de desarrollo del proyecto |
 
-### Puertas de calidad — 2026-08-28
+### Puertas de calidad — LEX-2.3 (2026-08-31, rama `feat/lex-2-3-rls-policies`)
 
 ```text
-LEX-2.1 (merged):  pnpm check exit 0 · db:test 33 · e2e 14/14
-LEX-2.2 (rama):     pnpm check exit 0 · e2e 14/14
-  pnpm db:reset   migración + seed desde vacío; 3 filas en languages con UUID fijos
-  pnpm db:test    000 · 010 · 020 · 030 — All tests successful, 38 asserciones
-  pnpm db:types   sin cambios (el seed no toca el esquema)
+pnpm db:reset   2 migraciones + seed desde vacío, sin pasos manuales
+pnpm db:test    000 · 010 · 020 · 030 · 040 — All tests successful, 74 asserciones
+pnpm db:types   sin cambios; git diff de database.types.ts vacío
+pnpm check      exit 0 (format, lint, typecheck, contraste, vitest, build)
+pnpm e2e        14 passed (escritorio-chromium + movil-poco-f5)
 ```
+
+Verificación por rotura: debilitar `courses_select_own`/`courses_delete_own` a
+`using (true)` → fallan exactamente 5 asserciones de aislamiento de `courses`,
+ninguna otra; restaurado → PASS.
 
 ### CI
 
 ```text
-run 33182960329   CI   main            push          success   merge de PR #5 (LEX-2.1 docs)
-run 33188502934   CI   feat/lex-2-2-…  pull_request  success   PR #6 (LEX-2.2)
-run 33188727474   CI   main            push          success   merge de PR #6
+run 33188727474   CI   main            push          success   merge de PR #6 (LEX-2.2), último verde sobre main
 ```
 
-Todas con los tres trabajos (Calidad, Base de datos, Extremo a extremo) en verde.
+LEX-2.3 todavía sin CI: rama sin subir. Pendiente PR.
 
 ---
 
@@ -260,20 +308,27 @@ Ninguna abierta.
   al repositorio; anotado para no volver a tropezar.
 - Sin `LICENSE`. Repositorio público sin licencia = todos los derechos reservados
   por defecto. Debe decidirse antes de la publicación de la V1 (LEX-10.10).
+- **La invariante de `010-rls-enabled.sql` comprueba «RLS habilitado», no «RLS
+  con ≥1 política».** Una tabla de FASE 3 podría habilitar RLS y olvidar las
+  políticas: quedaría en deny-all silencioso. Ampliar la invariante es trabajo de
+  FASE 3 (ver `evidence/LEX-2.3.md` §7).
+- **LEX-2.3 sin revisión cruzada independiente** (§3.6, políticas RLS). No hay
+  segundo agente disponible. Deuda visible.
 
 ---
 
 ## Siguiente acción exacta
 
-Empezar **LEX-2.3** — políticas RLS por operación y tests de aislamiento dueño /
-no-dueño (pgTAP) sobre `profiles`, `courses`, `course_settings`; `languages` con
-política de **solo lectura** (catálogo de referencia, MASTER_SPEC §15.2).
+1. Commit de LEX-2.3 en `feat/lex-2-3-rls-policies`, abrir PR, esperar CI verde
+   (tres trabajos), fusionar. Solo entonces la fila del roadmap queda cerrada
+   del todo con su `run` de CI.
+2. Empezar **LEX-2.4** — creación idempotente de perfil ligada a `auth.users`:
+   alta con reintento seguro, perfil no duplicable, comportamiento de error
+   probado; documentar la decisión trigger vs. caso de uso. Depende de LEX-2.1 y
+   LEX-2.3 (ambas `HECHO`). No iniciarla antes de cerrar el punto 1.
 
-Las cuatro tablas ya tienen RLS habilitado (LEX-2.1) sin políticas, así que hoy
-deniegan todo. LEX-2.3 añade las políticas `SELECT`/`INSERT`/`UPDATE`/`DELETE`
-por `auth.uid()` propietario y prueba que el usuario A no alcanza los datos de B
-ni directamente ni por relación (FK/UUID conocido). Aplica el gate §12.3.
-Decidir también si se activa `force row level security`.
+`force row level security`: decidido **no** activarlo (razón en
+`evidence/LEX-2.3.md` §2 y en el comentario de la migración).
 
 ---
 
@@ -294,10 +349,12 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main`, sincronizada con `origin/main`.
+- Rama por defecto: `main`, sincronizada con `origin/main` (`462e016`).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
+- Rama de trabajo actual: `feat/lex-2-3-rls-policies`, con LEX-2.3 sin commit
+  todavía. Sin subir, sin PR.
 - LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs).
   Ramas borradas.
 - Contenido versionado: aplicación Next.js completa, `supabase/` (config, seed,
-  tests, **migrations** — una: `20260828143434_identity_and_course`), CI,
-  documentación en `docs/` y ADR.
+  tests, **migrations** — dos: `20260828143434_identity_and_course`,
+  `20260831162304_identity_and_course_rls`), CI, documentación en `docs/` y ADR.
