@@ -12,6 +12,61 @@
     "status": "En desarrollo temprano. Todavía no hay cuentas ni contenido: esta página es la fundación técnica del proyecto.",
     "repository": "Ver el código en GitHub"
   },
+  "Auth": {
+    "errors": {
+      "email-required": "Escribe tu correo.",
+      "email-invalid": "Ese correo no parece válido.",
+      "password-too-short": "La contraseña necesita al menos 8 caracteres.",
+      "password-too-long": "La contraseña no puede pasar de 72 caracteres.",
+      "invalid-credentials": "El correo o la contraseña no son correctos.",
+      "weak-password": "Esa contraseña es demasiado débil. Prueba con una más larga.",
+      "missing-recovery-session": "Este enlace de recuperación ha caducado. Pide uno nuevo.",
+      "auth-unavailable": "No hemos podido completar la operación. Inténtalo de nuevo en un momento."
+    },
+    "login": {
+      "title": "Entrar en Lexora",
+      "emailLabel": "Correo",
+      "passwordLabel": "Contraseña",
+      "submit": "Entrar",
+      "submitting": "Entrando…",
+      "forgotLink": "¿Has olvidado la contraseña?",
+      "signupPrompt": "¿Todavía no tienes cuenta?",
+      "signupLink": "Crear una cuenta"
+    },
+    "signup": {
+      "title": "Crear una cuenta",
+      "emailLabel": "Correo",
+      "passwordLabel": "Contraseña",
+      "passwordHint": "Al menos 8 caracteres.",
+      "submit": "Crear cuenta",
+      "submitting": "Creando…",
+      "loginPrompt": "¿Ya tienes cuenta?",
+      "loginLink": "Entrar",
+      "checkEmailTitle": "Revisa tu correo",
+      "checkEmailBody": "Si esa dirección puede registrarse, te hemos enviado un enlace para confirmarla."
+    },
+    "forgot": {
+      "title": "Recuperar la contraseña",
+      "description": "Te enviaremos un enlace para elegir una nueva.",
+      "emailLabel": "Correo",
+      "submit": "Enviar el enlace",
+      "submitting": "Enviando…",
+      "sentTitle": "Revisa tu correo",
+      "sentBody": "Si esa dirección tiene una cuenta, te hemos enviado un enlace para cambiar la contraseña.",
+      "backToLogin": "Volver a entrar"
+    },
+    "reset": {
+      "title": "Elegir una contraseña nueva",
+      "passwordLabel": "Contraseña nueva",
+      "passwordHint": "Al menos 8 caracteres.",
+      "submit": "Guardar la contraseña",
+      "submitting": "Guardando…",
+      "doneTitle": "Contraseña cambiada",
+      "doneBody": "Ya puedes entrar con la contraseña nueva.",
+      "toLogin": "Ir a entrar"
+    },
+    "logout": "Cerrar sesión"
+  },
   "LocaleSwitcher": {
     "label": "Idioma de la interfaz",
     "es": "Español",
