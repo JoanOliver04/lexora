@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
-**Última actualización:** 2026-08-31
-**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (8/11)
+**Última actualización:** 2026-09-01
+**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (9/11)
 **Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-2.1…2.8 `HECHO` · siguiente LEX-2.9
-**Rama / commit base / HEAD:** `main` en `ce72ff9` (PR #14, LEX-2.8). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-2.1…2.9 `HECHO` · siguiente LEX-2.10
+**Rama / commit base / HEAD:** rama `feat/lex-2-9-app-shell` desde `main` (`a6fc6c8`); LEX-2.8 ya en `main` (PR #14, `ce72ff9`; cierre docs PR #15, `a6fc6c8`)
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,48 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-2.9 — Shell autenticado y curso activo — `HECHO`
+
+Informe completo en [`evidence/LEX-2.9.md`](evidence/LEX-2.9.md).
+
+El área autenticada deja de ser un marcador de posición y queda **asociada al
+curso activo** del usuario.
+
+- **Migración `20260831215553_active_course.sql`:** `profiles.active_course_id`
+  con **FK compuesta** `(active_course_id, id) → courses (id, owner_id)` y
+  `on delete set null (active_course_id)`. La columna `id` en la FK hace que el
+  curso activo solo pueda ser un curso propio —un `update` al curso de otro
+  falla con `23503`, no «se filtra al leer»—, igual que
+  `course_settings(course_id, user_id)`. **La lista de columnas en `set null` es
+  obligatoria:** sin ella pondría `id` (la PK) a NULL y el borrado del curso
+  fallaría (PostgreSQL 15+; aquí 17). RLS: sin política nueva, `profiles_update_own`
+  ya la cubre. `complete_onboarding` se reemplaza (`create or replace`) para
+  fijar `active_course_id = coalesce(active_course_id, curso)` al provisionar.
+- **Módulo `courses`:** `pickActiveCourse(courses, activeId)` puro (puntero si
+  sigue entre los suyos; si no, el más antiguo; si no, ninguno) + puerto
+  `ActiveCourseRepository` + adaptador + composición
+  `getActiveCourseForCurrentUser()`.
+- **Shell** (`(app)/app/page.tsx`): encabezado = título del curso activo bajo
+  `App.courseLabel`; el hueco del día describe lo que vendrá. `App.title`
+  retirado. El panel «Hoy» (§9.4) necesita mazos/planificador → FASE 3+.
+- **Puerta de onboarding:** sigue por página (subirla al layout necesita el
+  `pathname`; `(app)` tiene dos rutas). Deuda anotada.
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 12 ficheros/79, build)
+pnpm db:reset  4 migraciones + seed desde vacío
+pnpm db:test   8 ficheros / 123 asserciones, PASS  (070 nuevo: aislamiento del curso activo)
+pnpm db:types  regenerado: profiles.active_course_id (Row/Insert/Update + FK)
+pnpm e2e       36 passed (flake de GoTrue en auth.spec bajo carga paralela; 36/36 al repetir)
+```
+
+**Verificación por rotura:** `070` cazó `on delete set null` sin lista de
+columnas —el `delete` intentaba poner `profiles.id` a NULL—. Corregido a
+`on delete set null (active_course_id)`.
+
+Selector entre varios cursos: sin interfaz hasta que exista un segundo curso;
+la persistencia y el guardián de escritura ya están.
 
 ### LEX-2.8 — Construir onboarding ES/EN — `HECHO`
 
@@ -421,10 +463,11 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 2 en 8/11. LEX-2.1…2.8 en `main` (`ce72ff9`).
+Ninguna tarea `EN PROCESO`. FASE 2 en 9/11. LEX-2.1…2.8 en `main` (`a6fc6c8`);
+LEX-2.9 en rama `feat/lex-2-9-app-shell`, pendiente de commit/PR/CI.
 
-Siguiente: **LEX-2.9** — shell autenticado y selector de curso activo. Depende
-de LEX-2.8.
+Siguiente: **LEX-2.10** — completar manejo de estados y accesibilidad de
+identidad. Depende de LEX-2.5…2.9.
 
 ---
 
@@ -490,10 +533,23 @@ de LEX-2.8.
 | `tests/e2e/onboarding.spec.ts` | LEX-2.8: creado. 3 casos × 2 dispositivos. |
 | `tests/e2e/protected.spec.ts` | LEX-2.8: el test del destino guardado completa el onboarding tras el alta. |
 | `docs/evidence/LEX-2.8.md` | Creado. |
+| `supabase/migrations/20260831215553_active_course.sql` | LEX-2.9: creado. `profiles.active_course_id` + FK compuesta + `create or replace` de `complete_onboarding`. |
+| `supabase/tests/database/070-active-course.sql` | LEX-2.9: creado. 6 asserciones de aislamiento del curso activo. |
+| `supabase/tests/database/060-onboarding-rpc.sql` | LEX-2.9: +2 asserciones (`active_course_id` fijado; re-fijado tras NULL entre llamadas). |
+| `src/modules/courses/application/active-course.{ts,test.ts}` | LEX-2.9: creado. `pickActiveCourse` puro + puerto. |
+| `src/modules/courses/infrastructure/supabase-active-course-repository.ts` | LEX-2.9: creado. Adaptador. |
+| `src/composition/courses.ts` | LEX-2.9: creado. `getActiveCourseForCurrentUser()`. |
+| `src/app/[locale]/(app)/app/page.tsx` | LEX-2.9: shell asociado al curso activo (antes marcador de posición). |
+| `src/shared/infrastructure/supabase/database.types.ts` | LEX-2.9: regenerado (`active_course_id`). |
+| `messages/{es,en}.json` | LEX-2.9: `App.courseLabel` nuevo, `App.title` retirado, `placeholder` reescrito. |
+| `tests/e2e/{onboarding,protected}.spec.ts` | LEX-2.9: asserciones del encabezado del shell (curso activo). |
+| `docs/DATA_MODEL.md` | LEX-2.9: `active_course_id` y la FK compuesta. |
+| `docs/evidence/LEX-2.9.md` | Creado. |
 
-Migraciones SQL: **3** (`20260828143434_identity_and_course`, LEX-2.1;
+Migraciones SQL: **4** (`20260828143434_identity_and_course`, LEX-2.1;
 `20260831162304_identity_and_course_rls`, LEX-2.3;
-`20260831204649_onboarding_rpc`, LEX-2.7). LEX-2.2, LEX-2.4…2.6 y LEX-2.8 no
+`20260831204649_onboarding_rpc`, LEX-2.7;
+`20260831215553_active_course`, LEX-2.9). LEX-2.2, LEX-2.4…2.6 y LEX-2.8 no
 añaden migración.
 
 ---
@@ -510,7 +566,17 @@ añaden migración.
 | Docker | Desktop 4.88.1, motor 29.7.2 |
 | CLI de Supabase | 2.116.0, dependencia de desarrollo del proyecto |
 
-### Puertas de calidad — LEX-2.8 (2026-08-31, PR #14, ya en `main`)
+### Puertas de calidad — LEX-2.9 (2026-09-01, rama `feat/lex-2-9-app-shell`)
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 12 ficheros/79, build)
+pnpm db:reset  4 migraciones + seed desde vacío
+pnpm db:test   000 · 010 · 020 · 030 · 040 · 050 · 060 · 070 — All tests successful, 123 asserciones
+pnpm e2e       36 passed (flake de GoTrue en auth.spec `movil-poco-f5` en la 1ª pasada; 8/8 al repetir el spec, 36/36 el conjunto)
+pnpm db:types  regenerado: profiles.active_course_id (Row/Insert/Update + FK), mismo commit
+```
+
+### Puertas de calidad — LEX-2.8 (PR #14, ya en `main`)
 
 ```text
 pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 11 ficheros/75, build)
@@ -518,8 +584,6 @@ pnpm db:test   000 · 010 · 020 · 030 · 040 · 050 · 060 — All tests succe
 pnpm e2e       36 passed (14 portada + 8 auth + 6 puerta + 8 onboarding)
 pnpm db:types  sin cambios (LEX-2.8 no toca esquema)
 ```
-
-LEX-2.8 no añade migración. `pnpm e2e` verde a la primera (sin flakes).
 
 ### Puertas de calidad — LEX-2.7 (rama `feat/lex-2-7-onboarding`, ya en `main`)
 
@@ -538,6 +602,7 @@ nuevos aplicados.
 ### CI
 
 ```text
+run 33443403540   CI   main   push          success   merge de PR #15 (cierre docs LEX-2.8)
 run 33442806409   CI   main   push          success   merge de PR #14 (LEX-2.8)
 run 33442548467   CI   feat/lex-2-8-…       pull_request   success   PR #14 (LEX-2.8)
 run 33440461002   CI   main   push          success   merge de PR #13 (LEX-2.7)
@@ -603,30 +668,33 @@ Ninguna abierta.
   con ≥1 política».** Una tabla de FASE 3 podría habilitar RLS y olvidar las
   políticas: quedaría en deny-all silencioso. Ampliar la invariante es trabajo de
   FASE 3 (ver `evidence/LEX-2.3.md` §7).
-- **LEX-2.3…2.8 sin revisión cruzada independiente** (§3.6: políticas RLS,
-  ADR-005, sesión SSR, redirects, la función `complete_onboarding`, la pantalla
-  de onboarding). No hay segundo agente disponible. Deuda visible.
-  `complete_onboarding` es SECURITY INVOKER (no DEFINER), así que corre con las
-  políticas del propio usuario y no amplía la superficie que esa revisión
-  cubriría.
-- **La puerta de onboarding vive en `(app)/app/page.tsx`, no en un sitio
-  central.** Hoy `(app)` solo tiene esa página; cuando LEX-2.9/2.10 construyan
-  el shell real, la comprobación `hasCompletedOnboardingForCurrentUser()` debe
-  subir a un punto único para no repetirla en cada página.
-- **Manejo fino de estados y accesibilidad del onboarding: LEX-2.10.** LEX-2.8
-  entrega el estado de error del formulario (claves i18n, `role="alert"`,
-  `aria-invalid`) y campos nativos para teclado/móvil; la auditoría completa es
-  posterior.
+- **LEX-2.3…2.9 sin revisión cruzada independiente** (§3.6: políticas RLS,
+  ADR-005, sesión SSR, redirects, `complete_onboarding`, la pantalla de
+  onboarding, la FK compuesta del curso activo). No hay segundo agente. Deuda
+  visible. `complete_onboarding` es SECURITY INVOKER (no DEFINER); el curso
+  activo es una FK, no una función.
+- **La puerta de onboarding sigue en `(app)/app/page.tsx` (y en
+  `onboarding/page.tsx`), no centralizada.** Subirla al layout necesita el
+  `pathname` para no crear un bucle con `/onboarding`, y un layout de Server
+  Component no lo tiene a mano. `(app)` tiene dos rutas; se centraliza cuando
+  tenga más.
+- **Selector de curso sin interfaz (LEX-2.9).** `profiles.active_course_id` se
+  persiste y la escritura está protegida por FK compuesta (probada en `070`);
+  el cambio entre cursos llega con el segundo curso.
+- **Panel «Hoy» (§9.4) pendiente** de mazos y planificador (FASE 3+). El shell
+  de LEX-2.9 muestra el curso activo y un hueco descrito.
+- **Manejo fino de estados y accesibilidad de identidad: LEX-2.10.**
 
 ---
 
 ## Siguiente acción exacta
 
-Empezar **LEX-2.9** — shell autenticado y selector de curso activo: home
-privada asociada al curso, curso activo persistido, cambio que no da acceso a
-un UUID ajeno. Depende de LEX-2.8 (`HECHO`). Rama `feat/lex-2-9-…` desde
-`main` (`ce72ff9`). Aquí la comprobación `hasCompletedOnboardingForCurrentUser()`,
-hoy repetida por página en `(app)`, sube a un punto único.
+1. Commit de LEX-2.9 en `feat/lex-2-9-app-shell`, abrir PR, esperar CI verde
+   (tres trabajos), fusionar.
+2. Empezar **LEX-2.10** — completar manejo de estados y accesibilidad de
+   identidad: loading/empty/error/success, foco y anuncios, traducciones
+   completas, formularios sin errores críticos de accesibilidad. Depende de
+   LEX-2.5…2.9. No iniciarla antes de cerrar el punto 1.
 
 Decisiones vivas: `force row level security` **no** activado (LEX-2.3); creación
 de perfil = caso de uso, **no** trigger (ADR-005); errores de autenticación con
@@ -634,7 +702,9 @@ clave estable + traducción en presentación (LEX-2.5); área privada con doble
 barrera —proxy + layout de `(app)`— y `next` en poder del proxy (LEX-2.6);
 operaciones atómicas en función SQL SECURITY INVOKER tras un puerto, idioma de
 apoyo/objetivo fijos en la V1 (LEX-2.7); puerta de onboarding por página en
-`(app)` hasta que exista el shell (LEX-2.8).
+`(app)` hasta que exista el shell (LEX-2.8); curso activo por FK compuesta
+`(active_course_id, id) → courses (id, owner_id)`, `on delete set null` con
+lista de columnas (LEX-2.9).
 
 ---
 
@@ -655,13 +725,15 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main` en `ce72ff9` (PR #14, LEX-2.8).
+- Rama por defecto: `main` en `a6fc6c8` (PR #14 LEX-2.8 + PR #15 cierre docs).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
-- Sin rama de trabajo activa.
+- Rama de trabajo actual: `feat/lex-2-9-app-shell` desde `a6fc6c8`. LEX-2.9
+  implementado; pendiente de commit, PR y CI.
 - LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs);
   LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10; LEX-2.5 → PR #11;
-  LEX-2.6 → PR #12; LEX-2.7 → PR #13; LEX-2.8 → PR #14. Ramas borradas.
+  LEX-2.6 → PR #12; LEX-2.7 → PR #13; LEX-2.8 → PR #14 (+ #15 cierre docs).
+  Ramas borradas.
 - Contenido versionado: aplicación Next.js completa (módulos `identity` y
-  `courses`), `supabase/` (config, seed, tests, **migrations** — tres:
-  `20260828143434_identity_and_course`, `20260831162304_identity_and_course_rls`,
-  `20260831204649_onboarding_rpc`), CI, documentación en `docs/` y ADR (001–005).
+  `courses`), `supabase/` (config, seed, tests, **migrations** — cuatro:
+  `…_identity_and_course`, `…_identity_and_course_rls`, `…_onboarding_rpc`,
+  `20260831215553_active_course`), CI, documentación en `docs/` y ADR (001–005).

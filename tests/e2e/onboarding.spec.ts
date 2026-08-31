@@ -45,7 +45,9 @@ test.describe("onboarding", () => {
     await page.getByRole("button", { name: "Crear mi curso" }).click();
 
     await expect(page).toHaveURL("/es/app");
-    await expect(page.getByRole("heading", { name: "Área privada" })).toBeVisible();
+    // El shell muestra el curso activo; con interfaz `es` el título es "Inglés".
+    await expect(page.getByRole("heading", { name: "Inglés" })).toBeVisible();
+    await expect(page.getByText("Tu curso")).toBeVisible();
 
     // Repetir el onboarding ya no procede.
     await page.goto("/es/onboarding");
@@ -71,7 +73,9 @@ test.describe("onboarding", () => {
     await page.getByRole("button", { name: "Crear mi curso" }).click();
 
     await expect(page).toHaveURL("/en/app");
-    await expect(page.getByRole("heading", { name: "Your space" })).toBeVisible();
+    // Interfaz `en` → el curso se titula "English"; el shell lo muestra.
+    await expect(page.getByRole("heading", { name: "English" })).toBeVisible();
+    await expect(page.getByText("Your course")).toBeVisible();
   });
 
   test("un límite fuera de rango se rechaza con un mensaje y no crea el curso", async ({

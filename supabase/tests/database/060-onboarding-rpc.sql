@@ -15,7 +15,7 @@
 -- update of the one course, not a silent no-op and not a second course.
 
 begin;
-select plan(32);
+select plan(34);
 
 -- Fixture (migration role: BYPASSRLS).
 insert into auth.users (id) values
@@ -131,9 +131,22 @@ select is(
   'title en el idioma de interfaz de C (es)'
 );
 
+-- LEX-2.9: el onboarding deja al usuario con un curso activo.
+select is(
+  (select active_course_id from public.profiles
+    where id = 'a5e00003-0000-4000-8000-000000000003'),
+  (select id from public.courses
+    where owner_id = 'a5e00003-0000-4000-8000-000000000003'),
+  'profiles.active_course_id apunta al curso recién creado'
+);
+
 -- Instantánea para comparar tras la repetición. Se crea como el rol de
 -- migración (no depende de que `authenticated` tenga privilegio TEMP); solo
 -- lee la fila de C, cuyo valor es el mismo con RLS o sin ella.
+--
+-- Además se pone `active_course_id` a NULL: la segunda llamada debe volver a
+-- fijarlo. Así el `coalesce(active_course_id, curso)` de la función se prueba
+-- por su rama de escritura, y no da un falso verde por «ya estaba bien».
 reset role;
 create temp table _snap as
   select
@@ -142,6 +155,10 @@ create temp table _snap as
     (select onboarding_completed_at from public.profiles
       where id = 'a5e00003-0000-4000-8000-000000000003') as completed_at;
 grant select on _snap to authenticated;
+
+update public.profiles
+  set active_course_id = null
+  where id = 'a5e00003-0000-4000-8000-000000000003';
 
 -- ===========================================================================
 -- Como user C: repite el onboarding con OTROS valores.
@@ -205,6 +222,14 @@ select is(
     where owner_id = 'a5e00003-0000-4000-8000-000000000003'),
   'Inglés',
   'repetir el onboarding NO cambia el título (rama de actualización)'
+);
+
+-- Se puso a NULL antes de esta llamada: la función lo vuelve a fijar.
+select is(
+  (select active_course_id from public.profiles
+    where id = 'a5e00003-0000-4000-8000-000000000003'),
+  (select course_id from _snap),
+  'la segunda llamada re-fija active_course_id si estaba en NULL (coalesce)'
 );
 
 -- El CHECK course_settings_daily_new_limit_range (0..100) sigue mandando: la

@@ -174,6 +174,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_course_id: string | null
           created_at: string
           display_name: string | null
           id: string
@@ -183,6 +184,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active_course_id?: string | null
           created_at?: string
           display_name?: string | null
           id: string
@@ -192,6 +194,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active_course_id?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
@@ -200,7 +203,15 @@ export type Database = {
           ui_locale?: Database["public"]["Enums"]["ui_locale"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_active_course_fk"
+            columns: ["active_course_id", "id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
       }
     }
     Views: {
