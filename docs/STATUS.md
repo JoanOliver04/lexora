@@ -5,7 +5,7 @@
 **Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
 **Tarea activa:** ninguna
 **Estado de la tarea:** LEX-2.1 · LEX-2.2 · LEX-2.3 `HECHO` · siguiente LEX-2.4
-**Rama / commit base / HEAD:** rama `feat/lex-2-3-rls-policies` desde `main` (`462e016`); LEX-2.3 pendiente de commit, PR y CI
+**Rama / commit base / HEAD:** rama `feat/lex-2-3-rls-policies` (`afd2d60`) desde `main` (`462e016`); PR #8, CI verde, pendiente de merge por Joan
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -195,7 +195,8 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 2 en 3/11. LEX-2.3 pendiente de commit/PR/CI.
+Ninguna tarea `EN PROCESO`. FASE 2 en 3/11. LEX-2.3 en PR #8 con CI verde,
+pendiente de merge por Joan.
 
 Siguiente: **LEX-2.4** — creación idempotente de perfil ligada a `auth.users`:
 reintento seguro, perfil no duplicable, comportamiento de error probado, y
@@ -256,10 +257,13 @@ ninguna otra; restaurado → PASS.
 ### CI
 
 ```text
-run 33188727474   CI   main            push          success   merge de PR #6 (LEX-2.2), último verde sobre main
+run 33416229043   CI   feat/lex-2-3-rls-policies   pull_request   success   PR #8 (LEX-2.3)
+  Calidad 40s · Base de datos 2m17s · Extremo a extremo 2m16s
+run 33188727474   CI   main                        push           success   merge de PR #6 (LEX-2.2)
 ```
 
-LEX-2.3 todavía sin CI: rama sin subir. Pendiente PR.
+LEX-2.3: PR [#8](https://github.com/JoanOliver04/lexora/pull/8), CI verde (tres
+trabajos). Pendiente de merge por Joan.
 
 ---
 
@@ -319,9 +323,7 @@ Ninguna abierta.
 
 ## Siguiente acción exacta
 
-1. Commit de LEX-2.3 en `feat/lex-2-3-rls-policies`, abrir PR, esperar CI verde
-   (tres trabajos), fusionar. Solo entonces la fila del roadmap queda cerrada
-   del todo con su `run` de CI.
+1. Fusionar PR #8 (LEX-2.3) — corresponde a Joan. CI verde (run 33416229043).
 2. Empezar **LEX-2.4** — creación idempotente de perfil ligada a `auth.users`:
    alta con reintento seguro, perfil no duplicable, comportamiento de error
    probado; documentar la decisión trigger vs. caso de uso. Depende de LEX-2.1 y
@@ -351,8 +353,8 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 - Rama por defecto: `main`, sincronizada con `origin/main` (`462e016`).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
-- Rama de trabajo actual: `feat/lex-2-3-rls-policies`, con LEX-2.3 sin commit
-  todavía. Sin subir, sin PR.
+- Rama de trabajo actual: `feat/lex-2-3-rls-policies` (`afd2d60`), subida,
+  PR #8 con CI verde, pendiente de merge.
 - LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs).
   Ramas borradas.
 - Contenido versionado: aplicación Next.js completa, `supabase/` (config, seed,
