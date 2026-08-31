@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-31
-**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (3/11)
+**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (4/11)
 **Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-2.1 · LEX-2.2 · LEX-2.3 `HECHO` · siguiente LEX-2.4
-**Rama / commit base / HEAD:** `main` con LEX-2.3 fusionado (PR #8, merge `ec9223d`)
+**Estado de la tarea:** LEX-2.1…2.4 `HECHO` · siguiente LEX-2.5
+**Rama / commit base / HEAD:** rama `feat/lex-2-4-profile-creation` desde `main` (`b44b5bb`); LEX-2.4 pendiente de commit, PR y CI. LEX-2.3 ya en `main` (PR #8, `ec9223d`)
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,49 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-2.4 — Creación idempotente de perfil — `HECHO`
+
+Informe completo en [`evidence/LEX-2.4.md`](evidence/LEX-2.4.md).
+
+**ADR-005 — creación de perfil = caso de uso, no trigger.** `MASTER_SPEC.md`
+§9.2 pide «creación automática e idempotente del perfil». Se elige un caso de
+uso de la capa de aplicación en vez de un trigger `SECURITY DEFINER` sobre
+`auth.users`: alinea con ADR-001/-002, evita una función `security definer` sin
+la revisión cruzada que exige §3.6 y que no está disponible, y la política
+`profiles_insert_own` (LEX-2.3) ya hace de segunda barrera. **Sin migración:**
+la unicidad la da la PK de `profiles` (LEX-2.1); la idempotencia,
+`INSERT … ON CONFLICT (id) DO NOTHING`.
+
+- `src/modules/identity/application/ensure-profile.ts` — puerto
+  `ProfileRepository.ensureExists`, caso de uso `ensureProfile`,
+  `EnsureProfileError`, resultado `created` / `already-existed`.
+- `src/modules/identity/infrastructure/supabase-profile-repository.ts` —
+  `upsert` con `ignoreDuplicates`; `select()` vacío ⇒ ya existía.
+- `src/composition/identity.ts` — `ensureProfileForCurrentUser()`: el `userId`
+  sale de `getClaims()` (firma verificada), nunca de un parámetro. Sin llamador
+  todavía: lo consumen LEX-2.5 y LEX-2.6.
+- Sin carpeta `domain/` en el módulo: no hay lógica pura que colocar.
+
+Tests: `ensure-profile.test.ts` con repo en memoria (crea / idempotente /
+concurrencia / id vacío / propaga error) y `050-profile-creation.sql`
+(9 asserciones; `auth.uid()` fijado; ensure inserta 1 → segundo 0; insert
+duplicado a pelo → `23505`, que es lo que hace el perfil no duplicable, no el
+`ON CONFLICT`; A no crea perfil de B → `42501`; anon → `42501`).
+
+```text
+pnpm db:test   6 ficheros, 83 asserciones, PASS
+pnpm check     exit 0 (format, lint, typecheck, contraste, vitest 22, build)
+pnpm e2e       14 passed
+```
+
+**Verificación por rotura:** en una transacción revertida, `drop constraint
+profiles_pkey` → los dos insert a pelo dejan 2 filas; confirma que la asserción
+`23505` de `050` es la que discrimina. Las `42501` replican el patrón ya
+verificado por rotura en `040`.
+
+**Ventana sin perfil** entre el alta y la primera petición propia: aceptada en
+ADR-005, se cierra en LEX-2.6.
 
 ### LEX-2.3 — RLS y tests de aislamiento de las tablas base — `HECHO`
 
@@ -195,11 +238,12 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 2 en 3/11. LEX-2.3 fusionada a `main` (PR #8).
+Ninguna tarea `EN PROCESO`. FASE 2 en 4/11. LEX-2.3 en `main` (PR #8/#9);
+LEX-2.4 en rama `feat/lex-2-4-profile-creation`, pendiente de commit/PR/CI.
 
-Siguiente: **LEX-2.4** — creación idempotente de perfil ligada a `auth.users`:
-reintento seguro, perfil no duplicable, comportamiento de error probado, y
-decisión trigger / caso de uso documentada. Depende de LEX-2.1 y LEX-2.3.
+Siguiente: **LEX-2.5** — registro, verificación, login, logout y recuperación
+por correo y contraseña (Supabase Auth SSR). Aplica el gate §12.6. Depende de
+LEX-1.8 y LEX-2.4.
 
 ---
 
@@ -221,9 +265,17 @@ decisión trigger / caso de uso documentada. Depende de LEX-2.1 y LEX-2.3.
 | `supabase/migrations/20260831162304_identity_and_course_rls.sql` | LEX-2.3: creado. 14 políticas RLS por operación. |
 | `supabase/tests/database/040-identity-course-rls.sql` | LEX-2.3: creado. 36 asserciones de aislamiento dueño / no-dueño / anon / service_role. |
 | `docs/evidence/LEX-2.3.md` | Creado. |
+| `src/modules/identity/application/ensure-profile.{ts,test.ts}` | LEX-2.4: creado. Puerto `ProfileRepository`, caso de uso `ensureProfile`, tests con repo en memoria. |
+| `src/modules/identity/infrastructure/supabase-profile-repository.ts` | LEX-2.4: creado. Adaptador `upsert` idempotente. |
+| `src/composition/identity.ts` | LEX-2.4: creado. `ensureProfileForCurrentUser()`. |
+| `supabase/tests/database/050-profile-creation.sql` | LEX-2.4: creado. 9 asserciones. |
+| `docs/adrs/ADR-005-creacion-de-perfil.md`, `docs/adrs/README.md` | LEX-2.4: ADR-005 y su fila en el índice. |
+| `docs/DATA_MODEL.md` | LEX-2.4: nota sobre la creación de la fila de perfil. |
+| `docs/evidence/LEX-2.4.md` | Creado. |
 
 Migraciones SQL: **2** (`20260828143434_identity_and_course`, LEX-2.1;
-`20260831162304_identity_and_course_rls`, LEX-2.3). LEX-2.2 no añade migración.
+`20260831162304_identity_and_course_rls`, LEX-2.3). LEX-2.2 y LEX-2.4 no añaden
+migración (LEX-2.4 por decisión de ADR-005: sin trigger, sin cambio de esquema).
 
 ---
 
@@ -239,31 +291,28 @@ Migraciones SQL: **2** (`20260828143434_identity_and_course`, LEX-2.1;
 | Docker | Desktop 4.88.1, motor 29.7.2 |
 | CLI de Supabase | 2.116.0, dependencia de desarrollo del proyecto |
 
-### Puertas de calidad — LEX-2.3 (2026-08-31, rama `feat/lex-2-3-rls-policies`)
+### Puertas de calidad — LEX-2.4 (2026-08-31, rama `feat/lex-2-4-profile-creation`)
 
 ```text
-pnpm db:reset   2 migraciones + seed desde vacío, sin pasos manuales
-pnpm db:test    000 · 010 · 020 · 030 · 040 — All tests successful, 74 asserciones
-pnpm db:types   sin cambios; git diff de database.types.ts vacío
-pnpm check      exit 0 (format, lint, typecheck, contraste, vitest, build)
-pnpm e2e        14 passed (escritorio-chromium + movil-poco-f5)
+pnpm db:test   000 · 010 · 020 · 030 · 040 · 050 — All tests successful, 83 asserciones
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 4 ficheros/22, build)
+pnpm e2e       14 passed (escritorio-chromium + movil-poco-f5)
 ```
 
-Verificación por rotura: debilitar `courses_select_own`/`courses_delete_own` a
-`using (true)` → fallan exactamente 5 asserciones de aislamiento de `courses`,
-ninguna otra; restaurado → PASS.
+LEX-2.4 no añade migración ni cambia `database.types.ts`. Verificación por
+rotura: sin `profiles_pkey` el insert duplicado a pelo deja 2 filas (la
+asserción `23505` de `050` es la que discrimina).
 
 ### CI
 
 ```text
 run 33422803840   CI   main                        push           success   merge de PR #8 (LEX-2.3)
 run 33416229043   CI   feat/lex-2-3-rls-policies    pull_request   success   PR #8 (LEX-2.3)
-run 33188727474   CI   main                        push           success   merge de PR #6 (LEX-2.2)
+run 33427904179   CI   main                        push           success   merge de PR #9 (cierre docs LEX-2.3)
 ```
 
-LEX-2.3: PR [#8](https://github.com/JoanOliver04/lexora/pull/8) fusionada a
-`main` (merge `ec9223d`); CI verde tras el merge (run 33422803840, tres
-trabajos: Calidad 45s · Base de datos 2m13s · Extremo a extremo 2m19s).
+LEX-2.3 en `main` (PR #8 `ec9223d`, PR #9 docs). **LEX-2.4 todavía sin CI:**
+rama sin subir, pendiente PR.
 
 ---
 
@@ -316,20 +365,28 @@ Ninguna abierta.
   con ≥1 política».** Una tabla de FASE 3 podría habilitar RLS y olvidar las
   políticas: quedaría en deny-all silencioso. Ampliar la invariante es trabajo de
   FASE 3 (ver `evidence/LEX-2.3.md` §7).
-- **LEX-2.3 sin revisión cruzada independiente** (§3.6, políticas RLS). No hay
-  segundo agente disponible. Deuda visible.
+- **LEX-2.3 y LEX-2.4 sin revisión cruzada independiente** (§3.6, políticas RLS
+  y ADR-005). No hay segundo agente disponible. Deuda visible. En LEX-2.4, al no
+  añadir función `SECURITY DEFINER`, la superficie que esa revisión cubriría no
+  crece.
+- **`ensureProfileForCurrentUser()` sin llamador todavía.** Es el punto de
+  entrada que consumirán LEX-2.5 (tras el alta) y LEX-2.6 (protección de rutas).
+  Hasta entonces no hay área autenticada, así que nada depende del perfil.
 
 ---
 
 ## Siguiente acción exacta
 
-Empezar **LEX-2.4** — creación idempotente de perfil ligada a `auth.users`:
-alta con reintento seguro, perfil no duplicable, comportamiento de error
-probado; documentar la decisión trigger vs. caso de uso. Depende de LEX-2.1 y
-LEX-2.3, ambas `HECHO` y en `main`.
+1. Commit de LEX-2.4 en `feat/lex-2-4-profile-creation`, abrir PR, esperar CI
+   verde (tres trabajos), fusionar.
+2. Empezar **LEX-2.5** — registro, verificación, login, logout y recuperación
+   por correo y contraseña (Supabase Auth SSR). Traducido ES/EN, redirects por
+   lista segura, errores que no revelan si un correo existe; tras el alta/login
+   se llama a `ensureProfileForCurrentUser()`. Aplica el gate §12.6. Depende de
+   LEX-1.8 y LEX-2.4 (`HECHO`). No iniciarla antes de cerrar el punto 1.
 
-`force row level security`: decidido **no** activarlo (razón en
-`evidence/LEX-2.3.md` §2 y en el comentario de la migración).
+Decisiones vivas: `force row level security` **no** activado (LEX-2.3); creación
+de perfil = caso de uso, **no** trigger (ADR-005).
 
 ---
 
@@ -350,10 +407,13 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main`, sincronizada con `origin/main` (`ec9223d`).
+- Rama por defecto: `main`, sincronizada con `origin/main` (`b44b5bb`).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
+- Rama de trabajo actual: `feat/lex-2-4-profile-creation`, LEX-2.4 sin commit.
+  Sin subir, sin PR.
 - LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs);
-  LEX-2.3 → PR #8 (+ este cierre docs). Ramas borradas.
-- Contenido versionado: aplicación Next.js completa, `supabase/` (config, seed,
-  tests, **migrations** — dos: `20260828143434_identity_and_course`,
-  `20260831162304_identity_and_course_rls`), CI, documentación en `docs/` y ADR.
+  LEX-2.3 → PR #8 (+ #9 cierre docs). Ramas borradas.
+- Contenido versionado: aplicación Next.js completa (incl. módulo `identity`),
+  `supabase/` (config, seed, tests, **migrations** — dos:
+  `20260828143434_identity_and_course`, `20260831162304_identity_and_course_rls`),
+  CI, documentación en `docs/` y ADR (001–005).

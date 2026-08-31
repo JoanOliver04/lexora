@@ -12,6 +12,7 @@ explicarse y, si hace falta, revertirse con conocimiento de causa.
 | [ADR-002](ADR-002-supabase-sin-orm.md) | Supabase Data API con repositorios propios, sin ORM | Aceptado |
 | [ADR-003](ADR-003-fsrs-programa-practice-item.md) | FSRS programa `PracticeItem`, no `Concept` | Aceptado |
 | [ADR-004](ADR-004-pwa-online-first.md) | PWA online-first, sin estudio offline en V1 | Aceptado |
+| [ADR-005](ADR-005-creacion-de-perfil.md) | La creación del perfil es un caso de uso, no un trigger | Aceptado |
 
 ## Reglas
 

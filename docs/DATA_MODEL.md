@@ -87,6 +87,14 @@ Estados cerrados como enums de PostgreSQL: `ui_locale` (`es`, `en`) y
 | `onboarding_completed_at` | `timestamptz` NULL | lo fija el onboarding (LEX-2.7/2.8) |
 | `created_at`, `updated_at` | `timestamptz` NOT NULL | `updated_at` lo mantiene un trigger |
 
+_Creación de la fila (LEX-2.4):_ la asegura un **caso de uso de la capa de
+aplicación** (`ensureProfile`) a la entrada del área autenticada, bajo la
+identidad del propio usuario, de forma idempotente
+(`INSERT ... ON CONFLICT (id) DO NOTHING`). **No hay trigger** sobre
+`auth.users` y LEX-2.4 no añade migración: la unicidad la da la PK y el
+aislamiento la política `profiles_insert_own`. Motivos en
+[ADR-005](adrs/ADR-005-creacion-de-perfil.md).
+
 **`languages`** — catálogo de referencia. Semillas en LEX-2.2.
 
 | Columna | Tipo | Notas |
