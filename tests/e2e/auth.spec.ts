@@ -1,0 +1,77 @@
+import { expect, test } from "@playwright/test";
+
+/**
+ * Flujos de autenticación con correo y contraseña (LEX-2.5).
+ *
+ * En local `enable_confirmations = false`, así que el alta deja sesión abierta
+ * de inmediato y vuelve a la portada. La verificación por correo real se prueba
+ * a mano (queda para el propietario).
+ */
+
+function uniqueEmail(): string {
+  return `e2e-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
+}
+
+const PASSWORD = "e2e-passw0rd";
+
+function hasAuthCookie(cookies: { name: string }[]): boolean {
+  return cookies.some((cookie) => cookie.name.includes("auth-token"));
+}
+
+test.describe("autenticación", () => {
+  test("alta, cierre y reinicio de sesión", async ({ page }) => {
+    const email = uniqueEmail();
+
+    await page.goto("/es/signup");
+    await page.getByLabel("Correo").fill(email);
+    await page.getByLabel("Contraseña").fill(PASSWORD);
+    await page.getByRole("button", { name: "Crear cuenta" }).click();
+
+    await expect(page).toHaveURL("/es");
+    expect(hasAuthCookie(await page.context().cookies())).toBe(true);
+
+    // Cerrar sesión desde la portada.
+    await page.getByRole("button", { name: "Cerrar sesión" }).click();
+    await expect(page).toHaveURL("/es/login");
+    expect(hasAuthCookie(await page.context().cookies())).toBe(false);
+
+    // Entrar de nuevo con las mismas credenciales.
+    await page.goto("/es/login");
+    await page.getByLabel("Correo").fill(email);
+    await page.getByLabel("Contraseña").fill(PASSWORD);
+    await page.getByRole("button", { name: "Entrar", exact: true }).click();
+
+    await expect(page).toHaveURL("/es");
+    expect(hasAuthCookie(await page.context().cookies())).toBe(true);
+  });
+
+  test("una contraseña incorrecta da un error genérico y no revela nada", async ({ page }) => {
+    await page.goto("/es/login");
+    await page.getByLabel("Correo").fill(uniqueEmail());
+    await page.getByLabel("Contraseña").fill("no-es-la-buena");
+    await page.getByRole("button", { name: "Entrar", exact: true }).click();
+
+    // `getByRole("alert")` también captura el anunciador de rutas de Next
+    // (un div vacío), así que se localiza el mensaje por su texto.
+    const alert = page.getByText("El correo o la contraseña no son correctos.");
+    await expect(alert).toBeVisible();
+    await expect(alert).toHaveAttribute("role", "alert");
+    await expect(page).toHaveURL(/\/es\/login/);
+  });
+
+  test("recuperar contraseña responde igual exista o no la cuenta", async ({ page }) => {
+    await page.goto("/es/forgot-password");
+    await page.getByLabel("Correo").fill(uniqueEmail());
+    await page.getByRole("button", { name: "Enviar el enlace" }).click();
+
+    await expect(page.getByRole("status")).toContainText("Revisa tu correo");
+  });
+
+  test("el alta se sirve en inglés bajo /en", async ({ page }) => {
+    await page.goto("/en/signup");
+
+    await expect(page.getByRole("heading", { name: "Create an account" })).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Create account" })).toBeVisible();
+  });
+});

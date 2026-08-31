@@ -12,6 +12,61 @@
     "status": "Early development. There are no accounts or content yet: this page is the project's technical foundation.",
     "repository": "View the code on GitHub"
   },
+  "Auth": {
+    "errors": {
+      "email-required": "Enter your email.",
+      "email-invalid": "That email doesn't look valid.",
+      "password-too-short": "The password needs at least 8 characters.",
+      "password-too-long": "The password can't be longer than 72 characters.",
+      "invalid-credentials": "That email or password is not correct.",
+      "weak-password": "That password is too weak. Try a longer one.",
+      "missing-recovery-session": "This recovery link has expired. Request a new one.",
+      "auth-unavailable": "We couldn't complete that. Please try again in a moment."
+    },
+    "login": {
+      "title": "Sign in to Lexora",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "forgotLink": "Forgot your password?",
+      "signupPrompt": "Don't have an account yet?",
+      "signupLink": "Create one"
+    },
+    "signup": {
+      "title": "Create an account",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "passwordHint": "At least 8 characters.",
+      "submit": "Create account",
+      "submitting": "Creating…",
+      "loginPrompt": "Already have an account?",
+      "loginLink": "Sign in",
+      "checkEmailTitle": "Check your email",
+      "checkEmailBody": "If that address can be registered, we've sent a link to confirm it."
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "description": "We'll email you a link to choose a new one.",
+      "emailLabel": "Email",
+      "submit": "Send the link",
+      "submitting": "Sending…",
+      "sentTitle": "Check your email",
+      "sentBody": "If that address has an account, we've sent a link to change the password.",
+      "backToLogin": "Back to sign in"
+    },
+    "reset": {
+      "title": "Choose a new password",
+      "passwordLabel": "New password",
+      "passwordHint": "At least 8 characters.",
+      "submit": "Save the password",
+      "submitting": "Saving…",
+      "doneTitle": "Password changed",
+      "doneBody": "You can now sign in with the new password.",
+      "toLogin": "Go to sign in"
+    },
+    "logout": "Sign out"
+  },
   "LocaleSwitcher": {
     "label": "Interface language",
     "es": "Español",

@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-08-31
-**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (4/11)
+**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (5/11)
 **Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-2.1…2.4 `HECHO` · siguiente LEX-2.5
-**Rama / commit base / HEAD:** rama `feat/lex-2-4-profile-creation` desde `main` (`b44b5bb`); LEX-2.4 pendiente de commit, PR y CI. LEX-2.3 ya en `main` (PR #8, `ec9223d`)
+**Estado de la tarea:** LEX-2.1…2.5 `HECHO` · siguiente LEX-2.6
+**Rama / commit base / HEAD:** rama `feat/lex-2-5-auth-flows` desde `main` (`e0b768d`); LEX-2.5 pendiente de commit, PR y CI. LEX-2.4 ya en `main` (PR #10, `e0b768d`)
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,46 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-2.5 — Registro, login, logout y recuperación — `HECHO`
+
+Informe completo en [`evidence/LEX-2.5.md`](evidence/LEX-2.5.md).
+
+Flujos de correo y contraseña con Supabase Auth SSR. Módulo `identity`:
+
+- **Aplicación:** `credentials` (Zod, claves estables), `safe-redirect`
+  (`resolveSafeRedirect`: solo rutas internas), `auth-gateway` (puerto +
+  errores), `auth-flows` (casos de uso; un fallo de infraestructura es
+  `auth-unavailable`, no una excepción).
+- **Infraestructura:** `supabase-auth-gateway` — traduce los errores de GoTrue.
+- **Composición:** `registerVisitor` / `signInVisitor` / `signOutVisitor` /
+  `requestPasswordResetFor` / `updateCurrentPassword` / `completeAuthCallback` /
+  `getCurrentUserId`. Tras autenticar llama a `ensureProfileForCurrentUser()`.
+- **Presentación:** `(auth)/` con login/signup/forgot-password/reset-password
+  (Server Component + form con `useActionState`), Server Actions delgadas
+  (`locale` y `next` validados antes de `redirect()`), callback en
+  `/api/auth/callback` (fuera del `matcher` del proxy), `SessionControls` en la
+  portada. i18n ES/EN (namespace `Auth`).
+
+**No revela si un correo existe (§12.6):** alta con correo repetido
+(`user_already_exists`, 422 en local con `enable_confirmations=false`) → mismo
+resultado que un alta nueva; login = un solo mensaje `invalid-credentials`;
+recuperación responde igual exista o no la cuenta.
+
+`supabase/config.toml`: `site_url` local pasa a `http://localhost:3000` (lo que
+sirven `pnpm start` y Playwright). Sin ese cambio, GoTrue descarta el
+`redirectTo` del correo de recuperación. Solo entorno local. **Sin migración.**
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste, vitest 7 ficheros/48, build)
+pnpm db:test   6 ficheros, 83 asserciones, PASS
+pnpm e2e       22 passed (14 portada + 8 auth: alta→logout→login por cookie,
+               contraseña incorrecta genérica, recuperación neutral, /en en inglés)
+pnpm db:types  sin cambios
+```
+
+Entregado como un solo PR pese a `ROADMAP.md` §2.5 (cinco pantallas), por
+indicación del propietario de no detenerse a preguntar.
 
 ### LEX-2.4 — Creación idempotente de perfil — `HECHO`
 
@@ -238,12 +278,11 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 2 en 4/11. LEX-2.3 en `main` (PR #8/#9);
-LEX-2.4 en rama `feat/lex-2-4-profile-creation`, pendiente de commit/PR/CI.
+Ninguna tarea `EN PROCESO`. FASE 2 en 5/11. LEX-2.3/2.4 en `main`;
+LEX-2.5 en rama `feat/lex-2-5-auth-flows`, pendiente de commit/PR/CI.
 
-Siguiente: **LEX-2.5** — registro, verificación, login, logout y recuperación
-por correo y contraseña (Supabase Auth SSR). Aplica el gate §12.6. Depende de
-LEX-1.8 y LEX-2.4.
+Siguiente: **LEX-2.6** — proteger rutas y mantener sesión SSR. Aplica el gate
+§12.6. Depende de LEX-2.5.
 
 ---
 
@@ -272,10 +311,20 @@ LEX-1.8 y LEX-2.4.
 | `docs/adrs/ADR-005-creacion-de-perfil.md`, `docs/adrs/README.md` | LEX-2.4: ADR-005 y su fila en el índice. |
 | `docs/DATA_MODEL.md` | LEX-2.4: nota sobre la creación de la fila de perfil. |
 | `docs/evidence/LEX-2.4.md` | Creado. |
+| `src/modules/identity/application/{credentials,safe-redirect,auth-gateway,auth-flows}.ts` (+ 3 `.test.ts`) | LEX-2.5: creados. Puertos y casos de uso de autenticación. |
+| `src/modules/identity/infrastructure/supabase-auth-gateway.ts` | LEX-2.5: creado. Adaptador sobre `supabase.auth.*`. |
+| `src/composition/identity.ts` | LEX-2.5: ampliado con los cinco flujos + `getCurrentUserId` + `completeAuthCallback`. |
+| `src/app/[locale]/(auth)/` | LEX-2.5: layout, `actions.ts`, 4×{page + form}, `_components/`. |
+| `src/app/[locale]/session-controls.tsx`, `src/app/[locale]/page.tsx` | LEX-2.5: control de sesión en la portada (la hace dinámica). |
+| `src/app/api/auth/callback/route.ts` | LEX-2.5: canje del `code` del enlace de correo. |
+| `messages/{es,en}.json` | LEX-2.5: namespace `Auth`. |
+| `supabase/config.toml` | LEX-2.5: `site_url` local → `http://localhost:3000`; `additional_redirect_urls`. |
+| `tests/e2e/auth.spec.ts` | LEX-2.5: creado. 4 casos × 2 dispositivos. |
+| `docs/evidence/LEX-2.5.md` | Creado. |
 
 Migraciones SQL: **2** (`20260828143434_identity_and_course`, LEX-2.1;
-`20260831162304_identity_and_course_rls`, LEX-2.3). LEX-2.2 y LEX-2.4 no añaden
-migración (LEX-2.4 por decisión de ADR-005: sin trigger, sin cambio de esquema).
+`20260831162304_identity_and_course_rls`, LEX-2.3). LEX-2.2, LEX-2.4 y LEX-2.5
+no añaden migración.
 
 ---
 
@@ -291,28 +340,31 @@ migración (LEX-2.4 por decisión de ADR-005: sin trigger, sin cambio de esquema
 | Docker | Desktop 4.88.1, motor 29.7.2 |
 | CLI de Supabase | 2.116.0, dependencia de desarrollo del proyecto |
 
-### Puertas de calidad — LEX-2.4 (2026-08-31, rama `feat/lex-2-4-profile-creation`)
+### Puertas de calidad — LEX-2.5 (2026-08-31, rama `feat/lex-2-5-auth-flows`)
 
 ```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 7 ficheros/48, build)
 pnpm db:test   000 · 010 · 020 · 030 · 040 · 050 — All tests successful, 83 asserciones
-pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 4 ficheros/22, build)
-pnpm e2e       14 passed (escritorio-chromium + movil-poco-f5)
+pnpm e2e       22 passed (14 portada + 8 auth)
+pnpm db:types  sin cambios
 ```
 
-LEX-2.4 no añade migración ni cambia `database.types.ts`. Verificación por
-rotura: sin `profiles_pkey` el insert duplicado a pelo deja 2 filas (la
-asserción `23505` de `050` es la que discrimina).
+LEX-2.5 no añade migración. Verificación por rotura: `resolveSafeRedirect`
+devolviendo siempre `raw` → fallan sus 6 casos de rechazo; restaurado, PASS.
 
 ### CI
 
 ```text
-run 33422803840   CI   main                        push           success   merge de PR #8 (LEX-2.3)
-run 33416229043   CI   feat/lex-2-3-rls-policies    pull_request   success   PR #8 (LEX-2.3)
-run 33427904179   CI   main                        push           success   merge de PR #9 (cierre docs LEX-2.3)
+run 33429565060   CI   main   push   success   merge de PR #10 (LEX-2.4) — «Base de datos» reintentado tras flake de red del runner
+run 33422803840   CI   main   push   success   merge de PR #8 (LEX-2.3)
 ```
 
-LEX-2.3 en `main` (PR #8 `ec9223d`, PR #9 docs). **LEX-2.4 todavía sin CI:**
-rama sin subir, pendiente PR.
+LEX-2.3 y LEX-2.4 en `main` (`e0b768d`). **LEX-2.5 todavía sin CI:** rama sin
+subir, pendiente PR.
+
+Nota: el primer intento de CI sobre el merge de PR #10 falló en «Levantar
+Supabase local» por `toomanyrequests` / puerto 54322 ocupado en el runner
+(infra, no el código). Reintentado en verde.
 
 ---
 
@@ -321,11 +373,17 @@ rama sin subir, pendiente PR.
 Corresponden a Joan:
 
 1. **Confirmar la interpretación de «curso de referencia» en LEX-2.2:** se ha
-   entregado como definición documentada, no como fila sembrada en `courses`
-   (que necesitaría un usuario ficticio y adelantaría LEX-2.4). Ver
-   `evidence/LEX-2.2.md` §1.
+   entregado como definición documentada, no como fila sembrada en `courses`.
+   Ver `evidence/LEX-2.2.md` §1.
 2. Mantener una copia de seguridad de `docs/no_visible_en_github/` fuera del
    proyecto: Git no protege esos archivos.
+3. **LEX-2.5 — enlaces de correo de principio a fin (Mailpit
+   `http://127.0.0.1:54324`):** (a) con `enable_confirmations` activado, que el
+   enlace de confirmación de alta pase por `/api/auth/callback` y deje entrar;
+   (b) recuperación de contraseña: solicitar → abrir el correo → seguir el
+   enlace → cambiar la contraseña → entrar con la nueva. En local
+   `enable_confirmations = false`, así que (a) no se puede probar sin cambiar la
+   config.
 
 ---
 
@@ -377,16 +435,20 @@ Ninguna abierta.
 
 ## Siguiente acción exacta
 
-1. Commit de LEX-2.4 en `feat/lex-2-4-profile-creation`, abrir PR, esperar CI
-   verde (tres trabajos), fusionar.
-2. Empezar **LEX-2.5** — registro, verificación, login, logout y recuperación
-   por correo y contraseña (Supabase Auth SSR). Traducido ES/EN, redirects por
-   lista segura, errores que no revelan si un correo existe; tras el alta/login
-   se llama a `ensureProfileForCurrentUser()`. Aplica el gate §12.6. Depende de
-   LEX-1.8 y LEX-2.4 (`HECHO`). No iniciarla antes de cerrar el punto 1.
+1. Commit de LEX-2.5 en `feat/lex-2-5-auth-flows`, abrir PR, esperar CI verde
+   (tres trabajos), fusionar.
+2. Empezar **LEX-2.6** — proteger rutas y mantener sesión SSR: el usuario
+   anónimo no alcanza el área privada (redirección a `login` con `next`),
+   cookies de sesión seguras, renovación/cierre comprobados, páginas privadas
+   fuera de caché compartida. A la entrada del área autenticada se llama a
+   `ensureProfileForCurrentUser()` (cierra la ventana sin perfil de ADR-005).
+   Aplica el gate §12.6. Depende de LEX-2.5. No iniciarla antes de cerrar el
+   punto 1.
 
 Decisiones vivas: `force row level security` **no** activado (LEX-2.3); creación
-de perfil = caso de uso, **no** trigger (ADR-005).
+de perfil = caso de uso, **no** trigger (ADR-005); errores de autenticación con
+clave estable + traducción en presentación, sin revelar si un correo existe
+(LEX-2.5).
 
 ---
 
@@ -407,12 +469,12 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main`, sincronizada con `origin/main` (`b44b5bb`).
+- Rama por defecto: `main`, sincronizada con `origin/main` (`e0b768d`).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
-- Rama de trabajo actual: `feat/lex-2-4-profile-creation`, LEX-2.4 sin commit.
+- Rama de trabajo actual: `feat/lex-2-5-auth-flows`, LEX-2.5 sin commit.
   Sin subir, sin PR.
 - LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs);
-  LEX-2.3 → PR #8 (+ #9 cierre docs). Ramas borradas.
+  LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10. Ramas borradas.
 - Contenido versionado: aplicación Next.js completa (incl. módulo `identity`),
   `supabase/` (config, seed, tests, **migrations** — dos:
   `20260828143434_identity_and_course`, `20260831162304_identity_and_course_rls`),

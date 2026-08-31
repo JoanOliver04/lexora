@@ -5,6 +5,7 @@ import { use } from "react";
 import { ThemeToggle } from "@/shared/presentation/theme/theme-toggle";
 
 import { LocaleSwitcher } from "./locale-switcher";
+import { SessionControls } from "./session-controls";
 
 export default function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = use(params);
@@ -18,7 +19,8 @@ export default function Home({ params }: { params: Promise<{ locale: string }> }
         <span className="font-mono text-sm tracking-wide text-(--color-ink-muted)">
           {t("title")}
         </span>
-        <div className="flex flex-wrap items-start gap-5">
+        <div className="flex flex-wrap items-center gap-5">
+          <SessionControls locale={locale} />
           <LocaleSwitcher />
           <ThemeToggle />
         </div>
