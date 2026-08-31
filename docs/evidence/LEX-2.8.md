@@ -170,8 +170,9 @@ Migraciones: **ninguna**.
 
 ## 10. Estado del árbol Git
 
-Rama `feat/lex-2-8-onboarding-ui` desde `main` (`0cfdc70`). Pendiente de commit,
-PR y CI.
+Rama `feat/lex-2-8-onboarding-ui` desde `main` (`0cfdc70`). PR #14 fusionada a
+`main` (merge `ce72ff9`); CI verde en los tres trabajos, runs `33442548467`
+(PR) y `33442806409` (merge). Rama borrada.
 
 ## 11. Siguiente tarea
 
