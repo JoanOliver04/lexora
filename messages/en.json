@@ -12,6 +12,10 @@
     "status": "Early development. There are no accounts or content yet: this page is the project's technical foundation.",
     "repository": "View the code on GitHub"
   },
+  "App": {
+    "title": "Your space",
+    "placeholder": "Your study day will live here. We're still building it."
+  },
   "Auth": {
     "errors": {
       "email-required": "Enter your email.",

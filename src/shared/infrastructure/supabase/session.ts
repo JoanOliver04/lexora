@@ -21,11 +21,16 @@ import type { Database } from "./database.types";
  *
  * Escribir solo en `response` deja la petición actual con el token viejo.
  * Escribir solo en `request` renueva la sesión y la pierde al terminar.
+ *
+ * Devuelve también el `userId` de la sesión ya verificada (o `null`). El proxy
+ * lo necesita para decidir si una ruta protegida es alcanzable, y esa
+ * comprobación de firma ya se hace aquí: devolverla evita un segundo
+ * `getClaims()` por petición y deja una sola fuente de verdad sobre «quién es».
  */
 export async function refreshSupabaseSession(
   request: NextRequest,
   response: NextResponse,
-): Promise<NextResponse> {
+): Promise<{ response: NextResponse; userId: string | null }> {
   const supabase = createServerClient<Database>(
     clientEnv.NEXT_PUBLIC_SUPABASE_URL,
     clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
@@ -55,7 +60,7 @@ export async function refreshSupabaseSession(
   //
   // `getClaims()` verifica la firma del token contra las claves públicas del
   // proyecto. Es la diferencia entre leer un carné y comprobarlo.
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
 
-  return response;
+  return { response, userId: data?.claims.sub ?? null };
 }
