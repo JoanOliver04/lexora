@@ -1,4 +1,6 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+
+import { signUp, uniqueEmail } from "./helpers";
 
 /**
  * Accesibilidad de los estados de error de identidad (LEX-2.10).
@@ -12,20 +14,6 @@ import { expect, test, type Page } from "@playwright/test";
  * con ese rol y la coincidencia sería ambigua (igual que en `auth.spec.ts` y
  * `onboarding.spec.ts`).
  */
-
-function uniqueEmail(): string {
-  return `e2e-a11y-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
-}
-
-const PASSWORD = "e2e-passw0rd";
-
-async function signUp(page: Page): Promise<void> {
-  await page.goto("/es/signup");
-  await page.getByLabel("Correo").fill(uniqueEmail());
-  await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Crear cuenta" }).click();
-  await expect(page).toHaveURL("/es");
-}
 
 test.describe("accesibilidad de errores de identidad", () => {
   test("el login lleva el foco al primer campo inválido en cada intento", async ({ page }) => {

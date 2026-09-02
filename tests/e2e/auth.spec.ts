@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { PASSWORD, signUp, uniqueEmail } from "./helpers";
+
 /**
  * Flujos de autenticación con correo y contraseña (LEX-2.5).
  *
@@ -8,26 +10,13 @@ import { expect, test } from "@playwright/test";
  * a mano (queda para el propietario).
  */
 
-function uniqueEmail(): string {
-  return `e2e-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
-}
-
-const PASSWORD = "e2e-passw0rd";
-
 function hasAuthCookie(cookies: { name: string }[]): boolean {
   return cookies.some((cookie) => cookie.name.includes("auth-token"));
 }
 
 test.describe("autenticación", () => {
   test("alta, cierre y reinicio de sesión", async ({ page }) => {
-    const email = uniqueEmail();
-
-    await page.goto("/es/signup");
-    await page.getByLabel("Correo").fill(email);
-    await page.getByLabel("Contraseña").fill(PASSWORD);
-    await page.getByRole("button", { name: "Crear cuenta" }).click();
-
-    await expect(page).toHaveURL("/es");
+    const email = await signUp(page);
     expect(hasAuthCookie(await page.context().cookies())).toBe(true);
 
     // Cerrar sesión desde la portada.
