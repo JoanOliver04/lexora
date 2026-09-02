@@ -21,7 +21,7 @@ completitud de las traducciones ES/EN.
 |---|---|
 | **Loading** | `PendingButton` en los cinco formularios (`login`, `signup`, `forgot-password`, `reset-password`, `onboarding`): `disabled` + `aria-busy` + cambio de etiqueta mientras el Server Action está en vuelo. Ya existía; se deja constancia de que cubre el estado. |
 | **Error** | El trabajo de esta tarea. Región `role="alert"` con `id` estable (`FormError`), campos con `aria-invalid` **y** `aria-describedby` a esa región, y el foco al primer campo inválido en cada envío fallido (`useFocusFirstInvalid`). |
-| **Success** | `signup` / `forgot-password` / `reset-password` renderizan un bloque `role="status"` con encabezado `<h2>` y enlace de continuación. `login` y `onboarding` no tienen pantalla de éxito: hacen `redirect()` (a `/{locale}` y a `/{uiLocale}/app`). Es la respuesta deliberada, no un hueco. |
+| **Success** | `signup` / `forgot-password` / `reset-password` sustituyen el formulario por `FormStatus`: `role="status"` (anuncio `polite`) con `tabIndex={-1}` que **toma el foco al montarse** —el `<form>` y el botón donde estaba el foco desaparecen del DOM, así que sin esto quien navega con teclado caería a `<body>`—. `login` y `onboarding` no tienen pantalla de éxito: hacen `redirect()` (a `/{locale}` y a `/{uiLocale}/app`). |
 | **Empty** | No hay vistas de lista en identidad; los formularios siempre tienen campos. N/A, registrado. |
 
 ## 2. Foco y anuncios — `useFocusFirstInvalid`
@@ -56,6 +56,17 @@ error. Da un `id` estable por formulario para poder referenciarlo desde
 Los cinco formularios pasan a usarlo. El `role="alert"` deja de estar en el
 `<p>` del mensaje y pasa al contenedor; el `id` por formulario es `login-error`,
 `signup-error`, `forgot-error`, `reset-error`, `onboarding-error`.
+
+### `FormStatus`
+
+`src/shared/presentation/components/form-status.tsx`. `"use client"`:
+`<div role="status" tabIndex={-1}>` que toma el foco al montarse
+(`useEffect([], focus)`). Unifica las tres pantallas de éxito de identidad
+—antes cada una era un `<div role="status">` hecho a mano— y cierra el hueco de
+foco: al sustituir el formulario entero, el botón donde estaba el foco
+desaparece y sin este componente el foco caería a `<body>`. `outline-none`
+porque el contenedor no es un control, solo un destino de foco programático
+fuera del orden de tabulación.
 
 ## 3. Traducciones — candado de paridad
 
@@ -93,13 +104,20 @@ ya estaba en paridad antes del cambio: el candado protege que siga así.
 Sin cambios: la tarea no toca esquema. Se ejecuta como comprobación de no
 regresión.
 
-### Extremo a extremo (`pnpm e2e` → 40 passed)
+### Extremo a extremo (`pnpm e2e` → 44 passed)
 
-- `identity-a11y.spec.ts` (nuevo, 2 casos ×2 dispositivos):
-  - **login**: envío en vacío → `role="alert"` con el mensaje, foco en el campo
-    de correo, `aria-invalid="true"` y `aria-describedby="login-error"`; el
-    usuario rellena (el foco queda en contraseña) y reenvía → el foco **vuelve**
-    al correo. Es la aserción que falla con un efecto atado solo al montaje.
+- `identity-a11y.spec.ts` (nuevo, 4 casos ×2 dispositivos):
+  - **login, foco por intento**: envío en vacío → `role="alert"` con el mensaje,
+    foco en el campo de correo, `aria-invalid="true"` y
+    `aria-describedby="login-error"`; el usuario rellena (el foco queda en
+    contraseña) y reenvía → el foco **vuelve** al correo. Es la aserción que
+    falla con un efecto atado solo al montaje.
+  - **login, error por URL**: `/es/login?error=missing-recovery-session` pinta
+    `#login-error` (`role="alert"` + texto) en el primer render y el campo de
+    correo ya lo referencia — no hay `aria-describedby` colgando.
+  - **pantalla de éxito**: enviar `forgot-password` con un correo válido → el
+    `role="status"` con «Revisa tu correo» recibe el foco (no se queda en
+    `<body>`).
   - **onboarding**: enviar sin elegir nivel declarado → sigue en `/onboarding`,
     el grupo tiene `aria-invalid="true"` y recibe el foco, y el mensaje «Elige
     tu nivel actual.» es visible.
@@ -120,7 +138,7 @@ regresión.
 pnpm check     exit 0 (format, lint, typecheck, contraste 8/8, vitest 14 ficheros/85, build)
 pnpm db:test   8 ficheros / 123 asserciones, PASS (sin cambios: no toca esquema)
 pnpm db:types  sin cambios (no hay migración)
-pnpm e2e       40 passed (flake de GoTrue en una pasada; 40/40 al repetir)
+pnpm e2e       44 passed (verde a la primera en la última pasada; ver §7 sobre el flake de GoTrue)
 ```
 
 ## 6. Archivos
@@ -129,11 +147,12 @@ pnpm e2e       40 passed (flake de GoTrue en una pasada; 40/40 al repetir)
 |---|---|
 | `src/shared/presentation/hooks/use-focus-first-invalid.ts` (+ `.test.tsx`) | Nuevo. Hook de foco al primer campo inválido + 3 casos jsdom. |
 | `src/shared/presentation/components/form-error.tsx` | Nuevo. Región `role="alert"` con `id` estable. |
-| `src/shared/presentation/components/index.ts` | Exporta `FormError`. |
+| `src/shared/presentation/components/form-status.tsx` | Nuevo. Pantalla de éxito `role="status"` que toma el foco al montarse. |
+| `src/shared/presentation/components/index.ts` | Exporta `FormError` y `FormStatus`. |
 | `src/app/[locale]/(auth)/login/login-form.tsx` | `FormError` + `aria-describedby` + `useFocusFirstInvalid`; `invalid` pasa a `Boolean(state.error)` (era solo `invalid-credentials`). |
-| `src/app/[locale]/(auth)/signup/signup-form.tsx` | `FormError` + `aria-describedby` (fusionado con `password-hint`) + hook. |
-| `src/app/[locale]/(auth)/forgot-password/forgot-password-form.tsx` | `FormError` + `aria-describedby` + hook. |
-| `src/app/[locale]/(auth)/reset-password/reset-password-form.tsx` | `FormError` + `aria-describedby` (fusionado con `password-hint`) + hook. |
+| `src/app/[locale]/(auth)/signup/signup-form.tsx` | `FormError` + `FormStatus` + `aria-describedby` (fusionado con `password-hint`) + hook. |
+| `src/app/[locale]/(auth)/forgot-password/forgot-password-form.tsx` | `FormError` + `FormStatus` + `aria-describedby` + hook. |
+| `src/app/[locale]/(auth)/reset-password/reset-password-form.tsx` | `FormError` + `FormStatus` + `aria-describedby` (fusionado con `password-hint`) + hook. |
 | `src/app/[locale]/(app)/onboarding/onboarding-form.tsx` | `FormError` + hook; **grupos de radio inválidos** con `aria-invalid` + `aria-describedby` + `tabIndex={-1}` + `<legend>` en color de error (deuda de LEX-2.8). |
 | `tests/unit/messages/parity.test.ts` | Nuevo. Candado de paridad ES/EN, árbol completo, dos direcciones. |
 | `tests/e2e/identity-a11y.spec.ts` | Nuevo. Foco al primer error en login y onboarding. |
@@ -153,6 +172,13 @@ Migraciones: **0**.
   que enumera las pegas son el respaldo visible y anunciado.
 - **Sin revisión cruzada independiente** (§3.6, accesibilidad y textos). No hay
   segundo agente. Deuda visible, arrastrada desde LEX-2.3.
+- **Flake de GoTrue en el alta bajo carga paralela** (`__next_error__` en
+  `/es/signup` con dos proyectos Supabase y dos workers de Playwright): visto en
+  una pasada de LEX-2.7, LEX-2.9 y una primera pasada de esta tarea; siempre
+  verde al repetir y en CI. **LEX-2.11 es la auditoría E2E con dos usuarios**:
+  ese flake estará en su camino directo y «documentado como conocido» no
+  sobrevive a una fila de auditoría. LEX-2.11 debe fijarlo (causa raíz) o
+  decidir una política de reintento explícita, no volver a descubrirlo.
 
 ## 8. Estado del árbol Git
 

@@ -33,6 +33,10 @@ formulario, foco y anuncios, y un candado de completitud de traducciones.
 - **`FormError`** (`src/shared/presentation/components/`): región `role="alert"`
   con `id` estable por formulario. Los cinco formularios de identidad pasan a
   usarla; el `role="alert"` deja el `<p>` y pasa al contenedor.
+- **`FormStatus`**: las tres pantallas de éxito (`signup`, `forgot-password`,
+  `reset-password`) sustituyen el formulario por un `role="status"` que **toma
+  el foco al montarse** (`tabIndex={-1}`) — sin esto el foco caería a `<body>`
+  al desaparecer el botón.
 - **Grupos de radio del onboarding** (deuda anotada en LEX-2.8): un grupo
   inválido es `<fieldset aria-invalid tabIndex={-1} aria-describedby>` con la
   `<legend>` en color de error.
@@ -44,7 +48,7 @@ formulario, foco y anuncios, y un candado de completitud de traducciones.
 pnpm check     exit 0 (format, lint, typecheck, contraste 8/8, vitest 14 ficheros/85, build)
 pnpm db:test   8 ficheros / 123 asserciones, PASS (sin cambios: no toca esquema)
 pnpm db:types  sin cambios (no hay migración)
-pnpm e2e       40 passed (identity-a11y ×2 nuevos; flake de GoTrue en una pasada, 40/40 al repetir)
+pnpm e2e       44 passed (identity-a11y ×4 nuevos; verde a la primera en la última pasada)
 ```
 
 `auth.spec.ts`: una aserción ajustada (`role="alert"` pasó del `<p>` al
@@ -583,8 +587,9 @@ M2. Depende de LEX-2.10.
 | `docs/evidence/LEX-2.9.md` | Creado. |
 | `src/shared/presentation/hooks/use-focus-first-invalid.{ts,test.tsx}` | LEX-2.10: creado. Hook de foco al primer campo inválido + 3 casos jsdom. |
 | `src/shared/presentation/components/form-error.tsx` | LEX-2.10: creado. Región `role="alert"` con `id` estable. |
-| `src/shared/presentation/components/index.ts` | LEX-2.10: exporta `FormError`. |
-| `src/app/[locale]/(auth)/{login,signup,forgot-password,reset-password}/*-form.tsx` | LEX-2.10: `FormError` + `aria-describedby` + `useFocusFirstInvalid`. |
+| `src/shared/presentation/components/form-status.tsx` | LEX-2.10: creado. Pantalla de éxito `role="status"` que toma el foco al montarse. |
+| `src/shared/presentation/components/index.ts` | LEX-2.10: exporta `FormError` y `FormStatus`. |
+| `src/app/[locale]/(auth)/{login,signup,forgot-password,reset-password}/*-form.tsx` | LEX-2.10: `FormError` + `aria-describedby` + `useFocusFirstInvalid`; éxito vía `FormStatus` en los tres que tienen pantalla de éxito. |
 | `src/app/[locale]/(app)/onboarding/onboarding-form.tsx` | LEX-2.10: `FormError` + hook; grupos de radio inválidos con `aria-invalid` + `tabIndex={-1}` + `<legend>` en rojo (deuda de LEX-2.8). |
 | `tests/unit/messages/parity.test.ts` | LEX-2.10: creado. Candado de paridad ES/EN, árbol completo, dos direcciones. |
 | `tests/e2e/identity-a11y.spec.ts` | LEX-2.10: creado. Foco al primer error en login y onboarding. |

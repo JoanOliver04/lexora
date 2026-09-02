@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useActionState, useRef } from "react";
 
-import { FormError, Input, Label } from "@/shared/presentation/components";
+import { FormError, FormStatus, Input, Label } from "@/shared/presentation/components";
 import { useFocusFirstInvalid } from "@/shared/presentation/hooks/use-focus-first-invalid";
 
 import { signupAction, type AuthFormState } from "../actions";
@@ -17,10 +17,10 @@ export function SignupForm({ locale, next }: { locale: string; next?: string | u
 
   if (state.status === "check-email") {
     return (
-      <div className="flex flex-col gap-3" role="status">
+      <FormStatus>
         <h2 className="text-lg font-medium">{t("signup.checkEmailTitle")}</h2>
         <p className="text-sm text-(--color-ink-muted)">{t("signup.checkEmailBody")}</p>
-      </div>
+      </FormStatus>
     );
   }
 

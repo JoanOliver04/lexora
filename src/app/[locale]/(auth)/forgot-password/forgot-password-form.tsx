@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useActionState, useRef } from "react";
 
-import { FormError, Input, Label } from "@/shared/presentation/components";
+import { FormError, FormStatus, Input, Label } from "@/shared/presentation/components";
 import { useFocusFirstInvalid } from "@/shared/presentation/hooks/use-focus-first-invalid";
 
 import { Link } from "@/i18n/navigation";
@@ -19,13 +19,13 @@ export function ForgotPasswordForm({ locale }: { locale: string }) {
 
   if (state.status === "sent") {
     return (
-      <div className="flex flex-col gap-3" role="status">
+      <FormStatus>
         <h2 className="text-lg font-medium">{t("forgot.sentTitle")}</h2>
         <p className="text-sm text-(--color-ink-muted)">{t("forgot.sentBody")}</p>
         <Link href="/login" className="text-sm text-(--color-accent) underline underline-offset-4">
           {t("forgot.backToLogin")}
         </Link>
-      </div>
+      </FormStatus>
     );
   }
 

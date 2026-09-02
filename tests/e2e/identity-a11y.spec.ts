@@ -50,6 +50,30 @@ test.describe("accesibilidad de errores de identidad", () => {
     await expect(email).toBeFocused();
   });
 
+  test("un error del login llegado por la URL pinta la región referenciada", async ({ page }) => {
+    // `?error=` lo pone `/api/auth/callback` cuando el enlace de recuperación
+    // ha caducado. La región `#login-error` debe existir en el primer render,
+    // o el `aria-describedby` de los campos apuntaría a la nada.
+    await page.goto("/es/login?error=missing-recovery-session");
+
+    const region = page.locator("#login-error");
+    await expect(region).toHaveAttribute("role", "alert");
+    await expect(region).toContainText("Este enlace de recuperación ha caducado.");
+    await expect(page.getByLabel("Correo")).toHaveAttribute("aria-describedby", "login-error");
+  });
+
+  test("la pantalla de éxito toma el foco en lugar de dejarlo en el cuerpo", async ({ page }) => {
+    await page.goto("/es/forgot-password");
+    await page.getByLabel("Correo").fill(uniqueEmail());
+    await page.getByRole("button", { name: "Enviar el enlace" }).click();
+
+    // El formulario entero se sustituye por el `role="status"`; el contenedor
+    // recibe el foco para que quien navega con teclado no caiga al principio.
+    const status = page.getByRole("status").filter({ hasText: "Revisa tu correo" });
+    await expect(status).toBeVisible();
+    await expect(status).toBeFocused();
+  });
+
   test("un grupo de radios sin elegir en el onboarding se marca y recibe el foco", async ({
     page,
   }) => {
