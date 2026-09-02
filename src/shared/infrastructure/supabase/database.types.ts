@@ -34,6 +34,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      concept_tags: {
+        Row: {
+          concept_id: string
+          created_at: string
+          owner_id: string
+          tag_id: string
+        }
+        Insert: {
+          concept_id: string
+          created_at?: string
+          owner_id: string
+          tag_id: string
+        }
+        Update: {
+          concept_id?: string
+          created_at?: string
+          owner_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concept_tags_concept_owner_fk"
+            columns: ["concept_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "concepts"
+            referencedColumns: ["id", "owner_id"]
+          },
+          {
+            foreignKeyName: "concept_tags_tag_owner_fk"
+            columns: ["tag_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      concepts: {
+        Row: {
+          archived_at: string | null
+          canonical_key: string | null
+          cefr_level: Database["public"]["Enums"]["cefr_level"] | null
+          course_id: string
+          created_at: string
+          example: string | null
+          explanation: string | null
+          id: string
+          kind: Database["public"]["Enums"]["concept_kind"]
+          metadata: Json
+          owner_id: string
+          source_reference: string | null
+          summary: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          canonical_key?: string | null
+          cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
+          course_id: string
+          created_at?: string
+          example?: string | null
+          explanation?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["concept_kind"]
+          metadata?: Json
+          owner_id: string
+          source_reference?: string | null
+          summary: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          canonical_key?: string | null
+          cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
+          course_id?: string
+          created_at?: string
+          example?: string | null
+          explanation?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["concept_kind"]
+          metadata?: Json
+          owner_id?: string
+          source_reference?: string | null
+          summary?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concepts_course_owner_fk"
+            columns: ["course_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
       course_settings: {
         Row: {
           course_id: string
@@ -142,6 +240,98 @@ export type Database = {
           },
         ]
       }
+      deck_concepts: {
+        Row: {
+          concept_id: string
+          created_at: string
+          deck_id: string
+          owner_id: string
+          position: number | null
+          updated_at: string
+        }
+        Insert: {
+          concept_id: string
+          created_at?: string
+          deck_id: string
+          owner_id: string
+          position?: number | null
+          updated_at?: string
+        }
+        Update: {
+          concept_id?: string
+          created_at?: string
+          deck_id?: string
+          owner_id?: string
+          position?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deck_concepts_concept_owner_fk"
+            columns: ["concept_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "concepts"
+            referencedColumns: ["id", "owner_id"]
+          },
+          {
+            foreignKeyName: "deck_concepts_deck_owner_fk"
+            columns: ["deck_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "decks"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      decks: {
+        Row: {
+          archived_at: string | null
+          category: Database["public"]["Enums"]["deck_category"] | null
+          cefr_level: Database["public"]["Enums"]["cefr_level"] | null
+          course_id: string
+          created_at: string
+          description: string | null
+          id: string
+          owner_id: string
+          position: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          category?: Database["public"]["Enums"]["deck_category"] | null
+          cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
+          course_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          owner_id: string
+          position?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          category?: Database["public"]["Enums"]["deck_category"] | null
+          cefr_level?: Database["public"]["Enums"]["cefr_level"] | null
+          course_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          owner_id?: string
+          position?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decks_course_owner_fk"
+            columns: ["course_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
       languages: {
         Row: {
           active: boolean
@@ -171,6 +361,59 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      practice_items: {
+        Row: {
+          answer_text: string
+          archived_at: string | null
+          concept_id: string
+          config: Json
+          created_at: string
+          enabled: boolean
+          hint_text: string | null
+          id: string
+          mode: Database["public"]["Enums"]["practice_mode"]
+          owner_id: string
+          prompt_text: string
+          updated_at: string
+        }
+        Insert: {
+          answer_text: string
+          archived_at?: string | null
+          concept_id: string
+          config: Json
+          created_at?: string
+          enabled?: boolean
+          hint_text?: string | null
+          id?: string
+          mode: Database["public"]["Enums"]["practice_mode"]
+          owner_id: string
+          prompt_text: string
+          updated_at?: string
+        }
+        Update: {
+          answer_text?: string
+          archived_at?: string | null
+          concept_id?: string
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          hint_text?: string | null
+          id?: string
+          mode?: Database["public"]["Enums"]["practice_mode"]
+          owner_id?: string
+          prompt_text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_items_concept_owner_fk"
+            columns: ["concept_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "concepts"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -213,6 +456,44 @@ export type Database = {
           },
         ]
       }
+      tags: {
+        Row: {
+          course_id: string
+          created_at: string
+          display_name: string
+          id: string
+          normalized_name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          display_name: string
+          id?: string
+          normalized_name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          normalized_name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tags_course_owner_fk"
+            columns: ["course_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -230,6 +511,29 @@ export type Database = {
     }
     Enums: {
       cefr_level: "A1" | "A2" | "B1" | "B2"
+      concept_kind:
+        | "vocabulary"
+        | "collocation"
+        | "phrase"
+        | "grammar"
+        | "communicative_function"
+        | "pronunciation"
+        | "other"
+      deck_category:
+        | "vocabulary"
+        | "grammar"
+        | "communicative_function"
+        | "pronunciation"
+        | "professional"
+        | "mixed"
+      practice_mode:
+        | "basic_recognition"
+        | "basic_recall"
+        | "cloze"
+        | "listening_dictation"
+        | "guided_production"
+        | "free_production"
+        | "pronunciation"
       ui_locale: "es" | "en"
     }
     CompositeTypes: {
@@ -362,6 +666,32 @@ export const Constants = {
   public: {
     Enums: {
       cefr_level: ["A1", "A2", "B1", "B2"],
+      concept_kind: [
+        "vocabulary",
+        "collocation",
+        "phrase",
+        "grammar",
+        "communicative_function",
+        "pronunciation",
+        "other",
+      ],
+      deck_category: [
+        "vocabulary",
+        "grammar",
+        "communicative_function",
+        "pronunciation",
+        "professional",
+        "mixed",
+      ],
+      practice_mode: [
+        "basic_recognition",
+        "basic_recall",
+        "cloze",
+        "listening_dictation",
+        "guided_production",
+        "free_production",
+        "pronunciation",
+      ],
       ui_locale: ["es", "en"],
     },
   },

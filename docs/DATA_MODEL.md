@@ -8,10 +8,13 @@ Las decisiones que lo condicionan están en
 > **Estado:** existen las cuatro tablas de identidad y curso (`profiles`,
 > `languages`, `courses`, `course_settings`), con sus políticas RLS
 > (migraciones `20260828143434_identity_and_course` y
-> `20260831162304_identity_and_course_rls`). El resto del modelo descrito aquí
-> es lo acordado; las columnas exactas, restricciones, índices y políticas se
-> fijan en las migraciones SQL de cada fase, que son la fuente de verdad del
-> esquema.
+> `20260831162304_identity_and_course_rls`), y las seis tablas de biblioteca
+> (`decks`, `concepts`, `deck_concepts`, `practice_items`, `tags`,
+> `concept_tags`), solo estructura, sin políticas ni índices de consulta
+> (migración `20260902193649_library_schema`, LEX-3.2; RLS e índices en
+> LEX-3.3). El resto del modelo descrito aquí es lo acordado; las columnas
+> exactas, restricciones, índices y políticas se fijan en las migraciones SQL
+> de cada fase, que son la fuente de verdad del esquema.
 
 ## La distinción que lo explica todo
 
@@ -213,6 +216,119 @@ privilegios por defecto, de modo que `revoke from public` a secas dejaría a
 No se usa para fusionarlos automáticamente: dos entradas idénticas pueden tener
 matices distintos, y una fusión destructiva no se puede deshacer.
 
+#### Esquema exacto (migración `20260902193649_library_schema`, LEX-3.2)
+
+Estados cerrados como enums de PostgreSQL: `deck_category` (`vocabulary`,
+`grammar`, `communicative_function`, `pronunciation`, `professional`, `mixed`),
+`concept_kind` (`vocabulary`, `collocation`, `phrase`, `grammar`,
+`communicative_function`, `pronunciation`, `other`) y `practice_mode` (los
+**siete** modos de §13.9; solo `basic_recognition`, `basic_recall` y `cloze` se
+activan en la V1, y ese límite lo aplica el dominio, no un CHECK). `cefr_level`
+se reutiliza de LEX-2.1. Los tres enums nuevos reflejan
+`src/modules/library/domain/taxonomy.ts`.
+
+**Patrón común.** Igual que `course_settings` en LEX-2.1: `owner_id` está
+denormalizado en las seis tablas y una **FK compuesta**
+`(x_id, owner_id) → padre (id, owner_id)` convierte la pertenencia en
+estructura. No se puede insertar una fila que enlace contenido de dos usuarios.
+No hay FK suelta `owner_id → profiles`, por el mismo motivo que
+`course_settings` no la tiene: la compuesta ya obliga a que `owner_id` sea un
+perfil real de forma transitiva, y el borrado de un perfil llega a estas filas
+por la cascada de `courses`. Longitudes de texto **≥** los límites del dominio
+(`TITLE` 200, `SHORT` 500, `LONG` 4000). `archived_at timestamptz` en el
+contenido con historial (`decks`, `concepts`, `practice_items`); no hay borrado
+físico previsto para esas filas salvo la cascada al borrar el curso. Trigger
+`set_updated_at` en las cinco tablas con `updated_at` (todas menos
+`concept_tags`, que no tiene carga mutable).
+
+**`decks`** — agrupación organizativa dentro de un curso.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | `uuid` PK | `gen_random_uuid()` |
+| `course_id` | `uuid` NOT NULL | parte de la FK compuesta a `courses` |
+| `owner_id` | `uuid` NOT NULL | parte de la FK compuesta; **siempre** `= courses.owner_id` |
+| `title` | `text` NOT NULL | CHECK 1–200 caracteres tras recortar |
+| `description` | `text` NULL | CHECK: nulo o ≤ 500 |
+| `cefr_level` | `cefr_level` NULL | Q-005: el nivel MCER del mazo; `professional` va en `category`, no aquí |
+| `category` | `deck_category` NULL | |
+| `position` | `integer` NOT NULL | por defecto 0; CHECK ≥ 0 |
+| `archived_at` | `timestamptz` NULL | |
+| `created_at`, `updated_at` | `timestamptz` NOT NULL | |
+| | | FK compuesta `(course_id, owner_id)` → `courses(id, owner_id)` `on delete cascade`; UNIQUE `(id, owner_id)` — destino de la FK compuesta de `deck_concepts`; índice en `(course_id)` para respaldar la cascada |
+
+**`concepts`** — unidad de conocimiento dentro de un curso.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | `uuid` PK | |
+| `course_id`, `owner_id` | `uuid` NOT NULL | FK compuesta a `courses`, como en `decks` |
+| `kind` | `concept_kind` NOT NULL | |
+| `title` | `text` NOT NULL | CHECK 1–200 tras recortar |
+| `canonical_key` | `text` GENERATED ALWAYS … STORED | `lower(btrim(regexp_replace(title, '\s+', ' ', 'g')))` — coincide con `canonicalKey` del dominio (minúsculas + colapso de espacios, **sin quitar acentos**). No admite valor explícito. **Sin índice único**: solo sugiere duplicados (§13.7), no los fusiona |
+| `summary` | `text` NOT NULL | CHECK 1–500 tras recortar |
+| `explanation` | `text` NULL | CHECK: nulo o ≤ 4000 |
+| `example` | `text` NULL | CHECK: nulo o ≤ 500 |
+| `cefr_level` | `cefr_level` NULL | |
+| `source_reference` | `text` NULL | CHECK: nulo o ≤ 500. El dominio (LEX-3.1) todavía no acota este campo; lo acota la base |
+| `metadata` | `jsonb` NOT NULL | por defecto `'{}'`; CHECK `jsonb_typeof = 'object'`. JSONB permitido aquí por §13.7 (extensión acotada y validada) |
+| `archived_at` | `timestamptz` NULL | |
+| `created_at`, `updated_at` | `timestamptz` NOT NULL | |
+| | | FK compuesta `(course_id, owner_id)` → `courses(id, owner_id)` `on delete cascade`; UNIQUE `(id, owner_id)`; índice en `(course_id)` |
+
+**`deck_concepts`** — relación muchos a muchos entre mazos y conceptos.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `deck_id`, `concept_id` | `uuid` NOT NULL | PK compuesta `(deck_id, concept_id)`: un concepto en un mazo, una sola vez |
+| `owner_id` | `uuid` NOT NULL | **la misma columna** en las dos FK compuestas → mazo y concepto son del mismo usuario |
+| `position` | `integer` NULL | orden dentro del mazo (opcional, §13.8); CHECK: nulo o ≥ 0 |
+| `created_at`, `updated_at` | `timestamptz` NOT NULL | |
+| | | FK compuestas `(deck_id, owner_id)` → `decks(id, owner_id)` y `(concept_id, owner_id)` → `concepts(id, owner_id)`, ambas `on delete cascade`; índice en `(concept_id)` (la PK ya cubre el lado `deck_id`) |
+
+**`practice_items`** — competencia programable sobre un concepto.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | `uuid` PK | |
+| `concept_id`, `owner_id` | `uuid` NOT NULL | FK compuesta a `concepts` |
+| `mode` | `practice_mode` NOT NULL | |
+| `prompt_text` | `text` NOT NULL | CHECK 1–4000 tras recortar |
+| `answer_text` | `text` NOT NULL | CHECK 1–500 tras recortar |
+| `hint_text` | `text` NULL | CHECK: nulo o ≤ 500 |
+| `config` | `jsonb` NOT NULL | **sin valor por defecto**; CHECK `jsonb_typeof = 'object'` y CHECK `config ? 'mode' and config->>'mode' = mode::text` — un `{}` se rechaza. JSONB discriminado por `mode` (§13.9) |
+| `enabled` | `boolean` NOT NULL | por defecto `true` |
+| `archived_at` | `timestamptz` NULL | |
+| `created_at`, `updated_at` | `timestamptz` NOT NULL | |
+| | | FK compuesta `(concept_id, owner_id)` → `concepts(id, owner_id)` `on delete cascade`; índice en `(concept_id)` |
+
+**`tags`** — etiqueta del usuario dentro de un curso.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `id` | `uuid` PK | |
+| `course_id`, `owner_id` | `uuid` NOT NULL | FK compuesta a `courses` |
+| `normalized_name` | `text` NOT NULL | CHECK 1–200; CHECK `!~ '(^|::)(::|$)'` — sin segmento vacío (`a::`, `::b`, `a::::b`) |
+| `display_name` | `text` NOT NULL | CHECK 1–200 tras recortar |
+| `created_at`, `updated_at` | `timestamptz` NOT NULL | |
+| | | FK compuesta `(course_id, owner_id)` → `courses(id, owner_id)` `on delete cascade`; UNIQUE `(id, owner_id)`; índice en `(course_id)`. **La unicidad de `normalized_name` por curso es LEX-3.3** |
+
+**`concept_tags`** — relación muchos a muchos entre conceptos y etiquetas.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `concept_id`, `tag_id` | `uuid` NOT NULL | PK compuesta `(concept_id, tag_id)` |
+| `owner_id` | `uuid` NOT NULL | la misma columna en las dos FK compuestas → concepto y etiqueta del mismo usuario |
+| `created_at` | `timestamptz` NOT NULL | sin `updated_at`: no hay carga mutable |
+| | | FK compuestas `(concept_id, owner_id)` → `concepts(id, owner_id)` y `(tag_id, owner_id)` → `tags(id, owner_id)`, ambas `on delete cascade`; índice en `(tag_id)` |
+
+**RLS:** habilitado en las seis tablas (niega todo acceso a `anon` /
+`authenticated` hasta que LEX-3.3 añada políticas). Sin `force row level
+security`, igual que en LEX-2.1. Estructura probada en
+`supabase/tests/database/080-library-schema.sql` (60 aserciones: tablas,
+claves, enums, `canonical_key` generada, cada CHECK rechazando un valor, las FK
+compuestas impidiendo enlaces entre usuarios y la cascada al borrar el curso).
+
 ### Estudio
 
 | Tabla | Papel |
@@ -267,7 +383,12 @@ No se crean tablas vacías por anticipación.
 
 ## Pendiente
 
-- Columnas exactas, tipos y restricciones de cada tabla: se fijan en su migración.
-- Política de índices, una vez existan consultas reales que medir.
+- Columnas exactas, tipos y restricciones de las tablas de fase 4 y 5: se fijan
+  en su migración. Identidad (LEX-2.1) y biblioteca (LEX-3.2) ya están arriba.
+- RLS y política de índices de biblioteca (propietario, curso, búsqueda,
+  `canonical_key`, unicidad de `tags.normalized_name` por curso): LEX-3.3.
+- Regla «un mazo y sus conceptos son del mismo curso, no solo del mismo dueño»
+  en `deck_concepts`: candidata a LEX-3.3; hoy solo se garantiza el mismo dueño.
 - Estrategia de retención de registros históricos y de anonimización al eliminar una cuenta.
-- Diagrama regenerado desde el esquema real cuando existan migraciones.
+- El diagrama de arriba ya nombra las tablas de fase 4 y 5; se confirmará contra
+  el esquema real cuando se creen esas migraciones.
