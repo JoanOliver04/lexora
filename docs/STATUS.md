@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-02
-**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (0/12). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (1/12). FASE 2 `HECHO` (11/11)
 **Hito actual:** M3 — Biblioteca manual usable — `PENDIENTE`. M2 `HECHO`
-**Tarea activa:** LEX-3.1 — modelo de dominio de biblioteca — `EN PROCESO`
-**Estado de la tarea:** entregable completo y gates en verde en local; pendiente PR + CI
-**Rama / commit base / HEAD:** rama `feat/lex-3-1-library-domain` desde `main` (`82f9844`).
+**Tarea activa:** ninguna
+**Estado de la tarea:** LEX-3.1 `HECHO` · siguiente LEX-3.2 · abierta Q-005
+**Rama / commit base / HEAD:** `main` en `426b2b3` (PR #22, LEX-3.1). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -15,11 +15,13 @@
 
 ## Terminado en esta sesión
 
-### LEX-3.1 — Modelo de dominio de biblioteca — `EN PROCESO`
+### LEX-3.1 — Modelo de dominio de biblioteca — `HECHO`
 
-Informe en [`evidence/LEX-3.1.md`](evidence/LEX-3.1.md). Entregable completo y
-gates en verde en local; falta PR + CI. **Sin migración, sin tocar SQL ni
-pantallas.**
+Informe en [`evidence/LEX-3.1.md`](evidence/LEX-3.1.md). PR #22 fusionada a
+`main` (merge `426b2b3`); CI verde en los tres trabajos, runs `33657579290`
+(PR; el job «Base de datos» reintentado tras un `toomanyrequests` /
+`address already in use` del runner, ajeno) y `33658253752` (merge). **Sin
+migración, sin tocar SQL ni pantallas.**
 
 Primer paso de FASE 3 / M3: el dominio puro del módulo `library`. Cinco ficheros
 en `src/modules/library/domain/` (uno por concepto cohesivo, patrón de
@@ -579,14 +581,16 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-**LEX-3.1** `EN PROCESO` en `feat/lex-3-1-library-domain`: código y gates en
-verde en local, pendiente PR + CI + merge. FASE 3 en 0/12 (abierta).
+Ninguna tarea `EN PROCESO`. FASE 3 en 1/12. LEX-3.1 en `main` (`426b2b3`).
 
 Siguiente: **LEX-3.2** — migraciones de `decks`, `concepts`, `deck_concepts`,
-`practice_items`, `tags` y `concept_tags`. Depende de LEX-3.1.
+`practice_items`, `tags` y `concept_tags`. Depende de LEX-3.1. **Antes de fijar
+`decks.cefr_level` hay que resolver o confirmar Q-005** (recomendación:
+`professional` es categoría, no nivel).
 
 Acción pendiente del propietario: **etiqueta de hito M2** (`v0.3.0-m2` o la que
-Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4).
+Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4); y **decidir
+Q-005**.
 
 ---
 
@@ -735,6 +739,9 @@ nuevos aplicados.
 ### CI
 
 ```text
+run 33658253752   CI   main   push          success   merge de PR #22 (LEX-3.1)
+run 33657579290   CI   feat/lex-3-1-…       pull_request   success   PR #22 (LEX-3.1; job BD reintentado, infra)
+run 33655823478   CI   main   push          success   merge de PR #21 (cierre docs LEX-2.11 / M2)
 run 33654786410   CI   main   push          success   merge de PR #20 (LEX-2.11, cierra M2)
 run 33654445913   CI   feat/lex-2-11-…      pull_request   success   PR #20 (LEX-2.11)
 run 33652080651   CI   main   push          success   merge de PR #19 (cierre docs LEX-2.10)
@@ -749,7 +756,8 @@ run 33442548467   CI   feat/lex-2-8-…       pull_request   success   PR #14 (L
 run 33440461002   CI   main   push          success   merge de PR #13 (LEX-2.7)
 ```
 
-LEX-2.1…2.11 en `main` (`0f36ed1`), CI verde en el PR y en el merge de cada tarea.
+LEX-2.1…2.11 y LEX-3.1 en `main` (`426b2b3`), CI verde en el PR y en el merge de
+cada tarea.
 
 ---
 
@@ -838,16 +846,21 @@ LEX-3.2.
 
 ## Siguiente acción exacta
 
-Abrir el PR de `feat/lex-3-1-library-domain` contra `main`, CI verde en los tres
-trabajos (PR y merge), y en un PR de cierre de docs marcar LEX-3.1 `HECHO` en el
-roadmap con los IDs de run aquí y en `evidence/LEX-3.1.md` §8. Después,
-**LEX-3.2** — migraciones de la biblioteca (`decks`, `concepts`,
-`deck_concepts`, `practice_items`, `tags`, `concept_tags`); `MASTER_SPEC.md`
-§§13.6–13.10; **confirmar con el propietario** la interpretación
-`professional`-categoría antes de fijar el enum de `deck.cefr_level`.
+Empezar **LEX-3.2** — migraciones de `decks`, `concepts`, `deck_concepts`,
+`practice_items`, `tags`, `concept_tags`. Fuente `MASTER_SPEC.md` §§13.6–13.10;
+gate de migraciones (§12.3). Enums de PostgreSQL / CHECK para `deck.category`,
+`concept.kind`, `practice_item.mode` (los 7, 3 activables); `practice_items.config`
+JSONB discriminado por `mode`; `archived_at` para el contenido con historial;
+`deck_concepts` con `unique (deck_id, concept_id)`; límites ≥ los de
+`library/domain/taxonomy.ts`; `database.types.ts` regenerado en el mismo commit;
+`DATA_MODEL.md` y diagrama al día. **Antes de fijar `decks.cefr_level`, resolver
+o confirmar Q-005** (recomendación: `professional` es categoría, no nivel, y
+`decks.cefr_level` reutiliza `public.cefr_level`). Rama `feat/lex-3-2-…` desde
+`main` (`426b2b3`).
 
-Acción pendiente del propietario: **etiqueta de hito M2** (`v0.3.0-m2` o la que
-Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4).
+Acción pendiente del propietario: **decidir Q-005**; **etiqueta de hito M2**
+(`v0.3.0-m2` o la que Joan decida) — no se crea sin autorización expresa
+(CLAUDE.md §4).
 
 Decisiones vivas: `force row level security` **no** activado (LEX-2.3); creación
 de perfil = caso de uso, **no** trigger (ADR-005); errores de autenticación con
@@ -878,7 +891,7 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main` en `0f36ed1` (PR #20, LEX-2.11 — cierra M2).
+- Rama por defecto: `main` en `426b2b3` (PR #22, LEX-3.1).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas; `v0.3.0-m2` **pendiente de
   autorización de Joan**.
 - Sin rama de trabajo activa.
@@ -886,7 +899,7 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
   LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10; LEX-2.5 → PR #11;
   LEX-2.6 → PR #12; LEX-2.7 → PR #13; LEX-2.8 → PR #14 (+ #15 cierre docs);
   LEX-2.9 → PR #16 (+ #17 cierre docs); LEX-2.10 → PR #18 (+ #19 cierre docs);
-  LEX-2.11 → PR #20.
+  LEX-2.11 → PR #20 (+ #21 cierre docs); LEX-3.1 → PR #22.
   Ramas borradas.
 - Contenido versionado: aplicación Next.js completa (módulos `identity` y
   `courses`), `supabase/` (config, seed, tests, **migrations** — cuatro:
