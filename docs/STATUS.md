@@ -3,9 +3,9 @@
 **Última actualización:** 2026-09-02
 **Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (10/11)
 **Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
-**Tarea activa:** LEX-2.10 — manejo de estados y accesibilidad de identidad — `EN PROCESO`
-**Estado de la tarea:** entregable completo y gates en verde en local; pendiente PR + CI
-**Rama / commit base / HEAD:** rama `feat/lex-2-10-identity-states` desde `main` (`33c8c79`).
+**Tarea activa:** ninguna
+**Estado de la tarea:** LEX-2.1…2.10 `HECHO` · siguiente LEX-2.11
+**Rama / commit base / HEAD:** `main` en `4619dbe` (PR #18, LEX-2.10). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -15,11 +15,11 @@
 
 ## Terminado en esta sesión
 
-### LEX-2.10 — Manejo de estados y accesibilidad de identidad — `EN PROCESO`
+### LEX-2.10 — Manejo de estados y accesibilidad de identidad — `HECHO`
 
-Informe en [`evidence/LEX-2.10.md`](evidence/LEX-2.10.md). Entregable completo y
-gates en verde en local; falta el PR y la CI para marcar `HECHO`. **Sin
-migración.**
+Informe en [`evidence/LEX-2.10.md`](evidence/LEX-2.10.md). PR #18 fusionada a
+`main` (merge `4619dbe`); CI verde en los tres trabajos, runs `33650503266`
+(PR) y `33650912529` (merge). **Sin migración.**
 
 Pulido transversal de las vistas de identidad. Los cuatro estados de cada
 formulario, foco y anuncios, y un candado de completitud de traducciones.
@@ -503,11 +503,10 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-**LEX-2.10** `EN PROCESO` en `feat/lex-2-10-identity-states`: código y gates en
-verde en local, pendiente PR + CI + merge. FASE 2 en 10/11.
+Ninguna tarea `EN PROCESO`. FASE 2 en 10/11. LEX-2.1…2.10 en `main` (`4619dbe`).
 
 Siguiente: **LEX-2.11** — auditoría E2E y de M2 con dos usuarios. Cierra FASE 2 /
-M2. Depende de LEX-2.10.
+M2. Depende de LEX-2.1…2.10.
 
 ---
 
@@ -652,6 +651,9 @@ nuevos aplicados.
 ### CI
 
 ```text
+run 33650912529   CI   main   push          success   merge de PR #18 (LEX-2.10)
+run 33650503266   CI   feat/lex-2-10-…      pull_request   success   PR #18 (LEX-2.10)
+run 33446280224   CI   main   push          success   merge de PR #17 (cierre docs LEX-2.9)
 run 33445695615   CI   main   push          success   merge de PR #16 (LEX-2.9)
 run 33445445077   CI   feat/lex-2-9-…       pull_request   success   PR #16 (LEX-2.9)
 run 33443403540   CI   main   push          success   merge de PR #15 (cierre docs LEX-2.8)
@@ -660,7 +662,7 @@ run 33442548467   CI   feat/lex-2-8-…       pull_request   success   PR #14 (L
 run 33440461002   CI   main   push          success   merge de PR #13 (LEX-2.7)
 ```
 
-LEX-2.1…2.9 en `main` (`a444755`), CI verde en el PR y en el merge de cada tarea.
+LEX-2.1…2.10 en `main` (`4619dbe`), CI verde en el PR y en el merge de cada tarea.
 
 ---
 
@@ -746,11 +748,14 @@ Ninguna abierta.
 
 ## Siguiente acción exacta
 
-Abrir el PR de `feat/lex-2-10-identity-states` contra `main`, esperar los tres
-trabajos de CI en verde (PR y merge), y en un PR de cierre de docs marcar
-LEX-2.10 `HECHO` en el roadmap y rellenar los IDs de run aquí y en
-`evidence/LEX-2.10.md` §8. Después, **LEX-2.11** — auditoría E2E y de M2 con dos
-usuarios (cierra FASE 2 / M2). Depende de LEX-2.10 (`HECHO`).
+Empezar **LEX-2.11** — auditoría E2E y de M2 con dos usuarios: recorrer
+registro → onboarding → sesión → recuperación con A y B en paralelo; confirmar
+aislamiento en interfaz, servidor y RLS; `db:reset` desde vacío y CI verde en
+los tres trabajos. Cierra FASE 2 / M2. Rama `feat/lex-2-11-…` desde `main`
+(`4619dbe`). **En el camino de esta tarea está el flake de GoTrue**
+(`__next_error__` en `/es/signup` bajo dos proyectos Supabase + dos workers):
+fijar la causa raíz o decidir una política de reintento explícita, no volver a
+documentarlo. Ver `evidence/LEX-2.10.md` §7.
 
 Decisiones vivas: `force row level security` **no** activado (LEX-2.3); creación
 de perfil = caso de uso, **no** trigger (ADR-005); errores de autenticación con
@@ -781,14 +786,13 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main` en `33c8c79` (PR #17, cierre docs LEX-2.9).
+- Rama por defecto: `main` en `4619dbe` (PR #18, LEX-2.10).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
-- Rama de trabajo activa: `feat/lex-2-10-identity-states` desde `33c8c79`
-  (LEX-2.10, pendiente de PR).
+- Sin rama de trabajo activa.
 - LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs);
   LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10; LEX-2.5 → PR #11;
   LEX-2.6 → PR #12; LEX-2.7 → PR #13; LEX-2.8 → PR #14 (+ #15 cierre docs);
-  LEX-2.9 → PR #16 (+ #17 cierre docs).
+  LEX-2.9 → PR #16 (+ #17 cierre docs); LEX-2.10 → PR #18.
   Ramas borradas.
 - Contenido versionado: aplicación Next.js completa (módulos `identity` y
   `courses`), `supabase/` (config, seed, tests, **migrations** — cuatro:
