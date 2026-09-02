@@ -1,7 +1,7 @@
 # LEX-2.10 — Completar manejo de estados y accesibilidad de identidad
 
 **Fecha:** 2026-09-02
-**Rama:** `feat/lex-2-10-identity-states`
+**Rama:** `feat/lex-2-10-identity-states` (PR #18, merge `4619dbe`)
 **Estado resultante:** `HECHO`
 
 ---
@@ -182,8 +182,11 @@ Migraciones: **0**.
 
 ## 8. Estado del árbol Git
 
-Rama `feat/lex-2-10-identity-states` desde `main` (`33c8c79`). Pendiente de
-commit, PR y CI en el momento de escribir esta evidencia; se completa al cerrar.
+Rama `feat/lex-2-10-identity-states` desde `main` (`33c8c79`), dos commits
+(`5665908` estados y accesibilidad; `a22d4a3` foco en las pantallas de éxito y
+más cobertura e2e). PR #18 fusionada a `main` (merge `4619dbe`); CI verde en los
+tres trabajos (`Calidad`, `Base de datos`, `Extremo a extremo`), runs
+`33650503266` (PR) y `33650912529` (merge). Rama borrada.
 
 ## 9. Siguiente tarea
 
