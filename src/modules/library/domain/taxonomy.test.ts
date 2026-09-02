@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  CEFR_LEVELS,
+  INVALID_ENUM,
   isPracticeMode,
   isV1PracticeMode,
   normalizeWhitespace,
   PRACTICE_MODES,
+  readOptionalEnum,
   readOptionalText,
   V1_PRACTICE_MODES,
 } from "./taxonomy";
@@ -30,6 +33,16 @@ describe("readOptionalText", () => {
 
   it("recorta los extremos de un texto real", () => {
     expect(readOptionalText("  nota  ")).toBe("nota");
+  });
+});
+
+describe("readOptionalEnum", () => {
+  it("ausente o vacío → null; dentro del vocabulario → el valor; fuera → INVALID_ENUM", () => {
+    expect(readOptionalEnum(undefined, CEFR_LEVELS)).toBeNull();
+    expect(readOptionalEnum("", CEFR_LEVELS)).toBeNull();
+    expect(readOptionalEnum(null, CEFR_LEVELS)).toBeNull();
+    expect(readOptionalEnum("B1", CEFR_LEVELS)).toBe("B1");
+    expect(readOptionalEnum("C1", CEFR_LEVELS)).toBe(INVALID_ENUM);
   });
 });
 

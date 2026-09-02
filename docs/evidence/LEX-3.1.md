@@ -46,6 +46,10 @@ barril se saldría de la cobertura (`coverage.exclude: **/index.ts`)—.
   (ausente/vacío → `null`), límites `TITLE_MAX_LENGTH` (200),
   `SHORT_TEXT_MAX_LENGTH` (500), `LONG_TEXT_MAX_LENGTH` (4000). El esquema de
   LEX-3.2 debe usar estos límites o mayores; la base es el guardián último.
+- `readOptionalEnum(value, allowed)` + la marca `INVALID_ENUM`: una sola
+  implementación para leer nivel, categoría y cualquier enum opcional —ausente
+  → `null`, dentro del vocabulario → el valor, fuera → `INVALID_ENUM`—, en vez
+  de repetir la función y su símbolo centinela en cada entidad.
 
 ### `deck.ts`
 
@@ -55,11 +59,13 @@ claves estables `deck.title.empty` / `.tooLong`, `deck.description.tooLong`,
 `deck.cefrLevel.invalid`, `deck.category.invalid`. Nivel y categoría opcionales
 (`null`); si vienen, deben ser del vocabulario cerrado. `isArchived(deck)`.
 
-**Interpretación declarada (§9.5 vs §13.6):** §9.5 ofrece «profesional» tanto en
-la lista de **nivel** como en la de **categoría**; §13.6 nombra la columna
-`cefr_level`, que solo admite bandas MCER. Decisión para LEX-3.2: el contenido
-profesional se clasifica con `category = 'professional'` y `cefr_level` nulo,
-**no** con un nivel `professional`. Confirmable por el propietario.
+**`Q-005` (abierta):** §9.5 ofrece «profesional» tanto en la lista de **nivel**
+como en la de **categoría**; §13.6 nombra la columna `cefr_level`, que solo
+admite bandas MCER. LEX-3.1 se entrega con la recomendación —`professional` es
+una **categoría**, `deck.cefrLevel: CefrLevel | null`— y registra
+`docs/OPEN_QUESTIONS.md` Q-005 con opciones e impacto. No bloquea LEX-3.1; sí
+condiciona el enum de `decks.cefr_level` en LEX-3.2, que no debe fijarlo sin la
+decisión de Joan.
 
 ### `concept.ts`
 
@@ -114,12 +120,12 @@ rutas ficticias; no necesita cambio.
 
 ## 4. Tests
 
-`pnpm test` → **19 ficheros, 128 tests, PASS** (14 / 85 previos + 5 ficheros /
-43 tests nuevos):
+`pnpm test` → **19 ficheros, 129 tests, PASS** (14 / 85 previos + 5 ficheros /
+44 tests nuevos):
 
 | Fichero | Casos |
 |---|---|
-| `taxonomy.test.ts` | 6 — `normalizeWhitespace` conserva acentos; `readOptionalText`; los siete modos y el subconjunto V1. |
+| `taxonomy.test.ts` | 7 — `normalizeWhitespace` conserva acentos; `readOptionalText`; `readOptionalEnum` (null / valor / `INVALID_ENUM`); los siete modos y el subconjunto V1. |
 | `deck.test.ts` | 8 — borrador completo y normalización; nivel/categoría ausentes; cada categoría; título vacío / largo; nivel y categoría inválidos acumulados; entrada no-objeto; `isArchived`. |
 | `concept.test.ts` | 9 — `canonicalKey` (acentos no colisionan); borrador válido; cada `kind`; título y resumen obligatorios acumulados; `kind` desconocido; explicación larga; nivel no MCER; `isArchived`. |
 | `practice-item.test.ts` | 11 — reconocimiento; cloze con limpieza de soluciones; modo futuro rechazado; modo desconocido sin ruido de config; `config` que no cuadra con el modo; cloze vacío; enunciado y respuesta acumulados; `canReverse`; `reverseOf` intercambia y no arrastra pista; doble inversa; `null` para cloze. |
@@ -128,7 +134,7 @@ rutas ficticias; no necesita cambio.
 ## 5. Puertas
 
 ```text
-pnpm check     exit 0 (format, lint, typecheck, contraste 8/8, vitest 19 ficheros/128, build)
+pnpm check     exit 0 (format, lint, typecheck, contraste 8/8, vitest 19 ficheros/129, build)
 pnpm db:test   8 ficheros / 123 asserciones, PASS (sin cambios: LEX-3.1 no toca SQL)
 pnpm db:types  sin cambios (no hay migración)
 pnpm e2e       sin cambios respecto a LEX-2.11 (dominio puro, sin pantallas ni rutas)
@@ -143,6 +149,8 @@ pnpm e2e       sin cambios respecto a LEX-2.11 (dominio puro, sin pantallas ni r
 | `src/modules/library/domain/concept.ts` (+ `.test.ts`) | Nuevo. `Concept`, `ConceptDraft`, `validateConceptDraft`, `canonicalKey`, `isArchived`. |
 | `src/modules/library/domain/practice-item.ts` (+ `.test.ts`) | Nuevo. `PracticeItem`, `PracticeItemConfig` (unión discriminada), `validatePracticeItemDraft`, `canReverse`, `reverseOf`, `isArchived`. |
 | `src/modules/library/domain/tag.ts` (+ `.test.ts`) | Nuevo. `Tag`, `TagDraft`, `normalizeTagName`, `tagSegments`, `validateTagDraft`. |
+| `src/modules/README.md` | La fila de `library` pasa a «existe solo `domain/`». |
+| `docs/OPEN_QUESTIONS.md` | `Q-005` — «profesional»: nivel o categoría. |
 | `docs/evidence/LEX-3.1.md` | Este informe. |
 
 Migraciones: **0**. No se toca `docs/DATA_MODEL.md` (documenta el esquema real,
@@ -150,9 +158,9 @@ que no existe hasta LEX-3.2).
 
 ## 7. Riesgos y deuda
 
-- **Interpretación `professional` categoría-no-nivel** (§2 `deck.ts`): pendiente
-  de confirmación del propietario. Si se decidiera lo contrario, `CefrLevel` de
-  `deck`/`concept` cambiaría y arrastraría a LEX-3.2.
+- **`Q-005` abierta** («profesional»: nivel o categoría, §2 `deck.ts`).
+  Recomendación registrada (categoría). Si Joan decide lo contrario, `taxonomy.ts`
+  y la migración de LEX-3.2 cambian.
 - **Límites de longitud** (`TITLE_MAX_LENGTH`, …) elegidos aquí; LEX-3.2 debe
   fijar columnas ≥ estos valores, o el guardián de la base y el mensaje del
   dominio se contradicen.

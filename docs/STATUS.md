@@ -780,8 +780,11 @@ Corresponden a Joan:
 | Q-002 | Qué documentación es pública | `RESUELTA` — privado el diseño, público el método |
 | Q-003 | Herramientas de desarrollo | `RESUELTA` |
 | Q-004 | Primer push al remoto público | `RESUELTA` |
+| Q-005 | «Profesional» en un mazo: ¿nivel o categoría? | `ABIERTA` — recomendación: categoría (afecta a LEX-3.2/3.5) |
 
-Ninguna abierta.
+Abierta: **Q-005**. LEX-3.1 se entrega con la recomendación (categoría)
+declarada; no bloquea LEX-3.1, sí condiciona el enum de `decks.cefr_level` en
+LEX-3.2.
 
 ---
 

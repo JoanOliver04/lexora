@@ -12,9 +12,11 @@ import {
   CEFR_LEVELS,
   type DeckCategory,
   DECK_CATEGORIES,
+  INVALID_ENUM,
   isBlank,
   isRecord,
   normalizeWhitespace,
+  readOptionalEnum,
   readOptionalText,
   SHORT_TEXT_MAX_LENGTH,
   TITLE_MAX_LENGTH,
@@ -77,13 +79,13 @@ export function validateDeckDraft(raw: unknown): DeckValidation {
     issues.push("deck.description.tooLong");
   }
 
-  const cefrLevel = readLevel(input["cefrLevel"]);
-  if (cefrLevel === INVALID) {
+  const cefrLevel = readOptionalEnum(input["cefrLevel"], CEFR_LEVELS);
+  if (cefrLevel === INVALID_ENUM) {
     issues.push("deck.cefrLevel.invalid");
   }
 
-  const category = readCategory(input["category"]);
-  if (category === INVALID) {
+  const category = readOptionalEnum(input["category"], DECK_CATEGORIES);
+  if (category === INVALID_ENUM) {
     issues.push("deck.category.invalid");
   }
 
@@ -104,22 +106,4 @@ export function validateDeckDraft(raw: unknown): DeckValidation {
 
 export function isArchived(deck: Pick<Deck, "archivedAt">): boolean {
   return deck.archivedAt !== null;
-}
-
-// ---------------------------------------------------------------------------
-
-const INVALID = Symbol("invalid");
-
-function readLevel(value: unknown): CefrLevel | null | typeof INVALID {
-  if (value === undefined || value === null || value === "") {
-    return null;
-  }
-  return CEFR_LEVELS.includes(value as CefrLevel) ? (value as CefrLevel) : INVALID;
-}
-
-function readCategory(value: unknown): DeckCategory | null | typeof INVALID {
-  if (value === undefined || value === null || value === "") {
-    return null;
-  }
-  return DECK_CATEGORIES.includes(value as DeckCategory) ? (value as DeckCategory) : INVALID;
 }

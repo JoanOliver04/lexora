@@ -13,10 +13,12 @@ import {
   CEFR_LEVELS,
   type ConceptKind,
   CONCEPT_KINDS,
+  INVALID_ENUM,
   isBlank,
   isRecord,
   LONG_TEXT_MAX_LENGTH,
   normalizeWhitespace,
+  readOptionalEnum,
   readOptionalText,
   SHORT_TEXT_MAX_LENGTH,
   TITLE_MAX_LENGTH,
@@ -113,8 +115,8 @@ export function validateConceptDraft(raw: unknown): ConceptValidation {
     issues.push("concept.example.tooLong");
   }
 
-  const cefrLevel = readLevel(input["cefrLevel"]);
-  if (cefrLevel === INVALID) {
+  const cefrLevel = readOptionalEnum(input["cefrLevel"], CEFR_LEVELS);
+  if (cefrLevel === INVALID_ENUM) {
     issues.push("concept.cefrLevel.invalid");
   }
 
@@ -138,15 +140,4 @@ export function validateConceptDraft(raw: unknown): ConceptValidation {
 
 export function isArchived(concept: Pick<Concept, "archivedAt">): boolean {
   return concept.archivedAt !== null;
-}
-
-// ---------------------------------------------------------------------------
-
-const INVALID = Symbol("invalid");
-
-function readLevel(value: unknown): CefrLevel | null | typeof INVALID {
-  if (value === undefined || value === null || value === "") {
-    return null;
-  }
-  return CEFR_LEVELS.includes(value as CefrLevel) ? (value as CefrLevel) : INVALID;
 }

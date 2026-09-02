@@ -132,3 +132,24 @@ export function readOptionalText(value: unknown): string | null {
   const trimmed = value.trim();
   return trimmed === "" ? null : trimmed;
 }
+
+/**
+ * Marca de «venía un valor, pero no es del vocabulario». Se distingue de `null`
+ * (ausente, válido) para que el validador de cada entidad pueda emitir su pega.
+ */
+export const INVALID_ENUM = Symbol("invalid-enum");
+
+/**
+ * Lee un campo de enum **opcional**: ausente o vacío → `null`; presente y
+ * dentro del vocabulario → el valor; presente y fuera → `INVALID_ENUM`. Una
+ * sola implementación para nivel, categoría y cualquier otro enum cerrado.
+ */
+export function readOptionalEnum<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+): T | null | typeof INVALID_ENUM {
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+  return allowed.includes(value as T) ? (value as T) : INVALID_ENUM;
+}
