@@ -3,9 +3,9 @@
 **Última actualización:** 2026-09-02
 **Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (10/11)
 **Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
-**Tarea activa:** ninguna
-**Estado de la tarea:** LEX-2.1…2.10 `HECHO` · siguiente LEX-2.11
-**Rama / commit base / HEAD:** `main` en `4619dbe` (PR #18, LEX-2.10). Sin rama de trabajo activa.
+**Tarea activa:** LEX-2.11 — auditoría E2E y de M2 con dos usuarios — `EN PROCESO`
+**Estado de la tarea:** entregable completo y gates en verde en local; pendiente PR + CI
+**Rama / commit base / HEAD:** rama `feat/lex-2-11-m2-audit` desde `main` (`f75f74e`).
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,42 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-2.11 — Auditoría E2E y de M2 con dos usuarios — `EN PROCESO`
+
+Informe en [`evidence/LEX-2.11.md`](evidence/LEX-2.11.md). Entregable completo y
+gates en verde en local; falta PR + CI para marcar `HECHO` (y con ello **FASE 2
+`HECHO`** / **M2 `HECHO`**). **Sin migración.**
+
+Pasada de conjunto sobre M2: recorre los flujos de punta a punta y comprueba el
+aislamiento A/B en las tres capas. La tabla de `evidence/LEX-2.11.md` §2 mapea
+cada criterio de salida de M2 a su prueba (pgTAP `040`/`050`/`060`/`070`, E2E
+`auth`/`protected`/`onboarding`, `db:reset` desde vacío).
+
+- **`tests/e2e/isolation.spec.ts`** (nuevo): dos contextos de navegador con
+  sesión a la vez; A hace el onboarding en español, B en inglés; cada uno ve su
+  curso, y la actividad de uno no cambia lo del otro. Señal que identifica al
+  dueño: `courses.title` se fija al crear a partir del `ui_locale` de ese
+  usuario, así que el curso de A se titula «Inglés» y el de B «English» **aunque
+  se miren bajo el otro locale**.
+- **`tests/e2e/helpers.ts`** (nuevo): unifica `uniqueEmail` / `signUp` /
+  `completeOnboarding`, que cuatro specs repetían. `auth`, `protected`,
+  `onboarding` e `identity-a11y` pasan a importarlos; ningún caso cambia de
+  comportamiento.
+- **Flake de GoTrue — decisión.** Hipótesis de límite de peticiones
+  (`sign_in_sign_ups = 30`) **descartada por sondeo**: 45 altas seguidas, todas
+  `200` — el stack local no aplica ese límite. No reproducible en ~10 pasadas
+  dirigidas con instrumentación. Decisión: `signUp` reintenta el alta **una vez,
+  con correo nuevo**, si no cae en `/es` en 10 s — reintento de *preparación*,
+  no política global; `playwright.config.ts` mantiene `retries: 0` en local.
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 8/8, vitest 14 ficheros/85, build)
+pnpm db:reset  4 migraciones + seed desde vacío, sin pasos manuales
+pnpm db:test   8 ficheros / 123 asserciones, PASS (sin cambios: no toca esquema)
+pnpm db:types  sin cambios (no hay migración)
+pnpm e2e       46 passed (44 previos + isolation ×2); 12 pasadas seguidas sin flake tras el reintento
+```
 
 ### LEX-2.10 — Manejo de estados y accesibilidad de identidad — `HECHO`
 
@@ -503,10 +539,11 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 2 en 10/11. LEX-2.1…2.10 en `main` (`4619dbe`).
+**LEX-2.11** `EN PROCESO` en `feat/lex-2-11-m2-audit`: código y gates en verde en
+local, pendiente PR + CI + merge. Al cerrar: FASE 2 `HECHO` (11/11), M2 `HECHO`.
 
-Siguiente: **LEX-2.11** — auditoría E2E y de M2 con dos usuarios. Cierra FASE 2 /
-M2. Depende de LEX-2.1…2.10.
+Siguiente tras el cierre: **FASE 3 / M3** — biblioteca manual usable. Primera
+tarea LEX-3.1 (modelo de dominio de biblioteca).
 
 ---
 
@@ -592,8 +629,12 @@ M2. Depende de LEX-2.1…2.10.
 | `src/app/[locale]/(app)/onboarding/onboarding-form.tsx` | LEX-2.10: `FormError` + hook; grupos de radio inválidos con `aria-invalid` + `tabIndex={-1}` + `<legend>` en rojo (deuda de LEX-2.8). |
 | `tests/unit/messages/parity.test.ts` | LEX-2.10: creado. Candado de paridad ES/EN, árbol completo, dos direcciones. |
 | `tests/e2e/identity-a11y.spec.ts` | LEX-2.10: creado. Foco al primer error en login y onboarding. |
-| `tests/e2e/auth.spec.ts` | LEX-2.10: 1 aserción — `role="alert"` pasó del `<p>` al contenedor `#login-error`. |
+| `tests/e2e/auth.spec.ts` | LEX-2.10: 1 aserción — `role="alert"` pasó del `<p>` al contenedor `#login-error`. LEX-2.11: usa `helpers.ts`. |
 | `docs/evidence/LEX-2.10.md` | Creado. |
+| `tests/e2e/helpers.ts` | LEX-2.11: creado. `PASSWORD`, `uniqueEmail`, `signUp` (con reintento de preparación), `completeOnboarding` — antes repetidos en cuatro specs. |
+| `tests/e2e/isolation.spec.ts` | LEX-2.11: creado. Aislamiento A/B en la capa de interfaz (dos contextos simultáneos). |
+| `tests/e2e/{protected,onboarding,identity-a11y}.spec.ts` | LEX-2.11: usan `helpers.ts`; ningún caso cambia de comportamiento. |
+| `docs/evidence/LEX-2.11.md` | Creado. Auditoría de M2 (mapa criterio → evidencia). |
 
 Migraciones SQL: **4** (`20260828143434_identity_and_course`, LEX-2.1;
 `20260831162304_identity_and_course_rls`, LEX-2.3;
@@ -748,14 +789,13 @@ Ninguna abierta.
 
 ## Siguiente acción exacta
 
-Empezar **LEX-2.11** — auditoría E2E y de M2 con dos usuarios: recorrer
-registro → onboarding → sesión → recuperación con A y B en paralelo; confirmar
-aislamiento en interfaz, servidor y RLS; `db:reset` desde vacío y CI verde en
-los tres trabajos. Cierra FASE 2 / M2. Rama `feat/lex-2-11-…` desde `main`
-(`4619dbe`). **En el camino de esta tarea está el flake de GoTrue**
-(`__next_error__` en `/es/signup` bajo dos proyectos Supabase + dos workers):
-fijar la causa raíz o decidir una política de reintento explícita, no volver a
-documentarlo. Ver `evidence/LEX-2.10.md` §7.
+Abrir el PR de `feat/lex-2-11-m2-audit` contra `main`, CI verde en los tres
+trabajos (PR y merge), y en un PR de cierre de docs marcar LEX-2.11 `HECHO` +
+**FASE 2 `HECHO` (11/11)** + **M2 `HECHO`** en el roadmap, con los IDs de run
+aquí y en `evidence/LEX-2.11.md` §8. La **etiqueta de hito M2** (`v0.3.0-m2` o
+la que decida Joan) **no se crea sin autorización expresa** (CLAUDE.md §4):
+queda como acción pendiente del propietario. Después, **FASE 3 / LEX-3.1** —
+modelo de dominio de biblioteca. No se inicia sin cerrar antes M2.
 
 Decisiones vivas: `force row level security` **no** activado (LEX-2.3); creación
 de perfil = caso de uso, **no** trigger (ADR-005); errores de autenticación con

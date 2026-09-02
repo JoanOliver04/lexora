@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { signUp } from "./helpers";
+
 /**
  * Onboarding (LEX-2.8).
  *
@@ -8,20 +10,6 @@ import { expect, test, type Page } from "@playwright/test";
  * segunda visita al onboarding ya no tiene sentido y redirige a `/app`. El
  * estado de error del formulario se comprueba con un valor fuera de rango.
  */
-
-function uniqueEmail(): string {
-  return `e2e-onb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
-}
-
-const PASSWORD = "e2e-passw0rd";
-
-async function signUp(page: Page): Promise<void> {
-  await page.goto("/es/signup");
-  await page.getByLabel("Correo").fill(uniqueEmail());
-  await page.getByLabel("Contraseña").fill(PASSWORD);
-  await page.getByRole("button", { name: "Crear cuenta" }).click();
-  await expect(page).toHaveURL("/es");
-}
 
 function declaredLevel(page: Page) {
   return page.getByRole("group", { name: "¿Qué nivel de inglés dirías que tienes?" });
