@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-02
-**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (10/11)
-**Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
-**Tarea activa:** LEX-2.11 — auditoría E2E y de M2 con dos usuarios — `EN PROCESO`
-**Estado de la tarea:** entregable completo y gates en verde en local; pendiente PR + CI
-**Rama / commit base / HEAD:** rama `feat/lex-2-11-m2-audit` desde `main` (`f75f74e`).
+**Fase actual:** FASE 2 `HECHO` (11/11) → **FASE 3 — Biblioteca, mazos y conceptos** — `PENDIENTE` (0/12)
+**Hito actual:** M2 — Identidad y onboarding aislados — `HECHO`. Siguiente M3 `PENDIENTE`
+**Tarea activa:** ninguna
+**Estado de la tarea:** LEX-2.1…2.11 `HECHO` · **M2 `HECHO`** · siguiente LEX-3.1
+**Rama / commit base / HEAD:** `main` en `0f36ed1` (PR #20, LEX-2.11). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -15,11 +15,12 @@
 
 ## Terminado en esta sesión
 
-### LEX-2.11 — Auditoría E2E y de M2 con dos usuarios — `EN PROCESO`
+### LEX-2.11 — Auditoría E2E y de M2 con dos usuarios — `HECHO` · cierra M2
 
-Informe en [`evidence/LEX-2.11.md`](evidence/LEX-2.11.md). Entregable completo y
-gates en verde en local; falta PR + CI para marcar `HECHO` (y con ello **FASE 2
-`HECHO`** / **M2 `HECHO`**). **Sin migración.**
+Informe en [`evidence/LEX-2.11.md`](evidence/LEX-2.11.md). PR #20 fusionada a
+`main` (merge `0f36ed1`); CI verde en los tres trabajos, runs `33654445913`
+(PR) y `33654786410` (merge). **Con esto FASE 2 `HECHO` (11/11) y M2 `HECHO`.**
+**Sin migración.**
 
 Pasada de conjunto sobre M2: recorre los flujos de punta a punta y comprueba el
 aislamiento A/B en las tres capas. La tabla de `evidence/LEX-2.11.md` §2 mapea
@@ -539,11 +540,16 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-**LEX-2.11** `EN PROCESO` en `feat/lex-2-11-m2-audit`: código y gates en verde en
-local, pendiente PR + CI + merge. Al cerrar: FASE 2 `HECHO` (11/11), M2 `HECHO`.
+Ninguna tarea `EN PROCESO`. **FASE 2 `HECHO` (11/11). M2 `HECHO`.** LEX-2.1…2.11
+en `main` (`0f36ed1`).
 
-Siguiente tras el cierre: **FASE 3 / M3** — biblioteca manual usable. Primera
-tarea LEX-3.1 (modelo de dominio de biblioteca).
+Siguiente: **FASE 3 / M3** — biblioteca manual usable. Primera tarea **LEX-3.1**
+(modelo de dominio de biblioteca: entidades `Deck`/`Concept`/`PracticeItem`/
+`Tag`, invariantes puras, `domain` sin dependencias externas). No se inicia
+aquí.
+
+Acción pendiente del propietario: **etiqueta de hito M2** (`v0.3.0-m2` o la que
+Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4).
 
 ---
 
@@ -692,6 +698,9 @@ nuevos aplicados.
 ### CI
 
 ```text
+run 33654786410   CI   main   push          success   merge de PR #20 (LEX-2.11, cierra M2)
+run 33654445913   CI   feat/lex-2-11-…      pull_request   success   PR #20 (LEX-2.11)
+run 33652080651   CI   main   push          success   merge de PR #19 (cierre docs LEX-2.10)
 run 33650912529   CI   main   push          success   merge de PR #18 (LEX-2.10)
 run 33650503266   CI   feat/lex-2-10-…      pull_request   success   PR #18 (LEX-2.10)
 run 33446280224   CI   main   push          success   merge de PR #17 (cierre docs LEX-2.9)
@@ -703,7 +712,7 @@ run 33442548467   CI   feat/lex-2-8-…       pull_request   success   PR #14 (L
 run 33440461002   CI   main   push          success   merge de PR #13 (LEX-2.7)
 ```
 
-LEX-2.1…2.10 en `main` (`4619dbe`), CI verde en el PR y en el merge de cada tarea.
+LEX-2.1…2.11 en `main` (`0f36ed1`), CI verde en el PR y en el merge de cada tarea.
 
 ---
 
@@ -789,13 +798,15 @@ Ninguna abierta.
 
 ## Siguiente acción exacta
 
-Abrir el PR de `feat/lex-2-11-m2-audit` contra `main`, CI verde en los tres
-trabajos (PR y merge), y en un PR de cierre de docs marcar LEX-2.11 `HECHO` +
-**FASE 2 `HECHO` (11/11)** + **M2 `HECHO`** en el roadmap, con los IDs de run
-aquí y en `evidence/LEX-2.11.md` §8. La **etiqueta de hito M2** (`v0.3.0-m2` o
-la que decida Joan) **no se crea sin autorización expresa** (CLAUDE.md §4):
-queda como acción pendiente del propietario. Después, **FASE 3 / LEX-3.1** —
-modelo de dominio de biblioteca. No se inicia sin cerrar antes M2.
+Empezar **LEX-3.1** — modelo de dominio de biblioteca: entidades y tipos para
+`Deck`, `Concept`, `PracticeItem`, `Tag`, nivel y categoría; invariantes puras
+(dirección inversa, `mode` cerrado, archivado); `domain` sin Next / Supabase /
+Zod externo salvo mapeos de borde. Sin migración (es LEX-3.2), sin pantallas.
+Fuente: `MASTER_SPEC.md` §6 y §7; cotejar con `docs/DATA_MODEL.md`. Rama
+`feat/lex-3-1-…` desde `main` (`0f36ed1`).
+
+Acción pendiente del propietario: **etiqueta de hito M2** (`v0.3.0-m2` o la que
+Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4).
 
 Decisiones vivas: `force row level security` **no** activado (LEX-2.3); creación
 de perfil = caso de uso, **no** trigger (ADR-005); errores de autenticación con
@@ -826,13 +837,15 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main` en `4619dbe` (PR #18, LEX-2.10).
-  Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
+- Rama por defecto: `main` en `0f36ed1` (PR #20, LEX-2.11 — cierra M2).
+  Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas; `v0.3.0-m2` **pendiente de
+  autorización de Joan**.
 - Sin rama de trabajo activa.
 - LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs);
   LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10; LEX-2.5 → PR #11;
   LEX-2.6 → PR #12; LEX-2.7 → PR #13; LEX-2.8 → PR #14 (+ #15 cierre docs);
-  LEX-2.9 → PR #16 (+ #17 cierre docs); LEX-2.10 → PR #18.
+  LEX-2.9 → PR #16 (+ #17 cierre docs); LEX-2.10 → PR #18 (+ #19 cierre docs);
+  LEX-2.11 → PR #20.
   Ramas borradas.
 - Contenido versionado: aplicación Next.js completa (módulos `identity` y
   `courses`), `supabase/` (config, seed, tests, **migrations** — cuatro:

@@ -1,7 +1,7 @@
 # LEX-2.11 — Auditoría E2E y de M2 con dos usuarios
 
 **Fecha:** 2026-09-02
-**Rama:** `feat/lex-2-11-m2-audit`
+**Rama:** `feat/lex-2-11-m2-audit` (PR #20, merge `0f36ed1`)
 **Estado resultante:** `HECHO` — **cierra FASE 2 / M2**
 
 ---
@@ -32,7 +32,7 @@ del alta (§5).
 | **Aislamiento en el servidor** | Toda composición `*ForCurrentUser` (`identity.ts`, `onboarding.ts`, `courses.ts`) toma el `userId` de `client.auth.getClaims()` (`claims.sub`), **nunca de un parámetro**. `resolveSafeRedirect` filtra el `next`/`locale` antes de cualquier `redirect()`. Regla de capas exigida por lint + `tests/unit/architecture/layer-rules.test.ts`. |
 | **Aislamiento en la interfaz** | `tests/e2e/isolation.spec.ts` (**nuevo**): dos contextos de navegador con sesión a la vez; A hace el onboarding en español y B en inglés; cada uno ve su propio curso, y la actividad de uno no cambia lo que ve el otro. Señal que identifica al dueño: `courses.title` se fija al crear a partir del `ui_locale` de ese usuario, así que el curso de A se titula «Inglés» y el de B «English» **aunque se miren bajo el otro locale**. |
 | **Migración desde base limpia** | `pnpm db:reset` aplica las 4 migraciones desde vacío, en orden, sin pasos manuales, pese al ciclo `profiles → courses → profiles(owner_id)`. Es el job «Base de datos» de la CI. |
-| **CI verde en los tres trabajos** | Runs `<PR>` y `<merge>` — se rellenan al cerrar (§8). |
+| **CI verde en los tres trabajos** | `Calidad`, `Base de datos`, `Extremo a extremo` verdes en el PR (run `33654445913`) y en el merge a `main` (run `33654786410`). |
 
 ## 3. Nada que reprobar en la auditoría
 
@@ -121,8 +121,11 @@ Migraciones: **0**.
 
 ## 8. Estado del árbol Git
 
-Rama `feat/lex-2-11-m2-audit` desde `main` (`f75f74e`). PR `<n>` — CI y merge se
-rellenan al cerrar. Runs de CI: `<PR>` y `<merge>`, tres trabajos cada una.
+Rama `feat/lex-2-11-m2-audit` desde `main` (`f75f74e`), un commit (`d4c1bda`).
+PR #20 fusionada a `main` (merge `0f36ed1`); CI verde en los tres trabajos, runs
+`33654445913` (PR) y `33654786410` (merge). Rama borrada. El cierre de docs
+—LEX-2.11 `HECHO`, FASE 2 / M2 `HECHO`, contadores— va en un PR aparte, como en
+las tareas anteriores.
 
 ## 9. Cierre de FASE 2 / M2
 
