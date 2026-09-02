@@ -1,7 +1,7 @@
 # LEX-3.1 — Modelo de dominio de biblioteca
 
 **Fecha:** 2026-09-02
-**Rama:** `feat/lex-3-1-library-domain`
+**Rama:** `feat/lex-3-1-library-domain` (PR #22, merge `426b2b3`)
 **Estado resultante:** `HECHO`
 
 ---
@@ -172,8 +172,12 @@ que no existe hasta LEX-3.2).
 
 ## 8. Estado del árbol Git
 
-Rama `feat/lex-3-1-library-domain` desde `main` (`82f9844`). PR y CI se
-completan al cerrar.
+Rama `feat/lex-3-1-library-domain` desde `main` (`82f9844`), dos commits
+(`96b8986` dominio; `d2d2a43` consolidación de `readOptionalEnum` + Q-005 +
+README). PR #22 fusionada a `main` (merge `426b2b3`); CI verde en los tres
+trabajos, runs `33657579290` (PR — el job «Base de datos» falló primero por
+`toomanyrequests` / `address already in use` del runner y se reintentó) y
+`33658253752` (merge). Rama borrada.
 
 ## 9. Siguiente tarea
 
