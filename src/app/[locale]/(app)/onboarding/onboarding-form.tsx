@@ -1,42 +1,64 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState } from "react";
+import { useActionState, useRef } from "react";
 
 import { CEFR_LEVELS } from "@/modules/courses/domain/onboarding";
-import { Input, Label } from "@/shared/presentation/components";
+import { FormError, Input, Label } from "@/shared/presentation/components";
+import { useFocusFirstInvalid } from "@/shared/presentation/hooks/use-focus-first-invalid";
 
 import { PendingButton } from "../../(auth)/_components/pending-button";
 import { onboardingAction, type OnboardingFormState } from "./actions";
 import { issueMessageKey } from "./message-key";
 
 const UI_LOCALE_OPTIONS = ["es", "en"] as const;
+const ERROR_ID = "onboarding-error";
 
 export function OnboardingForm({ locale }: { locale: string }) {
   const t = useTranslations("Onboarding");
   const [state, action] = useActionState<OnboardingFormState, FormData>(onboardingAction, {});
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstInvalid(formRef, state);
 
   const issues = state.issues ?? [];
-  // `aria-invalid` solo en el campo de número, donde tiene efecto (el `Input`
-  // pinta el borde de error). El resaltado de los grupos de radio inválidos es
-  // LEX-2.10; hoy el bloque `role="alert"` de arriba enumera todas las pegas.
+  const uiLocaleInvalid = issues.includes("onboarding.uiLocale.invalid");
+  const declaredLevelInvalid = issues.includes("onboarding.declaredLevel.invalid");
+  const startLevelInvalid = issues.includes("onboarding.startLevel.invalid");
   const limitInvalid = issues.some((issue) => issue.startsWith("onboarding.dailyNewLimit"));
 
+  // Un grupo de radios inválido: `<fieldset>` con `aria-invalid` y
+  // `aria-describedby` a la región de error, `tabIndex={-1}` para que
+  // `useFocusFirstInvalid` pueda llevarle el foco, y la leyenda en color de
+  // error como pista visible. El detalle del mensaje sigue en el `role="alert"`.
+  function groupProps(invalid: boolean) {
+    return invalid
+      ? ({
+          "aria-invalid": true,
+          "aria-describedby": ERROR_ID,
+          tabIndex: -1,
+        } as const)
+      : {};
+  }
+
+  function legendClass(invalid: boolean): string {
+    return invalid ? "text-sm font-medium text-(--color-danger)" : "text-sm font-medium";
+  }
+
   return (
-    <form action={action} className="flex flex-col gap-8" noValidate>
+    <form ref={formRef} action={action} className="flex flex-col gap-8" noValidate>
       <input type="hidden" name="locale" value={locale} />
 
       {issues.length > 0 || state.error ? (
-        <div role="alert" className="flex flex-col gap-1 text-sm text-(--color-danger)">
+        <FormError id={ERROR_ID}>
           {state.error ? <p>{t("genericError")}</p> : null}
           {issues.map((issue) => (
             <p key={issue}>{t(`errors.${issueMessageKey(issue)}`)}</p>
           ))}
-        </div>
+        </FormError>
       ) : null}
 
-      <fieldset className="flex flex-col gap-3">
-        <legend className="text-sm font-medium">{t("uiLocaleLabel")}</legend>
+      <fieldset className="flex flex-col gap-3" {...groupProps(uiLocaleInvalid)}>
+        <legend className={legendClass(uiLocaleInvalid)}>{t("uiLocaleLabel")}</legend>
         <div className="flex flex-wrap gap-4">
           {UI_LOCALE_OPTIONS.map((option) => (
             <label key={option} className="flex items-center gap-2">
@@ -64,8 +86,8 @@ export function OnboardingForm({ locale }: { locale: string }) {
         </div>
       </dl>
 
-      <fieldset className="flex flex-col gap-3">
-        <legend className="text-sm font-medium">{t("declaredLevelLabel")}</legend>
+      <fieldset className="flex flex-col gap-3" {...groupProps(declaredLevelInvalid)}>
+        <legend className={legendClass(declaredLevelInvalid)}>{t("declaredLevelLabel")}</legend>
         <div className="flex flex-col gap-2">
           {CEFR_LEVELS.map((level) => (
             <label key={level} className="flex items-center gap-2">
@@ -77,8 +99,8 @@ export function OnboardingForm({ locale }: { locale: string }) {
         <p className="text-xs text-(--color-ink-subtle)">{t("declaredLevelNote")}</p>
       </fieldset>
 
-      <fieldset className="flex flex-col gap-3">
-        <legend className="text-sm font-medium">{t("startLevelLabel")}</legend>
+      <fieldset className="flex flex-col gap-3" {...groupProps(startLevelInvalid)}>
+        <legend className={legendClass(startLevelInvalid)}>{t("startLevelLabel")}</legend>
         <div className="flex flex-col gap-2">
           {CEFR_LEVELS.map((level) => (
             <label key={level} className="flex items-center gap-2">
@@ -109,7 +131,7 @@ export function OnboardingForm({ locale }: { locale: string }) {
           defaultValue={5}
           required
           aria-invalid={limitInvalid || undefined}
-          aria-describedby="dailyNewLimit-hint"
+          aria-describedby={limitInvalid ? `${ERROR_ID} dailyNewLimit-hint` : "dailyNewLimit-hint"}
           className="max-w-28"
         />
         <p id="dailyNewLimit-hint" className="text-xs text-(--color-ink-subtle)">

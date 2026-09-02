@@ -52,10 +52,12 @@ test.describe("autenticación", () => {
     await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
     // `getByRole("alert")` también captura el anunciador de rutas de Next
-    // (un div vacío), así que se localiza el mensaje por su texto.
-    const alert = page.getByText("El correo o la contraseña no son correctos.");
-    await expect(alert).toBeVisible();
+    // (un div vacío), así que se localiza la región de error por su `id` y se
+    // comprueba que lleva `role="alert"` y contiene el mensaje (LEX-2.10: el
+    // rol pasó del `<p>` al contenedor `FormError`).
+    const alert = page.locator("#login-error");
     await expect(alert).toHaveAttribute("role", "alert");
+    await expect(alert).toContainText("El correo o la contraseña no son correctos.");
     await expect(page).toHaveURL(/\/es\/login/);
   });
 

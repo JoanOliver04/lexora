@@ -1,9 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState } from "react";
+import { useActionState, useRef } from "react";
 
-import { Input, Label } from "@/shared/presentation/components";
+import { FormError, Input, Label } from "@/shared/presentation/components";
+import { useFocusFirstInvalid } from "@/shared/presentation/hooks/use-focus-first-invalid";
 
 import type { AuthErrorCode } from "@/modules/identity/application/auth-flows";
 
@@ -24,17 +25,19 @@ export function LoginForm({
     loginAction,
     initialError ? { error: initialError } : {},
   );
-  const invalid = state.error === "invalid-credentials";
+  const invalid = Boolean(state.error);
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstInvalid(formRef, state);
 
   return (
-    <form action={action} className="flex flex-col gap-5" noValidate>
+    <form ref={formRef} action={action} className="flex flex-col gap-5" noValidate>
       <input type="hidden" name="locale" value={locale} />
       {next ? <input type="hidden" name="next" value={next} /> : null}
 
       {state.error ? (
-        <p role="alert" className="text-sm text-(--color-danger)">
-          {t(`errors.${state.error}`)}
-        </p>
+        <FormError id="login-error">
+          <p>{t(`errors.${state.error}`)}</p>
+        </FormError>
       ) : null}
 
       <div className="flex flex-col gap-2">
@@ -46,6 +49,7 @@ export function LoginForm({
           autoComplete="email"
           required
           aria-invalid={invalid || undefined}
+          aria-describedby={invalid ? "login-error" : undefined}
         />
       </div>
 
@@ -58,6 +62,7 @@ export function LoginForm({
           autoComplete="current-password"
           required
           aria-invalid={invalid || undefined}
+          aria-describedby={invalid ? "login-error" : undefined}
         />
       </div>
 

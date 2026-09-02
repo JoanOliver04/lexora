@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
-**Última actualización:** 2026-09-01
-**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (9/11)
+**Última actualización:** 2026-09-02
+**Fase actual:** FASE 2 — Identidad, onboarding y curso — `EN PROCESO` (10/11)
 **Hito actual:** M2 — Identidad y onboarding aislados — `PENDIENTE`. M1 `HECHO`
-**Tarea activa:** ninguna
-**Estado de la tarea:** LEX-2.1…2.9 `HECHO` · siguiente LEX-2.10
-**Rama / commit base / HEAD:** `main` en `a444755` (PR #16, LEX-2.9). Sin rama de trabajo activa.
+**Tarea activa:** LEX-2.10 — manejo de estados y accesibilidad de identidad — `EN PROCESO`
+**Estado de la tarea:** entregable completo y gates en verde en local; pendiente PR + CI
+**Rama / commit base / HEAD:** rama `feat/lex-2-10-identity-states` desde `main` (`33c8c79`).
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,46 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-2.10 — Manejo de estados y accesibilidad de identidad — `EN PROCESO`
+
+Informe en [`evidence/LEX-2.10.md`](evidence/LEX-2.10.md). Entregable completo y
+gates en verde en local; falta el PR y la CI para marcar `HECHO`. **Sin
+migración.**
+
+Pulido transversal de las vistas de identidad. Los cuatro estados de cada
+formulario, foco y anuncios, y un candado de completitud de traducciones.
+
+- **`useFocusFirstInvalid`** (`src/shared/presentation/hooks/`): tras cada envío
+  fallido lleva el foco al primer `[aria-invalid="true"]`. Depende del **objeto
+  de estado** de `useActionState` (nuevo en cada envío), no del código de error:
+  recoloca el foco aunque el usuario lo haya movido y el error se repita. El
+  foco va al campo, no al `role="alert"` (que ya se anuncia solo al insertarse);
+  el campo apunta a la región con `aria-describedby`.
+- **`FormError`** (`src/shared/presentation/components/`): región `role="alert"`
+  con `id` estable por formulario. Los cinco formularios de identidad pasan a
+  usarla; el `role="alert"` deja el `<p>` y pasa al contenedor.
+- **`FormStatus`**: las tres pantallas de éxito (`signup`, `forgot-password`,
+  `reset-password`) sustituyen el formulario por un `role="status"` que **toma
+  el foco al montarse** (`tabIndex={-1}`) — sin esto el foco caería a `<body>`
+  al desaparecer el botón.
+- **Grupos de radio del onboarding** (deuda anotada en LEX-2.8): un grupo
+  inválido es `<fieldset aria-invalid tabIndex={-1} aria-describedby>` con la
+  `<legend>` en color de error.
+- **`parity.test.ts`**: camina el árbol completo de `messages/{es,en}.json` y
+  afirma en las dos direcciones que las claves coinciden y que ningún valor está
+  vacío. Verificado por rotura (borrar `Auth.login.submit` de `en` → falla).
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 8/8, vitest 14 ficheros/85, build)
+pnpm db:test   8 ficheros / 123 asserciones, PASS (sin cambios: no toca esquema)
+pnpm db:types  sin cambios (no hay migración)
+pnpm e2e       44 passed (identity-a11y ×4 nuevos; verde a la primera en la última pasada)
+```
+
+`auth.spec.ts`: una aserción ajustada (`role="alert"` pasó del `<p>` al
+contenedor `#login-error`). Mismo tipo de cambio a un test existente que en
+LEX-2.8 y LEX-2.9.
 
 ### LEX-2.9 — Shell autenticado y curso activo — `HECHO`
 
@@ -463,10 +503,11 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 2 en 9/11. LEX-2.1…2.9 en `main` (`a444755`).
+**LEX-2.10** `EN PROCESO` en `feat/lex-2-10-identity-states`: código y gates en
+verde en local, pendiente PR + CI + merge. FASE 2 en 10/11.
 
-Siguiente: **LEX-2.10** — completar manejo de estados y accesibilidad de
-identidad. Depende de LEX-2.5…2.9.
+Siguiente: **LEX-2.11** — auditoría E2E y de M2 con dos usuarios. Cierra FASE 2 /
+M2. Depende de LEX-2.10.
 
 ---
 
@@ -544,6 +585,16 @@ identidad. Depende de LEX-2.5…2.9.
 | `tests/e2e/{onboarding,protected}.spec.ts` | LEX-2.9: asserciones del encabezado del shell (curso activo). |
 | `docs/DATA_MODEL.md` | LEX-2.9: `active_course_id` y la FK compuesta. |
 | `docs/evidence/LEX-2.9.md` | Creado. |
+| `src/shared/presentation/hooks/use-focus-first-invalid.{ts,test.tsx}` | LEX-2.10: creado. Hook de foco al primer campo inválido + 3 casos jsdom. |
+| `src/shared/presentation/components/form-error.tsx` | LEX-2.10: creado. Región `role="alert"` con `id` estable. |
+| `src/shared/presentation/components/form-status.tsx` | LEX-2.10: creado. Pantalla de éxito `role="status"` que toma el foco al montarse. |
+| `src/shared/presentation/components/index.ts` | LEX-2.10: exporta `FormError` y `FormStatus`. |
+| `src/app/[locale]/(auth)/{login,signup,forgot-password,reset-password}/*-form.tsx` | LEX-2.10: `FormError` + `aria-describedby` + `useFocusFirstInvalid`; éxito vía `FormStatus` en los tres que tienen pantalla de éxito. |
+| `src/app/[locale]/(app)/onboarding/onboarding-form.tsx` | LEX-2.10: `FormError` + hook; grupos de radio inválidos con `aria-invalid` + `tabIndex={-1}` + `<legend>` en rojo (deuda de LEX-2.8). |
+| `tests/unit/messages/parity.test.ts` | LEX-2.10: creado. Candado de paridad ES/EN, árbol completo, dos direcciones. |
+| `tests/e2e/identity-a11y.spec.ts` | LEX-2.10: creado. Foco al primer error en login y onboarding. |
+| `tests/e2e/auth.spec.ts` | LEX-2.10: 1 aserción — `role="alert"` pasó del `<p>` al contenedor `#login-error`. |
+| `docs/evidence/LEX-2.10.md` | Creado. |
 
 Migraciones SQL: **4** (`20260828143434_identity_and_course`, LEX-2.1;
 `20260831162304_identity_and_course_rls`, LEX-2.3;
@@ -683,16 +734,23 @@ Ninguna abierta.
   el cambio entre cursos llega con el segundo curso.
 - **Panel «Hoy» (§9.4) pendiente** de mazos y planificador (FASE 3+). El shell
   de LEX-2.9 muestra el curso activo y un hueco descrito.
-- **Manejo fino de estados y accesibilidad de identidad: LEX-2.10.**
+- **Sin herramienta automática de a11y (axe / `jsx-a11y`) en el gate (LEX-2.10).**
+  No está instalada; añadirla es una decisión de stack fuera del alcance. La
+  verificación es RTL para el foco + revisión manual de roles y `aria-*`. Deuda
+  para una tarea de tooling.
+- **`aria-invalid` en `<fieldset>` (LEX-2.10)** no tiene soporte uniforme en
+  todos los lectores; el color de la `<legend>` y el `role="alert"` que enumera
+  las pegas son el respaldo.
 
 ---
 
 ## Siguiente acción exacta
 
-Empezar **LEX-2.10** — completar manejo de estados y accesibilidad de identidad:
-loading/empty/error/success, foco y anuncios, traducciones completas,
-formularios sin errores críticos de accesibilidad. Depende de LEX-2.5…2.9
-(`HECHO`). Rama `feat/lex-2-10-…` desde `main` (`a444755`).
+Abrir el PR de `feat/lex-2-10-identity-states` contra `main`, esperar los tres
+trabajos de CI en verde (PR y merge), y en un PR de cierre de docs marcar
+LEX-2.10 `HECHO` en el roadmap y rellenar los IDs de run aquí y en
+`evidence/LEX-2.10.md` §8. Después, **LEX-2.11** — auditoría E2E y de M2 con dos
+usuarios (cierra FASE 2 / M2). Depende de LEX-2.10 (`HECHO`).
 
 Decisiones vivas: `force row level security` **no** activado (LEX-2.3); creación
 de perfil = caso de uso, **no** trigger (ADR-005); errores de autenticación con
@@ -723,12 +781,14 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main` en `a444755` (PR #16, LEX-2.9).
+- Rama por defecto: `main` en `33c8c79` (PR #17, cierre docs LEX-2.9).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas.
-- Sin rama de trabajo activa.
+- Rama de trabajo activa: `feat/lex-2-10-identity-states` desde `33c8c79`
+  (LEX-2.10, pendiente de PR).
 - LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs);
   LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10; LEX-2.5 → PR #11;
-  LEX-2.6 → PR #12; LEX-2.7 → PR #13; LEX-2.8 → PR #14 (+ #15 cierre docs); LEX-2.9 → PR #16.
+  LEX-2.6 → PR #12; LEX-2.7 → PR #13; LEX-2.8 → PR #14 (+ #15 cierre docs);
+  LEX-2.9 → PR #16 (+ #17 cierre docs).
   Ramas borradas.
 - Contenido versionado: aplicación Next.js completa (módulos `identity` y
   `courses`), `supabase/` (config, seed, tests, **migrations** — cuatro:
