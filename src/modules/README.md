@@ -9,9 +9,9 @@ La organización es *feature-first*: todo lo que hace falta para entender
 
 | Módulo | Responsabilidad | Llega en |
 |---|---|---|
-| `identity` | Autenticación, perfil y sesión | Fase 2 |
-| `courses` | Idiomas, cursos y configuración educativa | Fase 2 |
-| `library` | Mazos, conceptos, ítems de práctica y etiquetas | Fase 3 |
+| `identity` | Autenticación, perfil y sesión | Fase 2 — **existe** (`domain/`, `application/`, `infrastructure/`) |
+| `courses` | Idiomas, cursos y configuración educativa | Fase 2 — **existe** (`domain/`, `application/`, `infrastructure/`) |
+| `library` | Mazos, conceptos, ítems de práctica y etiquetas | Fase 3 — **existe** solo `domain/` (LEX-3.1) |
 | `importing` | Previsualización, validación e importación de archivos | Fase 4 |
 | `study` | Cola diaria, sesiones, repetición espaciada e historial | Fases 5 y 6 |
 | `analytics` | Consultas y estadísticas | Fase 7 |

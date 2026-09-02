@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-02
-**Fase actual:** FASE 2 `HECHO` (11/11) → **FASE 3 — Biblioteca, mazos y conceptos** — `PENDIENTE` (0/12)
-**Hito actual:** M2 — Identidad y onboarding aislados — `HECHO`. Siguiente M3 `PENDIENTE`
-**Tarea activa:** ninguna
-**Estado de la tarea:** LEX-2.1…2.11 `HECHO` · **M2 `HECHO`** · siguiente LEX-3.1
-**Rama / commit base / HEAD:** `main` en `0f36ed1` (PR #20, LEX-2.11). Sin rama de trabajo activa.
+**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (0/12). FASE 2 `HECHO` (11/11)
+**Hito actual:** M3 — Biblioteca manual usable — `PENDIENTE`. M2 `HECHO`
+**Tarea activa:** LEX-3.1 — modelo de dominio de biblioteca — `EN PROCESO`
+**Estado de la tarea:** entregable completo y gates en verde en local; pendiente PR + CI
+**Rama / commit base / HEAD:** rama `feat/lex-3-1-library-domain` desde `main` (`82f9844`).
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,45 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-3.1 — Modelo de dominio de biblioteca — `EN PROCESO`
+
+Informe en [`evidence/LEX-3.1.md`](evidence/LEX-3.1.md). Entregable completo y
+gates en verde en local; falta PR + CI. **Sin migración, sin tocar SQL ni
+pantallas.**
+
+Primer paso de FASE 3 / M3: el dominio puro del módulo `library`. Cinco ficheros
+en `src/modules/library/domain/` (uno por concepto cohesivo, patrón de
+`courses/domain/onboarding.ts`):
+
+- **`taxonomy.ts`** — `CefrLevel` (no importado de `courses`; *feature-first*),
+  `DeckCategory`, `ConceptKind`, `PracticeMode` (los **siete** reservados de
+  §13.9), `V1_PRACTICE_MODES` (los tres activables); helpers de texto
+  (`normalizeWhitespace` sin tocar acentos, `readOptionalText`, límites de
+  longitud).
+- **`deck.ts` / `concept.ts` / `practice-item.ts` / `tag.ts`** — `interface`
+  persistido + `*Draft` editable + `validate*Draft(raw)` que acumula todas las
+  pegas con claves estables, más helpers puros: `canonicalKey` (concepto),
+  `normalizeTagName` / `tagSegments` (tag), `canReverse` / `reverseOf` (ítem:
+  la dirección inversa es **otro ítem del mismo concepto**, nunca otro
+  concepto).
+- **`PracticeItemConfig`**: unión discriminada por `mode`; `cloze` guarda
+  `answers: string[]`; los cuatro modos futuros solo el discriminante. Validado
+  sin Zod (eso es el borde, LEX-3.4).
+
+**Interpretación declarada:** «profesional» (§9.5) se modela como `category`, no
+como nivel — §13.6 nombra la columna `cefr_level` (solo MCER). Pendiente de
+confirmación del propietario; afecta a LEX-3.2.
+
+**Regla de capas:** `eslint.config.mjs` la aplica por glob (`src/**/domain/**`),
+así que `library/domain` queda cubierto sin cambios. Verificado por rotura:
+`import` de `@supabase/*` en `taxonomy.ts` → `pnpm lint` falla. Revertido.
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 8/8, vitest 19 ficheros/128, build)
+pnpm db:test   8 ficheros / 123 asserciones, PASS (sin cambios: no toca SQL)
+pnpm db:types  sin cambios (no hay migración)
+```
 
 ### LEX-2.11 — Auditoría E2E y de M2 con dos usuarios — `HECHO` · cierra M2
 
@@ -540,13 +579,11 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. **FASE 2 `HECHO` (11/11). M2 `HECHO`.** LEX-2.1…2.11
-en `main` (`0f36ed1`).
+**LEX-3.1** `EN PROCESO` en `feat/lex-3-1-library-domain`: código y gates en
+verde en local, pendiente PR + CI + merge. FASE 3 en 0/12 (abierta).
 
-Siguiente: **FASE 3 / M3** — biblioteca manual usable. Primera tarea **LEX-3.1**
-(modelo de dominio de biblioteca: entidades `Deck`/`Concept`/`PracticeItem`/
-`Tag`, invariantes puras, `domain` sin dependencias externas). No se inicia
-aquí.
+Siguiente: **LEX-3.2** — migraciones de `decks`, `concepts`, `deck_concepts`,
+`practice_items`, `tags` y `concept_tags`. Depende de LEX-3.1.
 
 Acción pendiente del propietario: **etiqueta de hito M2** (`v0.3.0-m2` o la que
 Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4).
@@ -743,8 +780,11 @@ Corresponden a Joan:
 | Q-002 | Qué documentación es pública | `RESUELTA` — privado el diseño, público el método |
 | Q-003 | Herramientas de desarrollo | `RESUELTA` |
 | Q-004 | Primer push al remoto público | `RESUELTA` |
+| Q-005 | «Profesional» en un mazo: ¿nivel o categoría? | `ABIERTA` — recomendación: categoría (afecta a LEX-3.2/3.5) |
 
-Ninguna abierta.
+Abierta: **Q-005**. LEX-3.1 se entrega con la recomendación (categoría)
+declarada; no bloquea LEX-3.1, sí condiciona el enum de `decks.cefr_level` en
+LEX-3.2.
 
 ---
 
@@ -798,12 +838,13 @@ Ninguna abierta.
 
 ## Siguiente acción exacta
 
-Empezar **LEX-3.1** — modelo de dominio de biblioteca: entidades y tipos para
-`Deck`, `Concept`, `PracticeItem`, `Tag`, nivel y categoría; invariantes puras
-(dirección inversa, `mode` cerrado, archivado); `domain` sin Next / Supabase /
-Zod externo salvo mapeos de borde. Sin migración (es LEX-3.2), sin pantallas.
-Fuente: `MASTER_SPEC.md` §6 y §7; cotejar con `docs/DATA_MODEL.md`. Rama
-`feat/lex-3-1-…` desde `main` (`0f36ed1`).
+Abrir el PR de `feat/lex-3-1-library-domain` contra `main`, CI verde en los tres
+trabajos (PR y merge), y en un PR de cierre de docs marcar LEX-3.1 `HECHO` en el
+roadmap con los IDs de run aquí y en `evidence/LEX-3.1.md` §8. Después,
+**LEX-3.2** — migraciones de la biblioteca (`decks`, `concepts`,
+`deck_concepts`, `practice_items`, `tags`, `concept_tags`); `MASTER_SPEC.md`
+§§13.6–13.10; **confirmar con el propietario** la interpretación
+`professional`-categoría antes de fijar el enum de `deck.cefr_level`.
 
 Acción pendiente del propietario: **etiqueta de hito M2** (`v0.3.0-m2` o la que
 Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4).

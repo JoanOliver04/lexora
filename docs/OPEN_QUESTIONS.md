@@ -4,7 +4,7 @@
 > Cada entrada tiene un ID estable `Q-nnn` que nunca se reutiliza.
 > Protocolo: `ROADMAP.md` §3.5 (documento privado y local).
 
-**Última actualización:** 2026-08-26
+**Última actualización:** 2026-09-02
 
 ## Índice de estado
 
@@ -14,6 +14,7 @@
 | Q-002 | Qué documentación es pública y cuál no | `RESUELTA` | LEX-0.2, LEX-0.4, LEX-0.5, LEX-10.4 |
 | Q-003 | Herramientas de desarrollo ausentes | `RESUELTA` | — |
 | Q-004 | Primer push al remoto público | `RESUELTA` | — |
+| Q-005 | «Profesional» en un mazo: ¿nivel o categoría? | `ABIERTA` | LEX-3.1, LEX-3.2, LEX-3.5 |
 
 > Este archivo es público. Se aplican las mismas exclusiones que en
 > [`STATUS.md`](STATUS.md): sin credenciales, sin datos personales, sin contenido
@@ -157,6 +158,54 @@ en lugar de suponerlo.
 ### Consecuencia
 
 Desbloquea LEX-1.12: una CI solo se puede dar por buena viéndola correr.
+
+---
+
+## Q-005 — «Profesional» en un mazo: ¿nivel o categoría?
+
+**Estado:** `ABIERTA`
+**Fecha:** 2026-09-02
+**Bloquea:** el enum de `decks.cefr_level` en LEX-3.2; la interfaz de creación de
+mazos en LEX-3.5.
+
+### Contexto
+
+`MASTER_SPEC.md` §9.5 ofrece «profesional» en **dos** listas del formulario de
+mazo: la de **nivel MCER** («A1, A2, B1, B2 o profesional») y la de **categoría**
+(«vocabulario, gramática, función comunicativa, pronunciación, profesional o
+mixta»). §13.6 nombra la columna `cefr_level`, cuyo nombre implica solo bandas
+del Marco Común (A1–B2), como el enum `public.cefr_level` que ya existe (LEX-2.1)
+y que comparten `courses.declared_level` / `start_level`.
+
+Si «profesional» es un valor de nivel, `decks` necesita un enum propio distinto
+del de cursos, y «nivel» deja de significar lo mismo en toda la app.
+
+### Opciones
+
+1. **`professional` es una categoría, no un nivel.** `decks.cefr_level` reutiliza
+   el enum `public.cefr_level` (A1–B2, anulable); el contenido profesional se
+   marca con `category = 'professional'` y `cefr_level` nulo.
+2. **`professional` es un valor de nivel.** `decks` usa un enum nuevo
+   (`cefr_level` + `professional`), separado del de cursos. «Nivel» pasa a tener
+   dos significados según la tabla.
+3. Un tercer eje explícito (`is_professional boolean`), que nadie ha pedido.
+
+### Recomendación
+
+Opción 1. Mantiene un único significado de «nivel MCER» en cursos y biblioteca,
+reutiliza el enum existente y no pierde información: la categoría ya recoge
+«profesional». LEX-3.1 ya modela el dominio así (`DeckCategory` incluye
+`professional`; `deck.cefrLevel: CefrLevel | null`).
+
+### Impacto de no decidir
+
+LEX-3.2 no puede fijar el enum de `decks.cefr_level`. LEX-3.1 se entrega con la
+opción 1 declarada; si Joan elige otra, cambia `taxonomy.ts` y la migración de
+LEX-3.2, aún sin escribir.
+
+### Resolución
+
+_(pendiente)_
 
 ---
 
