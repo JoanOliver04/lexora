@@ -82,7 +82,24 @@ jobs:
       - name: Levantar Supabase local
         # Sin Studio ni los servicios que no participan en las pruebas: cada
         # contenedor de mas es tiempo de arranque en cada ejecucion.
-        run: pnpm exec supabase start -x studio,imgproxy,vector,logflare
+        #
+        # Con reintento: Docker Hub limita las descargas anonimas del runner
+        # ("toomanyrequests: Rate exceeded") y un contenedor huerfano de otro
+        # job puede dejar el puerto 54322 ocupado ("address already in use").
+        # Ambos son transitorios y ajenos al codigo; se limpia y se reintenta
+        # antes de dar el job por roto.
+        run: |
+          for attempt in 1 2 3; do
+            if pnpm exec supabase start -x studio,imgproxy,vector,logflare; then
+              exit 0
+            fi
+            echo "::warning::supabase start fallo (intento ${attempt}/3); limpiando y reintentando"
+            pnpm exec supabase stop --no-backup || true
+            docker ps -aq | xargs -r docker rm -f || true
+            sleep $((attempt * 15))
+          done
+          echo "::error::supabase start fallo tras 3 intentos"
+          exit 1
 
       - name: Aplicar migraciones desde una base limpia
         # Es la comprobacion que importa: que el esquema versionado se aplique
@@ -129,7 +146,22 @@ jobs:
         # Faltaba en la primera version de esta CI, y en local no se notaba
         # porque la base de datos siempre esta encendida. Lo encontro la propia
         # CI en LEX-1.13, que es exactamente para lo que existe.
-        run: pnpm exec supabase start -x studio,imgproxy,vector,logflare
+        #
+        # Con reintento por el mismo motivo que en el job "Base de datos":
+        # "toomanyrequests" de Docker Hub y puertos ocupados por contenedores
+        # huerfanos son transitorios y ajenos al codigo.
+        run: |
+          for attempt in 1 2 3; do
+            if pnpm exec supabase start -x studio,imgproxy,vector,logflare; then
+              exit 0
+            fi
+            echo "::warning::supabase start fallo (intento ${attempt}/3); limpiando y reintentando"
+            pnpm exec supabase stop --no-backup || true
+            docker ps -aq | xargs -r docker rm -f || true
+            sleep $((attempt * 15))
+          done
+          echo "::error::supabase start fallo tras 3 intentos"
+          exit 1
 
       - name: Instalar Chromium
         # Solo Chromium. Firefox y WebKit se anadiran cuando exista producto que
