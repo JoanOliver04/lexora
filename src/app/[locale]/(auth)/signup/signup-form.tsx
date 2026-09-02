@@ -1,9 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState } from "react";
+import { useActionState, useRef } from "react";
 
-import { Input, Label } from "@/shared/presentation/components";
+import { FormError, Input, Label } from "@/shared/presentation/components";
+import { useFocusFirstInvalid } from "@/shared/presentation/hooks/use-focus-first-invalid";
 
 import { signupAction, type AuthFormState } from "../actions";
 import { PendingButton } from "../_components/pending-button";
@@ -11,6 +12,8 @@ import { PendingButton } from "../_components/pending-button";
 export function SignupForm({ locale, next }: { locale: string; next?: string | undefined }) {
   const t = useTranslations("Auth");
   const [state, action] = useActionState<AuthFormState, FormData>(signupAction, {});
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstInvalid(formRef, state);
 
   if (state.status === "check-email") {
     return (
@@ -26,16 +29,18 @@ export function SignupForm({ locale, next }: { locale: string; next?: string | u
     state.error === "password-too-short" ||
     state.error === "password-too-long" ||
     state.error === "weak-password";
+  // `auth-unavailable` no señala un campo concreto: el `role="alert"` lo explica,
+  // pero no se marca ningún `aria-invalid`.
 
   return (
-    <form action={action} className="flex flex-col gap-5" noValidate>
+    <form ref={formRef} action={action} className="flex flex-col gap-5" noValidate>
       <input type="hidden" name="locale" value={locale} />
       {next ? <input type="hidden" name="next" value={next} /> : null}
 
       {state.error ? (
-        <p role="alert" className="text-sm text-(--color-danger)">
-          {t(`errors.${state.error}`)}
-        </p>
+        <FormError id="signup-error">
+          <p>{t(`errors.${state.error}`)}</p>
+        </FormError>
       ) : null}
 
       <div className="flex flex-col gap-2">
@@ -47,6 +52,7 @@ export function SignupForm({ locale, next }: { locale: string; next?: string | u
           autoComplete="email"
           required
           aria-invalid={emailInvalid || undefined}
+          aria-describedby={emailInvalid ? "signup-error" : undefined}
         />
       </div>
 
@@ -60,7 +66,7 @@ export function SignupForm({ locale, next }: { locale: string; next?: string | u
           minLength={8}
           required
           aria-invalid={passwordInvalid || undefined}
-          aria-describedby="password-hint"
+          aria-describedby={passwordInvalid ? "signup-error password-hint" : "password-hint"}
         />
         <p id="password-hint" className="text-xs text-(--color-ink-subtle)">
           {t("signup.passwordHint")}
