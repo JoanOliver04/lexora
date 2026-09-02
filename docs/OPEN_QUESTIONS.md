@@ -165,8 +165,9 @@ Desbloquea LEX-1.12: una CI solo se puede dar por buena viéndola correr.
 
 **Estado:** `ABIERTA`
 **Fecha:** 2026-09-02
-**Bloquea:** el enum de `decks.cefr_level` en LEX-3.2; la interfaz de creación de
-mazos en LEX-3.5.
+**Bloquea:** ya no bloquea LEX-3.2 (se aplicó la opción 1, reversible); sigue
+condicionando la interfaz de creación de mazos en LEX-3.5 y una eventual
+migración correctora si Joan elige otra opción.
 
 ### Contexto
 
@@ -199,9 +200,13 @@ reutiliza el enum existente y no pierde información: la categoría ya recoge
 
 ### Impacto de no decidir
 
-LEX-3.2 no puede fijar el enum de `decks.cefr_level`. LEX-3.1 se entrega con la
-opción 1 declarada; si Joan elige otra, cambia `taxonomy.ts` y la migración de
-LEX-3.2, aún sin escribir.
+LEX-3.1 (dominio) y LEX-3.2 (migración `20260902193649_library_schema`) se
+entregan con la opción 1: `deck_category` incluye `professional` y
+`decks.cefr_level` reutiliza `public.cefr_level`. Si Joan elige la opción 2,
+hace falta: cambiar `deck_category` en `taxonomy.ts`, una migración correctora
+que cree un enum nuevo para `decks.cefr_level` y migre las filas, y ajustar la
+interfaz de LEX-3.5. Cuanto más contenido real exista, más cara es la
+corrección — conviene decidir antes de LEX-3.5.
 
 ### Resolución
 

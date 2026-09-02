@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-02
-**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (1/12). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (2/12). FASE 2 `HECHO` (11/11)
 **Hito actual:** M3 — Biblioteca manual usable — `PENDIENTE`. M2 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-3.1 `HECHO` · siguiente LEX-3.2 · abierta Q-005
-**Rama / commit base / HEAD:** `main` en `426b2b3` (PR #22, LEX-3.1). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-3.1 y LEX-3.2 `HECHO` · siguiente LEX-3.3 · Q-005 abierta (opción 1 aplicada, reversible)
+**Rama / commit base / HEAD:** `main` en `886e15a` (PR #25, LEX-3.2). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,55 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-3.2 — Migraciones de la biblioteca — `HECHO`
+
+Informe en [`evidence/LEX-3.2.md`](evidence/LEX-3.2.md). PR #25 fusionada a
+`main` (merge `886e15a`); CI verde en los tres trabajos, runs `33663842254`
+(PR) y `33664239771` (merge).
+
+Migración `20260902193649_library_schema.sql` — las seis tablas del módulo
+`library`, solo estructura. RLS **habilitado sin políticas** (deny-all →
+LEX-3.3); índices, políticas y unicidad de negocio también LEX-3.3.
+
+- **Enums:** `deck_category`, `concept_kind`, `practice_mode` (los siete de
+  §13.9; el límite a tres activables en la V1 lo aplica el dominio
+  `validatePracticeItemDraft`, no un CHECK). `cefr_level` se reutiliza de
+  LEX-2.1.
+- **Pertenencia estructural, patrón de `course_settings`:** `owner_id`
+  denormalizado en las seis tablas + FK compuesta
+  `(x_id, owner_id) → padre (id, owner_id)`. En `deck_concepts` y
+  `concept_tags` la **misma** `owner_id` participa en las dos FK compuestas →
+  mazo y concepto (o concepto y etiqueta) tienen que ser del mismo usuario o la
+  fila no entra. Sin FK suelta `owner_id → profiles`, igual que
+  `course_settings`.
+- **`concepts.canonical_key` GENERATED ALWAYS … STORED**
+  (`lower(btrim(regexp_replace(title,'\s+',' ','g')))`): no puede separarse del
+  título ni recibir un valor a mano (`428C9`), coincide con `canonicalKey` del
+  dominio, **conserva acentos**. Sin índice único — solo sugiere duplicados
+  (§13.7).
+- **JSONB solo donde §13 lo justifica:** `practice_items.config` sin valor por
+  defecto + CHECK `config ? 'mode' and config->>'mode' = mode::text` (un `{}`
+  se rechaza); `concepts.metadata` CHECK `jsonb_typeof = 'object'`.
+- CHECK de longitud ≥ los límites de `library/domain/taxonomy.ts` (200/500/4000).
+  `archived_at` en `decks`/`concepts`/`practice_items`; cascada al borrar el
+  curso. Trigger `set_updated_at` en las cinco tablas con `updated_at`.
+- **Q-005:** se aplica la recomendación (`professional` = `deck_category`,
+  `decks.cefr_level` = `public.cefr_level`). **Sigue abierta**; revertirla es un
+  cambio pequeño mientras no haya contenido real.
+
+```text
+pnpm db:reset  5 migraciones + seed desde vacío, sin pasos manuales
+pnpm db:test   9 ficheros / 190 asserciones, PASS (080 nuevo: 67)
+pnpm db:types  regenerado en el mismo commit; git diff limpio al re-ejecutar
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 19/129, build)
+```
+
+`080-library-schema.sql` (67): tablas, claves, enums, `trigger_is` de los cinco
+`set_updated_at`, `canonical_key` generada (recorte + minúsculas + acentos +
+rechazo de valor explícito), cada CHECK rechazando un valor, las FK compuestas
+impidiendo enlaces entre usuarios (`23503`) y la cascada al borrar el curso
+comprobada por identidad en `deck_concepts` y `practice_items` (dos saltos).
 
 ### LEX-3.1 — Modelo de dominio de biblioteca — `HECHO`
 
@@ -581,16 +630,18 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 3 en 1/12. LEX-3.1 en `main` (`426b2b3`).
+Ninguna tarea `EN PROCESO`. FASE 3 en 2/12. LEX-3.2 en `main` (`886e15a`).
 
-Siguiente: **LEX-3.2** — migraciones de `decks`, `concepts`, `deck_concepts`,
-`practice_items`, `tags` y `concept_tags`. Depende de LEX-3.1. **Antes de fijar
-`decks.cefr_level` hay que resolver o confirmar Q-005** (recomendación:
-`professional` es categoría, no nivel).
+Siguiente: **LEX-3.3** — restricciones, índices y RLS de biblioteca: políticas
+por operación sobre las seis tablas con caso dueño y no-dueño, índices de
+propietario/curso/búsqueda/`canonical_key`, unicidad de `tags.normalized_name`
+por curso, decidir la regla «mismo curso» de `deck_concepts`, y ampliar la
+invariante `010` a «RLS con ≥1 política». Depende de LEX-3.2.
 
 Acción pendiente del propietario: **etiqueta de hito M2** (`v0.3.0-m2` o la que
 Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4); y **decidir
-Q-005**.
+Q-005** (la opción 1 ya está aplicada en la migración de LEX-3.2, pero es
+reversible; decidir antes de LEX-3.5).
 
 ---
 
@@ -682,12 +733,22 @@ Q-005**.
 | `tests/e2e/isolation.spec.ts` | LEX-2.11: creado. Aislamiento A/B en la capa de interfaz (dos contextos simultáneos). |
 | `tests/e2e/{protected,onboarding,identity-a11y}.spec.ts` | LEX-2.11: usan `helpers.ts`; ningún caso cambia de comportamiento. |
 | `docs/evidence/LEX-2.11.md` | Creado. Auditoría de M2 (mapa criterio → evidencia). |
+| `src/modules/library/domain/{taxonomy,deck,concept,practice-item,tag}.ts` (+ `.test.ts`) | LEX-3.1: creados. Dominio puro del módulo `library` (5 ficheros, sin barril). |
+| `src/modules/README.md` | LEX-3.1: fila `library` → «existe solo `domain/`». |
+| `docs/OPEN_QUESTIONS.md` | LEX-3.1: `Q-005` añadida. LEX-3.2: `Q-005` — deja de bloquear LEX-3.2 (opción 1 aplicada, reversible); impacto ampliado. |
+| `docs/evidence/LEX-3.1.md` | Creado. |
+| `supabase/migrations/20260902193649_library_schema.sql` | LEX-3.2: creado. 3 enums, 6 tablas, FK compuestas de pertenencia, `canonical_key` generada, CHECK, triggers, índices de FK; RLS habilitado sin políticas. |
+| `supabase/tests/database/080-library-schema.sql` | LEX-3.2: creado. 67 asserciones pgTAP de estructura, CHECK, FK compuesta, cascada y triggers. |
+| `src/shared/infrastructure/supabase/database.types.ts` | LEX-3.2: regenerado; aparecen las 6 tablas y los 3 enums nuevos. |
+| `docs/DATA_MODEL.md` | LEX-3.2: bloque «Esquema exacto» de las seis tablas de biblioteca; «Pendiente» y cabecera de estado al día. |
+| `docs/evidence/LEX-3.2.md` | Creado. |
 
-Migraciones SQL: **4** (`20260828143434_identity_and_course`, LEX-2.1;
+Migraciones SQL: **5** (`20260828143434_identity_and_course`, LEX-2.1;
 `20260831162304_identity_and_course_rls`, LEX-2.3;
 `20260831204649_onboarding_rpc`, LEX-2.7;
-`20260831215553_active_course`, LEX-2.9). LEX-2.2, LEX-2.4…2.6 y LEX-2.8 no
-añaden migración.
+`20260831215553_active_course`, LEX-2.9;
+`20260902193649_library_schema`, LEX-3.2). LEX-2.2, LEX-2.4…2.6, LEX-2.8 y
+LEX-3.1 no añaden migración.
 
 ---
 
@@ -702,6 +763,24 @@ añaden migración.
 | pnpm | 11.24.0, vía corepack |
 | Docker | Desktop 4.88.1, motor 29.7.2 |
 | CLI de Supabase | 2.116.0, dependencia de desarrollo del proyecto |
+
+### Puertas de calidad — LEX-3.2 (2026-09-02, PR #25, ya en `main`)
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 19 ficheros/129, build)
+pnpm db:reset  5 migraciones + seed desde vacío, sin pasos manuales
+pnpm db:test   000 · 010 · 020 · 030 · 040 · 050 · 060 · 070 · 080 — All tests successful, 190 asserciones
+pnpm db:types  regenerado: 6 tablas de biblioteca + enums deck_category/concept_kind/practice_mode, mismo commit
+pnpm e2e       sin cambios respecto a LEX-3.1 (LEX-3.2 no toca pantallas ni rutas)
+```
+
+### Puertas de calidad — LEX-3.1 (PR #22, ya en `main`)
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 19 ficheros/129, build)
+pnpm db:test   8 ficheros / 123 asserciones, PASS (sin cambios: no toca SQL)
+pnpm db:types  sin cambios (no hay migración)
+```
 
 ### Puertas de calidad — LEX-2.9 (2026-09-01, PR #16, ya en `main`)
 
@@ -739,6 +818,10 @@ nuevos aplicados.
 ### CI
 
 ```text
+run 33664239771   CI   main   push          success   merge de PR #25 (LEX-3.2)
+run 33663842254   CI   feat/lex-3-2-…       pull_request   success   PR #25 (LEX-3.2)
+run 33660396141   CI   main   push          success   merge de PR #24 (endurecer supabase start en CI)
+run 33659255616   CI   main   push          success   merge de PR #23 (cierre docs LEX-3.1)
 run 33658253752   CI   main   push          success   merge de PR #22 (LEX-3.1)
 run 33657579290   CI   feat/lex-3-1-…       pull_request   success   PR #22 (LEX-3.1; job BD reintentado, infra)
 run 33655823478   CI   main   push          success   merge de PR #21 (cierre docs LEX-2.11 / M2)
@@ -756,8 +839,8 @@ run 33442548467   CI   feat/lex-2-8-…       pull_request   success   PR #14 (L
 run 33440461002   CI   main   push          success   merge de PR #13 (LEX-2.7)
 ```
 
-LEX-2.1…2.11 y LEX-3.1 en `main` (`426b2b3`), CI verde en el PR y en el merge de
-cada tarea.
+LEX-2.1…2.11, LEX-3.1 y LEX-3.2 en `main` (`886e15a`), CI verde en el PR y en el
+merge de cada tarea.
 
 ---
 
@@ -788,11 +871,13 @@ Corresponden a Joan:
 | Q-002 | Qué documentación es pública | `RESUELTA` — privado el diseño, público el método |
 | Q-003 | Herramientas de desarrollo | `RESUELTA` |
 | Q-004 | Primer push al remoto público | `RESUELTA` |
-| Q-005 | «Profesional» en un mazo: ¿nivel o categoría? | `ABIERTA` — recomendación: categoría (afecta a LEX-3.2/3.5) |
+| Q-005 | «Profesional» en un mazo: ¿nivel o categoría? | `ABIERTA` — opción 1 (categoría) aplicada en LEX-3.2, reversible; decidir antes de LEX-3.5 |
 
-Abierta: **Q-005**. LEX-3.1 se entrega con la recomendación (categoría)
-declarada; no bloquea LEX-3.1, sí condiciona el enum de `decks.cefr_level` en
-LEX-3.2.
+Abierta: **Q-005**. LEX-3.1 (dominio) y LEX-3.2 (migración) se entregan con la
+opción 1: `deck_category` incluye `professional` y `decks.cefr_level` reutiliza
+`public.cefr_level`. Si Joan elige la opción 2, hace falta una migración
+correctora y ajustar `taxonomy.ts` y la interfaz de LEX-3.5; cuanto más
+contenido real exista, más cara la corrección.
 
 ---
 
@@ -816,14 +901,28 @@ LEX-3.2.
 - Sin `LICENSE`. Repositorio público sin licencia = todos los derechos reservados
   por defecto. Debe decidirse antes de la publicación de la V1 (LEX-10.10).
 - **La invariante de `010-rls-enabled.sql` comprueba «RLS habilitado», no «RLS
-  con ≥1 política».** Una tabla de FASE 3 podría habilitar RLS y olvidar las
-  políticas: quedaría en deny-all silencioso. Ampliar la invariante es trabajo de
-  FASE 3 (ver `evidence/LEX-2.3.md` §7).
-- **LEX-2.3…2.9 sin revisión cruzada independiente** (§3.6: políticas RLS,
+  con ≥1 política».** Las **seis** tablas de biblioteca (LEX-3.2) están
+  precisamente así hasta LEX-3.3: RLS habilitado, deny-all, sin políticas.
+  Ampliar la invariante a «≥1 política» es parte de LEX-3.3 (ver
+  `evidence/LEX-2.3.md` §7).
+- **`concepts.canonical_key` aparece como `canonical_key?: string | null` en el
+  `Insert` de `database.types.ts`** (limitación de `supabase gen types` con
+  columnas generadas). Un repositorio de LEX-3.4 que extienda un `Concept` del
+  dominio dentro de un `insert` compilaría y fallaría en ejecución con `428C9`.
+  LEX-3.4 debe construir el `insert` sin `canonical_key`. `DATA_MODEL.md` lo
+  anota.
+- **`concepts.source_reference`** lo acota la base a 500; el dominio (LEX-3.1)
+  todavía no lo valida. Un valor largo daría un error de base en vez de un
+  mensaje del dominio hasta que LEX-3.6 lo cubra.
+- **`deck_concepts` garantiza el mismo dueño, no el mismo curso.** Un usuario
+  podría enlazar un concepto del curso A a un mazo del curso B. Candidata a
+  LEX-3.3.
+- **LEX-2.3…3.2 sin revisión cruzada independiente** (§3.6: políticas RLS,
   ADR-005, sesión SSR, redirects, `complete_onboarding`, la pantalla de
-  onboarding, la FK compuesta del curso activo). No hay segundo agente. Deuda
-  visible. `complete_onboarding` es SECURITY INVOKER (no DEFINER); el curso
-  activo es una FK, no una función.
+  onboarding, la FK compuesta del curso activo, el esquema de biblioteca). No
+  hay segundo agente. Deuda visible. `complete_onboarding` es SECURITY INVOKER
+  (no DEFINER); el curso activo y la pertenencia de biblioteca son FK, no
+  funciones.
 - **La puerta de onboarding sigue en `(app)/app/page.tsx` (y en
   `onboarding/page.tsx`), no centralizada.** Subirla al layout necesita el
   `pathname` para no crear un bucle con `/onboarding`, y un layout de Server
@@ -846,19 +945,23 @@ LEX-3.2.
 
 ## Siguiente acción exacta
 
-Empezar **LEX-3.2** — migraciones de `decks`, `concepts`, `deck_concepts`,
-`practice_items`, `tags`, `concept_tags`. Fuente `MASTER_SPEC.md` §§13.6–13.10;
-gate de migraciones (§12.3). Enums de PostgreSQL / CHECK para `deck.category`,
-`concept.kind`, `practice_item.mode` (los 7, 3 activables); `practice_items.config`
-JSONB discriminado por `mode`; `archived_at` para el contenido con historial;
-`deck_concepts` con `unique (deck_id, concept_id)`; límites ≥ los de
-`library/domain/taxonomy.ts`; `database.types.ts` regenerado en el mismo commit;
-`DATA_MODEL.md` y diagrama al día. **Antes de fijar `decks.cefr_level`, resolver
-o confirmar Q-005** (recomendación: `professional` es categoría, no nivel, y
-`decks.cefr_level` reutiliza `public.cefr_level`). Rama `feat/lex-3-2-…` desde
-`main` (`426b2b3`).
+Empezar **LEX-3.3** — restricciones, índices y RLS de biblioteca. Sobre la
+migración `20260902193649_library_schema` (LEX-3.2, ya en `main`): una migración
+nueva con las políticas RLS por operación para las seis tablas (`decks`,
+`concepts`, `deck_concepts`, `practice_items`, `tags`, `concept_tags`) —patrón
+`auth.uid() = owner_id`, `(select auth.uid())` envuelto—, con test de
+aislamiento dueño / no-dueño / anon en pgTAP emparejando cada denegación con su
+permiso; los índices de propietario/curso/búsqueda/`canonical_key`; el índice
+único de `tags.normalized_name` por curso (hoy `080` lo marca con un `lives_ok`
+que este paso sustituye por un `throws`); decidir la regla «mismo curso, no solo
+mismo dueño» de `deck_concepts`/`concept_tags` (si se impone, necesita
+`course_id` en la tabla de enlace + FK compuesta a `(id, course_id)`); y ampliar
+la invariante de `010-rls-enabled.sql` a «RLS con ≥1 política». Gate de
+migraciones y RLS (§12.3). `database.types.ts` regenerado si cambia el esquema.
+Rama `feat/lex-3-3-…` desde `main` (`886e15a`).
 
-Acción pendiente del propietario: **decidir Q-005**; **etiqueta de hito M2**
+Acción pendiente del propietario: **decidir Q-005** (opción 1 aplicada en
+LEX-3.2, reversible; decidir antes de LEX-3.5); **etiqueta de hito M2**
 (`v0.3.0-m2` o la que Joan decida) — no se crea sin autorización expresa
 (CLAUDE.md §4).
 
@@ -870,7 +973,10 @@ operaciones atómicas en función SQL SECURITY INVOKER tras un puerto, idioma de
 apoyo/objetivo fijos en la V1 (LEX-2.7); puerta de onboarding por página en
 `(app)` hasta que exista el shell (LEX-2.8); curso activo por FK compuesta
 `(active_course_id, id) → courses (id, owner_id)`, `on delete set null` con
-lista de columnas (LEX-2.9).
+lista de columnas (LEX-2.9); biblioteca con `owner_id` denormalizado + FK
+compuesta de pertenencia en las seis tablas, `concepts.canonical_key` como
+columna generada, `practice_items.config` JSONB sin default con CHECK de `mode`,
+RLS habilitado sin políticas hasta LEX-3.3 (LEX-3.2).
 
 ---
 
@@ -891,7 +997,7 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main` en `426b2b3` (PR #22, LEX-3.1).
+- Rama por defecto: `main` en `886e15a` (PR #25, LEX-3.2).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas; `v0.3.0-m2` **pendiente de
   autorización de Joan**.
 - Sin rama de trabajo activa.
@@ -899,9 +1005,12 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
   LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10; LEX-2.5 → PR #11;
   LEX-2.6 → PR #12; LEX-2.7 → PR #13; LEX-2.8 → PR #14 (+ #15 cierre docs);
   LEX-2.9 → PR #16 (+ #17 cierre docs); LEX-2.10 → PR #18 (+ #19 cierre docs);
-  LEX-2.11 → PR #20 (+ #21 cierre docs); LEX-3.1 → PR #22.
+  LEX-2.11 → PR #20 (+ #21 cierre docs); LEX-3.1 → PR #22 (+ #23 cierre docs);
+  endurecer CI → PR #24; LEX-3.2 → PR #25.
   Ramas borradas.
-- Contenido versionado: aplicación Next.js completa (módulos `identity` y
-  `courses`), `supabase/` (config, seed, tests, **migrations** — cuatro:
-  `…_identity_and_course`, `…_identity_and_course_rls`, `…_onboarding_rpc`,
-  `20260831215553_active_course`), CI, documentación en `docs/` y ADR (001–005).
+- Contenido versionado: aplicación Next.js completa (módulos `identity`,
+  `courses` y `library/domain`), `supabase/` (config, seed, tests,
+  **migrations** — cinco: `…_identity_and_course`, `…_identity_and_course_rls`,
+  `…_onboarding_rpc`, `20260831215553_active_course`,
+  `20260902193649_library_schema`), CI, documentación en `docs/` y ADR
+  (001–005).
