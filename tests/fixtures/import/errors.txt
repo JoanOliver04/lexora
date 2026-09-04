@@ -1,0 +1,4 @@
+	respuesta sin frente	tags
+frente sin respuesta		tags
+solo una columna
+frente	respuesta	demasiadas	columnas	aqui
