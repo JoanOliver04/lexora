@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-04
 **Rama:** `feat/lex-3-11-item-preview`
-**Estado resultante:** `EN PROCESO` → `HECHO` al fusionar con CI verde.
+**Estado resultante:** `HECHO`. PR #43 fusionada a `main` (merge `230924f`);
+CI verde en los tres trabajos, runs `33896380937` (PR) y `33896772890`
+(merge).
 
 ---
 
@@ -98,9 +100,8 @@ Migraciones: **0**.
 
 ## 6. Estado del árbol Git
 
-Rama `feat/lex-3-11-item-preview` desde `main` (`60c4b98`). Pendiente:
-commit, PR contra `main`, CI verde en los tres trabajos, merge, CI verde en
-`main`, cierre docs.
+Rama `feat/lex-3-11-item-preview` desde `main` (`60c4b98`), fusionada. `main`
+en `230924f`. Cierre de documentación en `docs/lex-3-11-close`.
 
 ## 7. Siguiente tarea
 
