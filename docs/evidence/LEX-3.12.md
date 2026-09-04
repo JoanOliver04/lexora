@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-04
 **Rama:** `feat/lex-3-12-m3-audit`
-**Estado resultante:** `EN PROCESO` → `HECHO` al fusionar con CI verde. **Cierra FASE 3 / M3.**
+**Estado resultante:** `HECHO`. **Cierra FASE 3 / M3.** PR #45 fusionada a
+`main` (merge `508f700`); CI verde en los tres trabajos, runs `33898407035`
+(PR) y `33898825648` (merge).
 
 ---
 
@@ -158,9 +160,8 @@ Migraciones: **0**.
 
 ## 8. Estado del árbol Git
 
-Rama `feat/lex-3-12-m3-audit` desde `main` (`230924f`). Pendiente: commit, PR
-contra `main`, CI verde en los tres trabajos, merge, CI verde en `main`,
-cierre docs.
+Rama `feat/lex-3-12-m3-audit` desde `main` (`230924f`), fusionada. `main` en
+`508f700`. Cierre de documentación en `docs/lex-3-12-close`.
 
 ## 9. Siguiente tarea
 

@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-04
-**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (11/12). FASE 2 `HECHO` (11/11)
-**Hito actual:** M3 — Biblioteca manual usable — `PENDIENTE`. M2 `HECHO`
+**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Hito actual:** **M3 — Biblioteca manual usable — `HECHO`.** M2 `HECHO`. Etiqueta de hito (`v0.4.0-m3` o la que decida Joan) pendiente de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-3.1…3.11 `HECHO` · siguiente y última de FASE 3: LEX-3.12 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `230924f` (PR #43, LEX-3.11). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-3.1…3.12 `HECHO` · LEX-3.13 `PENDIENTE` (deuda no bloqueante, ver evidencia LEX-3.12) · siguiente fase: FASE 4 (importación TXT/CSV), LEX-4.1 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `508f700` (PR #45, LEX-3.12). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,56 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-3.12 — E2E, revisión de arquitectura y cierre de M3 — `HECHO` · cierra FASE 3 / M3
+
+Informe en [`evidence/LEX-3.12.md`](evidence/LEX-3.12.md). PR #45 fusionada a
+`main` (merge `508f700`); CI verde en los tres trabajos, runs `33898407035`
+(PR) y `33898825648` (merge). **Sin migración**; `db:test` sin cambios (266);
+`db:types` limpio. **Con esto FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin
+bloquear el hito) y M3 `HECHO`.**
+
+Mismo patrón que LEX-2.11 (cierre de M2): sin producto nuevo, recorre los
+flujos de punta a punta y cierra el único hueco real que quedaba.
+
+- **`tests/e2e/library-isolation.spec.ts`** (nuevo): el hueco de aislamiento
+  A/B que ningún E2E de FASE 3 había probado en la interfaz (solo pgTAP
+  `090`). A crea un mazo y un concepto; B no los ve en su lista (recuento
+  cero) ni por URL directa con el UUID de A — verificado por el **estado
+  HTTP `404`** de la navegación, no solo por el texto de la página, para
+  distinguir de verdad «la fila no existe para B» de «se le deniega el
+  paso».
+- **Tabla criterio de M3 → evidencia** en el informe: cada afirmación de la
+  salida de M3 (crear/editar/buscar/archivar mazos, conceptos e ítems;
+  inversa correcta; RLS; gate de arquitectura; CI verde) enlazada a su
+  prueba ya existente.
+- **Deuda de FASE 3, con veredicto explícito por ítem:** el N+1 de
+  LEX-3.5/3.6 (recuentos y etiquetas) se cierra formalmente — LEX-3.9 ya lo
+  había resuelto, quedaba sin decir. El defecto de reinicio de formulario
+  que LEX-3.10 encontró se **promueve a tarea propia (LEX-3.13)**, con
+  dependencia LEX-3.10, en vez de quedar como nota suelta — probablemente
+  afecta también a `CreateDeckForm` y a los formularios de ítem, no
+  bloquea M3.
+- **§3.6 (revisión cruzada independiente) sigue abierta, no se cierra
+  aquí:** se consultó al `advisor` sobre el propio diseño de esta tarea
+  —y corrigió una aserción débil del test de aislamiento (comprobar el
+  texto del 404 no bastaba, hacía falta el estado HTTP)—, pero no es
+  independiente de las decisiones de FASE 3 que estaría revisando. Se
+  registra como riesgo conocido, arrastrado a M4, por razón ambiental (sin
+  segundo agente), no como deuda resuelta.
+- **Relectura crítica propia de `library/`:** tres hallazgos registrados,
+  ninguno corregido aquí (auditoría, no refactor) — `assertUserId`
+  duplicada en los cuatro ficheros de `application/`; el mapeo
+  `ConceptRow → Concept` triplicado en tres adaptadores (el de más riesgo
+  real: una copia desincronizada al añadir un campo no la cazaría ningún
+  test); `safeLocale` duplicada en `decks/actions.ts` y `concepts/actions.ts`.
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 27 ficheros/194, build)
+pnpm db:test   11 ficheros / 266 aserciones, PASS (sin cambios: sin migración)
+pnpm db:types  sin cambios (no hay migración)
+pnpm e2e       76 passed (21 ficheros; library-isolation.spec.ts nuevo)
+```
 
 ### LEX-3.11 — Crear previsualización de ítems — `HECHO`
 
