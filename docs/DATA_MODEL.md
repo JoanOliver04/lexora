@@ -422,6 +422,54 @@ concepto sin tocar el mazo, sus enlaces ni sus ítems, archivar un ítem sin
 tocar su concepto ni el ítem hermano, idempotencia de archivar/restaurar dos
 veces seguidas, y el contraste de borrar una etiqueta sí cascada su enlace.
 
+#### Búsqueda, filtros y paginación (LEX-3.9)
+
+`decks.search` y `concepts.search` (puertos de `DeckRepository`/
+`ConceptRepository`) resuelven texto, categoría/tipo, nivel MCER y paginación
+en una sola consulta cada uno; sustituyen a `list`, que sigue existiendo para
+las lecturas internas que necesitan el orden completo sin paginar
+(`moveDeckAction`).
+
+**Texto: `ilike`, no `pg_trgm`.** LEX-3.3 dejó explícitamente diferida esta
+decisión. A los volúmenes de la V1 (los mazos y conceptos de un único curso
+por usuario, decenas o pocos cientos de filas) un `ilike '%término%'` sin
+índice de trigramas es un `seq scan` invisible en la práctica; `pg_trgm` gana
+su índice GIN y su migración solo cuando un volumen real lo demuestre falso —
+no antes, por un techo teórico. Diferido, no olvidado: si un caso real lo pide,
+es una migración correctiva con su propia evidencia de medición.
+
+**Recuentos y etiquetas agregados, sin vista ni función nueva.** El N+1
+anotado en la evidencia de LEX-3.5 (`listDeckConcepts` una vez por mazo
+listado) y LEX-3.6 (`listConceptTags` una vez por concepto listado) se resolvía
+con una vista o una función agregada — pero a estos volúmenes una sola
+consulta por página que trae todas las filas relevantes y las agrupa en
+memoria, en el adaptador, es más simple y no pide una migración:
+`countConceptsByDeck` embebe `concepts!inner(archived_at)` desde
+`deck_concepts` y cuenta agrupando por `deck_id`; `listForConcepts` embebe
+`tags!inner(*)` desde `concept_tags` y agrupa por `concept_id`. Ambos
+respetan el filtro de archivado ya establecido en LEX-3.8: un concepto
+archivado no cuenta en el recuento de su mazo, aunque el enlace siga ahí.
+
+**Paginación por `limit`/`offset`.** No por cursor: la lista es un puñado de
+páginas numeradas sobre un conjunto pequeño, no un scroll infinito, y ni
+`position` (mazos) ni `title` (conceptos) son una clave de cursor estable
+frente a inserciones intermedias. `clampLimit`/`clampOffset`
+(`application/pagination.ts`) acotan lo que llega de la URL antes de tocar el
+adaptador (techo 100, mínimo 1; offset negativo → 0).
+
+**Reordenar mazos exige el orden completo.** Con búsqueda, filtro o más de
+una página activos, `decks/page.tsx` oculta «Subir»/«Bajar»: los índices de la
+página visible ya no son vecinos reales en el orden global, y mover ahí
+confundiría más de lo que ayuda. `moveDeckAction` sigue leyendo el orden
+completo con `list` (sin paginar) para calcular el nuevo orden — la
+paginación es de la pantalla de lectura, no de esa escritura.
+
+Sin migración: ninguna columna ni índice nuevo. Cubierto por tests de caso de
+uso (`clampLimit`/`clampOffset`, valores por defecto y acotados) y e2e (buscar
+reduce la lista, filtrar por categoría/tipo reduce la lista, «sin resultados»
+se distingue de «biblioteca vacía», paginar con más de una página muestra
+anterior/siguiente).
+
 ### Estudio
 
 | Tabla | Papel |

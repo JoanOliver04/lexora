@@ -117,5 +117,22 @@ export function createSupabaseConceptRepository(
       if (error) throw libraryErrorFrom(error, "no se pudo leer el concepto");
       return data ? toConcept(data) : null;
     },
+
+    async search({ ownerId, courseId, includeArchived, search, kind, cefrLevel, limit, offset }) {
+      let query = client
+        .from("concepts")
+        .select("*", { count: "exact" })
+        .eq("owner_id", ownerId)
+        .eq("course_id", courseId);
+      if (!includeArchived) query = query.is("archived_at", null);
+      if (search) query = query.ilike("title", `%${search}%`);
+      if (kind) query = query.eq("kind", kind);
+      if (cefrLevel) query = query.eq("cefr_level", cefrLevel);
+      const { data, error, count } = await query
+        .order("title", { ascending: true })
+        .range(offset, offset + limit - 1);
+      if (error) throw libraryErrorFrom(error, "no se pudieron buscar los conceptos");
+      return { items: (data ?? []).map(toConcept), total: count ?? 0 };
+    },
   };
 }

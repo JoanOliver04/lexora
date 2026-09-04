@@ -128,6 +128,22 @@ export function createSupabaseTagRepository(client: SupabaseClient<Database>): T
       });
     },
 
+    async listForConcepts({ ownerId, conceptIds }) {
+      const { data, error } = await client
+        .from("concept_tags")
+        .select("concept_id, tags!inner(*)")
+        .eq("owner_id", ownerId)
+        .in("concept_id", conceptIds);
+      if (error)
+        throw libraryErrorFrom(error, "no se pudieron leer las etiquetas de los conceptos");
+      const tagsByConcept: Record<string, Tag[]> = {};
+      for (const row of data ?? []) {
+        if (!row.tags) throw new LibraryError("unavailable", "concept_tags sin etiqueta asociada");
+        (tagsByConcept[row.concept_id] ??= []).push(toTag(row.tags as TagRow));
+      }
+      return tagsByConcept;
+    },
+
     async listConcepts({ ownerId, tagId }) {
       const { data, error } = await client
         .from("concept_tags")

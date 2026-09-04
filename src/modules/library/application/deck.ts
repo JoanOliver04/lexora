@@ -18,6 +18,9 @@ import {
   type DeckIssue,
   validateDeckDraft,
 } from "@/modules/library/domain/deck";
+import type { CefrLevel, DeckCategory } from "@/modules/library/domain/taxonomy";
+
+import { type PageResult, clampLimit, clampOffset } from "@/modules/library/application/pagination";
 
 /** Un concepto dentro de un mazo, con su orden opcional (§13.8). */
 export interface DeckConcept {
@@ -58,6 +61,32 @@ export interface DeckRepository {
    * ninguna fila. No es atómico (§ evidencia LEX-3.5).
    */
   reorder(input: { ownerId: string; courseId: string; deckIds: string[] }): Promise<void>;
+  /**
+   * Búsqueda paginada por texto/categoría/nivel (LEX-3.9). `search` es `ilike`
+   * sobre el título: a los volúmenes de la V1 (mazos de un único curso) un
+   * `seq scan` es invisible; `pg_trgm` queda diferido hasta que un volumen real
+   * lo justifique (§ evidencia LEX-3.9). `total` es el recuento sin paginar,
+   * para construir la paginación.
+   */
+  search(input: {
+    ownerId: string;
+    courseId: string;
+    includeArchived?: boolean;
+    search?: string | undefined;
+    category?: DeckCategory | undefined;
+    cefrLevel?: CefrLevel | undefined;
+    limit: number;
+    offset: number;
+  }): Promise<PageResult<Deck>>;
+  /**
+   * Recuento de conceptos vivos (no archivados) por mazo, en una sola
+   * consulta para los `deckIds` dados — resuelve el N+1 anotado en la
+   * evidencia de LEX-3.5/3.6 (`listDeckConcepts` una vez por mazo).
+   */
+  countConceptsByDeck(input: {
+    ownerId: string;
+    deckIds: string[];
+  }): Promise<Record<string, number>>;
 }
 
 export type DeckOutcome = { ok: true; deck: Deck } | { ok: false; issues: DeckIssue[] };
@@ -173,4 +202,46 @@ export async function listDeckConcepts(
 ): Promise<DeckConcept[]> {
   assertUserId(ownerId);
   return repository.listConcepts({ ownerId, deckId });
+}
+
+/**
+ * Búsqueda paginada de mazos (LEX-3.9). `limit`/`offset` se acotan aquí, no en
+ * la pantalla: un valor fuera de rango en la URL (`?limit=99999`) no llega al
+ * adaptador sin pasar por `clampLimit`/`clampOffset`.
+ */
+export async function searchDecks(
+  repository: DeckRepository,
+  ownerId: string,
+  courseId: string,
+  options: {
+    includeArchived?: boolean;
+    search?: string | undefined;
+    category?: DeckCategory | undefined;
+    cefrLevel?: CefrLevel | undefined;
+    limit?: number;
+    offset?: number;
+  } = {},
+): Promise<PageResult<Deck>> {
+  assertUserId(ownerId);
+  return repository.search({
+    ownerId,
+    courseId,
+    includeArchived: options.includeArchived ?? false,
+    search: options.search,
+    category: options.category,
+    cefrLevel: options.cefrLevel,
+    limit: clampLimit(options.limit),
+    offset: clampOffset(options.offset),
+  });
+}
+
+/** Recuento de conceptos vivos por mazo, en una sola consulta. `deckIds` vacío no consulta. */
+export async function countConceptsPerDeck(
+  repository: DeckRepository,
+  ownerId: string,
+  deckIds: string[],
+): Promise<Record<string, number>> {
+  assertUserId(ownerId);
+  if (deckIds.length === 0) return {};
+  return repository.countConceptsByDeck({ ownerId, deckIds });
 }

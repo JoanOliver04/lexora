@@ -3,12 +3,14 @@ import { describe, expect, it, vi } from "vitest";
 import {
   addConceptToDeck,
   archiveDeck,
+  countConceptsPerDeck,
   createDeck,
   type DeckRepository,
   listDecks,
   removeConceptFromDeck,
   reorderDecks,
   restoreDeck,
+  searchDecks,
   updateDeck,
 } from "./deck";
 
@@ -45,6 +47,8 @@ function fakeRepository(overrides: Partial<DeckRepository> = {}): DeckRepository
     removeConcept: vi.fn().mockResolvedValue(undefined),
     listConcepts: vi.fn().mockResolvedValue([]),
     reorder: vi.fn().mockResolvedValue(undefined),
+    search: vi.fn().mockResolvedValue({ items: [persistedDeck], total: 1 }),
+    countConceptsByDeck: vi.fn().mockResolvedValue({}),
     ...overrides,
   };
 }
@@ -194,5 +198,77 @@ describe("addConceptToDeck / removeConceptFromDeck", () => {
       deckId: "deck-1",
       conceptId: "c-1",
     });
+  });
+});
+
+describe("searchDecks", () => {
+  it("aplica valores por defecto: sin archivados, primera página de 20", async () => {
+    const repository = fakeRepository();
+    await searchDecks(repository, "user-1", "course-1");
+    expect(repository.search).toHaveBeenCalledWith({
+      ownerId: "user-1",
+      courseId: "course-1",
+      includeArchived: false,
+      search: undefined,
+      category: undefined,
+      cefrLevel: undefined,
+      limit: 20,
+      offset: 0,
+    });
+  });
+
+  it("pasa los filtros y acota limit/offset fuera de rango", async () => {
+    const repository = fakeRepository();
+    await searchDecks(repository, "user-1", "course-1", {
+      includeArchived: true,
+      search: "verbo",
+      category: "grammar",
+      cefrLevel: "A2",
+      limit: 99_999,
+      offset: -5,
+    });
+    expect(repository.search).toHaveBeenCalledWith({
+      ownerId: "user-1",
+      courseId: "course-1",
+      includeArchived: true,
+      search: "verbo",
+      category: "grammar",
+      cefrLevel: "A2",
+      limit: 100,
+      offset: 0,
+    });
+  });
+
+  it("rechaza un identificador de usuario vacío", async () => {
+    const repository = fakeRepository();
+    await expect(searchDecks(repository, "  ", "course-1")).rejects.toThrow();
+    expect(repository.search).not.toHaveBeenCalled();
+  });
+});
+
+describe("countConceptsPerDeck", () => {
+  it("delega en el repositorio con los deckIds dados", async () => {
+    const repository = fakeRepository({
+      countConceptsByDeck: vi.fn().mockResolvedValue({ "deck-1": 3 }),
+    });
+    const counts = await countConceptsPerDeck(repository, "user-1", ["deck-1"]);
+    expect(counts).toEqual({ "deck-1": 3 });
+    expect(repository.countConceptsByDeck).toHaveBeenCalledWith({
+      ownerId: "user-1",
+      deckIds: ["deck-1"],
+    });
+  });
+
+  it("una lista vacía de deckIds no consulta", async () => {
+    const repository = fakeRepository();
+    const counts = await countConceptsPerDeck(repository, "user-1", []);
+    expect(counts).toEqual({});
+    expect(repository.countConceptsByDeck).not.toHaveBeenCalled();
+  });
+
+  it("rechaza un identificador de usuario vacío", async () => {
+    const repository = fakeRepository();
+    await expect(countConceptsPerDeck(repository, "  ", ["deck-1"])).rejects.toThrow();
+    expect(repository.countConceptsByDeck).not.toHaveBeenCalled();
   });
 });

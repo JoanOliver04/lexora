@@ -5,6 +5,7 @@ import {
   createTag,
   deleteTag,
   listConceptTags,
+  listTagsForConcepts,
   renameTag,
   type TagRepository,
   tagConcept,
@@ -30,6 +31,7 @@ function fakeRepository(overrides: Partial<TagRepository> = {}): TagRepository {
     tagConcept: vi.fn().mockResolvedValue(undefined),
     untagConcept: vi.fn().mockResolvedValue(undefined),
     listForConcept: vi.fn().mockResolvedValue([persistedTag]),
+    listForConcepts: vi.fn().mockResolvedValue({}),
     listConcepts: vi.fn().mockResolvedValue([]),
     ...overrides,
   };
@@ -120,5 +122,32 @@ describe("tagConcept / untagConcept / listConceptTags", () => {
     const repository = fakeRepository();
     await expect(listConceptTags(repository, "user-1", "c-1")).resolves.toEqual([persistedTag]);
     expect(repository.listForConcept).toHaveBeenCalledWith({ ownerId: "user-1", conceptId: "c-1" });
+  });
+});
+
+describe("listTagsForConcepts", () => {
+  it("delega en el repositorio con los conceptIds dados", async () => {
+    const repository = fakeRepository({
+      listForConcepts: vi.fn().mockResolvedValue({ "c-1": [persistedTag] }),
+    });
+    await expect(listTagsForConcepts(repository, "user-1", ["c-1"])).resolves.toEqual({
+      "c-1": [persistedTag],
+    });
+    expect(repository.listForConcepts).toHaveBeenCalledWith({
+      ownerId: "user-1",
+      conceptIds: ["c-1"],
+    });
+  });
+
+  it("una lista vacía de conceptIds no consulta", async () => {
+    const repository = fakeRepository();
+    await expect(listTagsForConcepts(repository, "user-1", [])).resolves.toEqual({});
+    expect(repository.listForConcepts).not.toHaveBeenCalled();
+  });
+
+  it("rechaza un identificador de usuario vacío", async () => {
+    const repository = fakeRepository();
+    await expect(listTagsForConcepts(repository, "  ", ["c-1"])).rejects.toThrow();
+    expect(repository.listForConcepts).not.toHaveBeenCalled();
   });
 });

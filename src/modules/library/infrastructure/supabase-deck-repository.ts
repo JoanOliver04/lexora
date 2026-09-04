@@ -179,6 +179,53 @@ export function createSupabaseDeckRepository(client: SupabaseClient<Database>): 
       }
     },
 
+    async search({
+      ownerId,
+      courseId,
+      includeArchived,
+      search,
+      category,
+      cefrLevel,
+      limit,
+      offset,
+    }) {
+      let query = client
+        .from("decks")
+        .select("*", { count: "exact" })
+        .eq("owner_id", ownerId)
+        .eq("course_id", courseId);
+      if (!includeArchived) query = query.is("archived_at", null);
+      if (search) query = query.ilike("title", `%${search}%`);
+      if (category) query = query.eq("category", category);
+      if (cefrLevel) query = query.eq("cefr_level", cefrLevel);
+      const { data, error, count } = await query
+        .order("position", { ascending: true })
+        .order("created_at", { ascending: true })
+        .range(offset, offset + limit - 1);
+      if (error) throw libraryErrorFrom(error, "no se pudieron buscar los mazos");
+      return { items: (data ?? []).map(toDeck), total: count ?? 0 };
+    },
+
+    async countConceptsByDeck({ ownerId, deckIds }) {
+      // Una consulta con los `deckIds` de la página visible, agrupada en
+      // memoria: a los volúmenes de la V1 es más simple y más barato que una
+      // vista o función agregada, y evita una migración para esto (§ evidencia
+      // LEX-3.9). El `!inner` descarta filas cuyo concepto ya no exista y
+      // permite filtrar `archived_at` del concepto embebido.
+      const { data, error } = await client
+        .from("deck_concepts")
+        .select("deck_id, concepts!inner(archived_at)")
+        .eq("owner_id", ownerId)
+        .in("deck_id", deckIds)
+        .is("concepts.archived_at", null);
+      if (error) throw libraryErrorFrom(error, "no se pudieron contar los conceptos de los mazos");
+      const counts: Record<string, number> = {};
+      for (const row of data ?? []) {
+        counts[row.deck_id] = (counts[row.deck_id] ?? 0) + 1;
+      }
+      return counts;
+    },
+
     async listConcepts({ ownerId, deckId }): Promise<DeckConcept[]> {
       const { data, error } = await client
         .from("deck_concepts")
