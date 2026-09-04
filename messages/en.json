@@ -15,7 +15,8 @@
   "App": {
     "courseLabel": "Your course",
     "placeholder": "Your study day will live here: reviews, new items and the button to start the session. We're still building it.",
-    "decksLink": "My decks"
+    "decksLink": "My decks",
+    "conceptsLink": "My concepts"
   },
   "Onboarding": {
     "title": "Set up your course",
@@ -88,7 +89,11 @@
     "showArchived": "Show archived",
     "hideArchived": "Hide archived",
     "emptyDecks": "You don't have any decks in this course yet. Create the first one below.",
-    "emptyDeckConcepts": "This deck has no concepts yet. You'll be able to add them once concepts exist (LEX-3.6).",
+    "emptyDeckConcepts": "This deck has no concepts yet.",
+    "linkConceptLabel": "Concept",
+    "linkConceptButton": "Add to deck",
+    "linkConceptEmpty": "There are no course concepts to add (or they're all already in this deck).",
+    "unlinkConceptButton": "Remove from deck",
     "genericError": "We couldn't save the deck. Please try again.",
     "errors": {
       "title_empty": "Enter a name for the deck.",
@@ -96,6 +101,72 @@
       "description_tooLong": "The description is too long.",
       "cefrLevel_invalid": "That level isn't valid.",
       "category_invalid": "That category isn't valid."
+    }
+  },
+  "Concepts": {
+    "listTitle": "Concepts",
+    "listIntro": "The unit of knowledge: a word, a collocation, a rule, a pronunciation contrast. It can live in several decks without duplicating your progress.",
+    "backToApp": "Back to home",
+    "listHeading": "Your concepts",
+    "createHeading": "New concept",
+    "editHeading": "Edit concept",
+    "detailBack": "Back to concepts",
+    "fields": {
+      "kindLabel": "Type",
+      "titleLabel": "Title",
+      "summaryLabel": "Summary",
+      "explanationLabel": "Explanation (optional)",
+      "exampleLabel": "Example (optional)",
+      "levelLabel": "Level (optional)",
+      "levelNone": "No level",
+      "sourceReferenceLabel": "Source (optional)"
+    },
+    "kinds": {
+      "vocabulary": "Vocabulary",
+      "collocation": "Collocation",
+      "phrase": "Phrase",
+      "grammar": "Grammar",
+      "communicative_function": "Communicative function",
+      "pronunciation": "Pronunciation",
+      "other": "Other"
+    },
+    "actions": {
+      "create": "Create concept",
+      "creating": "Creating…",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "archive": "Archive",
+      "restore": "Restore"
+    },
+    "archivedBadge": "Archived",
+    "showArchived": "Show archived",
+    "hideArchived": "Hide archived",
+    "emptyConcepts": "You don't have any concepts in this course yet. Create the first one below.",
+    "genericError": "We couldn't save the concept. Please try again.",
+    "errors": {
+      "kind_invalid": "Choose a type.",
+      "title_empty": "Enter a title for the concept.",
+      "title_tooLong": "The title is too long.",
+      "summary_empty": "Enter a summary.",
+      "summary_tooLong": "The summary is too long.",
+      "explanation_tooLong": "The explanation is too long.",
+      "example_tooLong": "The example is too long.",
+      "cefrLevel_invalid": "That level isn't valid."
+    },
+    "tags": {
+      "heading": "Tags",
+      "addLabel": "New tag",
+      "addPlaceholder": "e.g. phrasal-verbs",
+      "addButton": "Add",
+      "adding": "Adding…",
+      "removeButton": "Remove",
+      "empty": "This concept has no tags.",
+      "genericError": "We couldn't add the tag. Please try again.",
+      "errors": {
+        "name_empty": "Enter a tag name.",
+        "name_tooLong": "The tag name is too long.",
+        "name_emptySegment": "The tag hierarchy has an empty segment (use \"a::b\")."
+      }
     }
   },
   "Auth": {

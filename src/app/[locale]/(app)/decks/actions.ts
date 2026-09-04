@@ -7,9 +7,11 @@ import { getActiveCourseForCurrentUser } from "@/composition/courses";
 import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { routing } from "@/i18n/routing";
 import {
+  addConceptToDeck,
   archiveDeck,
   createDeck,
   listDecks,
+  removeConceptFromDeck,
   reorderDecks,
   restoreDeck,
   updateDeck,
@@ -143,6 +145,44 @@ export async function setDeckArchivedAction(formData: FormData): Promise<void> {
 
   revalidatePath(`/${locale}/decks`);
   redirect(`/${locale}/decks`);
+}
+
+/**
+ * Vincula un concepto ya existente a este mazo. Vive en `decks/actions.ts` (no
+ * en `concepts/actions.ts`): la pantalla que la usa es el detalle del mazo
+ * (`decks/[deckId]/page.tsx`), LEX-3.6 §2 lo declara así porque
+ * `DeckRepository` no tiene una consulta inversa «mazos de un concepto».
+ */
+export async function linkConceptToDeckAction(formData: FormData): Promise<void> {
+  const locale = safeLocale(formData);
+  const deckId = String(formData.get("deckId") ?? "");
+  const conceptId = String(formData.get("conceptId") ?? "");
+  const scope = await decksContext();
+  if (!scope || deckId === "" || conceptId === "") {
+    redirect(`/${locale}/decks`);
+  }
+
+  await addConceptToDeck(scope.context.decks, scope.context.ownerId, { deckId, conceptId });
+
+  revalidatePath(`/${locale}/decks`);
+  revalidatePath(`/${locale}/decks/${deckId}`);
+  redirect(`/${locale}/decks/${deckId}`);
+}
+
+export async function unlinkConceptFromDeckAction(formData: FormData): Promise<void> {
+  const locale = safeLocale(formData);
+  const deckId = String(formData.get("deckId") ?? "");
+  const conceptId = String(formData.get("conceptId") ?? "");
+  const scope = await decksContext();
+  if (!scope || deckId === "" || conceptId === "") {
+    redirect(`/${locale}/decks`);
+  }
+
+  await removeConceptFromDeck(scope.context.decks, scope.context.ownerId, { deckId, conceptId });
+
+  revalidatePath(`/${locale}/decks`);
+  revalidatePath(`/${locale}/decks/${deckId}`);
+  redirect(`/${locale}/decks/${deckId}`);
 }
 
 export async function moveDeckAction(formData: FormData): Promise<void> {
