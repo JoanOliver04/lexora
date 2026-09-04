@@ -14,7 +14,8 @@
   },
   "App": {
     "courseLabel": "Tu curso",
-    "placeholder": "Aquí irá tu día de estudio: repasos, ítems nuevos y el botón para empezar la sesión. Todavía lo estamos construyendo."
+    "placeholder": "Aquí irá tu día de estudio: repasos, ítems nuevos y el botón para empezar la sesión. Todavía lo estamos construyendo.",
+    "decksLink": "Mis mazos"
   },
   "Onboarding": {
     "title": "Prepara tu curso",
@@ -45,6 +46,56 @@
       "startLevel_invalid": "Elige desde qué nivel quieres empezar.",
       "dailyNewLimit_notInteger": "Escribe un número entero de ítems nuevos.",
       "dailyNewLimit_outOfRange": "Los ítems nuevos por día deben estar entre 0 y 100."
+    }
+  },
+  "Library": {
+    "decksTitle": "Mazos",
+    "decksIntro": "Agrupa conceptos del curso para decidir qué estudiar. Un mazo no guarda tu progreso, solo la selección.",
+    "backToApp": "Volver al inicio",
+    "listHeading": "Tus mazos",
+    "createHeading": "Nuevo mazo",
+    "editHeading": "Editar mazo",
+    "conceptsHeading": "Conceptos",
+    "detailBack": "Volver a los mazos",
+    "fields": {
+      "titleLabel": "Nombre",
+      "descriptionLabel": "Descripción (opcional)",
+      "levelLabel": "Nivel (opcional)",
+      "levelNone": "Sin nivel",
+      "categoryLabel": "Categoría (opcional)",
+      "categoryNone": "Sin categoría"
+    },
+    "categories": {
+      "vocabulary": "Vocabulario",
+      "grammar": "Gramática",
+      "communicative_function": "Función comunicativa",
+      "pronunciation": "Pronunciación",
+      "professional": "Profesional",
+      "mixed": "Mixto"
+    },
+    "actions": {
+      "create": "Crear mazo",
+      "creating": "Creando…",
+      "save": "Guardar cambios",
+      "saving": "Guardando…",
+      "archive": "Archivar",
+      "restore": "Restaurar",
+      "moveUp": "Subir",
+      "moveDown": "Bajar"
+    },
+    "conceptCount": "{count, plural, =0 {Sin conceptos} one {# concepto} other {# conceptos}}",
+    "archivedBadge": "Archivado",
+    "showArchived": "Ver archivados",
+    "hideArchived": "Ocultar archivados",
+    "emptyDecks": "Todavía no tienes mazos en este curso. Crea el primero abajo.",
+    "emptyDeckConcepts": "Este mazo aún no tiene conceptos. Podrás añadirlos cuando existan conceptos (LEX-3.6).",
+    "genericError": "No hemos podido guardar el mazo. Inténtalo de nuevo.",
+    "errors": {
+      "title_empty": "Escribe un nombre para el mazo.",
+      "title_tooLong": "El nombre del mazo es demasiado largo.",
+      "description_tooLong": "La descripción es demasiado larga.",
+      "cefrLevel_invalid": "Ese nivel no es válido.",
+      "category_invalid": "Esa categoría no es válida."
     }
   },
   "Auth": {

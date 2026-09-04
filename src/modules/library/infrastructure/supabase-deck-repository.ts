@@ -61,6 +61,21 @@ function toConcept(row: ConceptRow): Concept {
 export function createSupabaseDeckRepository(client: SupabaseClient<Database>): DeckRepository {
   return {
     async create({ ownerId, courseId, draft }) {
+      // Un mazo nuevo se añade al final: `position = max(position) + 1` del
+      // curso. Sin `position` explícita caería en el default `0` y, tras
+      // cualquier reordenación que normaliza a `0..n-1`, quedaría empatado
+      // arriba en lugar de al final. No es atómico frente a dos altas a la vez
+      // (colisión benigna: la reordenación posterior lo sanea).
+      const { data: last, error: lastError } = await client
+        .from("decks")
+        .select("position")
+        .eq("owner_id", ownerId)
+        .eq("course_id", courseId)
+        .order("position", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (lastError) throw libraryErrorFrom(lastError, "no se pudo crear el mazo");
+
       const { data, error } = await client
         .from("decks")
         .insert({
@@ -70,6 +85,7 @@ export function createSupabaseDeckRepository(client: SupabaseClient<Database>): 
           description: draft.description,
           cefr_level: draft.cefrLevel,
           category: draft.category,
+          position: (last?.position ?? -1) + 1,
         })
         .select("*")
         .single();
@@ -140,6 +156,27 @@ export function createSupabaseDeckRepository(client: SupabaseClient<Database>): 
         .eq("deck_id", deckId)
         .eq("concept_id", conceptId);
       if (error) throw libraryErrorFrom(error, "no se pudo quitar el concepto del mazo");
+    },
+
+    async reorder({ ownerId, courseId, deckIds }) {
+      // `decks.position` no tiene índice único (LEX-3.2), así que N `update`
+      // sueltos no colisionan entre sí. No hay transacción: un fallo a mitad
+      // deja el orden a medias (deuda anotada en la evidencia de LEX-3.5). Los
+      // `.eq` acotan cada escritura a una fila del propio usuario y curso.
+      const results = await Promise.all(
+        deckIds.map((deckId, index) =>
+          client
+            .from("decks")
+            .update({ position: index })
+            .eq("id", deckId)
+            .eq("owner_id", ownerId)
+            .eq("course_id", courseId),
+        ),
+      );
+      const failure = results.find((result) => result.error);
+      if (failure?.error) {
+        throw libraryErrorFrom(failure.error, "no se pudieron reordenar los mazos");
+      }
     },
 
     async listConcepts({ ownerId, deckId }): Promise<DeckConcept[]> {
