@@ -134,5 +134,17 @@ export function createSupabaseConceptRepository(
       if (error) throw libraryErrorFrom(error, "no se pudieron buscar los conceptos");
       return { items: (data ?? []).map(toConcept), total: count ?? 0 };
     },
+
+    async findByCanonicalKey({ ownerId, courseId, canonicalKey }) {
+      const { data, error } = await client
+        .from("concepts")
+        .select("*")
+        .eq("owner_id", ownerId)
+        .eq("course_id", courseId)
+        .eq("canonical_key", canonicalKey)
+        .is("archived_at", null);
+      if (error) throw libraryErrorFrom(error, "no se pudieron buscar conceptos duplicados");
+      return (data ?? []).map(toConcept);
+    },
   };
 }

@@ -178,6 +178,10 @@
     },
     "noResults": "Ningún concepto coincide con la búsqueda.",
     "emptyConcepts": "Todavía no tienes conceptos en este curso. Crea el primero abajo.",
+    "duplicates": {
+      "heading": "Ya existe un concepto con un título muy parecido:",
+      "createAnyway": "Crear de todos modos"
+    },
     "genericError": "No hemos podido guardar el concepto. Inténtalo de nuevo.",
     "errors": {
       "kind_invalid": "Elige un tipo.",

@@ -12,6 +12,7 @@
  */
 
 import {
+  canonicalKey,
   type Concept,
   type ConceptDraft,
   type ConceptIssue,
@@ -50,6 +51,17 @@ export interface ConceptRepository {
     limit: number;
     offset: number;
   }): Promise<PageResult<Concept>>;
+  /**
+   * Conceptos vivos (no archivados) del curso cuya `canonical_key` coincide
+   * exactamente (LEX-3.10). Es una **sugerencia**, no una restricción: la
+   * columna no tiene índice único (LEX-3.2/3.3), así que un `insert` con la
+   * misma clave nunca falla por sí solo — quien decide es la persona.
+   */
+  findByCanonicalKey(input: {
+    ownerId: string;
+    courseId: string;
+    canonicalKey: string;
+  }): Promise<Concept[]>;
 }
 
 export type ConceptOutcome = { ok: true; concept: Concept } | { ok: false; issues: ConceptIssue[] };
@@ -152,4 +164,22 @@ export async function searchConcepts(
     limit: clampLimit(options.limit),
     offset: clampOffset(options.offset),
   });
+}
+
+/**
+ * Conceptos vivos del curso cuyo título normaliza a la misma `canonicalKey`
+ * que `title` (LEX-3.10). Un título en blanco no consulta: `canonicalKey("")`
+ * es `""` y no debe listar «coincidencias» de un borrador todavía sin título
+ * —la validación real de ese caso la da `createConcept`, no esta función.
+ */
+export async function findDuplicateConcepts(
+  repository: ConceptRepository,
+  ownerId: string,
+  courseId: string,
+  title: string,
+): Promise<Concept[]> {
+  assertUserId(ownerId);
+  const key = canonicalKey(title);
+  if (key === "") return [];
+  return repository.findByCanonicalKey({ ownerId, courseId, canonicalKey: key });
 }

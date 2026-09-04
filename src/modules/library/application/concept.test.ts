@@ -4,6 +4,7 @@ import {
   archiveConcept,
   type ConceptRepository,
   createConcept,
+  findDuplicateConcepts,
   getConcept,
   listConcepts,
   searchConcepts,
@@ -47,6 +48,7 @@ function fakeRepository(overrides: Partial<ConceptRepository> = {}): ConceptRepo
     list: vi.fn().mockResolvedValue([persistedConcept]),
     get: vi.fn().mockResolvedValue(persistedConcept),
     search: vi.fn().mockResolvedValue({ items: [persistedConcept], total: 1 }),
+    findByCanonicalKey: vi.fn().mockResolvedValue([]),
     ...overrides,
   };
 }
@@ -175,5 +177,34 @@ describe("searchConcepts", () => {
     const repository = fakeRepository();
     await expect(searchConcepts(repository, "  ", "course-1")).rejects.toThrow();
     expect(repository.search).not.toHaveBeenCalled();
+  });
+});
+
+describe("findDuplicateConcepts", () => {
+  it("normaliza el título y delega en el repositorio", async () => {
+    const repository = fakeRepository({
+      findByCanonicalKey: vi.fn().mockResolvedValue([persistedConcept]),
+    });
+    const duplicates = await findDuplicateConcepts(repository, "user-1", "course-1", "  Casa  ");
+    expect(duplicates).toEqual([persistedConcept]);
+    expect(repository.findByCanonicalKey).toHaveBeenCalledWith({
+      ownerId: "user-1",
+      courseId: "course-1",
+      canonicalKey: "casa",
+    });
+  });
+
+  it("un título en blanco no consulta", async () => {
+    const repository = fakeRepository();
+    await expect(findDuplicateConcepts(repository, "user-1", "course-1", "   ")).resolves.toEqual(
+      [],
+    );
+    expect(repository.findByCanonicalKey).not.toHaveBeenCalled();
+  });
+
+  it("rechaza un identificador de usuario vacío", async () => {
+    const repository = fakeRepository();
+    await expect(findDuplicateConcepts(repository, "  ", "course-1", "casa")).rejects.toThrow();
+    expect(repository.findByCanonicalKey).not.toHaveBeenCalled();
   });
 });

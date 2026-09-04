@@ -178,6 +178,10 @@
     },
     "noResults": "No concept matches your search.",
     "emptyConcepts": "You don't have any concepts in this course yet. Create the first one below.",
+    "duplicates": {
+      "heading": "There is already a concept with a very similar title:",
+      "createAnyway": "Create anyway"
+    },
     "genericError": "We couldn't save the concept. Please try again.",
     "errors": {
       "kind_invalid": "Choose a type.",

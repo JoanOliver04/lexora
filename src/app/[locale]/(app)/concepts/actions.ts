@@ -9,6 +9,7 @@ import { routing } from "@/i18n/routing";
 import {
   archiveConcept,
   createConcept,
+  findDuplicateConcepts,
   restoreConcept,
   updateConcept,
 } from "@/modules/library/application/concept";
@@ -26,14 +27,33 @@ import type { ConceptIssue } from "@/modules/library/domain/concept";
 import type { PracticeItemIssue } from "@/modules/library/domain/practice-item";
 import { normalizeTagName, type TagIssue } from "@/modules/library/domain/tag";
 
+import type { ConceptFieldDefaults } from "./concept-fields";
+
 /**
  * Server Actions de conceptos, de sus etiquetas y de sus ítems de práctica.
  * Delgadas (ADR-001), mismo patrón que `decks/actions.ts`.
  */
 
+/** Coincidencia de posible duplicado, solo lo que la sugerencia necesita mostrar (LEX-3.10). */
+export interface ConceptDuplicateMatch {
+  id: string;
+  title: string;
+  kind: string;
+}
+
 export interface ConceptFormState {
   issues?: ConceptIssue[];
   error?: "generic";
+  duplicates?: ConceptDuplicateMatch[];
+  /**
+   * Eco de lo que la persona tecleó, para volver a rellenar el formulario
+   * cuando no se crea (issues, duplicados o error). React reinicia un
+   * `<form>` no controlado a los `defaultValue` tras **cualquier** envío de
+   * una Server Action que no navegue — sin esto, el segundo envío («Crear de
+   * todos modos») partiría de campos vacíos en vez de lo que la persona ya
+   * había escrito.
+   */
+  values?: ConceptFieldDefaults;
 }
 
 export interface TagFormState {
@@ -51,6 +71,23 @@ function safeLocale(formData: FormData): string {
   return routing.locales.includes(raw as (typeof routing.locales)[number])
     ? raw
     : routing.defaultLocale;
+}
+
+/** Lo tecleado, como texto plano, para re-rellenar el formulario si no se crea. */
+function fieldValuesFromForm(formData: FormData): ConceptFieldDefaults {
+  const text = (key: string): string => {
+    const value = formData.get(key);
+    return typeof value === "string" ? value : "";
+  };
+  return {
+    kind: text("kind"),
+    title: text("title"),
+    summary: text("summary"),
+    explanation: text("explanation"),
+    example: text("example"),
+    cefrLevel: text("cefrLevel"),
+    sourceReference: text("sourceReference"),
+  };
 }
 
 function draftFromForm(formData: FormData): unknown {
@@ -88,6 +125,16 @@ async function libraryScope() {
   return context && course ? { context, course } : null;
 }
 
+/**
+ * Sugerencia de duplicados (LEX-3.10): antes de crear, si el título normaliza
+ * a la misma `canonicalKey` que un concepto vivo del curso, se enseña la
+ * coincidencia y **no** se crea todavía. `confirmDuplicate` llega a `"1"`
+ * cuando el propio formulario ya estaba mostrando el aviso en el envío
+ * anterior (campo oculto que refleja `duplicates.length > 0` en el cliente,
+ * ver `create-concept-form.tsx`) — reenviar tras verlo cuenta como decisión
+ * de la persona, sin JavaScript. Nunca fusiona ni sobrescribe: el concepto
+ * nuevo se crea igual que si no hubiera coincidencia, la clave no es única.
+ */
 export async function createConceptAction(
   _prev: ConceptFormState,
   formData: FormData,
@@ -98,6 +145,27 @@ export async function createConceptAction(
     return { error: "generic" };
   }
 
+  const confirmDuplicate = formData.get("confirmDuplicate") === "1";
+  const rawTitle = formData.get("title");
+  if (!confirmDuplicate && typeof rawTitle === "string") {
+    const duplicates = await findDuplicateConcepts(
+      scope.context.concepts,
+      scope.context.ownerId,
+      scope.course.id,
+      rawTitle,
+    );
+    if (duplicates.length > 0) {
+      return {
+        duplicates: duplicates.map((concept) => ({
+          id: concept.id,
+          title: concept.title,
+          kind: concept.kind,
+        })),
+        values: fieldValuesFromForm(formData),
+      };
+    }
+  }
+
   try {
     const outcome = await createConcept(
       scope.context.concepts,
@@ -106,12 +174,12 @@ export async function createConceptAction(
       draftFromForm(formData),
     );
     if (!outcome.ok) {
-      return { issues: outcome.issues };
+      return { issues: outcome.issues, values: fieldValuesFromForm(formData) };
     }
   } catch (error) {
     if (error instanceof LibraryError) {
       console.error("createConceptAction", error);
-      return { error: "generic" };
+      return { error: "generic", values: fieldValuesFromForm(formData) };
     }
     throw error;
   }
