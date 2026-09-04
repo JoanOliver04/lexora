@@ -185,4 +185,52 @@ test.describe("conceptos", () => {
     await page.getByRole("button", { name: "Buscar", exact: true }).click();
     await expect(page.getByText("Ningún concepto coincide con la búsqueda.")).toBeVisible();
   });
+
+  test("sugerencia de duplicados: avisa antes de crear, nunca fusiona (LEX-3.10)", async ({
+    page,
+  }) => {
+    await signUp(page);
+    await completeOnboarding(page);
+    await page.goto("/es/concepts");
+
+    await page.getByLabel("Título", { exact: true }).fill("Break the ice");
+    await page.getByLabel("Resumen", { exact: true }).fill("Romper el hielo");
+    await page.getByRole("button", { name: "Crear concepto" }).click();
+    await expect(page.getByRole("link", { name: "Break the ice", exact: true })).toBeVisible();
+
+    // Mismo título salvo mayúsculas/espacios extra: misma `canonicalKey`. La
+    // normalización de la clave no toca mayúsculas del título guardado, así
+    // que el nuevo (si llegara a crearse) se distinguiría por su forma exacta
+    // — se usa esa distinción para probar que **todavía no existe**.
+    await page.getByLabel("Título", { exact: true }).fill("  BREAK   THE ICE  ");
+    await page.getByLabel("Resumen", { exact: true }).fill("Otra redacción del resumen");
+    await page.getByRole("button", { name: "Crear concepto" }).click();
+    await expect(page.getByText("Ya existe un concepto con un título muy parecido:")).toBeVisible();
+    // Dos enlaces con ese texto: el de la lista y el del propio aviso de
+    // duplicado, ambos al mismo concepto existente.
+    await expect(page.getByRole("link", { name: "Break the ice", exact: true })).toHaveCount(2);
+    await expect(page.getByRole("link", { name: "BREAK THE ICE", exact: true })).toHaveCount(0);
+
+    // «Crear de todos modos»: crea pese al aviso, sin fusionar con el
+    // existente — quedan dos conceptos distintos y visibles.
+    await page.getByRole("button", { name: "Crear de todos modos" }).click();
+    await expect(page).toHaveURL("/es/concepts");
+    await expect(page.getByRole("link", { name: "BREAK THE ICE", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Break the ice", exact: true })).toBeVisible();
+
+    // `canonicalKey` conserva acentos a propósito (LEX-3.1): un título que
+    // solo difiere en el acento no cuenta como la misma clave, no avisa.
+    await page.getByLabel("Título", { exact: true }).fill("Café con leche");
+    await page.getByLabel("Resumen", { exact: true }).fill("Bebida caliente");
+    await page.getByRole("button", { name: "Crear concepto" }).click();
+    await expect(page.getByRole("link", { name: "Café con leche", exact: true })).toBeVisible();
+
+    await page.getByLabel("Título", { exact: true }).fill("Cafe con leche");
+    await page.getByLabel("Resumen", { exact: true }).fill("Sin tilde, a propósito");
+    await page.getByRole("button", { name: "Crear concepto" }).click();
+    await expect(page.getByRole("link", { name: "Cafe con leche", exact: true })).toBeVisible();
+    await expect(page.getByText("Ya existe un concepto con un título muy parecido:")).toHaveCount(
+      0,
+    );
+  });
 });
