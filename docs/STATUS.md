@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-04
-**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (5/12). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (6/12). FASE 2 `HECHO` (11/11)
 **Hito actual:** M3 — Biblioteca manual usable — `PENDIENTE`. M2 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-3.1…3.5 `HECHO` · siguiente LEX-3.6 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5)
-**Rama / commit base / HEAD:** `main` en `d0e46c7` (PR #31, LEX-3.5). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-3.1…3.6 `HECHO` · siguiente LEX-3.7 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5)
+**Rama / commit base / HEAD:** `main` en `ac98bc5` (PR #33, LEX-3.6). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,54 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-3.6 — CRUD de conceptos — `HECHO`
+
+Informe en [`evidence/LEX-3.6.md`](evidence/LEX-3.6.md). PR #33 fusionada a
+`main` (merge `ac98bc5`); CI verde en los tres trabajos, runs `33881460949`
+(PR) y `33881865428` (merge). **Sin migración**; `db:test` sin cambios (240);
+`db:types` limpio.
+
+Segunda pantalla de la biblioteca: CRUD de conceptos del curso activo, sus
+etiquetas y el vínculo concepto↔mazo, sobre `getLibraryContextForCurrentUser()`
+y los casos de uso de `concept.ts` / `tag.ts` / `deck.ts` (LEX-3.4).
+
+- **Ruta** `src/app/[locale]/(app)/concepts/`: lista, detalle/edición (usa
+  `ConceptRepository.get`, existente desde LEX-3.4, a diferencia del rodeo que
+  necesitó `decks/[deckId]/page.tsx`), Server Actions delgadas, formularios
+  cliente. `kind` y `summary` son **obligatorios** (a diferencia de la
+  categoría/descripción de un mazo); el `<select>` de tipo no tiene opción
+  vacía.
+- **Etiquetar por nombre:** `attachTagAction` busca una etiqueta del curso por
+  `normalizeTagName` (dominio) antes de crear una nueva — sin esto, «Idioms» e
+  «idioms» chocarían con el índice único del curso en vez de reutilizar la
+  misma fila. Verificado por rotura.
+- **Vínculo concepto↔mazo decidido:** vive en el detalle del **mazo**
+  (`decks/[deckId]/page.tsx`, extendido aquí), no en el de concepto —
+  `DeckRepository` no tiene una consulta inversa («mazos que contienen este
+  concepto») y añadirla solo por simetría sería alcance inventado.
+  `linkConceptToDeckAction` / `unlinkConceptFromDeckAction` en
+  `decks/actions.ts`, cada una revalida `/decks` **y** `/decks/{deckId}`.
+- **i18n:** namespace `Concepts` nuevo, paralelo a `Library` (campos y errores
+  propios, no anidado); enlace «Mis conceptos» desde el shell.
+- **`sourceReference` sin `ConceptIssue` propio** (heredado de LEX-3.1): solo
+  el CHECK de la base lo guarda; el cliente ayuda con `maxLength`.
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 26 ficheros/174, build)
+pnpm db:test   10 ficheros / 240 asserciones, PASS (sin cambios: LEX-3.6 no toca SQL)
+pnpm db:types  sin cambios (no hay migración)
+pnpm e2e       60 passed (concepts.spec.ts nuevo: crear/editar con
+               comprobación de identidad/etiquetar/archivar; validación;
+               capitalización de etiquetas; vínculo con mazo)
+```
+
+**Verificación por rotura:**
+- Regla de capas: `import` de `infrastructure/` en `concepts/actions.ts` →
+  `pnpm lint` falla. Revertido.
+- Comparación literal en vez de `normalizeTagName` en `attachTagAction` →
+  falla **solo** el test de capitalización de etiquetas del e2e (2/2
+  dispositivos), el resto de la suite sigue en verde. Restaurado.
 
 ### LEX-3.5 — CRUD y archivado de mazos — `HECHO`
 
@@ -791,18 +839,16 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 3 en 5/12. LEX-3.5 en `main` (`d0e46c7`).
+Ninguna tarea `EN PROCESO`. FASE 3 en 6/12. LEX-3.6 en `main` (`ac98bc5`).
 
-Siguiente: **LEX-3.6** — CRUD de conceptos: título, resumen, explicación,
-ejemplo, nivel, tipo (`ConceptKind`), fuente y tags validados, sobre
-`getLibraryContextForCurrentUser()` + los casos de uso de `concept.ts` /
-`tag.ts` (LEX-3.4). Mismo patrón de LEX-3.5 (Server Components + Server Actions
-delgadas + formularios cliente); la edición conserva la identidad. Los tags
-tienen unicidad real por curso (`23505` → `LibraryError('duplicate')`, a
-diferencia de mazos). Decidir dónde vive vincular un concepto a un mazo
-(`addConceptToDeck`/`removeConceptFromDeck`, ya en el puerto desde LEX-3.4, sin
-pantalla todavía). Sugerencia de duplicados por `canonical_key` queda fuera,
-es LEX-3.10. Depende de LEX-3.4.
+Siguiente: **LEX-3.7** — Ítems básicos y dirección inversa: `basic_recognition`,
+`basic_recall` y `cloze` simple (los únicos tres activables en la V1,
+`V1_PRACTICE_MODES`), sobre `getLibraryContextForCurrentUser()` + los casos de
+uso de `practice-item.ts` (LEX-3.4). Probablemente colgada del detalle de
+concepto (`concepts/[conceptId]/`). La dirección inversa crea **otro
+`PracticeItem` del mismo concepto** (`reverseOf`, dominio), nunca otro
+concepto. El `<select>` de modo debe ofrecer solo `V1_PRACTICE_MODES`, no los
+siete reservados. Depende de LEX-3.6.
 
 Acción pendiente del propietario: **etiqueta de hito M2** (`v0.3.0-m2` o la que
 Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4); y **decidir
@@ -813,8 +859,8 @@ visible en la UI de mazos —LEX-3.5—, pero sigue siendo reversible).
 
 ## Archivos y migraciones afectados en esta sesión
 
-> Nota: esta sesión abarca LEX-2.10…LEX-3.5. La tabla de abajo llega hasta
-> LEX-2.11; LEX-3.1…3.5 se resumen aquí.
+> Nota: esta sesión abarca LEX-2.10…LEX-3.6. La tabla de abajo llega hasta
+> LEX-2.11; LEX-3.1…3.6 se resumen aquí.
 >
 > - **LEX-3.1** — `src/modules/library/domain/` (5 ficheros + tests), sin
 >   migración. `src/modules/README.md`, `docs/OPEN_QUESTIONS.md` (Q-005).
@@ -841,6 +887,17 @@ visible en la UI de mazos —LEX-3.5—, pero sigue siendo reversible).
 >   `tests/unit/messages/deck-error-keys.test.ts`, `tests/e2e/decks.spec.ts`,
 >   `docs/evidence/LEX-3.5.md`. Sin migración; `db:test` y `db:types` sin
 >   cambios.
+> - **LEX-3.6** — `src/app/[locale]/(app)/concepts/` (`page.tsx`,
+>   `[conceptId]/page.tsx`, `actions.ts`, `create-concept-form.tsx`,
+>   `edit-concept-form.tsx`, `concept-fields.tsx`, `add-tag-form.tsx`,
+>   `message-key.ts`), `src/app/[locale]/(app)/decks/actions.ts`
+>   (+`linkConceptToDeckAction`/`unlinkConceptFromDeckAction`),
+>   `src/app/[locale]/(app)/decks/[deckId]/page.tsx` (lista de conceptos
+>   vinculados), `src/app/[locale]/(app)/app/page.tsx` (enlace «Mis
+>   conceptos»), `messages/{es,en}.json` (namespace `Concepts` + claves de
+>   vínculo en `Library`), `tests/unit/messages/{concept,tag}-error-keys.
+>   test.ts`, `tests/e2e/concepts.spec.ts`, `docs/evidence/LEX-3.6.md`. Sin
+>   migración; `db:test` y `db:types` sin cambios.
 
 | Archivo | Cambio |
 |---|---|
