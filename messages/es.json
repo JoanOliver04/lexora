@@ -15,7 +15,8 @@
   "App": {
     "courseLabel": "Tu curso",
     "placeholder": "Aquí irá tu día de estudio: repasos, ítems nuevos y el botón para empezar la sesión. Todavía lo estamos construyendo.",
-    "decksLink": "Mis mazos"
+    "decksLink": "Mis mazos",
+    "conceptsLink": "Mis conceptos"
   },
   "Onboarding": {
     "title": "Prepara tu curso",
@@ -88,7 +89,11 @@
     "showArchived": "Ver archivados",
     "hideArchived": "Ocultar archivados",
     "emptyDecks": "Todavía no tienes mazos en este curso. Crea el primero abajo.",
-    "emptyDeckConcepts": "Este mazo aún no tiene conceptos. Podrás añadirlos cuando existan conceptos (LEX-3.6).",
+    "emptyDeckConcepts": "Este mazo no tiene conceptos todavía.",
+    "linkConceptLabel": "Concepto",
+    "linkConceptButton": "Añadir al mazo",
+    "linkConceptEmpty": "No hay conceptos del curso para añadir (o ya están todos en este mazo).",
+    "unlinkConceptButton": "Quitar del mazo",
     "genericError": "No hemos podido guardar el mazo. Inténtalo de nuevo.",
     "errors": {
       "title_empty": "Escribe un nombre para el mazo.",
@@ -96,6 +101,72 @@
       "description_tooLong": "La descripción es demasiado larga.",
       "cefrLevel_invalid": "Ese nivel no es válido.",
       "category_invalid": "Esa categoría no es válida."
+    }
+  },
+  "Concepts": {
+    "listTitle": "Conceptos",
+    "listIntro": "La unidad de conocimiento: una palabra, una collocation, una regla, un contraste de pronunciación. Puede estar en varios mazos sin duplicar tu progreso.",
+    "backToApp": "Volver al inicio",
+    "listHeading": "Tus conceptos",
+    "createHeading": "Nuevo concepto",
+    "editHeading": "Editar concepto",
+    "detailBack": "Volver a los conceptos",
+    "fields": {
+      "kindLabel": "Tipo",
+      "titleLabel": "Título",
+      "summaryLabel": "Resumen",
+      "explanationLabel": "Explicación (opcional)",
+      "exampleLabel": "Ejemplo (opcional)",
+      "levelLabel": "Nivel (opcional)",
+      "levelNone": "Sin nivel",
+      "sourceReferenceLabel": "Fuente (opcional)"
+    },
+    "kinds": {
+      "vocabulary": "Vocabulario",
+      "collocation": "Collocation",
+      "phrase": "Expresión",
+      "grammar": "Gramática",
+      "communicative_function": "Función comunicativa",
+      "pronunciation": "Pronunciación",
+      "other": "Otro"
+    },
+    "actions": {
+      "create": "Crear concepto",
+      "creating": "Creando…",
+      "save": "Guardar cambios",
+      "saving": "Guardando…",
+      "archive": "Archivar",
+      "restore": "Restaurar"
+    },
+    "archivedBadge": "Archivado",
+    "showArchived": "Ver archivados",
+    "hideArchived": "Ocultar archivados",
+    "emptyConcepts": "Todavía no tienes conceptos en este curso. Crea el primero abajo.",
+    "genericError": "No hemos podido guardar el concepto. Inténtalo de nuevo.",
+    "errors": {
+      "kind_invalid": "Elige un tipo.",
+      "title_empty": "Escribe un título para el concepto.",
+      "title_tooLong": "El título es demasiado largo.",
+      "summary_empty": "Escribe un resumen.",
+      "summary_tooLong": "El resumen es demasiado largo.",
+      "explanation_tooLong": "La explicación es demasiado larga.",
+      "example_tooLong": "El ejemplo es demasiado largo.",
+      "cefrLevel_invalid": "Ese nivel no es válido."
+    },
+    "tags": {
+      "heading": "Etiquetas",
+      "addLabel": "Nueva etiqueta",
+      "addPlaceholder": "p. ej. phrasal-verbs",
+      "addButton": "Añadir",
+      "adding": "Añadiendo…",
+      "removeButton": "Quitar",
+      "empty": "Este concepto no tiene etiquetas.",
+      "genericError": "No hemos podido añadir la etiqueta. Inténtalo de nuevo.",
+      "errors": {
+        "name_empty": "Escribe un nombre de etiqueta.",
+        "name_tooLong": "El nombre de la etiqueta es demasiado largo.",
+        "name_emptySegment": "La jerarquía de la etiqueta tiene un tramo vacío (usa «a::b»)."
+      }
     }
   },
   "Auth": {

@@ -49,9 +49,14 @@ export default async function AppHome({ params }: { params: Promise<{ locale: st
         <h1 className="text-2xl font-semibold tracking-tight">{activeCourse.title}</h1>
       </header>
       <p className="text-(--color-ink-muted)">{t("placeholder")}</p>
-      <Link href="/decks" className="text-(--color-accent) underline underline-offset-4">
-        {t("decksLink")}
-      </Link>
+      <div className="flex flex-wrap gap-4">
+        <Link href="/decks" className="text-(--color-accent) underline underline-offset-4">
+          {t("decksLink")}
+        </Link>
+        <Link href="/concepts" className="text-(--color-accent) underline underline-offset-4">
+          {t("conceptsLink")}
+        </Link>
+      </div>
       <form action={logoutAction}>
         <input type="hidden" name="locale" value={locale} />
         <Button type="submit" variant="secondary">

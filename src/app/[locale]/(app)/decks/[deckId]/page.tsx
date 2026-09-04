@@ -5,10 +5,15 @@ import { getActiveCourseForCurrentUser } from "@/composition/courses";
 import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
+import { listConcepts } from "@/modules/library/application/concept";
 import { listDeckConcepts, listDecks } from "@/modules/library/application/deck";
 import { Button } from "@/shared/presentation/components";
 
-import { setDeckArchivedAction } from "../actions";
+import {
+  linkConceptToDeckAction,
+  setDeckArchivedAction,
+  unlinkConceptFromDeckAction,
+} from "../actions";
 import { EditDeckForm } from "../edit-deck-form";
 
 /**
@@ -20,6 +25,11 @@ import { EditDeckForm } from "../edit-deck-form";
  * dedicado se añadiría si LEX-3.9 lo pide.
  *
  * Misma puerta de onboarding por página que la lista (deuda anotada).
+ *
+ * **Vincular conceptos a este mazo vive aquí** (LEX-3.6), no en el detalle de
+ * concepto: esta página ya lee `listDeckConcepts` de un mazo concreto barato;
+ * hacerlo al revés («mazos que contienen este concepto») exigiría un método
+ * nuevo en `DeckRepository` sin caso de uso que lo pida todavía.
  */
 export default async function DeckDetailPage({
   params,
@@ -51,7 +61,11 @@ export default async function DeckDetailPage({
     notFound();
   }
 
-  const conceptCount = (await listDeckConcepts(context.decks, context.ownerId, deck.id)).length;
+  const linked = await listDeckConcepts(context.decks, context.ownerId, deck.id);
+  const linkedIds = new Set(linked.map((item) => item.concept.id));
+  const courseConcepts = await listConcepts(context.concepts, context.ownerId, activeCourse.id);
+  const available = courseConcepts.filter((concept) => !linkedIds.has(concept.id));
+
   const t = await getTranslations("Library");
 
   return (
@@ -73,12 +87,63 @@ export default async function DeckDetailPage({
 
       <section className="flex flex-col gap-3 border-t border-(--color-border) pt-8">
         <h2 className="text-lg font-medium">{t("conceptsHeading")}</h2>
-        {conceptCount === 0 ? (
+        <p className="text-sm text-(--color-ink-muted)">
+          {t("conceptCount", { count: linked.length })}
+        </p>
+
+        {linked.length === 0 ? (
           <p className="text-sm text-(--color-ink-muted)">{t("emptyDeckConcepts")}</p>
         ) : (
-          <p className="text-sm text-(--color-ink-muted)">
-            {t("conceptCount", { count: conceptCount })}
-          </p>
+          <ul className="flex flex-col gap-2">
+            {linked.map(({ concept }) => (
+              <li
+                key={concept.id}
+                className="flex items-center justify-between gap-3 rounded-(--radius-control) border border-(--color-border) px-3 py-2"
+              >
+                <span className="text-sm">{concept.title}</span>
+                <form action={unlinkConceptFromDeckAction}>
+                  <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="deckId" value={deck.id} />
+                  <input type="hidden" name="conceptId" value={concept.id} />
+                  <Button type="submit" variant="secondary">
+                    {t("unlinkConceptButton")}
+                  </Button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {available.length > 0 ? (
+          <form action={linkConceptToDeckAction} className="flex flex-wrap items-end gap-3 pt-2">
+            <input type="hidden" name="locale" value={locale} />
+            <input type="hidden" name="deckId" value={deck.id} />
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="link-concept"
+                className="text-sm font-medium text-(--color-ink-muted)"
+              >
+                {t("linkConceptLabel")}
+              </label>
+              <select
+                id="link-concept"
+                name="conceptId"
+                required
+                className="w-full min-h-11 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-ink)"
+              >
+                {available.map((concept) => (
+                  <option key={concept.id} value={concept.id}>
+                    {concept.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Button type="submit" variant="secondary">
+              {t("linkConceptButton")}
+            </Button>
+          </form>
+        ) : (
+          <p className="text-sm text-(--color-ink-subtle)">{t("linkConceptEmpty")}</p>
         )}
       </section>
 
