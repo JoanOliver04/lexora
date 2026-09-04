@@ -13,13 +13,22 @@ import {
   updateConcept,
 } from "@/modules/library/application/concept";
 import { LibraryError } from "@/modules/library/application/library-error";
+import {
+  archivePracticeItem,
+  createPracticeItem,
+  createReversePracticeItem,
+  listPracticeItems,
+  restorePracticeItem,
+  updatePracticeItem,
+} from "@/modules/library/application/practice-item";
 import { createTag, listTags, tagConcept, untagConcept } from "@/modules/library/application/tag";
 import type { ConceptIssue } from "@/modules/library/domain/concept";
+import type { PracticeItemIssue } from "@/modules/library/domain/practice-item";
 import { normalizeTagName, type TagIssue } from "@/modules/library/domain/tag";
 
 /**
- * Server Actions de conceptos y de sus etiquetas. Delgadas (ADR-001), mismo
- * patrón que `decks/actions.ts`.
+ * Server Actions de conceptos, de sus etiquetas y de sus ítems de práctica.
+ * Delgadas (ADR-001), mismo patrón que `decks/actions.ts`.
  */
 
 export interface ConceptFormState {
@@ -29,6 +38,11 @@ export interface ConceptFormState {
 
 export interface TagFormState {
   issues?: TagIssue[];
+  error?: "generic";
+}
+
+export interface PracticeItemFormState {
+  issues?: PracticeItemIssue[];
   error?: "generic";
 }
 
@@ -48,6 +62,21 @@ function draftFromForm(formData: FormData): unknown {
     example: formData.get("example"),
     cefrLevel: formData.get("cefrLevel"),
     sourceReference: formData.get("sourceReference"),
+  };
+}
+
+function practiceItemDraftFromForm(formData: FormData): unknown {
+  const mode = formData.get("mode");
+  const config =
+    mode === "cloze"
+      ? { mode: "cloze", answers: String(formData.get("clozeAnswers") ?? "").split("\n") }
+      : { mode };
+  return {
+    mode,
+    promptText: formData.get("promptText"),
+    answerText: formData.get("answerText"),
+    hintText: formData.get("hintText"),
+    config,
   };
 }
 
@@ -205,6 +234,131 @@ export async function detachTagAction(formData: FormData): Promise<void> {
   }
 
   await untagConcept(scope.context.tags, scope.context.ownerId, { conceptId, tagId });
+
+  revalidatePath(`/${locale}/concepts/${conceptId}`);
+  redirect(`/${locale}/concepts/${conceptId}`);
+}
+
+export async function createPracticeItemAction(
+  _prev: PracticeItemFormState,
+  formData: FormData,
+): Promise<PracticeItemFormState> {
+  const locale = safeLocale(formData);
+  const conceptId = String(formData.get("conceptId") ?? "");
+  const scope = await libraryScope();
+  if (!scope || conceptId === "") {
+    return { error: "generic" };
+  }
+
+  try {
+    const outcome = await createPracticeItem(
+      scope.context.practiceItems,
+      scope.context.ownerId,
+      conceptId,
+      practiceItemDraftFromForm(formData),
+    );
+    if (!outcome.ok) {
+      return { issues: outcome.issues };
+    }
+  } catch (error) {
+    if (error instanceof LibraryError) {
+      console.error("createPracticeItemAction", error);
+      return { error: "generic" };
+    }
+    throw error;
+  }
+
+  revalidatePath(`/${locale}/concepts/${conceptId}`);
+  redirect(`/${locale}/concepts/${conceptId}`);
+}
+
+export async function updatePracticeItemAction(
+  _prev: PracticeItemFormState,
+  formData: FormData,
+): Promise<PracticeItemFormState> {
+  const locale = safeLocale(formData);
+  const conceptId = String(formData.get("conceptId") ?? "");
+  const itemId = String(formData.get("itemId") ?? "");
+  const scope = await libraryScope();
+  if (!scope || conceptId === "" || itemId === "") {
+    return { error: "generic" };
+  }
+
+  try {
+    const outcome = await updatePracticeItem(
+      scope.context.practiceItems,
+      scope.context.ownerId,
+      itemId,
+      practiceItemDraftFromForm(formData),
+    );
+    if (!outcome.ok) {
+      return { issues: outcome.issues };
+    }
+  } catch (error) {
+    if (error instanceof LibraryError) {
+      console.error("updatePracticeItemAction", error);
+      return { error: "generic" };
+    }
+    throw error;
+  }
+
+  revalidatePath(`/${locale}/concepts/${conceptId}`);
+  revalidatePath(`/${locale}/concepts/${conceptId}/items/${itemId}`);
+  redirect(`/${locale}/concepts/${conceptId}`);
+}
+
+export async function setPracticeItemArchivedAction(formData: FormData): Promise<void> {
+  const locale = safeLocale(formData);
+  const conceptId = String(formData.get("conceptId") ?? "");
+  const itemId = String(formData.get("itemId") ?? "");
+  const archived = String(formData.get("archived") ?? "") === "1";
+  const scope = await libraryScope();
+  if (!scope || conceptId === "" || itemId === "") {
+    redirect(`/${locale}/concepts`);
+  }
+
+  const run = archived ? archivePracticeItem : restorePracticeItem;
+  await run(scope.context.practiceItems, scope.context.ownerId, itemId);
+
+  revalidatePath(`/${locale}/concepts/${conceptId}`);
+  redirect(`/${locale}/concepts/${conceptId}`);
+}
+
+/**
+ * Crea la dirección inversa de un ítem existente. `PracticeItemRepository` no
+ * tiene `get` (LEX-3.4): se lee la lista del concepto —incluidos los
+ * archivados, por si se invierte uno archivado— y se busca, como en el
+ * detalle de mazo (LEX-3.5). Si el modo no tiene inversa (`createReversePracticeItem`
+ * devuelve `null`), no pasa nada: la pantalla no debería haber ofrecido el
+ * botón para ese ítem.
+ */
+export async function reversePracticeItemAction(formData: FormData): Promise<void> {
+  const locale = safeLocale(formData);
+  const conceptId = String(formData.get("conceptId") ?? "");
+  const itemId = String(formData.get("itemId") ?? "");
+  const scope = await libraryScope();
+  if (!scope || conceptId === "" || itemId === "") {
+    redirect(`/${locale}/concepts`);
+  }
+
+  const items = await listPracticeItems(
+    scope.context.practiceItems,
+    scope.context.ownerId,
+    conceptId,
+    { includeArchived: true },
+  );
+  const item = items.find((candidate) => candidate.id === itemId);
+  if (item) {
+    try {
+      await createReversePracticeItem(scope.context.practiceItems, scope.context.ownerId, item);
+    } catch (error) {
+      if (error instanceof LibraryError) {
+        console.error("reversePracticeItemAction", error);
+      } else {
+        throw error;
+      }
+    }
+  }
 
   revalidatePath(`/${locale}/concepts/${conceptId}`);
   redirect(`/${locale}/concepts/${conceptId}`);

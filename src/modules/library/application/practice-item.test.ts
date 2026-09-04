@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   archivePracticeItem,
   createPracticeItem,
+  createReversePracticeItem,
   listPracticeItems,
   parsePracticeItemConfig,
   type PracticeItemRepository,
@@ -154,6 +155,47 @@ describe("updatePracticeItem", () => {
     expect(repository.update).toHaveBeenCalledWith(
       expect.objectContaining({ ownerId: "user-1", itemId: "item-3" }),
     );
+  });
+});
+
+describe("createReversePracticeItem", () => {
+  const recognitionItem = {
+    ...persistedItem,
+    mode: "basic_recognition" as const,
+    promptText: "house",
+    answerText: "casa",
+    config: { mode: "basic_recognition" as const },
+  };
+
+  it("crea el inverso con enunciado/respuesta intercambiados, del mismo concepto", async () => {
+    const repository = fakeRepository();
+    const outcome = await createReversePracticeItem(repository, "user-1", recognitionItem);
+    expect(outcome).not.toBeNull();
+    expect(outcome?.ok).toBe(true);
+    expect(repository.create).toHaveBeenCalledWith({
+      ownerId: "user-1",
+      conceptId: "concept-1",
+      draft: {
+        mode: "basic_recall",
+        promptText: "casa",
+        answerText: "house",
+        hintText: null,
+        config: { mode: "basic_recall" },
+      },
+    });
+  });
+
+  it("devuelve null si el modo no tiene inversa (cloze)", async () => {
+    const repository = fakeRepository();
+    const outcome = await createReversePracticeItem(repository, "user-1", persistedItem);
+    expect(outcome).toBeNull();
+    expect(repository.create).not.toHaveBeenCalled();
+  });
+
+  it("rechaza un identificador de usuario vacío", async () => {
+    const repository = fakeRepository();
+    await expect(createReversePracticeItem(repository, "", recognitionItem)).rejects.toThrow();
+    expect(repository.create).not.toHaveBeenCalled();
   });
 });
 

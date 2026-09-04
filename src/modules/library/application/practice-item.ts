@@ -22,6 +22,7 @@ import {
   type PracticeItemConfig,
   type PracticeItemDraft,
   type PracticeItemIssue,
+  reverseOf,
   validatePracticeItemDraft,
 } from "@/modules/library/domain/practice-item";
 
@@ -147,6 +148,41 @@ export async function restorePracticeItem(
 ): Promise<PracticeItem> {
   assertUserId(ownerId);
   return repository.setArchived({ ownerId, itemId, archived: false });
+}
+
+/**
+ * Crea la dirección inversa de un ítem existente (LEX-3.7): otro
+ * `PracticeItem` del **mismo concepto** (`item.conceptId`), nunca otro
+ * concepto. `reverseOf` (dominio) decide si el modo tiene inversa; `null`
+ * cuando no la tiene (todos los modos salvo `basic_recognition`/`basic_recall`,
+ * `canReverse`) — el llamador no debería ofrecer el botón en ese caso, pero
+ * aquí se comprueba igualmente en vez de asumirlo.
+ *
+ * El borrador que produce `reverseOf` ya cumple las reglas de dominio por
+ * construcción (intercambia enunciado/respuesta de un ítem válido), así que
+ * pasarlo de nuevo por `validatePracticeItemDraft` es una defensa, no el
+ * camino esperado a fallar.
+ */
+export async function createReversePracticeItem(
+  repository: PracticeItemRepository,
+  ownerId: string,
+  item: PracticeItem,
+): Promise<PracticeItemOutcome | null> {
+  assertUserId(ownerId);
+  const reversed = reverseOf(item);
+  if (!reversed) {
+    return null;
+  }
+  const validation = validatePracticeItemDraft(reversed);
+  if (!validation.ok) {
+    return { ok: false, issues: validation.issues };
+  }
+  const created = await repository.create({
+    ownerId,
+    conceptId: item.conceptId,
+    draft: validation.value,
+  });
+  return { ok: true, item: created };
 }
 
 export async function listPracticeItems(
