@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-04
-**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (7/12). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (8/12). FASE 2 `HECHO` (11/11)
 **Hito actual:** M3 — Biblioteca manual usable — `PENDIENTE`. M2 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-3.1…3.7 `HECHO` · siguiente LEX-3.8 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5)
-**Rama / commit base / HEAD:** `main` en `d75bb30` (PR #35, LEX-3.7). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-3.1…3.8 `HECHO` · siguiente LEX-3.9 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `e495613` (PR #37, LEX-3.8). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,46 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-3.8 — Definir archivado y borrado controlado — `HECHO`
+
+Informe en [`evidence/LEX-3.8.md`](evidence/LEX-3.8.md). PR #37 fusionada a
+`main` (merge `e495613`); CI verde en los tres trabajos, runs `33887118654`
+(PR) y `33887505018` (merge). **Sin migración**; sin cambios en TypeScript.
+
+No añade pantallas: fija por escrito la política transversal de archivar/
+borrar de la biblioteca (ya decidida por tabla desde LEX-3.2…3.7) y la cubre
+con pgTAP que hoy no existía como tal.
+
+- **Política:** `decks`/`concepts`/`practice_items` se archivan
+  (`archived_at`, sin `DELETE`); `tags`/`deck_concepts`/`concept_tags` se
+  borran de verdad (sin historial). **Sin cascada** entre entidades
+  archivables: archivar un mazo no archiva sus conceptos, archivar un
+  concepto no archiva el mazo que lo contiene ni sus `practice_items`.
+  Restaurar no necesita recrear nada porque nunca se destruyó nada.
+- **Efecto de visibilidad, ya documentado explícitamente:** archivar un
+  concepto no rompe su enlace `deck_concepts`, pero `listDeckConcepts`
+  (LEX-3.4) sí filtra los conceptos archivados al leer — un mazo puede
+  parecer haber perdido conceptos sin que el vínculo se haya roto.
+  Visibilidad, no destrucción.
+- **`supabase/tests/database/100-archive-invariants.sql`** (nuevo, 26
+  aserciones): estructura, archivar/restaurar mazo/concepto/ítem sin tocar
+  dependientes, idempotencia, contraste con el borrado físico de `tags` (sí
+  cascada `concept_tags`).
+- **Q-006 registrada** (¿archivar un concepto en cascada sobre sus ítems?),
+  `ABIERTA`, **no bloqueante** — recomendación: sin cascada (comportamiento
+  actual de la V1); condiciona el diseño del planificador de FASE 5.
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 27 ficheros/179, build; sin cambios)
+pnpm db:test   11 ficheros / 266 asserciones, PASS (100 nuevo: 26)
+pnpm db:types  sin cambios (no hay migración)
+pnpm e2e       66 passed (sin cambios: no toca pantallas)
+```
+
+**Verificación por rotura:** quitar el enlace `deck_concepts` de la fixture →
+fallan **exactamente** las 3 aserciones que dependen de él, nada más.
+Restaurada.
 
 ### LEX-3.7 — Ítems básicos y dirección inversa — `HECHO`
 
@@ -887,31 +927,30 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 3 en 7/12. LEX-3.7 en `main` (`d75bb30`).
+Ninguna tarea `EN PROCESO`. FASE 3 en 8/12. LEX-3.8 en `main` (`e495613`).
 
-Siguiente: **LEX-3.8** — Definir archivado y borrado controlado: no añade
-pantallas, fija por escrito la política transversal de archivar/borrar
-(`decks`/`concepts`/`practice_items` → `archived_at`, sin `DELETE`; `tags` y
-enlaces → borrado físico, ya decidido en LEX-3.2…3.6) y la cubre con tests que
-hoy no existen como tales: que archivar una entidad con dependencias no
-destruye referencias, que restaurar es seguro, y tests que anticipan un
-historial futuro (FASE 7) sin crear esa tabla todavía. Dos puntos a decidir al
-empezar (candidatos a `Q-nnn` si no son obvios): si archivar un concepto debe
-sacar al mazo de su recuento visible sin romper el vínculo real, y si archivar
-un concepto debe archivar en cascada sus ítems de práctica. Depende de
-LEX-3.5…3.7.
+Siguiente: **LEX-3.9** — Biblioteca con búsqueda, filtros y paginación: buscar
+por título/prompt/respuesta/tag; filtrar curso/mazo/nivel/tipo/estado;
+consultas paginadas sin N+1 — paga la deuda anotada en LEX-3.5/3.6/3.7 (un
+`listDeckConcepts`/`listConceptTags` por fila). Decidir si compensa `pg_trgm`
+(LEX-3.3 lo dejó explícitamente para aquí) o si `ilike` con el índice ya
+existente basta. Puede necesitar migración, a diferencia de LEX-3.5…3.8.
+Depende de LEX-3.4.
 
 Acción pendiente del propietario: **etiqueta de hito M2** (`v0.3.0-m2` o la que
-Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4); y **decidir
+Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4); **decidir
 Q-005** (la opción 1 ya está aplicada en la migración de LEX-3.2 y ahora es
-visible en la UI de mazos —LEX-3.5—, pero sigue siendo reversible).
+visible en la UI de mazos —LEX-3.5—, pero sigue siendo reversible); y
+**decidir Q-006** (archivar un concepto, ¿en cascada sobre sus ítems? — no
+bloqueante, recomendación: sin cascada, ya construida y probada en LEX-3.8;
+condiciona el diseño del planificador de FASE 5).
 
 ---
 
 ## Archivos y migraciones afectados en esta sesión
 
-> Nota: esta sesión abarca LEX-2.10…LEX-3.7. La tabla de abajo llega hasta
-> LEX-2.11; LEX-3.1…3.7 se resumen aquí.
+> Nota: esta sesión abarca LEX-2.10…LEX-3.8. La tabla de abajo llega hasta
+> LEX-2.11; LEX-3.1…3.8 se resumen aquí.
 >
 > - **LEX-3.1** — `src/modules/library/domain/` (5 ficheros + tests), sin
 >   migración. `src/modules/README.md`, `docs/OPEN_QUESTIONS.md` (Q-005).
@@ -959,6 +998,10 @@ visible en la UI de mazos —LEX-3.5—, pero sigue siendo reversible).
 >   `tests/unit/messages/practice-item-error-keys.test.ts`,
 >   `tests/e2e/practice-items.spec.ts`, `docs/evidence/LEX-3.7.md`. Sin
 >   migración; `db:test` y `db:types` sin cambios.
+> - **LEX-3.8** — `supabase/tests/database/100-archive-invariants.sql`
+>   (nuevo, 26 aserciones), `docs/DATA_MODEL.md` (+sección de política),
+>   `docs/OPEN_QUESTIONS.md` (+Q-006), `docs/evidence/LEX-3.8.md`. Sin
+>   migración; sin cambios en TypeScript.
 
 | Archivo | Cambio |
 |---|---|
