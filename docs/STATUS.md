@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-04
-**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (10/12). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (11/12). FASE 2 `HECHO` (11/11)
 **Hito actual:** M3 — Biblioteca manual usable — `PENDIENTE`. M2 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-3.1…3.10 `HECHO` · siguiente LEX-3.11 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `182993a` (PR #41, LEX-3.10). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-3.1…3.11 `HECHO` · siguiente y última de FASE 3: LEX-3.12 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `230924f` (PR #43, LEX-3.11). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,37 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-3.11 — Crear previsualización de ítems — `HECHO`
+
+Informe en [`evidence/LEX-3.11.md`](evidence/LEX-3.11.md). PR #43 fusionada a
+`main` (merge `230924f`); CI verde en los tres trabajos, runs `33896380937`
+(PR) y `33896772890` (merge). **Sin migración**; `db:test` sin cambios (266);
+`db:types` limpio.
+
+Un ítem de práctica se creaba y editaba a ciegas desde LEX-3.7. Esta tarea
+añade cómo se vería al estudiar, **sin** planificador ni valoración (FASE
+5/6): pura lectura sobre el `PracticeItem` ya guardado.
+
+- **`PracticeItemPreview`** en el detalle de ítem, antes del formulario de
+  edición: enunciado siempre visible, pista si existe, respuesta oculta tras
+  un `<details>`/`<summary>` nativo («Ver respuesta», sin JavaScript de
+  cliente). Visible también en un ítem archivado.
+- **`cloze`:** además de la respuesta completa, lista las soluciones del
+  hueco (`config.answers`) en orden, con su etiqueta propia.
+- **Sin marcador de hueco en `promptText`, deliberado:** LEX-3.7 nunca fijó
+  una convención para escribir el hueco de un `cloze`. Inventar aquí un
+  marcador y sustituirlo sería fijar una decisión de producto no pedida; el
+  enunciado se muestra tal cual se guardó.
+- Sin caso de uso ni puerto nuevo: presentación pura sobre un `PracticeItem`
+  ya cargado por el detalle existente (LEX-3.7).
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 27 ficheros/194, build)
+pnpm db:test   11 ficheros / 266 aserciones, PASS (sin cambios: sin migración)
+pnpm db:types  sin cambios (no hay migración)
+pnpm e2e       74 passed (practice-items.spec.ts extendido, sin fichero nuevo)
+```
 
 ### LEX-3.10 — Sugerir duplicados mediante `canonical_key` — `HECHO`
 
