@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-04
-**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (6/12). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (7/12). FASE 2 `HECHO` (11/11)
 **Hito actual:** M3 — Biblioteca manual usable — `PENDIENTE`. M2 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-3.1…3.6 `HECHO` · siguiente LEX-3.7 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5)
-**Rama / commit base / HEAD:** `main` en `ac98bc5` (PR #33, LEX-3.6). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-3.1…3.7 `HECHO` · siguiente LEX-3.8 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5)
+**Rama / commit base / HEAD:** `main` en `d75bb30` (PR #35, LEX-3.7). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,54 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-3.7 — Ítems básicos y dirección inversa — `HECHO`
+
+Informe en [`evidence/LEX-3.7.md`](evidence/LEX-3.7.md). PR #35 fusionada a
+`main` (merge `d75bb30`); CI verde en los tres trabajos, runs `33884581243`
+(PR) y `33884938039` (merge). **Sin migración**; `db:test` sin cambios (240);
+`db:types` limpio.
+
+Tercera pantalla de la biblioteca: CRUD de ítems de práctica de un concepto
+(`basic_recognition`, `basic_recall`, `cloze` — los tres activables en la V1)
+y su dirección inversa, sobre `getLibraryContextForCurrentUser()` y
+`practice-item.ts` (LEX-3.4).
+
+- **Ruta** colgada de `concepts/[conceptId]/`: sección de ítems en el detalle
+  de concepto (lista + alta) y `concepts/[conceptId]/items/[itemId]/` para
+  editar/archivar.
+- **El `<select>` de modo ofrece solo `V1_PRACTICE_MODES`** (tres), no los
+  siete reservados de `PRACTICE_MODES`: la interfaz no debe ni ofrecer los
+  modos futuros como opción, no basta con que el dominio los rechace.
+- **Dirección inversa como caso de uso nuevo:** `createReversePracticeItem`
+  (`application/practice-item.ts`) envuelve `reverseOf` (dominio) en vez de
+  llamarlo directo desde la Server Action — mantiene la regla de capas. Crea
+  otro `PracticeItem` del **mismo concepto**, revalida el borrador con
+  `validatePracticeItemDraft` como defensa.
+- **`config` por modo** sin JS que oculte campos (mismo principio que el resto
+  de la biblioteca): la `<textarea>` de soluciones del hueco se muestra
+  siempre, con nota de cuándo se usa.
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 27 ficheros/179, build)
+pnpm db:test   10 ficheros / 240 asserciones, PASS (sin cambios: LEX-3.7 no toca SQL)
+pnpm db:types  sin cambios (no hay migración)
+pnpm e2e       66 passed (practice-items.spec.ts nuevo: ítem básico + editar +
+               inverso; cloze + archivar; validación)
+```
+
+**Verificación por rotura:**
+- Regla de capas: `import` de `infrastructure/` en `concepts/actions.ts` →
+  `pnpm lint` falla. Revertido.
+- Quitar `assertUserId` de `createReversePracticeItem` → falla **solo** su
+  test de identificador de usuario vacío. Restaurado.
+
+**Lección de autoría del propio e2e** (no del producto): el primer intento del
+caso «cloze + archivar» clicaba «Archivar» sin esperar a que la navegación al
+detalle del ítem terminara — Playwright no espera una transición de cliente
+tras `.click()` en un enlace — y acababa archivando el concepto en vez del
+ítem (el botón «Archivar» del concepto seguía montado un instante). Corregido
+con una espera explícita de URL entre ambos clics.
 
 ### LEX-3.6 — CRUD de conceptos — `HECHO`
 
@@ -839,16 +887,19 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 3 en 6/12. LEX-3.6 en `main` (`ac98bc5`).
+Ninguna tarea `EN PROCESO`. FASE 3 en 7/12. LEX-3.7 en `main` (`d75bb30`).
 
-Siguiente: **LEX-3.7** — Ítems básicos y dirección inversa: `basic_recognition`,
-`basic_recall` y `cloze` simple (los únicos tres activables en la V1,
-`V1_PRACTICE_MODES`), sobre `getLibraryContextForCurrentUser()` + los casos de
-uso de `practice-item.ts` (LEX-3.4). Probablemente colgada del detalle de
-concepto (`concepts/[conceptId]/`). La dirección inversa crea **otro
-`PracticeItem` del mismo concepto** (`reverseOf`, dominio), nunca otro
-concepto. El `<select>` de modo debe ofrecer solo `V1_PRACTICE_MODES`, no los
-siete reservados. Depende de LEX-3.6.
+Siguiente: **LEX-3.8** — Definir archivado y borrado controlado: no añade
+pantallas, fija por escrito la política transversal de archivar/borrar
+(`decks`/`concepts`/`practice_items` → `archived_at`, sin `DELETE`; `tags` y
+enlaces → borrado físico, ya decidido en LEX-3.2…3.6) y la cubre con tests que
+hoy no existen como tales: que archivar una entidad con dependencias no
+destruye referencias, que restaurar es seguro, y tests que anticipan un
+historial futuro (FASE 7) sin crear esa tabla todavía. Dos puntos a decidir al
+empezar (candidatos a `Q-nnn` si no son obvios): si archivar un concepto debe
+sacar al mazo de su recuento visible sin romper el vínculo real, y si archivar
+un concepto debe archivar en cascada sus ítems de práctica. Depende de
+LEX-3.5…3.7.
 
 Acción pendiente del propietario: **etiqueta de hito M2** (`v0.3.0-m2` o la que
 Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4); y **decidir
@@ -859,8 +910,8 @@ visible en la UI de mazos —LEX-3.5—, pero sigue siendo reversible).
 
 ## Archivos y migraciones afectados en esta sesión
 
-> Nota: esta sesión abarca LEX-2.10…LEX-3.6. La tabla de abajo llega hasta
-> LEX-2.11; LEX-3.1…3.6 se resumen aquí.
+> Nota: esta sesión abarca LEX-2.10…LEX-3.7. La tabla de abajo llega hasta
+> LEX-2.11; LEX-3.1…3.7 se resumen aquí.
 >
 > - **LEX-3.1** — `src/modules/library/domain/` (5 ficheros + tests), sin
 >   migración. `src/modules/README.md`, `docs/OPEN_QUESTIONS.md` (Q-005).
@@ -897,6 +948,16 @@ visible en la UI de mazos —LEX-3.5—, pero sigue siendo reversible).
 >   conceptos»), `messages/{es,en}.json` (namespace `Concepts` + claves de
 >   vínculo en `Library`), `tests/unit/messages/{concept,tag}-error-keys.
 >   test.ts`, `tests/e2e/concepts.spec.ts`, `docs/evidence/LEX-3.6.md`. Sin
+>   migración; `db:test` y `db:types` sin cambios.
+> - **LEX-3.7** — `src/modules/library/application/practice-item.ts`
+>   (+`createReversePracticeItem`, + `.test.ts`),
+>   `src/app/[locale]/(app)/concepts/{create,edit}-practice-item-form.tsx`,
+>   `practice-item-fields.tsx`, `[conceptId]/items/[itemId]/page.tsx`
+>   (nuevos), `[conceptId]/page.tsx` (+sección de ítems), `actions.ts`
+>   (+4 Server Actions), `message-key.ts` (+`practiceItemIssueKey`),
+>   `messages/{es,en}.json` (`Concepts.items.*`),
+>   `tests/unit/messages/practice-item-error-keys.test.ts`,
+>   `tests/e2e/practice-items.spec.ts`, `docs/evidence/LEX-3.7.md`. Sin
 >   migración; `db:test` y `db:types` sin cambios.
 
 | Archivo | Cambio |
