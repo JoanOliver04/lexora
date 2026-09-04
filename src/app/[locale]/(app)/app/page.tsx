@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { logoutAction } from "@/app/[locale]/(auth)/actions";
 import { getActiveCourseForCurrentUser } from "@/composition/courses";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/shared/presentation/components";
 
 /**
@@ -48,6 +49,9 @@ export default async function AppHome({ params }: { params: Promise<{ locale: st
         <h1 className="text-2xl font-semibold tracking-tight">{activeCourse.title}</h1>
       </header>
       <p className="text-(--color-ink-muted)">{t("placeholder")}</p>
+      <Link href="/decks" className="text-(--color-accent) underline underline-offset-4">
+        {t("decksLink")}
+      </Link>
       <form action={logoutAction}>
         <input type="hidden" name="locale" value={locale} />
         <Button type="submit" variant="secondary">

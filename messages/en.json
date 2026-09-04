@@ -14,7 +14,8 @@
   },
   "App": {
     "courseLabel": "Your course",
-    "placeholder": "Your study day will live here: reviews, new items and the button to start the session. We're still building it."
+    "placeholder": "Your study day will live here: reviews, new items and the button to start the session. We're still building it.",
+    "decksLink": "My decks"
   },
   "Onboarding": {
     "title": "Set up your course",
@@ -45,6 +46,56 @@
       "startLevel_invalid": "Choose which level to start from.",
       "dailyNewLimit_notInteger": "Enter a whole number of new items.",
       "dailyNewLimit_outOfRange": "New items per day must be between 0 and 100."
+    }
+  },
+  "Library": {
+    "decksTitle": "Decks",
+    "decksIntro": "Group the course's concepts to decide what to study. A deck doesn't hold your progress, only the selection.",
+    "backToApp": "Back to home",
+    "listHeading": "Your decks",
+    "createHeading": "New deck",
+    "editHeading": "Edit deck",
+    "conceptsHeading": "Concepts",
+    "detailBack": "Back to decks",
+    "fields": {
+      "titleLabel": "Name",
+      "descriptionLabel": "Description (optional)",
+      "levelLabel": "Level (optional)",
+      "levelNone": "No level",
+      "categoryLabel": "Category (optional)",
+      "categoryNone": "No category"
+    },
+    "categories": {
+      "vocabulary": "Vocabulary",
+      "grammar": "Grammar",
+      "communicative_function": "Communicative function",
+      "pronunciation": "Pronunciation",
+      "professional": "Professional",
+      "mixed": "Mixed"
+    },
+    "actions": {
+      "create": "Create deck",
+      "creating": "Creating…",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "archive": "Archive",
+      "restore": "Restore",
+      "moveUp": "Move up",
+      "moveDown": "Move down"
+    },
+    "conceptCount": "{count, plural, =0 {No concepts} one {# concept} other {# concepts}}",
+    "archivedBadge": "Archived",
+    "showArchived": "Show archived",
+    "hideArchived": "Hide archived",
+    "emptyDecks": "You don't have any decks in this course yet. Create the first one below.",
+    "emptyDeckConcepts": "This deck has no concepts yet. You'll be able to add them once concepts exist (LEX-3.6).",
+    "genericError": "We couldn't save the deck. Please try again.",
+    "errors": {
+      "title_empty": "Enter a name for the deck.",
+      "title_tooLong": "The deck name is too long.",
+      "description_tooLong": "The description is too long.",
+      "cefrLevel_invalid": "That level isn't valid.",
+      "category_invalid": "That category isn't valid."
     }
   },
   "Auth": {

@@ -7,6 +7,7 @@ import {
   type DeckRepository,
   listDecks,
   removeConceptFromDeck,
+  reorderDecks,
   restoreDeck,
   updateDeck,
 } from "./deck";
@@ -43,6 +44,7 @@ function fakeRepository(overrides: Partial<DeckRepository> = {}): DeckRepository
     addConcept: vi.fn().mockResolvedValue(undefined),
     removeConcept: vi.fn().mockResolvedValue(undefined),
     listConcepts: vi.fn().mockResolvedValue([]),
+    reorder: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
 }
@@ -151,6 +153,24 @@ describe("listDecks", () => {
       courseId: "course-1",
       includeArchived: true,
     });
+  });
+});
+
+describe("reorderDecks", () => {
+  it("delega el orden completo en el repositorio", async () => {
+    const repository = fakeRepository();
+    await reorderDecks(repository, "user-1", "course-1", ["deck-3", "deck-1", "deck-2"]);
+    expect(repository.reorder).toHaveBeenCalledWith({
+      ownerId: "user-1",
+      courseId: "course-1",
+      deckIds: ["deck-3", "deck-1", "deck-2"],
+    });
+  });
+
+  it("rechaza un identificador de usuario vacío", async () => {
+    const repository = fakeRepository();
+    await expect(reorderDecks(repository, "  ", "course-1", ["deck-1"])).rejects.toThrow();
+    expect(repository.reorder).not.toHaveBeenCalled();
   });
 });
 
