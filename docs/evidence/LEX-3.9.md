@@ -2,7 +2,8 @@
 
 **Fecha:** 2026-09-04
 **Rama:** `feat/lex-3-9-search-filters-pagination`
-**Estado resultante:** `EN PROCESO` → `HECHO` al fusionar con CI verde.
+**Estado resultante:** `HECHO`. PR #39 fusionada a `main` (merge `2429bc7`); CI
+verde en los tres trabajos, runs `33891169405` (PR) y `33891590609` (merge).
 
 ---
 
@@ -171,9 +172,9 @@ Migraciones: **0**.
 
 ## 8. Estado del árbol Git
 
-Rama `feat/lex-3-9-search-filters-pagination` desde `main` (`5576ba0`).
-Pendiente: commit, PR contra `main`, CI verde en los tres trabajos, merge, CI
-verde en `main`, cierre docs.
+Rama `feat/lex-3-9-search-filters-pagination` desde `main` (`5576ba0`),
+fusionada. `main` en `2429bc7`. Cierre de documentación en
+`docs/lex-3-9-close`.
 
 ## 9. Siguiente tarea
 

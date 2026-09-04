@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-04
-**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (8/12). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (9/12). FASE 2 `HECHO` (11/11)
 **Hito actual:** M3 — Biblioteca manual usable — `PENDIENTE`. M2 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-3.1…3.8 `HECHO` · siguiente LEX-3.9 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `e495613` (PR #37, LEX-3.8). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-3.1…3.9 `HECHO` · siguiente LEX-3.10 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `2429bc7` (PR #39, LEX-3.9). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,61 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-3.9 — Biblioteca con búsqueda, filtros y paginación — `HECHO`
+
+Informe en [`evidence/LEX-3.9.md`](evidence/LEX-3.9.md). PR #39 fusionada a
+`main` (merge `2429bc7`); CI verde en los tres trabajos, runs `33891169405`
+(PR) y `33891590609` (merge). **Sin migración**; `db:test` sin cambios (266);
+`db:types` limpio.
+
+Ámbito acotado tras consulta previa: de los tres componentes del roadmap
+(buscar, filtrar, paginar sin N+1), solo paginación y los dos recuentos
+agregados tenían un motivador real — la deuda de N+1 ya anotada, con sitio
+exacto, en la evidencia de LEX-3.5/3.6. La búsqueda se entrega igualmente
+(barata una vez resuelta la paginación) pero con `ilike`, no `pg_trgm`.
+
+- **`DeckRepository.search` / `ConceptRepository.search`:** texto (`ilike`
+  sobre título), categoría/tipo, nivel MCER, `includeArchived`, paginación
+  `limit`/`offset` con recuento total. `list` sigue existiendo sin cambios:
+  `moveDeckAction` necesita el orden completo sin paginar.
+- **`pg_trgm` diferido, no descartado:** LEX-3.3 dejó la elección
+  explícitamente abierta; a los volúmenes de la V1 un `seq scan` con `ilike`
+  es invisible. Migración correctiva si un volumen real lo justifica.
+- **Dos N+1 resueltos sin vista ni función nueva:**
+  `DeckRepository.countConceptsByDeck` y `TagRepository.listForConcepts`, cada
+  uno una sola consulta que embebe la tabla relacionada y agrupa en memoria en
+  el adaptador — mismo patrón que `listConcepts`/`listForConcept` desde
+  LEX-3.4, con `deckIds`/`conceptIds` plural.
+- **Paginación por `limit`/`offset`**, no por cursor: `clampLimit`/
+  `clampOffset` nuevos en `application/pagination.ts`, compartidos por
+  `deck.ts` y `concept.ts`.
+- **Reordenar mazos se oculta** con búsqueda, filtro o más de una página
+  activos: los índices de una página parcial no son vecinos reales en el
+  orden global del curso.
+- **`decks/page.tsx` y `concepts/page.tsx` reescritas:** `<form
+  method="get">` sin JavaScript para buscar/filtrar; enlaces «Anterior»/
+  «Siguiente»; mensaje «sin resultados» distinto de «biblioteca vacía».
+
+**Fuera de alcance, declarado:** búsqueda por prompt/respuesta de ítem o por
+nombre de etiqueta (sin pantalla que lo consuma todavía); la lista de
+«conceptos disponibles para enlazar» del detalle de un mazo sigue sin
+paginar (una sola consulta, no N+1, aceptable a los volúmenes de la V1).
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 27 ficheros/191, build)
+pnpm db:test   11 ficheros / 266 asserciones, PASS (sin cambios: sin migración)
+pnpm db:types  sin cambios (no hay migración)
+pnpm e2e       72 passed (decks.spec.ts +2 casos: buscar/filtrar, paginación;
+               concepts.spec.ts +1 caso: buscar/filtrar)
+```
+
+**Verificación por rotura (autoría del propio e2e):** el enlace «Anterior» de
+la paginación generaba `?page=1` en vez de volver a `/decks` limpio —
+detectado por el propio test, corregido para omitir `page` cuando el destino
+es la página 1. El bucle de creación de 21 mazos asumía visibilidad inmediata
+de cada uno, falso para el 21.º (cae en la página 2 por construcción) —
+corregido.
 
 ### LEX-3.8 — Definir archivado y borrado controlado — `HECHO`
 
