@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-04
-**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (4/12). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (5/12). FASE 2 `HECHO` (11/11)
 **Hito actual:** M3 — Biblioteca manual usable — `PENDIENTE`. M2 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-3.1…3.4 `HECHO` · siguiente LEX-3.5 · Q-005 abierta (opción 1 aplicada, reversible)
-**Rama / commit base / HEAD:** `main` en `c7b0871` (PR #29, LEX-3.4). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-3.1…3.5 `HECHO` · siguiente LEX-3.6 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5)
+**Rama / commit base / HEAD:** `main` en `d0e46c7` (PR #31, LEX-3.5). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,64 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-3.5 — CRUD y archivado de mazos — `HECHO`
+
+Informe en [`evidence/LEX-3.5.md`](evidence/LEX-3.5.md). PR #31 fusionada a
+`main` (merge `d0e46c7`); CI verde en los tres trabajos, runs `33878550652`
+(PR) y `33878890360` (merge). **Sin migración**; `db:test` sin cambios (240);
+`db:types` limpio.
+
+Primeras pantallas de la biblioteca: lista de mazos del curso activo y
+detalle/edición, sobre `getLibraryContextForCurrentUser()` y los casos de uso
+de `deck.ts` (LEX-3.4).
+
+- **Ruta** `src/app/[locale]/(app)/decks/`: `page.tsx` (lista, Server
+  Component), `[deckId]/page.tsx` (detalle/edición), `actions.ts` (Server
+  Actions delgadas), `create-deck-form.tsx` / `edit-deck-form.tsx` (cliente,
+  patrón de `OnboardingForm`), `deck-fields.tsx` (campos compartidos),
+  `message-key.ts` (`deckIssueKey`, mismo puente que el onboarding).
+- **Reordenación en bloque** que LEX-3.4 dejó fuera: puerto
+  `DeckRepository.reorder({ ownerId, courseId, deckIds })` (reescribe
+  `position = 0..n-1`) + caso de uso `reorderDecks`. Botones «Subir»/«Bajar»
+  por fila; `moveDeckAction` intercambia el mazo con su vecino y reordena la
+  lista completa. `decks.position` no tiene índice único, así que los N
+  `update` del adaptador no colisionan entre sí — pero **no es atómico**
+  (deuda anotada).
+- **Alta al final:** `create()` del adaptador consulta `max(position)` del
+  curso e inserta con `max + 1`; sin esto un mazo nuevo caería en el default
+  `0` y, tras cualquier reordenación, quedaría empatado arriba.
+- **Recuentos** (`listDeckConcepts` por mazo, N+1 consciente — LEX-3.9 lo
+  resuelve) y **estados vacíos** (curso sin mazos; mazo sin conceptos).
+  `?archived=1` muestra también los archivados: sin ese camino `restoreDeck`
+  sería código muerto.
+- **Revalidación:** cada mutación llama a `revalidatePath(\`/${locale}/decks\`)`
+  antes de `redirect()` — `force-dynamic` gobierna el render del servidor, no
+  la caché del router en el cliente.
+- **Puerta de onboarding repetida** en las dos páginas nuevas: `(app)` pasa de
+  dos a cuatro rutas y la condición que LEX-2.9 nombraba para centralizarla en
+  el layout («cuando tenga más de dos rutas») se ha cumplido. Sigue por página;
+  deuda ahora explícita.
+- **Q-005** ahora visible en la UI: el `<select>` de categoría ofrece
+  «Profesional» / «Professional». Sigue abierta.
+- **i18n:** namespace `Library` nuevo en `messages/{es,en}.json`; enlace «Mis
+  mazos» / «My decks» desde el shell (`App.decksLink`).
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 24 ficheros/170, build)
+pnpm db:test   10 ficheros / 240 asserciones, PASS (sin cambios: LEX-3.5 no toca SQL)
+pnpm db:types  sin cambios (no hay migración)
+pnpm e2e       52 passed (decks.spec.ts nuevo: crear/renombrar/archivar/ver
+               archivados; alta al final + reordenar; validación)
+```
+
+**Verificación por rotura:**
+- Regla de capas (ruta de presentación): `import` de
+  `infrastructure/supabase-deck-repository` en `decks/actions.ts` → `pnpm lint`
+  falla («La presentacion llama a un caso de uso, no a un repositorio»).
+  Revertido.
+- Guarda de identidad: quitar `assertUserId(ownerId)` de `reorderDecks` → falla
+  **solo** su test de id vacío. Restaurado.
 
 ### LEX-3.4 — Repositorios y casos de uso de la biblioteca — `HECHO`
 
@@ -733,28 +791,30 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 3 en 4/12. LEX-3.4 en `main` (`c7b0871`).
+Ninguna tarea `EN PROCESO`. FASE 3 en 5/12. LEX-3.5 en `main` (`d0e46c7`).
 
-Siguiente: **LEX-3.5** — CRUD y archivado de mazos: pantallas ES/EN en
-`src/app/[locale]/(app)/` sobre `getLibraryContextForCurrentUser()` + los casos
-de uso de `deck.ts` (crear, renombrar/editar, categorizar, ordenar,
-archivar/restaurar). Server Components para leer, Server Actions delgadas para
-escribir. Recuentos por mazo (`listDeckConcepts`), estados vacíos, namespace
-i18n nuevo, claves de error del dominio traducidas en presentación. La
-reordenación (`position`) —caso de uso de reordenación en bloque que LEX-3.4
-dejó fuera— entra aquí. E2E de crear/renombrar/archivar. Depende de LEX-3.4.
+Siguiente: **LEX-3.6** — CRUD de conceptos: título, resumen, explicación,
+ejemplo, nivel, tipo (`ConceptKind`), fuente y tags validados, sobre
+`getLibraryContextForCurrentUser()` + los casos de uso de `concept.ts` /
+`tag.ts` (LEX-3.4). Mismo patrón de LEX-3.5 (Server Components + Server Actions
+delgadas + formularios cliente); la edición conserva la identidad. Los tags
+tienen unicidad real por curso (`23505` → `LibraryError('duplicate')`, a
+diferencia de mazos). Decidir dónde vive vincular un concepto a un mazo
+(`addConceptToDeck`/`removeConceptFromDeck`, ya en el puerto desde LEX-3.4, sin
+pantalla todavía). Sugerencia de duplicados por `canonical_key` queda fuera,
+es LEX-3.10. Depende de LEX-3.4.
 
 Acción pendiente del propietario: **etiqueta de hito M2** (`v0.3.0-m2` o la que
 Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4); y **decidir
-Q-005** (la opción 1 ya está aplicada en la migración de LEX-3.2, pero es
-reversible; decidir antes de LEX-3.5).
+Q-005** (la opción 1 ya está aplicada en la migración de LEX-3.2 y ahora es
+visible en la UI de mazos —LEX-3.5—, pero sigue siendo reversible).
 
 ---
 
 ## Archivos y migraciones afectados en esta sesión
 
-> Nota: esta sesión abarca LEX-2.10…LEX-3.4. La tabla de abajo llega hasta
-> LEX-2.11; LEX-3.1…3.4 se resumen aquí.
+> Nota: esta sesión abarca LEX-2.10…LEX-3.5. La tabla de abajo llega hasta
+> LEX-2.11; LEX-3.1…3.5 se resumen aquí.
 >
 > - **LEX-3.1** — `src/modules/library/domain/` (5 ficheros + tests), sin
 >   migración. `src/modules/README.md`, `docs/OPEN_QUESTIONS.md` (Q-005).
@@ -769,6 +829,17 @@ reversible; decidir antes de LEX-3.5).
 >   `src/modules/library/infrastructure/supabase-*-repository.ts` (4),
 >   `src/composition/library.ts`, `src/modules/README.md`,
 >   `docs/evidence/LEX-3.4.md`. Sin migración; `db:test` y `db:types` sin
+>   cambios.
+> - **LEX-3.5** — `src/app/[locale]/(app)/decks/` (`page.tsx`,
+>   `[deckId]/page.tsx`, `actions.ts`, `create-deck-form.tsx`,
+>   `edit-deck-form.tsx`, `deck-fields.tsx`, `message-key.ts`),
+>   `src/modules/library/application/deck.ts` (+ `.test.ts`, puerto `reorder` +
+>   caso de uso `reorderDecks`), `src/modules/library/infrastructure/
+>   supabase-deck-repository.ts` (`reorder`, `create` con alta al final),
+>   `src/app/[locale]/(app)/app/page.tsx` (enlace «Mis mazos»),
+>   `messages/{es,en}.json` (namespace `Library`),
+>   `tests/unit/messages/deck-error-keys.test.ts`, `tests/e2e/decks.spec.ts`,
+>   `docs/evidence/LEX-3.5.md`. Sin migración; `db:test` y `db:types` sin
 >   cambios.
 
 | Archivo | Cambio |
