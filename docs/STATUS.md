@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-04
-**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (3/12). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (4/12). FASE 2 `HECHO` (11/11)
 **Hito actual:** M3 — Biblioteca manual usable — `PENDIENTE`. M2 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-3.1…3.3 `HECHO` · siguiente LEX-3.4 · Q-005 abierta (opción 1 aplicada, reversible)
-**Rama / commit base / HEAD:** `main` en `402da72` (PR #27, LEX-3.3). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-3.1…3.4 `HECHO` · siguiente LEX-3.5 · Q-005 abierta (opción 1 aplicada, reversible)
+**Rama / commit base / HEAD:** `main` en `c7b0871` (PR #29, LEX-3.4). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,57 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-3.4 — Repositorios y casos de uso de la biblioteca — `HECHO`
+
+Informe en [`evidence/LEX-3.4.md`](evidence/LEX-3.4.md). PR #29 fusionada a
+`main` (merge `c7b0871`); CI verde en los tres trabajos, runs `33871218115`
+(PR) y `33871501880` (merge). **Sin migración**; `db:test` sin cambios (240);
+`db:types` limpio.
+
+Capas `application/` e `infrastructure/` del módulo `library`, sobre el dominio
+(LEX-3.1), el esquema (LEX-3.2) y la RLS (LEX-3.3).
+
+- **Cuatro puertos**, un fichero por entidad (`deck.ts`, `concept.ts`,
+  `practice-item.ts`, `tag.ts` en `application/`). Las operaciones de enlace
+  viven en el puerto del agregado: `addConceptToDeck` / `removeConceptFromDeck`
+  en `DeckRepository`, `tagConcept` / `untagConcept` en `TagRepository`. Seis
+  tablas, cuatro puertos.
+- **Casos de uso** con la forma de `completeOnboarding`: comprueban `ownerId`
+  vacío, llaman al validador de dominio, devuelven `{ ok: false, issues }` o
+  delegan en el puerto. `ownerId` de `getClaims()` en la composición.
+- **Validación:** los validadores de dominio ya aceptan `unknown` de forma
+  defensiva, así que **no** se apila Zod encima para mazo/concepto/etiqueta.
+  Zod solo donde §13.9 lo nombra: la unión discriminada del `config` de los
+  ítems de práctica (`practiceItemConfigSchema` — forma; el dominio, reglas).
+  Ningún esquema Zod referencia una constante de `taxonomy.ts`.
+- **Archivar vs borrar:** `decks` / `concepts` / `practice_items` →
+  `setArchived(archived)` sin `DELETE`; `tags` y las filas de enlace se borran
+  de verdad. Las lecturas excluyen los archivados salvo `includeArchived`.
+  `archived_at` se sella con el reloj del servidor: no gobierna ningún
+  vencimiento (el reloj inyectado de ADR-003 es para FSRS).
+- **Errores:** `libraryErrorFrom` → `LibraryError` con `kind` (`23505` →
+  `duplicate`, `23503` → `parent-missing`, `42501` → `forbidden`, `PGRST116` →
+  `not-found`, resto → `unavailable`). El `insert` de `concepts` se construye
+  campo a campo y **no** envía `canonical_key` (columna generada; `428C9` en
+  ejecución aunque el tipo la marque opcional).
+- **Composición:** `getLibraryContextForCurrentUser()` → `{ ownerId, decks,
+  concepts, practiceItems, tags }` con **tipo de puerto**, no la clase
+  concreta; la presentación (LEX-3.5+) nunca ve infraestructura.
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 23 ficheros/166, build)
+pnpm db:test   10 ficheros / 240 asserciones, PASS (sin cambios: LEX-3.4 no toca SQL)
+pnpm db:types  sin cambios (no hay migración)
+```
+
+**Verificación por rotura:**
+- Regla de capas (primeras carpetas `application/` e `infrastructure/` en
+  `library`): `import` de `@supabase/*` **y** de `infrastructure/` en
+  `application/deck.ts` → `pnpm lint` falla en ambos. Revertidos.
+- Sonda PostgREST contra el stack local: `.is("concepts.archived_at", null)`
+  sobre el recurso embebido con `!inner` **filtra** el concepto archivado, y
+  `row.concepts` es un **objeto** (no un array). Sonda borrada.
 
 ### LEX-3.3 — Restricciones, índices y RLS de biblioteca — `HECHO`
 
@@ -682,15 +733,16 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 3 en 3/12. LEX-3.3 en `main` (`402da72`).
+Ninguna tarea `EN PROCESO`. FASE 3 en 4/12. LEX-3.4 en `main` (`c7b0871`).
 
-Siguiente: **LEX-3.4** — repositorios y casos de uso de la biblioteca: puertos
-específicos por entidad (`DeckRepository`, `ConceptRepository`, …), adaptadores
-Supabase con mapeadores fila↔dominio (el `insert` de `concepts` **no** envía
-`canonical_key` — columna generada), traducción de errores de PostgREST a
-errores internos, casos de uso con validación de borde con Zod (§13.9), `userId`
-de `getClaims()`. Sin repositorio genérico universal. Composición en
-`src/composition/library.ts`. Depende de LEX-3.1…3.3.
+Siguiente: **LEX-3.5** — CRUD y archivado de mazos: pantallas ES/EN en
+`src/app/[locale]/(app)/` sobre `getLibraryContextForCurrentUser()` + los casos
+de uso de `deck.ts` (crear, renombrar/editar, categorizar, ordenar,
+archivar/restaurar). Server Components para leer, Server Actions delgadas para
+escribir. Recuentos por mazo (`listDeckConcepts`), estados vacíos, namespace
+i18n nuevo, claves de error del dominio traducidas en presentación. La
+reordenación (`position`) —caso de uso de reordenación en bloque que LEX-3.4
+dejó fuera— entra aquí. E2E de crear/renombrar/archivar. Depende de LEX-3.4.
 
 Acción pendiente del propietario: **etiqueta de hito M2** (`v0.3.0-m2` o la que
 Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4); y **decidir
@@ -701,8 +753,8 @@ reversible; decidir antes de LEX-3.5).
 
 ## Archivos y migraciones afectados en esta sesión
 
-> Nota: esta sesión abarca LEX-2.10…LEX-3.3. La tabla de abajo llega hasta
-> LEX-2.11; LEX-3.1…3.3 se resumen aquí.
+> Nota: esta sesión abarca LEX-2.10…LEX-3.4. La tabla de abajo llega hasta
+> LEX-2.11; LEX-3.1…3.4 se resumen aquí.
 >
 > - **LEX-3.1** — `src/modules/library/domain/` (5 ficheros + tests), sin
 >   migración. `src/modules/README.md`, `docs/OPEN_QUESTIONS.md` (Q-005).
@@ -712,6 +764,12 @@ reversible; decidir antes de LEX-3.5).
 > - **LEX-3.3** — `supabase/migrations/20260904122347_library_rls.sql`,
 >   `supabase/tests/database/090-library-rls.sql`, `080` (67 → 69),
 >   `docs/DATA_MODEL.md`, `docs/evidence/LEX-3.3.md`. `db:types` sin cambios.
+> - **LEX-3.4** — `src/modules/library/application/` (`library-error.ts` +
+>   `deck`/`concept`/`practice-item`/`tag` `.ts` + `.test.ts`),
+>   `src/modules/library/infrastructure/supabase-*-repository.ts` (4),
+>   `src/composition/library.ts`, `src/modules/README.md`,
+>   `docs/evidence/LEX-3.4.md`. Sin migración; `db:test` y `db:types` sin
+>   cambios.
 
 | Archivo | Cambio |
 |---|---|
@@ -831,6 +889,20 @@ LEX-3.1 no añaden migración.
 | Docker | Desktop 4.88.1, motor 29.7.2 |
 | CLI de Supabase | 2.116.0, dependencia de desarrollo del proyecto |
 
+### Puertas de calidad — LEX-3.4 (2026-09-04, PR #29, ya en `main`)
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 23 ficheros/166, build)
+pnpm db:test   000 … 090 — All tests successful, 240 asserciones (sin cambios: LEX-3.4 no toca SQL)
+pnpm db:types  sin cambios (no hay migración)
+pnpm e2e       sin cambios respecto a LEX-3.3 (LEX-3.4 no toca pantallas ni rutas)
+```
+
+Verificación por rotura: regla de capas (import de `@supabase/*` y de
+`infrastructure/` en `application/deck.ts` → `pnpm lint` falla en ambos);
+sonda PostgREST (filtro sobre recurso embebido funciona, `row.concepts` es
+objeto). Ambas revertidas / borradas.
+
 ### Puertas de calidad — LEX-3.3 (2026-09-04, PR #27, ya en `main`)
 
 ```text
@@ -899,6 +971,10 @@ nuevos aplicados.
 ### CI
 
 ```text
+run 33871501880   CI   main   push          success   merge de PR #29 (LEX-3.4)
+run 33871218115   CI   feat/lex-3-4-…       pull_request   success   PR #29 (LEX-3.4)
+run 33866268428   CI   main   push          success   merge de PR #28 (cierre docs LEX-3.3)
+run 33865463703   CI   docs/lex-3-3-close   pull_request   success   PR #28 (cierre docs LEX-3.3)
 run 33864928285   CI   main   push          success   merge de PR #27 (LEX-3.3)
 run 33864116248   CI   feat/lex-3-3-…       pull_request   success   PR #27 (LEX-3.3; job E2E ~10 min por espera de supabase start del runner)
 run 33665734859   CI   main   push          success   merge de PR #26 (cierre docs LEX-3.2)
@@ -924,7 +1000,7 @@ run 33442548467   CI   feat/lex-2-8-…       pull_request   success   PR #14 (L
 run 33440461002   CI   main   push          success   merge de PR #13 (LEX-2.7)
 ```
 
-LEX-2.1…2.11 y LEX-3.1…3.3 en `main` (`402da72`), CI verde en el PR y en el
+LEX-2.1…2.11 y LEX-3.1…3.4 en `main` (`c7b0871`), CI verde en el PR y en el
 merge de cada tarea.
 
 ---
@@ -1009,12 +1085,18 @@ contenido real exista, más cara la corrección.
 - **Índice de búsqueda por título** de `concepts`/`decks`: trasladado a LEX-3.9
   (decide `pg_trgm` con la consulta real). El criterio de salida de LEX-3.3
   nombra «búsqueda»; queda anotado para que 3.9 lo herede.
-- **LEX-2.3…3.3 sin revisión cruzada independiente** (§3.6: políticas RLS,
+- **Los adaptadores Supabase de biblioteca (LEX-3.4) no tienen test unitario
+  propio** — patrón de la casa (los de `courses` tampoco). El mapeo fila↔dominio
+  se cubre al montar pantallas en LEX-3.5; las dos lecturas con recurso embebido
+  se sondearon a mano contra el stack local en LEX-3.4.
+- **`23503` de biblioteca no distingue «padre inexistente» de «padre ajeno»** —
+  la FK compuesta lleva `owner_id`. Se unifican en `LibraryError('parent-missing')`.
+- **LEX-2.3…3.4 sin revisión cruzada independiente** (§3.6: políticas RLS,
   ADR-005, sesión SSR, redirects, `complete_onboarding`, la pantalla de
-  onboarding, la FK compuesta del curso activo, el esquema de biblioteca). No
-  hay segundo agente. Deuda visible. `complete_onboarding` es SECURITY INVOKER
-  (no DEFINER); el curso activo y la pertenencia de biblioteca son FK, no
-  funciones.
+  onboarding, la FK compuesta del curso activo, el esquema de biblioteca, la
+  capa de aplicación de biblioteca). No hay segundo agente. Deuda visible.
+  `complete_onboarding` es SECURITY INVOKER (no DEFINER); el curso activo y la
+  pertenencia de biblioteca son FK, no funciones.
 - **La puerta de onboarding sigue en `(app)/app/page.tsx` (y en
   `onboarding/page.tsx`), no centralizada.** Subirla al layout necesita el
   `pathname` para no crear un bucle con `/onboarding`, y un layout de Server
@@ -1037,27 +1119,27 @@ contenido real exista, más cara la corrección.
 
 ## Siguiente acción exacta
 
-Empezar **LEX-3.4** — repositorios y casos de uso de la biblioteca. Con el
-dominio (LEX-3.1), el esquema (LEX-3.2) y la RLS (LEX-3.3) ya en `main`: la capa
-de aplicación del módulo `library`.
+Empezar **LEX-3.5** — CRUD y archivado de mazos. La primera parte visible de la
+biblioteca, sobre la capa de aplicación de LEX-3.4.
 
-- **Puertos específicos** por entidad en `src/modules/library/application/`
-  (`DeckRepository`, `ConceptRepository`, `PracticeItemRepository`,
-  `TagRepository` y los enlaces). **Sin repositorio genérico universal.**
-- **Adaptadores Supabase** en `infrastructure/`: mapeadores fila↔dominio (el
-  `insert` de `concepts` **no** envía `canonical_key` — columna generada;
-  `evidence/LEX-3.2.md` §6), traducción de errores de PostgREST a errores
-  internos (`23505` de `tags` → duplicado, `42501` → no autorizado, `23503` →
-  padre inexistente).
-- **Casos de uso**: crear/renombrar/archivar mazo, crear/editar/archivar
-  concepto, añadir/quitar concepto de mazo, crear/editar/archivar ítem,
-  crear/renombrar/borrar etiqueta, etiquetar/desetiquetar. Validación de borde
-  con Zod (§13.9); invariantes al dominio; `userId` de `getClaims()`.
-- **Composición** en `src/composition/library.ts`. Tests de aplicación con repos
-  en memoria; sin pantallas (LEX-3.5+). Sin migración salvo hueco de esquema
-  real. Gate general y ADR-001/-002.
+- **Ruta** en `src/app/[locale]/(app)/` para la lista de mazos del curso activo
+  y el detalle/edición de un mazo. Server Components para leer, Server Actions
+  delgadas para escribir: piden `getLibraryContextForCurrentUser()`, llaman a
+  `createDeck` / `updateDeck` / `archiveDeck` / `restoreDeck` / `listDecks` /
+  `listDeckConcepts`.
+- **Crear, renombrar, describir, categorizar, ordenar y archivar/restaurar**.
+  La reordenación (`position`) es aquí: define el caso de uso de reordenación en
+  bloque que LEX-3.4 dejó fuera.
+- **Recuentos** (conceptos por mazo) y **estados vacíos** (curso sin mazos;
+  mazo sin conceptos). Namespace i18n nuevo en `messages/{es,en}.json`; las
+  claves de error del dominio (`deck.title.empty`, …) se traducen en la
+  presentación. `LibraryError.kind` → mensaje (`parent-missing` / `forbidden` /
+  `unavailable` → genérico + registro).
+- **E2E:** crear un mazo, renombrarlo, archivarlo y verlo salir de la lista por
+  defecto. El aislamiento A/B ya lo cubre `090`; no se repite.
+- Gate general + e2e. Sin migración.
 
-Rama `feat/lex-3-4-…` desde `main` (`402da72`).
+Rama `feat/lex-3-5-…` desde `main` (`c7b0871`).
 
 Acción pendiente del propietario: **decidir Q-005** (opción 1 aplicada en
 LEX-3.2, reversible; decidir antes de LEX-3.5); **etiqueta de hito M2**
@@ -1078,7 +1160,11 @@ columna generada, `practice_items.config` JSONB sin default con CHECK de `mode`
 (LEX-3.2); RLS de biblioteca de dueño por `owner_id`, `010` **no** ampliado a
 «≥1 política» (la acotada va en `090`), «mismo curso ≠ mismo dueño» en las
 tablas de enlace aceptada como no impuesta, índice de búsqueda por título
-trasladado a LEX-3.9 (LEX-3.3).
+trasladado a LEX-3.9 (LEX-3.3); capa de aplicación de biblioteca = cuatro
+puertos (uno por entidad, enlaces en el agregado), casos de uso que validan con
+el dominio y delegan, Zod solo para el `config` de ítems (§13.9),
+`archived_at` en vez de `DELETE` para el contenido con historial,
+`getLibraryContextForCurrentUser()` devuelve repos con tipo de puerto (LEX-3.4).
 
 ---
 
@@ -1099,7 +1185,7 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main` en `402da72` (PR #27, LEX-3.3).
+- Rama por defecto: `main` en `c7b0871` (PR #29, LEX-3.4).
   Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas; `v0.3.0-m2` **pendiente de
   autorización de Joan**.
 - Sin rama de trabajo activa.
@@ -1109,11 +1195,11 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
   LEX-2.9 → PR #16 (+ #17 cierre docs); LEX-2.10 → PR #18 (+ #19 cierre docs);
   LEX-2.11 → PR #20 (+ #21 cierre docs); LEX-3.1 → PR #22 (+ #23 cierre docs);
   endurecer CI → PR #24; LEX-3.2 → PR #25 (+ #26 cierre docs);
-  LEX-3.3 → PR #27 (+ #28 cierre docs).
+  LEX-3.3 → PR #27 (+ #28 cierre docs); LEX-3.4 → PR #29 (+ #30 cierre docs).
   Ramas borradas.
 - Contenido versionado: aplicación Next.js completa (módulos `identity`,
-  `courses` y `library/domain`), `supabase/` (config, seed, tests,
-  **migrations** — seis: `…_identity_and_course`, `…_identity_and_course_rls`,
-  `…_onboarding_rpc`, `20260831215553_active_course`,
-  `20260902193649_library_schema`, `20260904122347_library_rls`), CI,
-  documentación en `docs/` y ADR (001–005).
+  `courses` y `library` con `domain/` + `application/` + `infrastructure/`),
+  `supabase/` (config, seed, tests, **migrations** — seis:
+  `…_identity_and_course`, `…_identity_and_course_rls`, `…_onboarding_rpc`,
+  `20260831215553_active_course`, `20260902193649_library_schema`,
+  `20260904122347_library_rls`), CI, documentación en `docs/` y ADR (001–005).
