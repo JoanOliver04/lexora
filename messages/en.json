@@ -249,6 +249,12 @@
         "hintText_tooLong": "The hint is too long.",
         "config_modeMismatch": "The configuration doesn't match the chosen mode.",
         "config_clozeAnswersEmpty": "Enter at least one blank solution."
+      },
+      "preview": {
+        "heading": "How it will look when studying",
+        "hintLabel": "Hint",
+        "reveal": "Show answer",
+        "clozeAnswersLabel": "Blank solutions, in order"
       }
     }
   },

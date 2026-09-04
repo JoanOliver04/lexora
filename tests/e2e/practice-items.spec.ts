@@ -38,9 +38,15 @@ test.describe("ítems de práctica", () => {
     await expect(recognitionRow).toBeVisible();
     await expect(recognitionRow.getByText("Reconocimiento básico", { exact: true })).toBeVisible();
 
-    // Editar desde el detalle del ítem.
+    // Editar desde el detalle del ítem. La previsualización (LEX-3.11) ya
+    // muestra el enunciado; la respuesta queda oculta hasta «Ver respuesta».
     await page.getByRole("link", { name: "Editar", exact: true }).click();
     await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
+    await expect(page.getByText("Cómo se verá al estudiar")).toBeVisible();
+    await expect(page.getByText("take off", { exact: true })).toBeVisible();
+    await page.getByText("Ver respuesta", { exact: true }).click();
+    await expect(page.getByText("despegar", { exact: true })).toBeVisible();
+
     await page.getByLabel("Pista (opcional)", { exact: true }).fill("un avión");
     await page.getByRole("button", { name: "Guardar cambios" }).click();
     await expect(page).toHaveURL(conceptUrl);
@@ -76,6 +82,15 @@ test.describe("ítems de práctica", () => {
 
     await page.getByRole("link", { name: "Editar", exact: true }).click();
     await expect(page).toHaveURL(/\/items\/[0-9a-f-]+$/);
+
+    // La previsualización de un `cloze` muestra el enunciado tal cual se
+    // guardó (sin marcador de hueco propio, LEX-3.7 no fijó ninguno) y, al
+    // revelar la respuesta, las soluciones del hueco por separado.
+    await expect(page.getByText("Let's ___ the ice.", { exact: true })).toBeVisible();
+    await page.getByText("Ver respuesta", { exact: true }).click();
+    await expect(page.getByText("Soluciones del hueco, en orden")).toBeVisible();
+    await expect(page.locator("ol li", { hasText: "break" })).toBeVisible();
+
     await page.getByRole("button", { name: "Archivar" }).click();
     await expect(page).toHaveURL(conceptUrl);
     await expect(page.getByText("Archivado", { exact: true })).toBeVisible();

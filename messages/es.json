@@ -249,6 +249,12 @@
         "hintText_tooLong": "La pista es demasiado larga.",
         "config_modeMismatch": "La configuración no coincide con el modo elegido.",
         "config_clozeAnswersEmpty": "Escribe al menos una solución para el hueco."
+      },
+      "preview": {
+        "heading": "Cómo se verá al estudiar",
+        "hintLabel": "Pista",
+        "reveal": "Ver respuesta",
+        "clozeAnswersLabel": "Soluciones del hueco, en orden"
       }
     }
   },

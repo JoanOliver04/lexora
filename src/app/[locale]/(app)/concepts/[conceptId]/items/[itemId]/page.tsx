@@ -11,11 +11,14 @@ import { Button } from "@/shared/presentation/components";
 
 import { setPracticeItemArchivedAction } from "../../../actions";
 import { EditPracticeItemForm } from "../../../edit-practice-item-form";
+import { PracticeItemPreview } from "./practice-item-preview";
 
 /**
- * Edición de un ítem de práctica (LEX-3.7). `PracticeItemRepository` no tiene
- * `get` (LEX-3.4): se lee la lista del concepto —incluidos los archivados— y
- * se busca por id, como el detalle de mazo (LEX-3.5).
+ * Edición de un ítem de práctica (LEX-3.7), con su previsualización
+ * (LEX-3.11) — cómo se vería al estudiar, sin planificador ni valoración.
+ * `PracticeItemRepository` no tiene `get` (LEX-3.4): se lee la lista del
+ * concepto —incluidos los archivados— y se busca por id, como el detalle de
+ * mazo (LEX-3.5).
  */
 export default async function PracticeItemDetailPage({
   params,
@@ -68,6 +71,8 @@ export default async function PracticeItemDetailPage({
           <p className="text-sm text-(--color-ink-subtle)">{t("items.archivedBadge")}</p>
         ) : null}
       </header>
+
+      <PracticeItemPreview item={item} />
 
       <EditPracticeItemForm locale={locale} conceptId={conceptId} item={item} />
 
