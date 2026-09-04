@@ -1,0 +1,6 @@
+#separator:tab
+#html:false
+#columns:3
+#tags column:3
+achievement	logro	vocabulary::nouns
+give up	rendirse	phrasal_verbs::common

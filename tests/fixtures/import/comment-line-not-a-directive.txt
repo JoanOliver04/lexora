@@ -1,0 +1,4 @@
+#separator:tab
+#tags column:3
+break the ice	romper el hielo	idioms
+#1 rule	regla número uno	grammar::rules
