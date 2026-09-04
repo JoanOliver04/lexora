@@ -167,6 +167,49 @@
         "name_tooLong": "El nombre de la etiqueta es demasiado largo.",
         "name_emptySegment": "La jerarquía de la etiqueta tiene un tramo vacío (usa «a::b»)."
       }
+    },
+    "items": {
+      "heading": "Ítems de práctica",
+      "createHeading": "Nuevo ítem",
+      "editHeading": "Editar ítem",
+      "backToConcept": "Volver al concepto",
+      "empty": "Este concepto no tiene ítems de práctica todavía.",
+      "fields": {
+        "modeLabel": "Modo",
+        "promptLabel": "Enunciado",
+        "answerLabel": "Respuesta",
+        "hintLabel": "Pista (opcional)",
+        "clozeAnswersLabel": "Soluciones del hueco (una por línea)",
+        "clozeAnswersHint": "Solo se usa si el modo es «Completar huecos»."
+      },
+      "modes": {
+        "basic_recognition": "Reconocimiento básico",
+        "basic_recall": "Recuperación básica",
+        "cloze": "Completar huecos"
+      },
+      "actions": {
+        "create": "Crear ítem",
+        "creating": "Creando…",
+        "save": "Guardar cambios",
+        "saving": "Guardando…",
+        "archive": "Archivar",
+        "restore": "Restaurar",
+        "edit": "Editar",
+        "reverse": "Crear el inverso"
+      },
+      "archivedBadge": "Archivado",
+      "genericError": "No hemos podido guardar el ítem. Inténtalo de nuevo.",
+      "errors": {
+        "mode_invalid": "Elige un modo.",
+        "mode_notAvailableInV1": "Ese modo todavía no está disponible.",
+        "promptText_empty": "Escribe el enunciado.",
+        "promptText_tooLong": "El enunciado es demasiado largo.",
+        "answerText_empty": "Escribe la respuesta.",
+        "answerText_tooLong": "La respuesta es demasiado larga.",
+        "hintText_tooLong": "La pista es demasiado larga.",
+        "config_modeMismatch": "La configuración no coincide con el modo elegido.",
+        "config_clozeAnswersEmpty": "Escribe al menos una solución para el hueco."
+      }
     }
   },
   "Auth": {

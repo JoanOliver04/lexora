@@ -6,11 +6,14 @@ import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
 import { getConcept } from "@/modules/library/application/concept";
+import { listPracticeItems } from "@/modules/library/application/practice-item";
 import { listConceptTags } from "@/modules/library/application/tag";
+import { canReverse } from "@/modules/library/domain/practice-item";
 import { Button } from "@/shared/presentation/components";
 
-import { detachTagAction, setConceptArchivedAction } from "../actions";
+import { detachTagAction, reversePracticeItemAction, setConceptArchivedAction } from "../actions";
 import { AddTagForm } from "../add-tag-form";
+import { CreatePracticeItemForm } from "../create-practice-item-form";
 import { EditConceptForm } from "../edit-concept-form";
 
 /**
@@ -52,6 +55,9 @@ export default async function ConceptDetailPage({
   }
 
   const tags = await listConceptTags(context.tags, context.ownerId, concept.id);
+  const items = await listPracticeItems(context.practiceItems, context.ownerId, concept.id, {
+    includeArchived: true,
+  });
   const t = await getTranslations("Concepts");
 
   return (
@@ -100,6 +106,55 @@ export default async function ConceptDetailPage({
           </ul>
         )}
         <AddTagForm locale={locale} conceptId={concept.id} />
+      </section>
+
+      <section className="flex flex-col gap-3 border-t border-(--color-border) pt-8">
+        <h2 className="text-lg font-medium">{t("items.heading")}</h2>
+        {items.length === 0 ? (
+          <p className="text-sm text-(--color-ink-muted)">{t("items.empty")}</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {items.map((item) => (
+              <li
+                key={item.id}
+                className="flex flex-col gap-2 rounded-(--radius-control) border border-(--color-border) p-3"
+              >
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="text-xs text-(--color-ink-subtle)">
+                    {t(`items.modes.${item.mode}`)}
+                  </span>
+                  {item.archivedAt ? (
+                    <span className="text-xs text-(--color-ink-subtle)">
+                      {t("items.archivedBadge")}
+                    </span>
+                  ) : null}
+                </div>
+                <p className="text-sm">
+                  {item.promptText} → {item.answerText}
+                </p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Link
+                    href={`/concepts/${concept.id}/items/${item.id}`}
+                    className="text-sm underline underline-offset-4"
+                  >
+                    {t("items.actions.edit")}
+                  </Link>
+                  {!item.archivedAt && canReverse(item.mode) ? (
+                    <form action={reversePracticeItemAction}>
+                      <input type="hidden" name="locale" value={locale} />
+                      <input type="hidden" name="conceptId" value={concept.id} />
+                      <input type="hidden" name="itemId" value={item.id} />
+                      <Button type="submit" variant="secondary">
+                        {t("items.actions.reverse")}
+                      </Button>
+                    </form>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        <CreatePracticeItemForm locale={locale} conceptId={concept.id} />
       </section>
 
       <form action={setConceptArchivedAction} className="border-t border-(--color-border) pt-8">

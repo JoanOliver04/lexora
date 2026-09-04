@@ -167,6 +167,49 @@
         "name_tooLong": "The tag name is too long.",
         "name_emptySegment": "The tag hierarchy has an empty segment (use \"a::b\")."
       }
+    },
+    "items": {
+      "heading": "Practice items",
+      "createHeading": "New item",
+      "editHeading": "Edit item",
+      "backToConcept": "Back to concept",
+      "empty": "This concept has no practice items yet.",
+      "fields": {
+        "modeLabel": "Mode",
+        "promptLabel": "Prompt",
+        "answerLabel": "Answer",
+        "hintLabel": "Hint (optional)",
+        "clozeAnswersLabel": "Blank solutions (one per line)",
+        "clozeAnswersHint": "Only used when the mode is \"Cloze\"."
+      },
+      "modes": {
+        "basic_recognition": "Basic recognition",
+        "basic_recall": "Basic recall",
+        "cloze": "Cloze"
+      },
+      "actions": {
+        "create": "Create item",
+        "creating": "Creating…",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "archive": "Archive",
+        "restore": "Restore",
+        "edit": "Edit",
+        "reverse": "Create the reverse"
+      },
+      "archivedBadge": "Archived",
+      "genericError": "We couldn't save the item. Please try again.",
+      "errors": {
+        "mode_invalid": "Choose a mode.",
+        "mode_notAvailableInV1": "That mode isn't available yet.",
+        "promptText_empty": "Enter the prompt.",
+        "promptText_tooLong": "The prompt is too long.",
+        "answerText_empty": "Enter the answer.",
+        "answerText_tooLong": "The answer is too long.",
+        "hintText_tooLong": "The hint is too long.",
+        "config_modeMismatch": "The configuration doesn't match the chosen mode.",
+        "config_clozeAnswersEmpty": "Enter at least one blank solution."
+      }
     }
   },
   "Auth": {
