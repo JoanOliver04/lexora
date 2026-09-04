@@ -13,7 +13,7 @@
 -- inválido: un guardián que nunca ha dicho que no no está probado.
 
 begin;
-select plan(67);
+select plan(69);
 
 -- --- Las seis tablas existen, con clave primaria --------------------------
 
@@ -131,6 +131,17 @@ select trigger_is('public', 'practice_items', 'practice_items_set_updated_at',
                    'public', 'set_updated_at', 'practice_items tiene el trigger set_updated_at');
 select trigger_is('public', 'tags',           'tags_set_updated_at',
                    'public', 'set_updated_at', 'tags tiene el trigger set_updated_at');
+
+-- --- Índices y unicidad añadidos por LEX-3.3 ---------------------------
+--
+-- El aislamiento por dueño que sostienen se prueba en 090-library-rls.sql;
+-- aquí, la comprobación estructural (el índice existe y es del tipo correcto)
+-- para que un renombre no pase inadvertido.
+
+select has_index('public', 'concepts', 'concepts_owner_canonical_key_idx',
+  'concepts tiene el índice (owner_id, canonical_key) para sugerir duplicados (LEX-3.3)');
+select index_is_unique('public', 'tags', 'tags_course_normalized_name_key',
+  'tags_course_normalized_name_key es un índice único (LEX-3.3)');
 
 -- --- Datos sintéticos -----------------------------------------------------
 
@@ -358,14 +369,15 @@ select throws_like(
   '%tags_normalized_name_length%',
   'tags rechaza un nombre normalizado de más de 200 caracteres'
 );
--- La unicidad de normalized_name por curso es LEX-3.3: hoy dos etiquetas
--- equivalentes en el mismo curso se aceptan. Esta asercion marca la ausencia
--- deliberada; LEX-3.3 la sustituira por un throws.
-select lives_ok(
+-- La unicidad de normalized_name por curso la impone LEX-3.3
+-- (índice único tags_course_normalized_name_key). Aislamiento por dueño y
+-- reutilización del mismo nombre en otro curso: 090-library-rls.sql.
+select throws_ok(
   $$ insert into public.tags (course_id, owner_id, normalized_name, display_name)
      values ('00000000-0000-0000-0000-0000000000c1',
              '00000000-0000-0000-0000-000000000001', 'gramática::tiempos', 'gramatica::tiempos') $$,
-  'tags todavía no impone unicidad de normalized_name por curso (LEX-3.3)'
+  '23505', null,
+  'tags rechaza un segundo normalized_name equivalente en el mismo curso'
 );
 
 -- --- deck_concepts: par único y mismo dueño --------------------------
