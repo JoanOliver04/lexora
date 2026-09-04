@@ -6,6 +6,7 @@ import {
   createConcept,
   getConcept,
   listConcepts,
+  searchConcepts,
   updateConcept,
 } from "./concept";
 
@@ -45,6 +46,7 @@ function fakeRepository(overrides: Partial<ConceptRepository> = {}): ConceptRepo
       .mockResolvedValue({ ...persistedConcept, archivedAt: "2026-09-04T01:00:00Z" }),
     list: vi.fn().mockResolvedValue([persistedConcept]),
     get: vi.fn().mockResolvedValue(persistedConcept),
+    search: vi.fn().mockResolvedValue({ items: [persistedConcept], total: 1 }),
     ...overrides,
   };
 }
@@ -128,5 +130,50 @@ describe("getConcept", () => {
   it("propaga null si no existe", async () => {
     const repository = fakeRepository({ get: vi.fn().mockResolvedValue(null) });
     await expect(getConcept(repository, "user-1", "missing")).resolves.toBeNull();
+  });
+});
+
+describe("searchConcepts", () => {
+  it("aplica valores por defecto: sin archivados, primera página de 20", async () => {
+    const repository = fakeRepository();
+    await searchConcepts(repository, "user-1", "course-1");
+    expect(repository.search).toHaveBeenCalledWith({
+      ownerId: "user-1",
+      courseId: "course-1",
+      includeArchived: false,
+      search: undefined,
+      kind: undefined,
+      cefrLevel: undefined,
+      limit: 20,
+      offset: 0,
+    });
+  });
+
+  it("pasa los filtros y acota limit/offset fuera de rango", async () => {
+    const repository = fakeRepository();
+    await searchConcepts(repository, "user-1", "course-1", {
+      includeArchived: true,
+      search: "casa",
+      kind: "vocabulary",
+      cefrLevel: "A1",
+      limit: 0,
+      offset: 40,
+    });
+    expect(repository.search).toHaveBeenCalledWith({
+      ownerId: "user-1",
+      courseId: "course-1",
+      includeArchived: true,
+      search: "casa",
+      kind: "vocabulary",
+      cefrLevel: "A1",
+      limit: 1,
+      offset: 40,
+    });
+  });
+
+  it("rechaza un identificador de usuario vacío", async () => {
+    const repository = fakeRepository();
+    await expect(searchConcepts(repository, "  ", "course-1")).rejects.toThrow();
+    expect(repository.search).not.toHaveBeenCalled();
   });
 });

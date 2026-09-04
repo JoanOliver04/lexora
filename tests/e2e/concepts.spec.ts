@@ -140,4 +140,49 @@ test.describe("conceptos", () => {
     await page.getByRole("button", { name: "Quitar del mazo" }).click();
     await expect(page.getByText("Este mazo no tiene conceptos todavía.")).toBeVisible();
   });
+
+  test("buscar por título y filtrar por tipo (LEX-3.9)", async ({ page }) => {
+    await signUp(page);
+    await completeOnboarding(page);
+    await page.goto("/es/concepts");
+
+    await page.getByLabel("Título", { exact: true }).fill("Break the ice");
+    await page.getByLabel("Resumen", { exact: true }).fill("Romper el hielo");
+    await page.getByLabel("Tipo", { exact: true }).selectOption("phrase");
+    await page.getByRole("button", { name: "Crear concepto" }).click();
+    await expect(page.getByRole("link", { name: "Break the ice", exact: true })).toBeVisible();
+
+    await page.getByLabel("Título", { exact: true }).fill("Present perfect");
+    await page.getByLabel("Resumen", { exact: true }).fill("Tiempo verbal");
+    await page.getByLabel("Tipo", { exact: true }).selectOption("grammar");
+    await page.getByRole("button", { name: "Crear concepto" }).click();
+    await expect(page.getByRole("link", { name: "Present perfect", exact: true })).toBeVisible();
+
+    // Buscar por texto: solo el que coincide con el título.
+    await page.getByLabel("Buscar", { exact: true }).fill("Break");
+    await page.getByRole("button", { name: "Buscar", exact: true }).click();
+    await expect(page).toHaveURL(/[?&]q=Break/);
+    await expect(page.getByRole("link", { name: "Break the ice", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Present perfect", exact: true })).toHaveCount(0);
+
+    // Quitar filtros: vuelven a verse los dos.
+    await page.getByRole("link", { name: "Quitar filtros" }).click();
+    await expect(page).toHaveURL("/es/concepts");
+    await expect(page.getByRole("link", { name: "Break the ice", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Present perfect", exact: true })).toBeVisible();
+
+    // Filtrar por tipo: solo el de gramática.
+    await page.getByLabel("Tipo de concepto", { exact: true }).selectOption("grammar");
+    await page.getByRole("button", { name: "Buscar", exact: true }).click();
+    await expect(page).toHaveURL(/[?&]kind=grammar/);
+    await expect(page.getByRole("link", { name: "Present perfect", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Break the ice", exact: true })).toHaveCount(0);
+
+    // Una búsqueda sin coincidencias muestra el mensaje de «sin resultados»,
+    // no el de «biblioteca vacía».
+    await page.getByRole("link", { name: "Quitar filtros" }).click();
+    await page.getByLabel("Buscar", { exact: true }).fill("no existe ningún concepto así");
+    await page.getByRole("button", { name: "Buscar", exact: true }).click();
+    await expect(page.getByText("Ningún concepto coincide con la búsqueda.")).toBeVisible();
+  });
 });

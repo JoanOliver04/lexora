@@ -35,6 +35,13 @@ export interface TagRepository {
   untagConcept(input: { ownerId: string; conceptId: string; tagId: string }): Promise<void>;
   /** Etiquetas de un concepto. */
   listForConcept(input: { ownerId: string; conceptId: string }): Promise<Tag[]>;
+  /**
+   * Etiquetas de varios conceptos a la vez, en una sola consulta (LEX-3.9):
+   * resuelve el N+1 anotado en la evidencia de LEX-3.6 (`listConceptTags` una
+   * vez por concepto en la lista). Un `conceptId` sin etiquetas no aparece
+   * como clave del resultado.
+   */
+  listForConcepts(input: { ownerId: string; conceptIds: string[] }): Promise<Record<string, Tag[]>>;
   /** Conceptos con una etiqueta. Excluye los conceptos archivados. */
   listConcepts(input: { ownerId: string; tagId: string }): Promise<Concept[]>;
 }
@@ -120,6 +127,17 @@ export async function listConceptTags(
 ): Promise<Tag[]> {
   assertUserId(ownerId);
   return repository.listForConcept({ ownerId, conceptId });
+}
+
+/** Etiquetas de varios conceptos en una consulta. `conceptIds` vacío no consulta. */
+export async function listTagsForConcepts(
+  repository: TagRepository,
+  ownerId: string,
+  conceptIds: string[],
+): Promise<Record<string, Tag[]>> {
+  assertUserId(ownerId);
+  if (conceptIds.length === 0) return {};
+  return repository.listForConcepts({ ownerId, conceptIds });
 }
 
 export async function listConceptsWithTag(

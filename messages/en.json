@@ -88,6 +88,24 @@
     "archivedBadge": "Archived",
     "showArchived": "Show archived",
     "hideArchived": "Hide archived",
+    "search": {
+      "label": "Search",
+      "placeholder": "Search by title…",
+      "submit": "Search",
+      "clear": "Clear filters"
+    },
+    "filters": {
+      "categoryLabel": "Category",
+      "categoryAll": "All categories",
+      "levelLabel": "Level",
+      "levelAll": "All levels"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "status": "Page {page} of {pages}"
+    },
+    "noResults": "No deck matches your search.",
     "emptyDecks": "You don't have any decks in this course yet. Create the first one below.",
     "emptyDeckConcepts": "This deck has no concepts yet.",
     "linkConceptLabel": "Concept",
@@ -141,6 +159,24 @@
     "archivedBadge": "Archived",
     "showArchived": "Show archived",
     "hideArchived": "Hide archived",
+    "search": {
+      "label": "Search",
+      "placeholder": "Search by title…",
+      "submit": "Search",
+      "clear": "Clear filters"
+    },
+    "filters": {
+      "kindLabel": "Kind",
+      "kindAll": "All kinds",
+      "levelLabel": "Level",
+      "levelAll": "All levels"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "status": "Page {page} of {pages}"
+    },
+    "noResults": "No concept matches your search.",
     "emptyConcepts": "You don't have any concepts in this course yet. Create the first one below.",
     "genericError": "We couldn't save the concept. Please try again.",
     "errors": {

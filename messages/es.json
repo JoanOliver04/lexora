@@ -88,6 +88,24 @@
     "archivedBadge": "Archivado",
     "showArchived": "Ver archivados",
     "hideArchived": "Ocultar archivados",
+    "search": {
+      "label": "Buscar",
+      "placeholder": "Buscar por título…",
+      "submit": "Buscar",
+      "clear": "Quitar filtros"
+    },
+    "filters": {
+      "categoryLabel": "Categoría",
+      "categoryAll": "Todas las categorías",
+      "levelLabel": "Nivel",
+      "levelAll": "Todos los niveles"
+    },
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "status": "Página {page} de {pages}"
+    },
+    "noResults": "Ningún mazo coincide con la búsqueda.",
     "emptyDecks": "Todavía no tienes mazos en este curso. Crea el primero abajo.",
     "emptyDeckConcepts": "Este mazo no tiene conceptos todavía.",
     "linkConceptLabel": "Concepto",
@@ -141,6 +159,24 @@
     "archivedBadge": "Archivado",
     "showArchived": "Ver archivados",
     "hideArchived": "Ocultar archivados",
+    "search": {
+      "label": "Buscar",
+      "placeholder": "Buscar por título…",
+      "submit": "Buscar",
+      "clear": "Quitar filtros"
+    },
+    "filters": {
+      "kindLabel": "Tipo de concepto",
+      "kindAll": "Todos los tipos",
+      "levelLabel": "Nivel",
+      "levelAll": "Todos los niveles"
+    },
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "status": "Página {page} de {pages}"
+    },
+    "noResults": "Ningún concepto coincide con la búsqueda.",
     "emptyConcepts": "Todavía no tienes conceptos en este curso. Crea el primero abajo.",
     "genericError": "No hemos podido guardar el concepto. Inténtalo de nuevo.",
     "errors": {
