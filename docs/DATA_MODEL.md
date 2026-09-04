@@ -371,6 +371,57 @@ suyo y no alcanza lo de B ni por UUID conocido, `INSERT` como otro → `42501`,
 `23503` de la FK compuesta, unicidad de `tags` por curso → `23505`, anon no ve
 ni escribe nada, `service_role` salta RLS).
 
+#### Archivado y borrado controlado (LEX-3.8)
+
+Cada tabla de biblioteca sigue una de dos políticas, decidida por tabla desde
+LEX-3.2/3.4 y probada aquí como invariante, no solo enunciada:
+
+| Se archiva (`archived_at`, sin `DELETE`) | Se borra de verdad (sin historial) |
+|---|---|
+| `decks`, `concepts`, `practice_items` | `tags`, `deck_concepts`, `concept_tags` |
+
+**Archivar es un `UPDATE`, nunca un borrado ni un desenlace.** Poner
+`archived_at = now()` en un mazo, un concepto o un ítem no toca ninguna otra
+fila: los enlaces (`deck_concepts`, `concept_tags`) y las filas hijas
+(`practice_items` de un concepto) siguen existiendo exactamente igual que
+antes. **Restaurar** (`archived_at = null`) no necesita recrear nada, porque
+nunca se destruyó nada.
+
+**Sin cascada entre entidades archivables.** Cada tabla es dueña de su propio
+`archived_at`; archivar una no archiva a las que cuelgan de ella:
+
+- Archivar un **mazo** no archiva sus conceptos.
+- Archivar un **concepto** no archiva el mazo que lo contiene ni sus
+  `practice_items`.
+
+Esto **sí tiene un efecto de visibilidad**, ya decidido en LEX-3.4: las
+lecturas que embeben una relación (`listDeckConcepts`) excluyen los
+**conceptos** archivados, así que un mazo puede parecer haber perdido
+conceptos sin que el vínculo `deck_concepts` se haya roto — el enlace sigue en
+la base, solo se filtra al leer. Es el mismo patrón que «archivar un mazo lo
+saca de la lista por defecto»: visibilidad, no destrucción.
+
+**Q-006 (abierta):** si algún día conviene que archivar un concepto archive
+también en cascada sus ítems de práctica, es una decisión de producto
+pendiente — la opción actual (sin cascada) es la recomendada para la V1 y la
+que está construida; ver `OPEN_QUESTIONS.md`.
+
+**Contraste con lo que sí se borra de verdad:** `tags` no tiene `archived_at`
+— renombrar es un `UPDATE` normal, pero quitar una etiqueta es un `DELETE`
+físico, y su FK a `concept_tags` **sí** lleva `on delete cascade` (LEX-3.2):
+borrar una etiqueta borra sus enlaces `concept_tags`, al contrario que
+archivar una entidad. `deck_concepts` y `concept_tags` como tablas de enlace
+tampoco tienen `archived_at`: su ciclo de vida es el de sus dos extremos,
+salvo que se borren explícitamente (`removeConceptFromDeck` /
+`untagConcept`).
+
+Probado en `supabase/tests/database/100-archive-invariants.sql`
+(26 aserciones): estructura (quién tiene `archived_at` y quién no), archivar/
+restaurar un mazo sin tocar su concepto ni el enlace, archivar/restaurar un
+concepto sin tocar el mazo, sus enlaces ni sus ítems, archivar un ítem sin
+tocar su concepto ni el ítem hermano, idempotencia de archivar/restaurar dos
+veces seguidas, y el contraste de borrar una etiqueta sí cascada su enlace.
+
 ### Estudio
 
 | Tabla | Papel |

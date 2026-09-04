@@ -4,7 +4,7 @@
 > Cada entrada tiene un ID estable `Q-nnn` que nunca se reutiliza.
 > Protocolo: `ROADMAP.md` §3.5 (documento privado y local).
 
-**Última actualización:** 2026-09-02
+**Última actualización:** 2026-09-04
 
 ## Índice de estado
 
@@ -15,6 +15,7 @@
 | Q-003 | Herramientas de desarrollo ausentes | `RESUELTA` | — |
 | Q-004 | Primer push al remoto público | `RESUELTA` | — |
 | Q-005 | «Profesional» en un mazo: ¿nivel o categoría? | `ABIERTA` | LEX-3.1, LEX-3.2, LEX-3.5 |
+| Q-006 | Archivar un concepto, ¿en cascada sobre sus ítems de práctica? | `ABIERTA` | LEX-3.8 |
 
 > Este archivo es público. Se aplican las mismas exclusiones que en
 > [`STATUS.md`](STATUS.md): sin credenciales, sin datos personales, sin contenido
@@ -207,6 +208,73 @@ hace falta: cambiar `deck_category` en `taxonomy.ts`, una migración correctora
 que cree un enum nuevo para `decks.cefr_level` y migre las filas, y ajustar la
 interfaz de LEX-3.5. Cuanto más contenido real exista, más cara es la
 corrección — conviene decidir antes de LEX-3.5.
+
+### Resolución
+
+_(pendiente)_
+
+---
+
+## Q-006 — Archivar un concepto, ¿en cascada sobre sus ítems de práctica?
+
+**Estado:** `ABIERTA`
+**Fecha:** 2026-09-04
+**Bloquea:** no bloquea LEX-3.8 (se documenta y prueba el comportamiento
+actual, sin cascada); condiciona una eventual migración correctora y el
+planificador de FASE 5 si Joan elige lo contrario.
+
+### Contexto
+
+`concepts` y `practice_items` tienen cada uno su propio `archived_at`
+(LEX-3.2); archivar uno no toca el otro (comprobado, LEX-3.4/3.7). Hoy, si se
+archiva un concepto, sus `practice_items` **siguen** con `archived_at = null`:
+visibles y editables si alguien entra a su detalle por URL directa, aunque el
+concepto que los agrupa ya no aparezca en la lista por defecto ni en los
+mazos que lo contenían (`listDeckConcepts` filtra por concepto archivado,
+LEX-3.4).
+
+FASE 5 (motor FSRS) todavía no existe: hoy esto no tiene ningún efecto
+observable en un flujo de repaso porque no hay planificador que consulte
+`practice_items` para programar nada. La pregunta importa **antes** de FASE 5
+porque decidirla después, con historial de repaso real acumulado sobre esos
+ítems, es más cara.
+
+### Opciones
+
+1. **Sin cascada (comportamiento actual).** Archivar un concepto no toca sus
+   ítems. El planificador de FASE 5 decide por su cuenta si un ítem sin
+   concepto activo se programa o no (lectura conjunta `concepts.archived_at
+   is null` al armar la cola). Reactivar el concepto revive sus ítems sin
+   ningún paso adicional.
+2. **Cascada al archivar, sin cascada al restaurar.** Archivar un concepto
+   archiva también sus `practice_items` vivos en la misma operación; restaurar
+   el concepto **no** los restaura automáticamente (evita reactivar en bloque
+   ítems que la persona había archivado a propósito por otro motivo). Necesita
+   una transacción o un `rpc` que archive ambas tablas a la vez —hoy
+   `archiveConcept` es una sola escritura—.
+3. **Cascada completa en los dos sentidos.** Simétrico a la opción 2 pero
+   restaurar el concepto también restaura sus ítems. Pierde la distinción
+   «archivé este ítem por su cuenta» frente a «se archivó porque el concepto
+   se archivó».
+
+### Recomendación
+
+Opción 1 para V1: es la que ya está construida (LEX-3.4…3.7, sin coste
+adicional), mantiene cada entidad dueña de su propio `archived_at` (patrón
+consistente con el resto del esquema) y traslada la decisión real —qué
+programar— a donde tiene la información completa: el planificador de FASE 5,
+que de todas formas necesita filtrar por curso/mazo activos. Si el uso real
+muestra que los ítems huérfanos-pero-visibles confunden, la opción 2 es una
+migración pequeña y aislada (no toca `decks` ni `concepts`).
+
+### Impacto de no decidir
+
+LEX-3.8 documenta y prueba (pgTAP) la opción 1 como comportamiento **actual e
+intencional**, no como una laguna. Si Joan elige la opción 2 o 3 más adelante,
+hace falta: una función `archive_concept_cascade` (o equivalente en la capa de
+aplicación) que archive concepto + ítems en una operación atómica, y decidir
+qué pasa con los ítems que la persona ya había archivado ella misma antes de
+que se archivara el concepto (¿se distingue el motivo?).
 
 ### Resolución
 
