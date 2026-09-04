@@ -10,11 +10,12 @@ Las decisiones que lo condicionan están en
 > (migraciones `20260828143434_identity_and_course` y
 > `20260831162304_identity_and_course_rls`), y las seis tablas de biblioteca
 > (`decks`, `concepts`, `deck_concepts`, `practice_items`, `tags`,
-> `concept_tags`), solo estructura, sin políticas ni índices de consulta
-> (migración `20260902193649_library_schema`, LEX-3.2; RLS e índices en
-> LEX-3.3). El resto del modelo descrito aquí es lo acordado; las columnas
-> exactas, restricciones, índices y políticas se fijan en las migraciones SQL
-> de cada fase, que son la fuente de verdad del esquema.
+> `concept_tags`) con estructura (migración `20260902193649_library_schema`,
+> LEX-3.2), políticas RLS por dueño, índices de `owner_id` y unicidad de
+> `tags.normalized_name` por curso (`20260904122347_library_rls`, LEX-3.3). El
+> resto del modelo descrito aquí es lo acordado; las columnas exactas,
+> restricciones, índices y políticas se fijan en las migraciones SQL de cada
+> fase, que son la fuente de verdad del esquema.
 
 ## La distinción que lo explica todo
 
@@ -322,12 +323,53 @@ físico previsto para esas filas salvo la cascada al borrar el curso. Trigger
 | `created_at` | `timestamptz` NOT NULL | sin `updated_at`: no hay carga mutable |
 | | | FK compuestas `(concept_id, owner_id)` → `concepts(id, owner_id)` y `(tag_id, owner_id)` → `tags(id, owner_id)`, ambas `on delete cascade`; índice en `(tag_id)` |
 
-**RLS:** habilitado en las seis tablas (niega todo acceso a `anon` /
-`authenticated` hasta que LEX-3.3 añada políticas). Sin `force row level
-security`, igual que en LEX-2.1. Estructura probada en
-`supabase/tests/database/080-library-schema.sql` (60 aserciones: tablas,
-claves, enums, `canonical_key` generada, cada CHECK rechazando un valor, las FK
-compuestas impidiendo enlaces entre usuarios y la cascada al borrar el curso).
+Estructura probada en `supabase/tests/database/080-library-schema.sql`
+(67 aserciones: tablas, claves, enums, `trigger_is` de los cinco
+`set_updated_at`, `canonical_key` generada, cada CHECK rechazando un valor, las
+FK compuestas impidiendo enlaces entre usuarios y la cascada al borrar el
+curso).
+
+#### RLS, índices y unicidad (migración `20260904122347_library_rls`, LEX-3.3)
+
+**RLS.** Cada una de las seis tablas es de dueño para todas sus operaciones,
+por su `owner_id` denormalizado: política `SELECT`/`INSERT`/`UPDATE`/`DELETE`
+con `(select auth.uid()) = owner_id`. `concept_tags` no lleva `UPDATE` (la fila
+es su PK más `owner_id`, no hay nada que modificar; re-etiquetar es borrar e
+insertar). Un solo campo basta: las FK compuestas de LEX-3.2 ya obligan a que
+`owner_id` sea el del curso/padre, así que el acceso indirecto por la relación
+también queda cerrado. `(select auth.uid())` envuelto para que se evalúe como
+InitPlan. **`force row level security` no** se activa, igual que en LEX-2.3.
+
+`010-rls-enabled.sql` **no** se amplía a «RLS con ≥1 política»: eso rompería el
+patrón de dos fases (habilitar RLS en la migración de esquema, políticas en la
+siguiente) para las tablas de fase 4 y 5. La comprobación «≥1 política» vive en
+`090-library-rls.sql`, acotada a las seis tablas de biblioteca.
+
+**Índices** (además de los de FK de LEX-3.2): `(owner_id)` en las seis tablas
+—toda consulta filtra por él vía RLS—, como `courses_owner_id_idx`; y
+`concepts (owner_id, canonical_key)` para la sugerencia de duplicados
+(LEX-3.10). El índice de **búsqueda por título** espera a LEX-3.9, que decidirá
+si compensa `pg_trgm` con la forma de consulta real.
+
+**Unicidad:** índice único `tags (course_id, normalized_name)` — sin duplicados
+equivalentes dentro de un curso (§13.10). `normalized_name` ya colapsa
+mayúsculas, espacios y el espaciado de `::`, así que la igualdad sobre él es
+equivalencia. El mismo nombre en dos cursos son dos etiquetas.
+
+**Aceptado, no impuesto:** `deck_concepts` y `concept_tags` garantizan **el
+mismo dueño**, no el mismo curso. Enlazar un concepto del curso A a un mazo del
+curso B (del mismo usuario) es posible en la base; lo evita la interfaz
+(LEX-3.5/3.6 solo ofrecen conceptos del mismo curso). Imponerlo exigiría
+`course_id` en la tabla de enlace y una FK compuesta a `(id, course_id)`; no
+compensa sobre una tabla recién creada mientras la frontera de seguridad
+(cruce entre usuarios) ya es estructural.
+
+Aislamiento probado en `supabase/tests/database/090-library-rls.sql`
+(50 aserciones: juego de políticas exacto por tabla, «≥1 política», A ve solo lo
+suyo y no alcanza lo de B ni por UUID conocido, `INSERT` como otro → `42501`,
+`UPDATE`/`DELETE` sobre filas ajenas → cero filas, enlazar a un padre ajeno →
+`23503` de la FK compuesta, unicidad de `tags` por curso → `23505`, anon no ve
+ni escribe nada, `service_role` salta RLS).
 
 ### Estudio
 
@@ -384,11 +426,13 @@ No se crean tablas vacías por anticipación.
 ## Pendiente
 
 - Columnas exactas, tipos y restricciones de las tablas de fase 4 y 5: se fijan
-  en su migración. Identidad (LEX-2.1) y biblioteca (LEX-3.2) ya están arriba.
-- RLS y política de índices de biblioteca (propietario, curso, búsqueda,
-  `canonical_key`, unicidad de `tags.normalized_name` por curso): LEX-3.3.
+  en su migración. Identidad (LEX-2.1…2.9) y biblioteca (LEX-3.2, LEX-3.3) ya
+  están arriba.
+- Índice de **búsqueda por título** de `concepts`/`decks`: LEX-3.9, cuando la
+  consulta real decida si compensa `pg_trgm`.
 - Regla «un mazo y sus conceptos son del mismo curso, no solo del mismo dueño»
-  en `deck_concepts`: candidata a LEX-3.3; hoy solo se garantiza el mismo dueño.
+  en `deck_concepts` / `concept_tags`: **aceptada como no impuesta** en LEX-3.3
+  (la interfaz la respeta; imponerla exige `course_id` en la tabla de enlace).
 - Estrategia de retención de registros históricos y de anonimización al eliminar una cuenta.
 - El diagrama de arriba ya nombra las tablas de fase 4 y 5; se confirmará contra
   el esquema real cuando se creen esas migraciones.
