@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-04
-**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (9/12). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `EN PROCESO` (10/12). FASE 2 `HECHO` (11/11)
 **Hito actual:** M3 — Biblioteca manual usable — `PENDIENTE`. M2 `HECHO`
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-3.1…3.9 `HECHO` · siguiente LEX-3.10 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `2429bc7` (PR #39, LEX-3.9). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-3.1…3.10 `HECHO` · siguiente LEX-3.11 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `182993a` (PR #41, LEX-3.10). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,50 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-3.10 — Sugerir duplicados mediante `canonical_key` — `HECHO`
+
+Informe en [`evidence/LEX-3.10.md`](evidence/LEX-3.10.md). PR #41 fusionada a
+`main` (merge `182993a`); CI verde en los tres trabajos, runs `33894223541`
+(PR) y `33894600754` (merge). **Sin migración**; `db:test` sin cambios (266);
+`db:types` limpio.
+
+Primer uso real de `concepts.canonical_key` (existe desde LEX-3.2, índice
+desde LEX-3.3, nada la leía todavía).
+
+- **`ConceptRepository.findByCanonicalKey`** + caso de uso
+  `findDuplicateConcepts`: conceptos vivos del curso con la misma clave
+  normalizada (acentos conservados, LEX-3.1), sobre el índice ya existente.
+- **`createConceptAction`** comprueba antes de crear: si hay coincidencia y
+  no está confirmada, no crea — devuelve las coincidencias. **Nunca fusiona
+  ni sobrescribe**: confirmar crea un concepto nuevo e independiente.
+- **Hallazgo real durante la tarea:** `<form action={fn}>` de React 19
+  reinicia los campos no controlados a su `defaultValue` tras **cualquier**
+  resolución de la acción que no navegue, no solo tras éxito. Un diseño de
+  dos botones (uno con `name="confirmDuplicate" value="1"`) perdía el título
+  y el resumen tecleados antes de que la persona pudiera confirmar.
+  Corregido con un único botón cuya etiqueta cambia («Crear concepto» →
+  «Crear de todos modos») y un eco de los valores tecleados
+  (`ConceptFormState.values`) que repuebla el formulario tras cualquier
+  camino que no crea. El mismo defecto de reinicio probablemente afecta a
+  otros formularios de creación desde LEX-3.6 — no corregido ahí, anotado
+  como deuda.
+- **Fuera de alcance, declarado:** solo en creación, no en edición; sin
+  filtro por `kind` en la comparación (se muestra el tipo de cada
+  coincidencia, decide la persona); LEX-4.6 (plan de duplicados de
+  importación) es un pipeline distinto.
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 27 ficheros/194, build)
+pnpm db:test   11 ficheros / 266 aserciones, PASS (sin cambios: sin migración)
+pnpm db:types  sin cambios (no hay migración)
+pnpm e2e       74 passed (concepts.spec.ts +1 caso: sugerencia de duplicados)
+```
+
+**Verificación por rotura:** el diseño de dos botones falló de forma
+reproducible con «título vacío» donde se esperaba un concepto creado —
+confirmado con una captura del fallo antes de diagnosticar el reinicio de
+formulario como causa real.
 
 ### LEX-3.9 — Biblioteca con búsqueda, filtros y paginación — `HECHO`
 

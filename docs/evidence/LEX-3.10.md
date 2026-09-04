@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-04
 **Rama:** `feat/lex-3-10-duplicate-suggestion`
-**Estado resultante:** `EN PROCESO` → `HECHO` al fusionar con CI verde.
+**Estado resultante:** `HECHO`. PR #41 fusionada a `main` (merge `182993a`);
+CI verde en los tres trabajos, runs `33894223541` (PR) y `33894600754`
+(merge).
 
 ---
 
@@ -150,9 +152,8 @@ Migraciones: **0**.
 
 ## 8. Estado del árbol Git
 
-Rama `feat/lex-3-10-duplicate-suggestion` desde `main` (`daaed21`). Pendiente:
-commit, PR contra `main`, CI verde en los tres trabajos, merge, CI verde en
-`main`, cierre docs.
+Rama `feat/lex-3-10-duplicate-suggestion` desde `main` (`daaed21`), fusionada.
+`main` en `182993a`. Cierre de documentación en `docs/lex-3-10-close`.
 
 ## 9. Siguiente tarea
 
