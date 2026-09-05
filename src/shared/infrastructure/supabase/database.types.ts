@@ -332,6 +332,116 @@ export type Database = {
           },
         ]
       }
+      import_job_errors: {
+        Row: {
+          code: Database["public"]["Enums"]["import_error_code"]
+          created_at: string
+          id: string
+          import_job_id: string
+          message: string
+          owner_id: string
+          row_number: number
+          row_sample: string | null
+        }
+        Insert: {
+          code: Database["public"]["Enums"]["import_error_code"]
+          created_at?: string
+          id?: string
+          import_job_id: string
+          message: string
+          owner_id: string
+          row_number: number
+          row_sample?: string | null
+        }
+        Update: {
+          code?: Database["public"]["Enums"]["import_error_code"]
+          created_at?: string
+          id?: string
+          import_job_id?: string
+          message?: string
+          owner_id?: string
+          row_number?: number
+          row_sample?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_job_errors_job_owner_fk"
+            columns: ["import_job_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      import_jobs: {
+        Row: {
+          content_hash: string
+          course_id: string
+          created_at: string
+          deck_id: string | null
+          id: string
+          mapping_config: Json
+          original_filename: string
+          owner_id: string
+          rows_created: number
+          rows_duplicate: number
+          rows_failed: number
+          rows_skipped: number
+          rows_total: number
+          status: Database["public"]["Enums"]["import_status"]
+          updated_at: string
+        }
+        Insert: {
+          content_hash: string
+          course_id: string
+          created_at?: string
+          deck_id?: string | null
+          id?: string
+          mapping_config?: Json
+          original_filename: string
+          owner_id: string
+          rows_created?: number
+          rows_duplicate?: number
+          rows_failed?: number
+          rows_skipped?: number
+          rows_total?: number
+          status?: Database["public"]["Enums"]["import_status"]
+          updated_at?: string
+        }
+        Update: {
+          content_hash?: string
+          course_id?: string
+          created_at?: string
+          deck_id?: string | null
+          id?: string
+          mapping_config?: Json
+          original_filename?: string
+          owner_id?: string
+          rows_created?: number
+          rows_duplicate?: number
+          rows_failed?: number
+          rows_skipped?: number
+          rows_total?: number
+          status?: Database["public"]["Enums"]["import_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_jobs_course_owner_fk"
+            columns: ["course_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id", "owner_id"]
+          },
+          {
+            foreignKeyName: "import_jobs_deck_owner_fk"
+            columns: ["deck_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "decks"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
       languages: {
         Row: {
           active: boolean
@@ -526,6 +636,17 @@ export type Database = {
         | "pronunciation"
         | "professional"
         | "mixed"
+      import_error_code:
+        | "too_few_columns"
+        | "too_many_columns"
+        | "front_empty"
+        | "back_empty"
+      import_status:
+        | "pending"
+        | "mapping"
+        | "importing"
+        | "completed"
+        | "failed"
       practice_mode:
         | "basic_recognition"
         | "basic_recall"
@@ -683,6 +804,13 @@ export const Constants = {
         "professional",
         "mixed",
       ],
+      import_error_code: [
+        "too_few_columns",
+        "too_many_columns",
+        "front_empty",
+        "back_empty",
+      ],
+      import_status: ["pending", "mapping", "importing", "completed", "failed"],
       practice_mode: [
         "basic_recognition",
         "basic_recall",
