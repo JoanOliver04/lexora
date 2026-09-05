@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-05
 **Rama:** `feat/lex-4-3-import-jobs`
-**Estado resultante:** `EN PROCESO` → `HECHO` al fusionar con CI verde.
+**Estado resultante:** `HECHO`. PR #51 fusionada a `main` (merge `cc94cf6`);
+CI verde en los tres trabajos, runs `33983149363` (PR) y `33983385669`
+(merge).
 
 ---
 
@@ -140,9 +142,8 @@ Migraciones: **1**.
 
 ## 7. Estado del árbol Git
 
-Rama `feat/lex-4-3-import-jobs` desde `main` (`f5ae807`). Pendiente: commit,
-PR contra `main`, CI verde en los tres trabajos, merge, CI verde en `main`,
-cierre docs.
+Rama `feat/lex-4-3-import-jobs` desde `main` (`f5ae807`), fusionada. `main`
+en `cc94cf6`. Cierre de documentación en `docs/lex-4-3-close`.
 
 ## 8. Siguiente tarea
 

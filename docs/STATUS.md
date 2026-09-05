@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-05
-**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (2/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (3/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M4 — Importación real validada — `PENDIENTE`. M3 `HECHO`. Etiqueta de hito M3 (`v0.4.0-m3` o la que decida Joan) pendiente de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-4.1…4.2 `HECHO` · siguiente LEX-4.3 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `0849ef2` (PR #49, LEX-4.2). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-4.1…4.3 `HECHO` · siguiente LEX-4.4 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `cc94cf6` (PR #51, LEX-4.3). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,43 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-4.3 — Crear `import_jobs` e `import_job_errors` — `HECHO`
+
+Informe en [`evidence/LEX-4.3.md`](evidence/LEX-4.3.md). PR #51 fusionada a
+`main` (merge `cc94cf6`); CI verde en los tres trabajos, runs `33983149363`
+(PR) y `33983385669` (merge).
+
+Migración `20260905180000_import_jobs`: `import_jobs` + `import_job_errors` +
+enums + RLS en una sola migración (dos tablas pequeñas, siempre juntas).
+
+- **Enums:** `import_status` (`pending`/`mapping`/`importing`/`completed`/
+  `failed`); `import_error_code` con los 4 códigos estructurales del parser
+  (LEX-4.2) — LEX-4.5 añade los de validación.
+- **`import_jobs`:** `owner_id` denormalizado + FK compuesta a `courses` y a
+  `decks`; `deck_id` nulable con `on delete set null` (el trabajo sobrevive
+  al borrado del mazo de destino, historial); **sin columna de contenido**,
+  solo `content_hash` (§13.14 — el archivo no se guarda); cinco contadores
+  CHECK `>= 0`; trigger `set_updated_at`.
+- **`import_job_errors`:** FK compuesta `on delete cascade`; `message`
+  seguro (≤ 500) y `row_sample` opcional acotado (≤ 500); escrita una vez,
+  sin `UPDATE` (patrón `concept_tags`).
+- **RLS** por dueño; `import_jobs` con las 4 operaciones, `import_job_errors`
+  sin `UPDATE`. `(select auth.uid()) = owner_id` envuelto.
+- **pgTAP `110-import-jobs.sql`** (42): estructura, enums, cada CHECK
+  rechazando su valor, FK compuesta entre usuarios `23503`, cascada al
+  borrar el trabajo, `set null` al borrar el mazo, RLS dueño/no-dueño/anon.
+  Verificación por rotura: quitar `rows_failed >= 0` del CHECK → fallan
+  exactamente las aserciones 8 y 27.
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 31 ficheros/223, build)
+pnpm db:reset  7 migraciones + seed desde vacío
+pnpm db:test   12 ficheros / 308 aserciones, PASS (110 nuevo: 42)
+pnpm db:types  regenerado en el mismo commit (+128); git diff limpio al re-ejecutar
+```
+
+Sin `pnpm e2e`: no hay pantalla todavía (LEX-4.4).
 
 ### LEX-4.2 — Implementar puerto y parser delimitado — `HECHO`
 
