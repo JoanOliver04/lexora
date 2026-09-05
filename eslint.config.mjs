@@ -97,9 +97,9 @@ const eslintConfig = defineConfig([
               message: "El dominio no conoce Next.js (ADR-001).",
             },
             {
-              group: ["@supabase/*", "ts-fsrs"],
+              group: ["@supabase/*", "ts-fsrs", "papaparse"],
               message:
-                "El dominio no conoce Supabase ni ts-fsrs (ADR-001 y ADR-003). Se accede a ellos a traves de un puerto.",
+                "El dominio no conoce Supabase, ts-fsrs ni papaparse (ADR-001, ADR-003, MASTER_SPEC §9.7). Se accede a ellos a traves de un puerto.",
             },
             {
               group: [
@@ -133,9 +133,9 @@ const eslintConfig = defineConfig([
                 "La capa de aplicacion no conoce el framework (ADR-001). Un caso de uso debe poder probarse sin navegador.",
             },
             {
-              group: ["@supabase/*", "ts-fsrs"],
+              group: ["@supabase/*", "ts-fsrs", "papaparse"],
               message:
-                "La aplicacion depende de puertos, no de implementaciones concretas (ADR-001, ADR-002, ADR-003).",
+                "La aplicacion depende de puertos, no de implementaciones concretas (ADR-001, ADR-002, ADR-003, MASTER_SPEC §9.7).",
             },
             {
               group: [

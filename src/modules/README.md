@@ -12,7 +12,7 @@ La organización es *feature-first*: todo lo que hace falta para entender
 | `identity` | Autenticación, perfil y sesión | Fase 2 — **existe** (`domain/`, `application/`, `infrastructure/`) |
 | `courses` | Idiomas, cursos y configuración educativa | Fase 2 — **existe** (`domain/`, `application/`, `infrastructure/`) |
 | `library` | Mazos, conceptos, ítems de práctica y etiquetas | Fase 3 — **existe** (`domain/` LEX-3.1, `application/` + `infrastructure/` LEX-3.4; `presentation/` en LEX-3.5+) |
-| `importing` | Previsualización, validación e importación de archivos | Fase 4 |
+| `importing` | Previsualización, validación e importación de archivos | Fase 4 — **existe** (`domain/` + `application/` + `infrastructure/` LEX-4.2: parser delimitado tras puerto; `presentation/` en LEX-4.4) |
 | `study` | Cola diaria, sesiones, repetición espaciada e historial | Fases 5 y 6 |
 | `analytics` | Consultas y estadísticas | Fase 7 |
 | `settings` | Preferencias, exportación y eliminación | Fase 8 |
