@@ -487,12 +487,33 @@ siendo un derecho del usuario.
 
 ### Importación
 
+Migración `20260905180000_import_jobs` (LEX-4.3), estructura + RLS en una sola
+—las dos tablas son pequeñas y siempre llegan juntas—.
+
 | Tabla | Papel |
 |---|---|
-| `import_jobs` | Un trabajo de importación: destino, mapeo de columnas, estado y contadores. |
-| `import_job_errors` | Errores por fila, con mensaje seguro y una muestra acotada y saneada. |
+| `import_jobs` | Un trabajo de importación: `course_id`, `deck_id` de destino (nulo hasta el paso 5 del flujo, §9.7), `original_filename` (saneado en LEX-4.5, aquí solo se guarda), `content_hash`, `mapping_config` JSONB, `status` (`import_status`: `pending`/`mapping`/`importing`/`completed`/`failed`), cinco contadores, timestamps. |
+| `import_job_errors` | Errores por fila: `row_number`, `code` (`import_error_code`: los cuatro estructurales del parser en LEX-4.2, LEX-4.5 añade los de validación), `message` seguro (≤ 500), `row_sample` acotada y saneada (≤ 500, opcional). Escrita una vez, nunca editada — sin `updated_at`, sin política `UPDATE`. |
 
-El archivo completo no se conserva indefinidamente.
+- **El archivo completo no se guarda.** No hay columna de contenido en
+  `import_jobs`, solo `content_hash` (§13.14: «no se conservará el archivo
+  completo indefinidamente» → para la V1, no se conserva en absoluto).
+- **Pertenencia estructural**, patrón de biblioteca: `owner_id`
+  denormalizado + FK compuesta `(course_id, owner_id) → courses (id,
+  owner_id)` y `(deck_id, owner_id) → decks (id, owner_id)`. Un trabajo que
+  cruce usuarios no se puede insertar (`23503`). `import_job_errors` lleva
+  su propio `owner_id` y una FK compuesta `(import_job_id, owner_id) →
+  import_jobs (id, owner_id) on delete cascade`.
+- **`deck_id` con `on delete set null (deck_id)`:** si se borra el mazo de
+  destino, el trabajo sobrevive con `deck_id` nulo (historial). La lista de
+  columnas en `set null` es obligatoria (PostgreSQL 15+, aquí 17).
+- **RLS** por dueño en ambas: `import_jobs` con las cuatro operaciones (las
+  transiciones de estado son `UPDATE`); `import_job_errors` con
+  `SELECT`/`INSERT`/`DELETE`, sin `UPDATE` (patrón de `concept_tags`).
+- Probado en `supabase/tests/database/110-import-jobs.sql` (42 aserciones:
+  estructura, enums, cada CHECK rechazando su valor, FK compuesta entre
+  usuarios `23503`, cascada al borrar el trabajo, `set null` al borrar el
+  mazo, RLS dueño/no-dueño/anon).
 
 ### Tablas futuras
 
