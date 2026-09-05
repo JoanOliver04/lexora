@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-05
-**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (3/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (4/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M4 — Importación real validada — `PENDIENTE`. M3 `HECHO`. Etiqueta de hito M3 (`v0.4.0-m3` o la que decida Joan) pendiente de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-4.1…4.3 `HECHO` · siguiente LEX-4.4 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `cc94cf6` (PR #51, LEX-4.3). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-4.1…4.4 `HECHO` · siguiente LEX-4.5 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `b658c78` (PR #53, LEX-4.4). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,39 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-4.4 — Implementar preview y mapeo de columnas — `HECHO`
+
+Informe en [`evidence/LEX-4.4.md`](evidence/LEX-4.4.md). PR #53 fusionada a
+`main` (merge `b658c78`); CI verde en los tres trabajos, runs `33984578999`
+(PR) y `33984795076` (merge). **Sin migración.**
+
+Primera pantalla de importación (§9.7 pasos 1–4): elegir archivo, ver el
+separador detectado, una muestra acotada de filas y mapear columnas.
+**No persiste nada.**
+
+- **Ruta `(app)/import/`:** `page.tsx` + `import-preview-form.tsx` (cliente,
+  `useActionState`) + `actions.ts` (`previewImportAction`: lee el `File`,
+  parsea con `createDelimitedFileParser()` LEX-4.2, devuelve separador +
+  recuentos del archivo completo + muestra acotada a 50 filas ya mapeada).
+- **Cambiar el mapeo no re-sube el archivo:** la muestra tokenizada viaja
+  en un campo oculto `carried` y `applyColumnMapping` la reasigna.
+- **`domain/column-mapping.ts`** (nuevo): `applyColumnMapping` con índices
+  0-indexados independientes para frente/reverso/tags, tolera más de 3
+  columnas, un índice mapeado ausente → `too_few_columns`.
+- **`ParseFileResult`** gana `columnCount` y `rawRows` (additivo; los tests
+  de LEX-4.2 comprueban campo a campo, no rompen).
+- **i18n:** namespace `Import` ES/EN; enlace «Importar» desde el shell.
+
+```text
+pnpm check   exit 0 (format, lint, typecheck, contraste 18/18, vitest 32 ficheros/229, build)
+pnpm db:test 12 ficheros / 308 aserciones, PASS (sin cambios)
+pnpm e2e     80 passed (import-preview.spec.ts nuevo: subir TSV/ver separador/reasignar columnas; errors.txt/lista de problemas)
+```
+
+Fuera de alcance declarado: límites duros 5 MB/10.000 filas y saneamiento
+(LEX-4.5); mazo de destino e inversa (§9.7 pasos 5–6); duplicados (LEX-4.6);
+ejecutar la importación (LEX-4.7+).
 
 ### LEX-4.3 — Crear `import_jobs` e `import_job_errors` — `HECHO`
 
