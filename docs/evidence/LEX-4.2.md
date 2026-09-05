@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-05
 **Rama:** `feat/lex-4-2-delimited-parser`
-**Estado resultante:** `EN PROCESO` → `HECHO` al fusionar con CI verde.
+**Estado resultante:** `HECHO`. PR #49 fusionada a `main` (merge `0849ef2`);
+CI verde en los tres trabajos, runs `33982072136` (PR) y `33982267457`
+(merge).
 
 ---
 
@@ -127,9 +129,8 @@ Migraciones: **0**.
 
 ## 6. Estado del árbol Git
 
-Rama `feat/lex-4-2-delimited-parser` desde `main` (`f90f812`). Pendiente:
-commit, PR contra `main`, CI verde en los tres trabajos, merge, CI verde en
-`main`, cierre docs.
+Rama `feat/lex-4-2-delimited-parser` desde `main` (`f90f812`), fusionada.
+`main` en `0849ef2`. Cierre de documentación en `docs/lex-4-2-close`.
 
 ## 7. Siguiente tarea
 

@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
-**Última actualización:** 2026-09-04
-**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (1/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Última actualización:** 2026-09-05
+**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (2/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M4 — Importación real validada — `PENDIENTE`. M3 `HECHO`. Etiqueta de hito M3 (`v0.4.0-m3` o la que decida Joan) pendiente de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-4.1 `HECHO` · siguiente LEX-4.2 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `406f55c` (PR #47, LEX-4.1). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-4.1…4.2 `HECHO` · siguiente LEX-4.3 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `0849ef2` (PR #49, LEX-4.2). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,42 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-4.2 — Implementar puerto y parser delimitado — `HECHO`
+
+Informe en [`evidence/LEX-4.2.md`](evidence/LEX-4.2.md). PR #49 fusionada a
+`main` (merge `0849ef2`); CI verde en los tres trabajos, runs `33982072136`
+(PR) y `33982267457` (merge). **Sin migración.**
+
+Módulo `src/modules/importing/` nuevo. `docs/IMPORT_FORMAT.md` (LEX-4.1)
+caracterizó qué reconocer; esta tarea implementa cómo leerlo, aislado tras
+una interfaz (MASTER_SPEC §9.7).
+
+- **`domain/`** (puro): `separator.ts` (directiva `#separator:` o
+  heurística — tabulación gana, si no coma/punto y coma por frecuencia),
+  `directives.ts` (`splitLeadingDirectiveLines` corta en la primera línea
+  que no empieza por `#`; una `#` posterior es dato), `row.ts`
+  (`classifyRow` → fila válida o problema con código y número de línea
+  1-indexado tal como se ve en el archivo).
+- **`application/delimited-file-parser.ts`** — puerto
+  `DelimitedFileParser.parse(content)`.
+- **`infrastructure/papaparse-delimited-file-parser.ts`** — adaptador Papa
+  Parse. Papa Parse **solo** tokeniza (comillas RFC 4180); descartar el
+  BOM, directivas, separador, clasificación y numeración son del `domain/`.
+- **`papaparse@5.7.0`** — nombrada en MASTER_SPEC §9.7. Añadida al grupo
+  `no-restricted-imports` de `domain/` y `application/` junto a
+  `@supabase/*` y `ts-fsrs`; regresión en `layer-rules.test.ts`.
+- **Suite sobre las 9 fixtures de LEX-4.1:** BOM fuera del primer campo,
+  `#` tras la cabecera como fila literal, directivas contadas en el número
+  de fila, separador dentro de comillas no parte la columna, `errors.txt`
+  produce sus 4 códigos exactos.
+
+```text
+pnpm check   exit 0 (format, lint, typecheck, contraste 18/18, vitest 31 ficheros/223, build)
+```
+
+Sin `db:test` (sin esquema) ni `pnpm e2e` (el parser no tiene pantalla
+todavía, LEX-4.4).
 
 ### LEX-4.1 — Caracterizar formatos reales y crear fixtures legales — `HECHO`
 
