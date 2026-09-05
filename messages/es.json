@@ -16,7 +16,55 @@
     "courseLabel": "Tu curso",
     "placeholder": "Aquí irá tu día de estudio: repasos, ítems nuevos y el botón para empezar la sesión. Todavía lo estamos construyendo.",
     "decksLink": "Mis mazos",
-    "conceptsLink": "Mis conceptos"
+    "conceptsLink": "Mis conceptos",
+    "importLink": "Importar"
+  },
+  "Import": {
+    "backToApp": "Volver al inicio",
+    "title": "Importar",
+    "intro": "Sube un TXT o CSV preparado para Anki. Aquí solo lo previsualizas y decides qué columna es cada cosa; todavía no se importa nada.",
+    "fileLabel": "Archivo",
+    "submit": "Previsualizar",
+    "resubmit": "Actualizar vista previa",
+    "submitting": "Leyendo…",
+    "resubmitHint": "Para previsualizar otro archivo, elígelo arriba y vuelve a pulsar.",
+    "separatorDetected": "Separador detectado: {separator}",
+    "separatorFromDirective": "(declarado en el archivo)",
+    "counts": "{valid, plural, one {# fila válida} other {# filas válidas}} · {issues, plural, =0 {sin problemas} one {# con problemas} other {# con problemas}} (con el mapeo por defecto)",
+    "separator": {
+      "tab": "tabulación",
+      "comma": "coma",
+      "semicolon": "punto y coma"
+    },
+    "mapping": {
+      "heading": "Mapeo de columnas",
+      "front": "Columna de frente",
+      "back": "Columna de reverso",
+      "tags": "Columna de etiquetas",
+      "tagsNone": "(sin etiquetas)",
+      "columnLabel": "Columna {n}"
+    },
+    "preview": {
+      "heading": "Vista previa",
+      "empty": "Ninguna fila de la muestra es válida con este mapeo.",
+      "row": "Fila",
+      "front": "Frente",
+      "back": "Reverso",
+      "tags": "Etiquetas",
+      "issuesHeading": "Filas con problemas en la muestra",
+      "issueRow": "Fila {row}: {reason}"
+    },
+    "issue": {
+      "too_few_columns": "columnas de menos para el mapeo elegido",
+      "too_many_columns": "columnas de más",
+      "front_empty": "el frente está en blanco",
+      "back_empty": "el reverso está en blanco"
+    },
+    "errors": {
+      "no-file": "Elige un archivo.",
+      "empty-file": "El archivo está vacío.",
+      "read-failed": "No hemos podido leer el archivo."
+    }
   },
   "Onboarding": {
     "title": "Prepara tu curso",

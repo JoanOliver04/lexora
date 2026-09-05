@@ -30,6 +30,16 @@ export interface ParsedImportRow {
   tags: string[];
 }
 
+/**
+ * Una fila ya tokenizada pero **sin clasificar**: las columnas tal cual, con
+ * su número de línea. La pantalla de mapeo (LEX-4.4) la necesita para
+ * reasignar qué columna es frente/reverso/tags sin volver a leer el archivo.
+ */
+export interface RawImportRow {
+  rowNumber: number;
+  columns: string[];
+}
+
 export function isImportRowIssue(
   result: ParsedImportRow | ImportRowIssue,
 ): result is ImportRowIssue {

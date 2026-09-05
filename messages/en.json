@@ -16,7 +16,55 @@
     "courseLabel": "Your course",
     "placeholder": "Your study day will live here: reviews, new items and the button to start the session. We're still building it.",
     "decksLink": "My decks",
-    "conceptsLink": "My concepts"
+    "conceptsLink": "My concepts",
+    "importLink": "Import"
+  },
+  "Import": {
+    "backToApp": "Back to home",
+    "title": "Import",
+    "intro": "Upload a TXT or CSV prepared for Anki. Here you only preview it and decide which column is which; nothing is imported yet.",
+    "fileLabel": "File",
+    "submit": "Preview",
+    "resubmit": "Refresh preview",
+    "submitting": "Reading…",
+    "resubmitHint": "To preview a different file, pick it above and press again.",
+    "separatorDetected": "Detected separator: {separator}",
+    "separatorFromDirective": "(declared in the file)",
+    "counts": "{valid, plural, one {# valid row} other {# valid rows}} · {issues, plural, =0 {no problems} one {# with a problem} other {# with problems}} (with the default mapping)",
+    "separator": {
+      "tab": "tab",
+      "comma": "comma",
+      "semicolon": "semicolon"
+    },
+    "mapping": {
+      "heading": "Column mapping",
+      "front": "Front column",
+      "back": "Back column",
+      "tags": "Tags column",
+      "tagsNone": "(no tags)",
+      "columnLabel": "Column {n}"
+    },
+    "preview": {
+      "heading": "Preview",
+      "empty": "No sample row is valid with this mapping.",
+      "row": "Row",
+      "front": "Front",
+      "back": "Back",
+      "tags": "Tags",
+      "issuesHeading": "Sample rows with problems",
+      "issueRow": "Row {row}: {reason}"
+    },
+    "issue": {
+      "too_few_columns": "too few columns for the chosen mapping",
+      "too_many_columns": "too many columns",
+      "front_empty": "the front is blank",
+      "back_empty": "the back is blank"
+    },
+    "errors": {
+      "no-file": "Choose a file.",
+      "empty-file": "The file is empty.",
+      "read-failed": "We couldn't read the file."
+    }
   },
   "Onboarding": {
     "title": "Set up your course",

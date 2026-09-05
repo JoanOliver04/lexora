@@ -56,6 +56,9 @@ export default async function AppHome({ params }: { params: Promise<{ locale: st
         <Link href="/concepts" className="text-(--color-accent) underline underline-offset-4">
           {t("conceptsLink")}
         </Link>
+        <Link href="/import" className="text-(--color-accent) underline underline-offset-4">
+          {t("importLink")}
+        </Link>
       </div>
       <form action={logoutAction}>
         <input type="hidden" name="locale" value={locale} />
