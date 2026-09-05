@@ -46,12 +46,12 @@ describe("la capa de dominio", () => {
     expect(restrictedImportErrors(messages)).toHaveLength(1);
   });
 
-  it("no puede importar el cliente de la base de datos ni el planificador", async () => {
+  it("no puede importar el cliente de la base de datos, el planificador ni el parser", async () => {
     const messages = await lint(
       "src/modules/example/domain/thing.ts",
-      `import { createClient } from "@supabase/supabase-js";\nimport { fsrs } from "ts-fsrs";\nexport const x = [createClient, fsrs];\n`,
+      `import { createClient } from "@supabase/supabase-js";\nimport { fsrs } from "ts-fsrs";\nimport Papa from "papaparse";\nexport const x = [createClient, fsrs, Papa];\n`,
     );
-    expect(restrictedImportErrors(messages)).toHaveLength(2);
+    expect(restrictedImportErrors(messages)).toHaveLength(3);
   });
 
   it("no puede importar otra capa, ni por ruta relativa ni por alias", async () => {
@@ -83,9 +83,9 @@ describe("la capa de aplicación", () => {
   it("no puede importar implementaciones concretas, solo puertos", async () => {
     const messages = await lint(
       "src/modules/example/application/use-case.ts",
-      `import { createClient } from "@supabase/supabase-js";\nexport const x = createClient;\n`,
+      `import { createClient } from "@supabase/supabase-js";\nimport Papa from "papaparse";\nexport const x = [createClient, Papa];\n`,
     );
-    expect(restrictedImportErrors(messages)).toHaveLength(1);
+    expect(restrictedImportErrors(messages)).toHaveLength(2);
   });
 
   it("sí puede importar del dominio", async () => {
