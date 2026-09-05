@@ -11,6 +11,7 @@ import {
 import {
   type ImportRowIssue,
   type ParsedImportRow,
+  type RawImportRow,
   classifyRow,
   isImportRowIssue,
 } from "@/modules/importing/domain/row";
@@ -55,6 +56,8 @@ export function createPapaParseDelimitedFileParser(): DelimitedFileParser {
 
       const rows: ParsedImportRow[] = [];
       const issues: ImportRowIssue[] = [];
+      const rawRows: RawImportRow[] = [];
+      let columnCount = 0;
 
       parsed.data.forEach((columns, index) => {
         // Papa Parse añade una fila vacía final si el archivo termina en salto
@@ -64,7 +67,12 @@ export function createPapaParseDelimitedFileParser(): DelimitedFileParser {
         if (isTrailingEmptyRow) {
           return;
         }
-        const classified = classifyRow(columns, dataStartLine + index, directives.tagsColumn);
+        const rowNumber = dataStartLine + index;
+        rawRows.push({ rowNumber, columns });
+        if (columns.length > columnCount) {
+          columnCount = columns.length;
+        }
+        const classified = classifyRow(columns, rowNumber, directives.tagsColumn);
         if (isImportRowIssue(classified)) {
           issues.push(classified);
         } else {
@@ -75,8 +83,10 @@ export function createPapaParseDelimitedFileParser(): DelimitedFileParser {
       return {
         separator,
         separatorFromDirective: directives.separator !== null,
+        columnCount,
         rows,
         issues,
+        rawRows,
       };
     },
   };
