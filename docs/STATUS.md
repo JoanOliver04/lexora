@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-04
-**Fase actual:** **FASE 3 — Biblioteca, mazos y conceptos** — `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
-**Hito actual:** **M3 — Biblioteca manual usable — `HECHO`.** M2 `HECHO`. Etiqueta de hito (`v0.4.0-m3` o la que decida Joan) pendiente de autorización del propietario.
+**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (1/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Hito actual:** M4 — Importación real validada — `PENDIENTE`. M3 `HECHO`. Etiqueta de hito M3 (`v0.4.0-m3` o la que decida Joan) pendiente de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-3.1…3.12 `HECHO` · LEX-3.13 `PENDIENTE` (deuda no bloqueante, ver evidencia LEX-3.12) · siguiente fase: FASE 4 (importación TXT/CSV), LEX-4.1 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `508f700` (PR #45, LEX-3.12). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-4.1 `HECHO` · siguiente LEX-4.2 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `406f55c` (PR #47, LEX-4.1). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,36 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-4.1 — Caracterizar formatos reales y crear fixtures legales — `HECHO`
+
+Informe en [`evidence/LEX-4.1.md`](evidence/LEX-4.1.md). PR #47 fusionada a
+`main` (merge `406f55c`); CI verde en los tres trabajos, runs `33901308465`
+(PR) y `33901710213` (merge). **Sin migración, sin código de aplicación
+tocado.** Primera tarea de FASE 4.
+
+- **Sin el dataset real de Anki**: `07_Recursos/Anki_Mazos` no existe en
+  este clon. Preguntado explícitamente antes de tocar nada — Joan decidió
+  proceder con fixtures sintéticas del formato público documentado del
+  exportador de Anki, sin ver ningún fichero propio suyo. Caracterización
+  contra el dataset real queda para cuando esté accesible.
+- **`docs/IMPORT_FORMAT.md`** (nuevo, spec pública): encoding (UTF-8, BOM
+  opcional descartable), separador (tabulador por defecto, CSV coma/punto y
+  coma, declarable con `#separator:`), líneas directivas (solo válidas
+  antes de la primera fila de datos), tres columnas (frente/reverso/
+  etiquetas), etiquetas jerárquicas `::` (coincide con `normalizeTagName`/
+  `tagSegments` del dominio, LEX-3.1), campos entrecomillados RFC 4180.
+- **`tests/fixtures/import/`** (nuevo, 9 ficheros): tabulador, directivas,
+  coma, punto y coma, comillas, tags jerárquicos, BOM UTF-8 (verificado a
+  nivel de byte: `ef bb bf`), línea `#` fuera de cabecera (caso
+  adversario), filas inválidas. Ningún parser las lee todavía (LEX-4.2).
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 27 ficheros/194, build)
+```
+
+Sin `db:reset`/`db:test`/`db:types`/`pnpm e2e`: ningún esquema ni pantalla
+cambia.
 
 ### LEX-3.12 — E2E, revisión de arquitectura y cierre de M3 — `HECHO` · cierra FASE 3 / M3
 

@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-04
 **Rama:** `feat/lex-4-1-import-format-fixtures`
-**Estado resultante:** `EN PROCESO` → `HECHO` al fusionar con CI verde.
+**Estado resultante:** `HECHO`. PR #47 fusionada a `main` (merge `406f55c`);
+CI verde en los tres trabajos, runs `33901308465` (PR) y `33901710213`
+(merge).
 
 ---
 
@@ -101,9 +103,9 @@ Migraciones: **0**.
 
 ## 6. Estado del árbol Git
 
-Rama `feat/lex-4-1-import-format-fixtures` desde `main` (`8814c38`).
-Pendiente: commit, PR contra `main`, CI verde en los tres trabajos, merge,
-CI verde en `main`, cierre docs.
+Rama `feat/lex-4-1-import-format-fixtures` desde `main` (`8814c38`),
+fusionada. `main` en `406f55c`. Cierre de documentación en
+`docs/lex-4-1-close`.
 
 ## 7. Siguiente tarea
 
