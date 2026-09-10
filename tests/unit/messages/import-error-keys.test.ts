@@ -11,6 +11,8 @@ const FILE_ERRORS = [
   "too-large",
   "too-many-rows",
   "unavailable",
+  "no-deck",
+  "empty",
 ] as const;
 
 describe("claves de error de importación", () => {

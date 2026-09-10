@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 
-import { FormError, Label } from "@/shared/presentation/components";
+import { Button, FormError, Label } from "@/shared/presentation/components";
 
 import { PendingButton } from "../../(auth)/_components/pending-button";
 import { previewImportAction, type ImportPreviewState } from "./actions";
@@ -17,11 +17,17 @@ const SELECT_CLASS = [
 ].join(" ");
 
 /**
- * Subir un archivo, ver el separador, una muestra acotada, el plan de
- * duplicados y mapear columnas (LEX-4.4…4.6). No persiste nada: cambiar el
- * mapeo re-pinta a partir de `carried` (filas ya tokenizadas).
+ * Subir un archivo, mapear, ver duplicados e importar al curso (LEX-4.4…4.7).
+ * Cambiar el mapeo re-pinta a partir de `carried`. Importar escribe
+ * conceptos, ítems y un `import_jobs`.
  */
-export function ImportPreviewForm({ locale }: { locale: string }) {
+export function ImportPreviewForm({
+  locale,
+  decks,
+}: {
+  locale: string;
+  decks: { id: string; title: string }[];
+}) {
   const t = useTranslations("Import");
   const [state, action] = useActionState<ImportPreviewState, FormData>(previewImportAction, {});
 
@@ -36,6 +42,21 @@ export function ImportPreviewForm({ locale }: { locale: string }) {
         <FormError id={ERROR_ID}>
           <p>{t(`errors.${state.error}`)}</p>
         </FormError>
+      ) : null}
+
+      {state.result ? (
+        <section className="flex flex-col gap-2" role="status">
+          <h2 className="text-lg font-medium">{t("result.heading")}</h2>
+          <p className="text-sm">
+            {t("result.counts", {
+              created: state.result.rowsCreated,
+              skipped: state.result.rowsSkipped,
+              duplicate: state.result.rowsDuplicate,
+              failed: state.result.rowsFailed,
+              total: state.result.rowsTotal,
+            })}
+          </p>
+        </section>
       ) : null}
 
       <div className="flex flex-col gap-2">
@@ -209,6 +230,38 @@ export function ImportPreviewForm({ locale }: { locale: string }) {
             ) : null}
           </section>
 
+          <section className="flex flex-col gap-3">
+            <h2 className="text-lg font-medium">{t("execute.heading")}</h2>
+            {decks.length === 0 ? (
+              <p className="text-sm text-(--color-ink-muted)">{t("execute.noDeck")}</p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="import-deck">{t("execute.deck")}</Label>
+                <select
+                  id="import-deck"
+                  name="deckId"
+                  defaultValue={state.deckId || decks[0]?.id}
+                  className={SELECT_CLASS}
+                >
+                  {decks.map((deck) => (
+                    <option key={deck.id} value={deck.id}>
+                      {deck.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="createReverse"
+                value="1"
+                defaultChecked={state.createReverse === true}
+              />
+              {t("execute.reverse")}
+            </label>
+          </section>
+
           {(state.previewIssues ?? []).length > 0 ? (
             <section className="flex flex-col gap-2">
               <h2 className="text-lg font-medium">{t("preview.issuesHeading")}</h2>
@@ -234,6 +287,11 @@ export function ImportPreviewForm({ locale }: { locale: string }) {
 
       <div className="flex flex-col gap-2">
         <PendingButton idle={hasPreview ? t("resubmit") : t("submit")} pending={t("submitting")} />
+        {hasPreview && decks.length > 0 ? (
+          <Button type="submit" name="intent" value="execute">
+            {t("execute.submit")}
+          </Button>
+        ) : null}
         {hasPreview ? (
           <p className="text-xs text-(--color-ink-subtle)">{t("resubmitHint")}</p>
         ) : null}

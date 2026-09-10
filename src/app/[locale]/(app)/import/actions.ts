@@ -1,12 +1,19 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import { getActiveCourseForCurrentUser } from "@/composition/courses";
-import { createDelimitedFileParser } from "@/composition/importing";
+import {
+  createDelimitedFileParser,
+  getImportJobRepositoryForCurrentUser,
+} from "@/composition/importing";
 import { getLibraryContextForCurrentUser } from "@/composition/library";
+import { hashImportContent } from "@/modules/importing/application/content-hash";
 import {
   type DuplicateHit,
   planImportDuplicates,
 } from "@/modules/importing/application/duplicates";
+import { executeImport } from "@/modules/importing/application/execute-import";
 import {
   MAX_FILE_BYTES,
   inspectImportUpload,
@@ -30,12 +37,10 @@ import type {
 import type { Separator } from "@/modules/importing/domain/separator";
 
 /**
- * Vista previa de una importación (LEX-4.4, barreras LEX-4.5, duplicados
- * LEX-4.6). **No persiste nada.** Rechaza un archivo demasiado grande o con
- * demasiadas filas **antes** de parsear, sanea el nombre, parsea, mapea y
- * clasifica cada fila válida del archivo completo como nueva o posible
- * duplicada (`canonical_key` del curso activo). Cambiar el mapeo re-pinta
- * sin volver a subir: las filas tokenizadas viajan en `carried`.
+ * Vista previa (LEX-4.4…4.6) y ejecución del lote (LEX-4.7). El archivo
+ * enorme se rechaza **antes** de parsear. `intent=execute` confirma e
+ * importa; el resto solo previsualiza. El mazo de destino tiene que existir
+ * ya en el curso (selector mínimo; el wizard completo es LEX-4.8).
  */
 
 const PREVIEW_LIMIT = 50;
@@ -47,10 +52,19 @@ interface CarriedPreview {
   columnCount: number;
   /** Filas tokenizadas del archivo **completo**, para remapear y clasificar. */
   rawRows: RawImportRow[];
+  contentHash: string;
 }
 
 export interface ImportPreviewState {
-  error?: "no-file" | "empty-file" | "read-failed" | "too-large" | "too-many-rows" | "unavailable";
+  error?:
+    | "no-file"
+    | "empty-file"
+    | "read-failed"
+    | "too-large"
+    | "too-many-rows"
+    | "unavailable"
+    | "no-deck"
+    | "empty";
   filename?: string;
   separator?: Separator;
   separatorFromDirective?: boolean;
@@ -62,6 +76,15 @@ export interface ImportPreviewState {
   duplicateCount?: number;
   duplicateStrategy?: DuplicateStrategy;
   duplicateHits?: DuplicateHit[];
+  deckId?: string;
+  createReverse?: boolean;
+  result?: {
+    rowsTotal: number;
+    rowsCreated: number;
+    rowsSkipped: number;
+    rowsDuplicate: number;
+    rowsFailed: number;
+  };
   mapping?: ColumnMapping;
   /** Lo que se vuelve a serializar en el campo oculto para el siguiente envío. */
   carried?: CarriedPreview;
@@ -132,6 +155,7 @@ export async function previewImportAction(
       separatorFromDirective: parsed.separatorFromDirective,
       columnCount: parsed.columnCount,
       rawRows: parsed.rawRows,
+      contentHash: hashImportContent(content),
     };
   } else if (typeof carriedRaw === "string" && carriedRaw !== "") {
     try {
@@ -139,11 +163,15 @@ export async function previewImportAction(
     } catch {
       return { error: "no-file" };
     }
-    if (!Array.isArray(carried.rawRows)) {
+    if (!Array.isArray(carried.rawRows) || typeof carried.contentHash !== "string") {
       return { error: "no-file" };
     }
   } else {
     return { error: "no-file" };
+  }
+
+  if (String(formData.get("intent") ?? "") === "execute") {
+    return executeFromForm(formData, carried);
   }
 
   const mapping = readMapping(formData, Math.max(carried.columnCount, 1));
@@ -178,9 +206,83 @@ export async function previewImportAction(
     duplicateCount: plan.duplicateCount,
     duplicateStrategy: plan.strategy,
     duplicateHits: plan.hits,
+    deckId: String(formData.get("deckId") ?? ""),
+    createReverse: formData.get("createReverse") === "1",
     mapping,
     carried,
     previewRows: previewMapped.rows,
     previewIssues: issuesWithSamples(previewMapped.issues, previewRaw),
+  };
+}
+
+async function executeFromForm(
+  formData: FormData,
+  carried: CarriedPreview,
+): Promise<ImportPreviewState> {
+  const mapping = readMapping(formData, Math.max(carried.columnCount, 1));
+  const strategy = parseDuplicateStrategy(formData.get("duplicateStrategy"));
+  const deckId = String(formData.get("deckId") ?? "");
+  const createReverse = formData.get("createReverse") === "1";
+  const locale = String(formData.get("locale") ?? "es");
+
+  const library = await getLibraryContextForCurrentUser();
+  const course = await getActiveCourseForCurrentUser();
+  const jobs = await getImportJobRepositoryForCurrentUser();
+  if (!library || !course || !jobs) {
+    return { error: "unavailable", filename: carried.filename };
+  }
+
+  const outcome = await executeImport(
+    {
+      ownerId: library.ownerId,
+      courseId: course.id,
+      deckId,
+      filename: carried.filename,
+      contentHash: carried.contentHash,
+      mapping,
+      strategy,
+      createReverse,
+      rawRows: carried.rawRows,
+      locale,
+    },
+    {
+      jobs,
+      decks: library.decks,
+      concepts: library.concepts,
+      practiceItems: library.practiceItems,
+      tags: library.tags,
+    },
+  );
+
+  if (!outcome.ok) {
+    return { error: outcome.error, filename: carried.filename, carried };
+  }
+
+  revalidatePath(`/${locale}/concepts`);
+  revalidatePath(`/${locale}/decks`);
+  revalidatePath(`/${locale}/import`);
+
+  const previewRaw = carried.rawRows.slice(0, PREVIEW_LIMIT);
+  const previewMapped = mapPreviewRows(previewRaw, mapping);
+
+  return {
+    filename: carried.filename,
+    separator: carried.separator,
+    separatorFromDirective: carried.separatorFromDirective,
+    columnCount: carried.columnCount,
+    mapping,
+    carried,
+    duplicateStrategy: strategy,
+    deckId,
+    createReverse,
+    previewRows: previewMapped.rows,
+    previewIssues: issuesWithSamples(previewMapped.issues, previewRaw),
+    result: {
+      rowsTotal: outcome.result.rowsTotal,
+      rowsCreated: outcome.result.rowsCreated,
+      rowsSkipped: outcome.result.rowsSkipped,
+      rowsDuplicate: outcome.result.rowsDuplicate,
+      rowsFailed: outcome.result.rowsFailed,
+    },
   };
 }

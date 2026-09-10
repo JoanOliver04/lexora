@@ -493,7 +493,7 @@ Migración `20260905180000_import_jobs` (LEX-4.3), estructura + RLS en una sola
 | Tabla | Papel |
 |---|---|
 | `import_jobs` | Un trabajo de importación: `course_id`, `deck_id` de destino (nulo hasta el paso 5 del flujo, §9.7), `original_filename` (saneado: sin ruta, sin controles, sin `..`, ≤ 255), `content_hash`, `mapping_config` JSONB, `status` (`import_status`: `pending`/`mapping`/`importing`/`completed`/`failed`), cinco contadores, timestamps. |
-| `import_job_errors` | Errores por fila: `row_number`, `code` (`import_error_code`: cuatro estructurales del parser + `front_too_long` / `back_too_long` / `tags_too_long`, LEX-4.5), `message` seguro (≤ 500), `row_sample` acotada y saneada (dominio ≤ 200, CHECK de columna ≤ 500, opcional). Escrita una vez, nunca editada — sin `updated_at`, sin política `UPDATE`. |
+| `import_job_errors` | Errores por fila: `row_number`, `code` (`import_error_code`: cuatro estructurales del parser + longitudes LEX-4.5 + `rejected` LEX-4.7), `message` seguro (≤ 500), `row_sample` acotada y saneada (dominio ≤ 200, CHECK de columna ≤ 500, opcional). Escrita una vez, nunca editada — sin `updated_at`, sin política `UPDATE`. |
 
 - **El archivo completo no se guarda.** No hay columna de contenido en
   `import_jobs`, solo `content_hash` (§13.14: «no se conservará el archivo
