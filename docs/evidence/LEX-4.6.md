@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-10
 **Rama:** `feat/lex-4-6-duplicate-plan`
-**Estado resultante:** gates locales en verde. PR pendiente de CI.
+**Estado resultante:** `HECHO`. PR #57 fusionada a `main` (merge `19efe26`);
+CI verde en los tres trabajos, runs `34476806540` (PR) y `34477343160`
+(merge).
 
 ---
 
