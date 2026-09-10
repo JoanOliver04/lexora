@@ -38,7 +38,14 @@ describe("parseDirectiveLines", () => {
   });
 
   it("claves sin efecto en Lexora se ignoran sin romper", () => {
-    expect(parseDirectiveLines(["#notetype column:1", "#deck column:2", "#columns:3"])).toEqual({
+    expect(
+      parseDirectiveLines([
+        "#notetype column:1",
+        "#deck column:2",
+        "#columns:3",
+        "#notetype:Basic",
+      ]),
+    ).toEqual({
       separator: null,
       tagsColumn: DEFAULT_TAGS_COLUMN,
       html: null,

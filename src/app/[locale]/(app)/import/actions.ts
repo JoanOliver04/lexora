@@ -17,6 +17,7 @@ import { executeImport } from "@/modules/importing/application/execute-import";
 import type { ImportJobError } from "@/modules/importing/application/import-job";
 import {
   MAX_FILE_BYTES,
+  MAX_ROWS,
   inspectImportUpload,
   issuesWithSamples,
   mapPreviewRows,
@@ -171,6 +172,10 @@ export async function previewImportAction(
     }
   } else {
     return { error: "no-file" };
+  }
+
+  if (carried.rawRows.length > MAX_ROWS) {
+    return { error: "too-many-rows", filename: carried.filename };
   }
 
   if (String(formData.get("intent") ?? "") === "execute") {

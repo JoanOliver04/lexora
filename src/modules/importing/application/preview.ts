@@ -22,13 +22,14 @@ import {
 import { sanitizeFilename } from "@/modules/importing/domain/filename";
 import {
   MAX_FILE_BYTES,
+  MAX_ROWS,
   checkImportInput,
   exceedsFileSize,
 } from "@/modules/importing/domain/limits";
 import type { ImportRowIssue, RawImportRow } from "@/modules/importing/domain/row";
 import { sanitizeRowSample } from "@/modules/importing/domain/sanitize";
 
-export { MAX_FILE_BYTES };
+export { MAX_FILE_BYTES, MAX_ROWS };
 
 export type ImportFileError = "empty-file" | "too-large" | "too-many-rows";
 
