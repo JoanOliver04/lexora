@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-10
-**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (5/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (6/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M4 — Importación real validada — `PENDIENTE`. M3 `HECHO`. Etiqueta de hito M3 (`v0.4.0-m3` o la que decida Joan) pendiente de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-4.1…4.5 `HECHO` · siguiente LEX-4.6 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `8d1afa7` (PR #55, LEX-4.5). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-4.1…4.6 `HECHO` · siguiente LEX-4.7 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `19efe26` (PR #57, LEX-4.6). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,32 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-4.6 — Implementar plan de duplicados — `HECHO`
+
+Informe en [`evidence/LEX-4.6.md`](evidence/LEX-4.6.md). PR #57 fusionada a
+`main` (merge `19efe26`); CI verde en los tres trabajos, runs `34476806540`
+(PR) y `34477343160` (merge). **Sin migración.**
+
+Cada fila válida del archivo completo se clasifica como nueva o posible
+duplicada (`canonical_key` de LEX-3.10: conceptos vivos del curso y filas
+anteriores del archivo). Estrategias `skip` (por defecto) y `copy`.
+**No se actualiza** un concepto existente: el título no es identidad
+segura. No persiste nada.
+
+- **`domain/duplicates.ts`** + **`application/duplicates.ts`:** una
+  `list` del curso, clasificación en memoria.
+- Vista previa: recuentos con el mapeo actual; radios; lista acotada
+  de coincidencias.
+- `carried.rawRows` pasa a ser el archivo tokenizado completo.
+
+```text
+pnpm check   exit 0 (format, lint, typecheck, contraste 18/18, vitest 39/270, build)
+pnpm e2e     88 passed (import-preview.spec.ts +2: concepto existente; duplicado intra-archivo)
+```
+
+Fuera de alcance declarado: ejecutar (LEX-4.7); wizard (LEX-4.8);
+fusionar; deduplicación semántica; estrategia `update`.
 
 ### LEX-4.5 — Validar y sanear entradas — `HECHO`
 
