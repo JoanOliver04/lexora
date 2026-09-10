@@ -8,7 +8,7 @@
 -- not pass silently.
 
 begin;
-select plan(45);
+select plan(46);
 
 -- ===========================================================================
 -- Fixture (as the migration/test role: BYPASSRLS).
@@ -68,8 +68,8 @@ select enum_has_labels('public', 'import_status',
   'import_status has the five lifecycle labels');
 select enum_has_labels('public', 'import_error_code',
   ARRAY['too_few_columns', 'too_many_columns', 'front_empty', 'back_empty',
-        'front_too_long', 'back_too_long', 'tags_too_long'],
-  'import_error_code has the four structural labels (LEX-4.2) plus the three length labels (LEX-4.5)');
+        'front_too_long', 'back_too_long', 'tags_too_long', 'rejected'],
+  'import_error_code has structural, length and persist-time rejected labels');
 
 -- Casting proves ADD VALUE actually registered the labels, not just that
 -- pg_enum lists them: a missing ADD VALUE fails here with 22P02.
@@ -79,6 +79,8 @@ select is(('back_too_long'::public.import_error_code)::text, 'back_too_long',
   'back_too_long is a usable import_error_code (LEX-4.5)');
 select is(('tags_too_long'::public.import_error_code)::text, 'tags_too_long',
   'tags_too_long is a usable import_error_code (LEX-4.5)');
+select is(('rejected'::public.import_error_code)::text, 'rejected',
+  'rejected is a usable import_error_code (LEX-4.7)');
 
 select col_default_is('public', 'import_jobs', 'status', 'pending',
   'a new import_jobs row starts pending');

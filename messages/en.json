@@ -22,7 +22,7 @@
   "Import": {
     "backToApp": "Back to home",
     "title": "Import",
-    "intro": "Upload a TXT or CSV prepared for Anki. Here you only preview it and decide which column is which; nothing is imported yet.",
+    "intro": "Upload a TXT or CSV prepared for Anki. Preview it, pick a deck, and confirm. Duplicate rows are skipped or copied, never merged.",
     "fileLabel": "File",
     "fileHint": "Up to 5 MB and 10,000 rows. HTML is turned into plain text.",
     "submit": "Preview",
@@ -82,7 +82,20 @@
       "read-failed": "We couldn't read the file.",
       "too-large": "The file is larger than 5 MB.",
       "too-many-rows": "The file has more than 10,000 rows.",
-      "unavailable": "We couldn't read your course. Reload and try again."
+      "unavailable": "We couldn't read your course. Reload and try again.",
+      "no-deck": "Choose a destination deck. If you don't have one, create it first.",
+      "empty": "There are no rows to import with this mapping."
+    },
+    "execute": {
+      "heading": "Import into the course",
+      "deck": "Destination deck",
+      "noDeck": "Create a deck in the course before importing. The file is not stored until you confirm.",
+      "reverse": "Also create the reverse direction (back → front)",
+      "submit": "Import into the course"
+    },
+    "result": {
+      "heading": "Import finished",
+      "counts": "{created, plural, one {# created} other {# created}} · {skipped, plural, one {# skipped} other {# skipped}} · {duplicate, plural, one {# duplicate} other {# duplicates}} · {failed, plural, one {# failed} other {# failed}} (of {total})"
     }
   },
   "Onboarding": {

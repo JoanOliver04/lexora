@@ -140,4 +140,45 @@ test.describe("importación — vista previa", () => {
     await expect(page.getByText("Fila 2: hello")).toBeVisible();
     await expect(page.getByText("(también en filas 1)")).toBeVisible();
   });
+
+  test("sin mazo no se puede confirmar; con mazo, importar crea los conceptos", async ({
+    page,
+  }) => {
+    await signUp(page);
+    await completeOnboarding(page);
+    await page.goto("/es/import");
+    await page.getByLabel("Archivo").setInputFiles("tests/fixtures/import/basic-tab.txt");
+    await page.getByRole("button", { name: "Previsualizar" }).click();
+    await expect(page.getByText("2 nuevas · sin duplicados")).toBeVisible();
+    await expect(page.getByText("Crea un mazo en el curso antes de importar")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Importar al curso" })).toHaveCount(0);
+
+    await page.getByRole("link", { name: "Volver al inicio" }).click();
+    await page.getByRole("link", { name: "Mis mazos" }).click();
+    await page.getByLabel("Nombre").fill("Importados");
+    await page.getByRole("button", { name: "Crear mazo" }).click();
+    await expect(page.getByRole("link", { name: "Importados" })).toBeVisible();
+
+    await page.goto("/es/import");
+    await page.getByLabel("Archivo").setInputFiles("tests/fixtures/import/basic-tab.txt");
+    await page.getByRole("button", { name: "Previsualizar" }).click();
+    await expect(page.getByLabel("Mazo de destino")).toBeVisible();
+    await page.getByRole("button", { name: "Importar al curso" }).click();
+    await expect(page.getByRole("heading", { name: "Importación terminada" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText("2 creadas")).toBeVisible();
+
+    await page.goto("/es/concepts");
+    await expect(page.getByRole("link", { name: "break the ice", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "take off", exact: true })).toBeVisible();
+
+    await page.goto("/es/import");
+    await page.getByLabel("Archivo").setInputFiles("tests/fixtures/import/basic-tab.txt");
+    await page.getByRole("button", { name: "Previsualizar" }).click();
+    await expect(page.getByText("2 posibles duplicadas")).toBeVisible();
+    await page.getByRole("button", { name: "Importar al curso" }).click();
+    await expect(page.getByText("0 creadas")).toBeVisible();
+    await expect(page.getByText("2 omitidas")).toBeVisible();
+  });
 });

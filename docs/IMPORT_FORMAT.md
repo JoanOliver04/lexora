@@ -88,7 +88,11 @@ la misma convención que sigue Papa Parse (candidata nombrada en MASTER_SPEC
   a la misma clave que un concepto vivo del curso, o que otra fila anterior
   del archivo. Estrategias en la vista previa: omitir o crear copia. No se
   actualiza un concepto existente (no hay criterio seguro de «es el mismo»).
-  Ejecutar la estrategia es LEX-4.7.
+  Ejecutar: LEX-4.7. Cada confirmación es un trabajo nuevo; `skip` no
+  duplica la biblioteca, `copy` crea conceptos independientes. Un frente
+  más largo que el título de concepto (200) o un reverso más largo que el
+  ítem (500) se registra como fallo de esa fila y el lote sigue. El mazo
+  de destino tiene que existir ya en el curso.
 
 ## Fixtures
 

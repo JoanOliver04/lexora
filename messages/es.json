@@ -22,7 +22,7 @@
   "Import": {
     "backToApp": "Volver al inicio",
     "title": "Importar",
-    "intro": "Sube un TXT o CSV preparado para Anki. Aquí solo lo previsualizas y decides qué columna es cada cosa; todavía no se importa nada.",
+    "intro": "Sube un TXT o CSV preparado para Anki. Previsualizas, eliges mazo y confirmas. Las filas duplicadas se omiten o se copian, nunca se fusionan.",
     "fileLabel": "Archivo",
     "fileHint": "Hasta 5 MB y 10.000 filas. El HTML se convierte en texto plano.",
     "submit": "Previsualizar",
@@ -82,7 +82,20 @@
       "read-failed": "No hemos podido leer el archivo.",
       "too-large": "El archivo supera los 5 MB.",
       "too-many-rows": "El archivo tiene más de 10.000 filas.",
-      "unavailable": "No hemos podido leer tu curso. Recarga e inténtalo de nuevo."
+      "unavailable": "No hemos podido leer tu curso. Recarga e inténtalo de nuevo.",
+      "no-deck": "Elige un mazo de destino. Si no tienes ninguno, créalo antes.",
+      "empty": "No hay filas para importar con este mapeo."
+    },
+    "execute": {
+      "heading": "Importar al curso",
+      "deck": "Mazo de destino",
+      "noDeck": "Crea un mazo en el curso antes de importar. El archivo no se guarda hasta que confirmes.",
+      "reverse": "Crear también la dirección inversa (reverso → frente)",
+      "submit": "Importar al curso"
+    },
+    "result": {
+      "heading": "Importación terminada",
+      "counts": "{created, plural, one {# creada} other {# creadas}} · {skipped, plural, one {# omitida} other {# omitidas}} · {duplicate, plural, one {# duplicada} other {# duplicadas}} · {failed, plural, one {# fallida} other {# fallidas}} (de {total})"
     }
   },
   "Onboarding": {

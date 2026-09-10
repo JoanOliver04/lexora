@@ -2,15 +2,17 @@ import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { getActiveCourseForCurrentUser } from "@/composition/courses";
+import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
+import { listDecks } from "@/modules/library/application/deck";
 
 import { ImportPreviewForm } from "./import-preview-form";
 
 /**
- * Vista previa, mapeo y plan de duplicados (LEX-4.4…4.6, MASTER_SPEC §9.7
- * pasos 1–4 y 7). No persiste nada: elegir mazo de destino, dirección
- * inversa y ejecutar son tareas posteriores.
+ * Vista previa, duplicados y ejecución del lote (LEX-4.4…4.7). El selector
+ * de mazo es mínimo (mazos ya existentes del curso); el wizard completo es
+ * LEX-4.8.
  *
  * Puerta de onboarding repetida por página, como el resto de `(app)` (deuda
  * anotada desde LEX-2.9). Un import sin curso al que importar no tiene
@@ -30,6 +32,13 @@ export default async function ImportPage({ params }: { params: Promise<{ locale:
   }
 
   const t = await getTranslations("Import");
+  const library = await getLibraryContextForCurrentUser();
+  const decks = library
+    ? (await listDecks(library.decks, library.ownerId, activeCourse.id)).map((deck) => ({
+        id: deck.id,
+        title: deck.title,
+      }))
+    : [];
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-6 py-12">
@@ -41,7 +50,7 @@ export default async function ImportPage({ params }: { params: Promise<{ locale:
         <p className="text-sm text-(--color-ink-muted)">{t("intro")}</p>
       </header>
 
-      <ImportPreviewForm locale={locale} />
+      <ImportPreviewForm locale={locale} decks={decks} />
     </main>
   );
 }

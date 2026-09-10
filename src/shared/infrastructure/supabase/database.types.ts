@@ -644,6 +644,7 @@ export type Database = {
         | "front_too_long"
         | "back_too_long"
         | "tags_too_long"
+        | "rejected"
       import_status:
         | "pending"
         | "mapping"
@@ -815,6 +816,7 @@ export const Constants = {
         "front_too_long",
         "back_too_long",
         "tags_too_long",
+        "rejected",
       ],
       import_status: ["pending", "mapping", "importing", "completed", "failed"],
       practice_mode: [
