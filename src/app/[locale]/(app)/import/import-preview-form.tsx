@@ -17,10 +17,9 @@ const SELECT_CLASS = [
 ].join(" ");
 
 /**
- * Subir un archivo, ver el separador detectado y una muestra acotada, y
- * mapear qué columna es frente/reverso/etiquetas (LEX-4.4). No persiste nada:
- * cambiar el mapeo re-pinta la muestra a partir del campo oculto `carried`
- * (las filas ya tokenizadas), sin volver a subir el archivo.
+ * Subir un archivo, ver el separador, una muestra acotada, el plan de
+ * duplicados y mapear columnas (LEX-4.4…4.6). No persiste nada: cambiar el
+ * mapeo re-pinta a partir de `carried` (filas ya tokenizadas).
  */
 export function ImportPreviewForm({ locale }: { locale: string }) {
   const t = useTranslations("Import");
@@ -64,6 +63,12 @@ export function ImportPreviewForm({ locale }: { locale: string }) {
               {t("counts", {
                 valid: state.totalRows ?? 0,
                 issues: state.totalIssues ?? 0,
+              })}
+            </p>
+            <p className="text-(--color-ink-muted)">
+              {t("plan.counts", {
+                fresh: state.newCount ?? 0,
+                duplicates: state.duplicateCount ?? 0,
               })}
             </p>
           </section>
@@ -152,6 +157,56 @@ export function ImportPreviewForm({ locale }: { locale: string }) {
                 </table>
               </div>
             )}
+          </section>
+
+          <section className="flex flex-col gap-3">
+            <fieldset className="flex flex-col gap-3">
+              <legend className="text-lg font-medium">{t("plan.heading")}</legend>
+              <p className="text-sm text-(--color-ink-muted)">{t("plan.intro")}</p>
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="duplicateStrategy"
+                    value="skip"
+                    defaultChecked={(state.duplicateStrategy ?? "skip") === "skip"}
+                  />
+                  {t("plan.skip")}
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="duplicateStrategy"
+                    value="copy"
+                    defaultChecked={state.duplicateStrategy === "copy"}
+                  />
+                  {t("plan.copy")}
+                </label>
+              </div>
+              <p className="text-xs text-(--color-ink-subtle)">{t("plan.updateNote")}</p>
+            </fieldset>
+
+            {(state.duplicateHits ?? []).length > 0 ? (
+              <div className="flex flex-col gap-2">
+                <h2 className="text-lg font-medium">{t("plan.hitsHeading")}</h2>
+                <ul className="flex flex-col gap-1 text-sm text-(--color-ink-muted)">
+                  {(state.duplicateHits ?? []).map((hit) => (
+                    <li key={hit.rowNumber}>
+                      {t("plan.hitRow", {
+                        row: hit.rowNumber,
+                        front: hit.front.slice(0, 80),
+                      })}
+                      {hit.existingTitles.length > 0
+                        ? ` ${t("plan.hitExisting", { title: hit.existingTitles[0] ?? "" })}`
+                        : null}
+                      {hit.otherFileRows.length > 0
+                        ? ` ${t("plan.hitFile", { rows: hit.otherFileRows.join(", ") })}`
+                        : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </section>
 
           {(state.previewIssues ?? []).length > 0 ? (

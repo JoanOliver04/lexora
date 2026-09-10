@@ -8,9 +8,9 @@ import { Link } from "@/i18n/navigation";
 import { ImportPreviewForm } from "./import-preview-form";
 
 /**
- * Vista previa y mapeo de columnas de una importación (LEX-4.4, MASTER_SPEC
- * §9.7 pasos 1–4). No persiste nada: elegir mazo de destino, dirección
- * inversa, validación y ejecución son tareas posteriores.
+ * Vista previa, mapeo y plan de duplicados (LEX-4.4…4.6, MASTER_SPEC §9.7
+ * pasos 1–4 y 7). No persiste nada: elegir mazo de destino, dirección
+ * inversa y ejecutar son tareas posteriores.
  *
  * Puerta de onboarding repetida por página, como el resto de `(app)` (deuda
  * anotada desde LEX-2.9). Un import sin curso al que importar no tiene

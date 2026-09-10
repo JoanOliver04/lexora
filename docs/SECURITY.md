@@ -56,6 +56,16 @@ no interprete una celda como fórmula) no aplica aquí: esta tarea no escribe
 CSV. Queda para la exportación (FASE 8). Un valor que empiece por `=` se
 guarda como texto.
 
+## Duplicados
+
+La vista previa clasifica cada fila válida como nueva o posible duplicada
+comparando la `canonical_key` del frente con los conceptos vivos del curso
+(y con filas anteriores del mismo archivo). La persona elige **omitir** o
+**crear copia**. No hay «actualizar coincidencia»: un título igual no basta
+para saber que es el mismo concepto con un campo distinto, y un `UPDATE`
+silencioso rompería la regla de no sobrescribir. LEX-4.7 ejecutará la
+elección; aquí no se escribe nada.
+
 ## Qué no cubre esto
 
 - Cuotas o cooldowns de importación por cuenta.

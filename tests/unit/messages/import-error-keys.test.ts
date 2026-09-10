@@ -4,7 +4,14 @@ import en from "../../../messages/en.json";
 import es from "../../../messages/es.json";
 import { IMPORT_ROW_ISSUE_CODES } from "@/modules/importing/domain/row";
 
-const FILE_ERRORS = ["no-file", "empty-file", "read-failed", "too-large", "too-many-rows"] as const;
+const FILE_ERRORS = [
+  "no-file",
+  "empty-file",
+  "read-failed",
+  "too-large",
+  "too-many-rows",
+  "unavailable",
+] as const;
 
 describe("claves de error de importación", () => {
   it("cada código de fila tiene mensaje en es y en en", () => {

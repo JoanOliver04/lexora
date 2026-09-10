@@ -31,7 +31,19 @@
     "resubmitHint": "Para previsualizar otro archivo, elígelo arriba y vuelve a pulsar.",
     "separatorDetected": "Separador detectado: {separator}",
     "separatorFromDirective": "(declarado en el archivo)",
-    "counts": "{valid, plural, one {# fila válida} other {# filas válidas}} · {issues, plural, =0 {sin problemas} one {# con problemas} other {# con problemas}} (con el mapeo por defecto)",
+    "counts": "{valid, plural, one {# fila válida} other {# filas válidas}} · {issues, plural, =0 {sin problemas} one {# con problemas} other {# con problemas}}",
+    "plan": {
+      "counts": "{fresh, plural, one {# nueva} other {# nuevas}} · {duplicates, plural, =0 {sin duplicados} one {# posible duplicada} other {# posibles duplicadas}}",
+      "heading": "Duplicados",
+      "intro": "Si el frente coincide con un concepto que ya tienes (misma clave canónica), no lo fusionamos. Tú eliges qué hacer con esas filas; no se importa nada todavía.",
+      "skip": "Omitir las filas duplicadas",
+      "copy": "Crear una copia independiente",
+      "updateNote": "No actualizamos un concepto existente: el título no basta para saber si es el mismo con un campo distinto, y tocar lo que ya estudias no es seguro.",
+      "hitsHeading": "Posibles duplicados",
+      "hitRow": "Fila {row}: {front}",
+      "hitExisting": "(ya existe: {title})",
+      "hitFile": "(también en filas {rows})"
+    },
     "separator": {
       "tab": "tabulación",
       "comma": "coma",
@@ -69,7 +81,8 @@
       "empty-file": "El archivo está vacío.",
       "read-failed": "No hemos podido leer el archivo.",
       "too-large": "El archivo supera los 5 MB.",
-      "too-many-rows": "El archivo tiene más de 10.000 filas."
+      "too-many-rows": "El archivo tiene más de 10.000 filas.",
+      "unavailable": "No hemos podido leer tu curso. Recarga e inténtalo de nuevo."
     }
   },
   "Onboarding": {
