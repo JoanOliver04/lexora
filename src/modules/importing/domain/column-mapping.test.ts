@@ -73,4 +73,21 @@ describe("applyColumnMapping", () => {
     expect(issues).toEqual([]);
     expect(mapped).toEqual([{ rowNumber: 1, front: "a", back: "e", tags: ["c"] }]);
   });
+
+  it("un campo demasiado largo con el mapeo elegido → su código de longitud", () => {
+    const { issues } = applyColumnMapping(
+      [{ rowNumber: 4, columns: ["f".repeat(4001), "back", "t"] }],
+      DEFAULT_COLUMN_MAPPING,
+    );
+    expect(issues).toEqual([{ rowNumber: 4, code: "front_too_long" }]);
+  });
+
+  it("el HTML se sanea también al reasignar columnas", () => {
+    const { rows: mapped, issues } = applyColumnMapping(
+      [{ rowNumber: 1, columns: ["<i>front</i>", "<b>back</b>", "t"] }],
+      DEFAULT_COLUMN_MAPPING,
+    );
+    expect(issues).toEqual([]);
+    expect(mapped).toEqual([{ rowNumber: 1, front: "front", back: "back", tags: ["t"] }]);
+  });
 });

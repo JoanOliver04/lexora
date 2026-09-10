@@ -1,21 +1,33 @@
 /**
- * Clasificación de una fila ya tokenizada (LEX-4.2).
+ * Clasificación de una fila ya tokenizada (LEX-4.2, validación LEX-4.5).
  *
  * Lógica pura: recibe las columnas **ya separadas** por el adaptador (Papa
  * Parse hace el trabajo de respetar comillas y separadores dentro de un
  * campo) y decide si son una fila válida o un problema con código. No lanza:
  * un archivo con una fila mala no debe abortar las buenas.
  *
- * El saneamiento real (longitudes, HTML no ejecutable, límites) es LEX-4.5;
- * aquí solo se detecta la forma: columnas de más/de menos, frente o reverso
- * en blanco.
+ * Orden: forma (columnas de más/de menos) → HTML a texto plano → recorte de
+ * extremos → frente/reverso en blanco → longitud de campo. El HTML se quita
+ * antes de validar para juzgar lo que se guardaría, no el marcado.
  */
+
+import { MAX_FIELD_LENGTH, MAX_TAGS_FIELD_LENGTH } from "./limits";
+import { stripImportedHtml } from "./sanitize";
 
 /** Tres columnas: frente, reverso, etiquetas (§9.7). */
 export const EXPECTED_COLUMNS = 3;
 
-export type ImportRowIssueCode =
-  "too_few_columns" | "too_many_columns" | "front_empty" | "back_empty";
+export const IMPORT_ROW_ISSUE_CODES = [
+  "too_few_columns",
+  "too_many_columns",
+  "front_empty",
+  "back_empty",
+  "front_too_long",
+  "back_too_long",
+  "tags_too_long",
+] as const;
+
+export type ImportRowIssueCode = (typeof IMPORT_ROW_ISSUE_CODES)[number];
 
 export interface ImportRowIssue {
   /** Número de línea 1-indexado tal como se ve en el archivo. */
@@ -68,17 +80,45 @@ export function classifyRow(
   const tagsIndex = Math.min(Math.max(tagsColumn, 1), EXPECTED_COLUMNS) - 1;
   const contentIndexes = [0, 1, 2].filter((index) => index !== tagsIndex);
 
-  const front = (columns[contentIndexes[0]!] ?? "").trim();
-  const back = (columns[contentIndexes[1]!] ?? "").trim();
-  const rawTags = (columns[tagsIndex] ?? "").trim();
+  return classifyFields(
+    columns[contentIndexes[0]!] ?? "",
+    columns[contentIndexes[1]!] ?? "",
+    columns[tagsIndex] ?? "",
+    rowNumber,
+  );
+}
 
-  if (front === "") {
+/**
+ * Sanea y valida frente / reverso / etiquetas ya extraídos. Compartido por
+ * `classifyRow` (parser, tres columnas fijas) y `applyColumnMapping` (mapeo
+ * libre de la vista previa).
+ */
+export function classifyFields(
+  front: string,
+  back: string,
+  rawTags: string,
+  rowNumber: number,
+): ParsedImportRow | ImportRowIssue {
+  const strippedFront = stripImportedHtml(front).trim();
+  const strippedBack = stripImportedHtml(back).trim();
+  const strippedTags = stripImportedHtml(rawTags).trim();
+
+  if (strippedFront === "") {
     return { rowNumber, code: "front_empty" };
   }
-  if (back === "") {
+  if (strippedBack === "") {
     return { rowNumber, code: "back_empty" };
   }
+  if (strippedFront.length > MAX_FIELD_LENGTH) {
+    return { rowNumber, code: "front_too_long" };
+  }
+  if (strippedBack.length > MAX_FIELD_LENGTH) {
+    return { rowNumber, code: "back_too_long" };
+  }
+  if (strippedTags.length > MAX_TAGS_FIELD_LENGTH) {
+    return { rowNumber, code: "tags_too_long" };
+  }
 
-  const tags = rawTags === "" ? [] : rawTags.split(/\s+/);
-  return { rowNumber, front, back, tags };
+  const tags = strippedTags === "" ? [] : strippedTags.split(/\s+/);
+  return { rowNumber, front: strippedFront, back: strippedBack, tags };
 }

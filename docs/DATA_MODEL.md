@@ -492,8 +492,8 @@ Migración `20260905180000_import_jobs` (LEX-4.3), estructura + RLS en una sola
 
 | Tabla | Papel |
 |---|---|
-| `import_jobs` | Un trabajo de importación: `course_id`, `deck_id` de destino (nulo hasta el paso 5 del flujo, §9.7), `original_filename` (saneado en LEX-4.5, aquí solo se guarda), `content_hash`, `mapping_config` JSONB, `status` (`import_status`: `pending`/`mapping`/`importing`/`completed`/`failed`), cinco contadores, timestamps. |
-| `import_job_errors` | Errores por fila: `row_number`, `code` (`import_error_code`: los cuatro estructurales del parser en LEX-4.2, LEX-4.5 añade los de validación), `message` seguro (≤ 500), `row_sample` acotada y saneada (≤ 500, opcional). Escrita una vez, nunca editada — sin `updated_at`, sin política `UPDATE`. |
+| `import_jobs` | Un trabajo de importación: `course_id`, `deck_id` de destino (nulo hasta el paso 5 del flujo, §9.7), `original_filename` (saneado: sin ruta, sin controles, sin `..`, ≤ 255), `content_hash`, `mapping_config` JSONB, `status` (`import_status`: `pending`/`mapping`/`importing`/`completed`/`failed`), cinco contadores, timestamps. |
+| `import_job_errors` | Errores por fila: `row_number`, `code` (`import_error_code`: cuatro estructurales del parser + `front_too_long` / `back_too_long` / `tags_too_long`, LEX-4.5), `message` seguro (≤ 500), `row_sample` acotada y saneada (dominio ≤ 200, CHECK de columna ≤ 500, opcional). Escrita una vez, nunca editada — sin `updated_at`, sin política `UPDATE`. |
 
 - **El archivo completo no se guarda.** No hay columna de contenido en
   `import_jobs`, solo `content_hash` (§13.14: «no se conservará el archivo
@@ -510,10 +510,13 @@ Migración `20260905180000_import_jobs` (LEX-4.3), estructura + RLS en una sola
 - **RLS** por dueño en ambas: `import_jobs` con las cuatro operaciones (las
   transiciones de estado son `UPDATE`); `import_job_errors` con
   `SELECT`/`INSERT`/`DELETE`, sin `UPDATE` (patrón de `concept_tags`).
-- Probado en `supabase/tests/database/110-import-jobs.sql` (42 aserciones:
-  estructura, enums, cada CHECK rechazando su valor, FK compuesta entre
-  usuarios `23503`, cascada al borrar el trabajo, `set null` al borrar el
-  mazo, RLS dueño/no-dueño/anon).
+- Probado en `supabase/tests/database/110-import-jobs.sql` (45 aserciones:
+  estructura, enums —incluidos los tres códigos de longitud de LEX-4.5—, cada
+  CHECK rechazando su valor, FK compuesta entre usuarios `23503`, cascada al
+  borrar el trabajo, `set null` al borrar el mazo, RLS dueño/no-dueño/anon).
+- Migración `20260910120000_import_error_codes_validation` (LEX-4.5):
+  `alter type import_error_code add value` para `front_too_long`,
+  `back_too_long`, `tags_too_long`.
 
 ### Tablas futuras
 

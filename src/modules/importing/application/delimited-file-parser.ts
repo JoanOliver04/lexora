@@ -8,10 +8,12 @@
  * lint por glob (`no-restricted-imports`), sin configuración específica de
  * este módulo.
  *
- * Este puerto **solo parsea**: no valida longitudes ni sanea HTML (LEX-4.5),
- * no persiste nada (`import_jobs` es LEX-4.3), no decide qué se hace con una
- * detección de baja confianza (LEX-4.4). Devuelve las filas reconocidas y los
- * problemas por separado; nunca lanza porque una fila individual sea inválida.
+ * Este puerto **solo parsea**: no comprueba el tamaño del archivo ni el
+ * número de filas (eso es `inspectImportUpload`, antes de llamar a `parse`).
+ * La clasificación de cada fila (`classifyRow`) sí aplica longitudes y HTML
+ * a texto plano (LEX-4.5). No persiste nada. Devuelve las filas reconocidas
+ * y los problemas por separado; nunca lanza porque una fila individual sea
+ * inválida.
  */
 
 import type { Separator } from "@/modules/importing/domain/separator";

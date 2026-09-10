@@ -1,7 +1,13 @@
 "use server";
 
 import { createDelimitedFileParser } from "@/composition/importing";
-import { mapPreviewRows } from "@/modules/importing/application/preview";
+import {
+  MAX_FILE_BYTES,
+  inspectImportUpload,
+  issuesWithSamples,
+  mapPreviewRows,
+} from "@/modules/importing/application/preview";
+import { sanitizeFilename } from "@/modules/importing/domain/filename";
 import {
   DEFAULT_COLUMN_MAPPING,
   type ColumnMapping,
@@ -14,13 +20,12 @@ import type {
 import type { Separator } from "@/modules/importing/domain/separator";
 
 /**
- * Vista previa de una importación (LEX-4.4). **No persiste nada** (§9.7 pasos
- * 1–4): lee el archivo en memoria, lo parsea con el puerto de LEX-4.2 y
- * devuelve el separador detectado, una muestra acotada de filas y el mapeo de
- * columnas actual. Cambiar el mapeo re-pinta la muestra sin volver a subir el
- * archivo: la muestra acotada viaja en un campo oculto (`carried`).
- *
- * Los límites duros (5 MB / 10.000 filas) y el saneamiento real son LEX-4.5.
+ * Vista previa de una importación (LEX-4.4, barreras LEX-4.5). **No persiste
+ * nada** (§9.7 pasos 1–4): rechaza un archivo demasiado grande o con demasiadas
+ * filas **antes** de parsear, sanea el nombre, parsea con el puerto de LEX-4.2
+ * y devuelve el separador detectado, una muestra acotada de filas y el mapeo
+ * de columnas actual. Cambiar el mapeo re-pinta la muestra sin volver a subir
+ * el archivo: la muestra acotada viaja en un campo oculto (`carried`).
  */
 
 const PREVIEW_LIMIT = 50;
@@ -36,7 +41,7 @@ interface CarriedPreview {
 }
 
 export interface ImportPreviewState {
-  error?: "no-file" | "empty-file" | "read-failed";
+  error?: "no-file" | "empty-file" | "read-failed" | "too-large" | "too-many-rows";
   filename?: string;
   separator?: Separator;
   separatorFromDirective?: boolean;
@@ -49,7 +54,7 @@ export interface ImportPreviewState {
   carried?: CarriedPreview;
   /** La muestra ya mapeada con `mapping`, para la tabla de vista previa. */
   previewRows?: ParsedImportRow[];
-  previewIssues?: { rowNumber: number; code: ImportRowIssueCode }[];
+  previewIssues?: { rowNumber: number; code: ImportRowIssueCode; sample: string }[];
 }
 
 function readMapping(formData: FormData, columnCount: number): ColumnMapping {
@@ -87,18 +92,29 @@ export async function previewImportAction(
   let carried: CarriedPreview;
 
   if (file instanceof File && file.size > 0) {
+    const filename = sanitizeFilename(file.name);
+    // Rechazar por tamaño **antes** de leer: `file.text()` cargaría el archivo
+    // entero y el tope de 5 MB no serviría de nada.
+    if (file.size > MAX_FILE_BYTES) {
+      return { error: "too-large", filename };
+    }
     let content: string;
     try {
       content = await file.text();
     } catch {
       return { error: "read-failed" };
     }
-    if (content.trim() === "") {
-      return { error: "empty-file", filename: file.name };
+    const inspected = inspectImportUpload({
+      filename: file.name,
+      byteSize: file.size,
+      content,
+    });
+    if (!inspected.ok) {
+      return { error: inspected.error, filename: inspected.filename };
     }
     const parsed = createDelimitedFileParser().parse(content);
     carried = {
-      filename: file.name,
+      filename: inspected.filename,
       separator: parsed.separator,
       separatorFromDirective: parsed.separatorFromDirective,
       columnCount: parsed.columnCount,
@@ -129,6 +145,6 @@ export async function previewImportAction(
     mapping,
     carried,
     previewRows: mapped.rows,
-    previewIssues: mapped.issues,
+    previewIssues: issuesWithSamples(mapped.issues, carried.previewRaw),
   };
 }

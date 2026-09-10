@@ -24,6 +24,7 @@
     "title": "Importar",
     "intro": "Sube un TXT o CSV preparado para Anki. Aquí solo lo previsualizas y decides qué columna es cada cosa; todavía no se importa nada.",
     "fileLabel": "Archivo",
+    "fileHint": "Hasta 5 MB y 10.000 filas. El HTML se convierte en texto plano.",
     "submit": "Previsualizar",
     "resubmit": "Actualizar vista previa",
     "submitting": "Leyendo…",
@@ -58,12 +59,17 @@
       "too_few_columns": "columnas de menos para el mapeo elegido",
       "too_many_columns": "columnas de más",
       "front_empty": "el frente está en blanco",
-      "back_empty": "el reverso está en blanco"
+      "back_empty": "el reverso está en blanco",
+      "front_too_long": "el frente es demasiado largo",
+      "back_too_long": "el reverso es demasiado largo",
+      "tags_too_long": "el campo de etiquetas es demasiado largo"
     },
     "errors": {
       "no-file": "Elige un archivo.",
       "empty-file": "El archivo está vacío.",
-      "read-failed": "No hemos podido leer el archivo."
+      "read-failed": "No hemos podido leer el archivo.",
+      "too-large": "El archivo supera los 5 MB.",
+      "too-many-rows": "El archivo tiene más de 10.000 filas."
     }
   },
   "Onboarding": {

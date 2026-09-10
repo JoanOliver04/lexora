@@ -2,7 +2,7 @@
 
 Caracterización del formato de archivo que la importación de FASE 4 debe
 leer (`MASTER_SPEC.md` §9.7). Puerto y parser reales: LEX-4.2. Validación y
-saneamiento: LEX-4.5, `SECURITY.md` §16.2–16.3. Esta página describe la
+saneamiento: LEX-4.5, [`SECURITY.md`](SECURITY.md). Esta página describe la
 **forma** del archivo, no cómo se procesa.
 
 > **Origen de esta caracterización (LEX-4.1, 2026-09-04):** el dataset real
@@ -53,9 +53,11 @@ alguien cuyo propio campo empiece por `#` (ver
 Tres columnas por fila: **frente**, **reverso**, **etiquetas** (MASTER_SPEC
 §9.7). `#tags column:` puede mover la posición de la columna de etiquetas
 si el archivo la declara en otro orden. Una fila con menos columnas de las
-esperadas, o con frente/reverso en blanco, es inválida — el código de error
-concreto y qué hacer con ella es LEX-4.5; aquí solo se caracteriza que debe
-detectarse.
+esperadas, o con frente/reverso en blanco, es inválida. LEX-4.5 añade los
+códigos de longitud (`front_too_long`, `back_too_long`, `tags_too_long`:
+frente/reverso ≤ 4.000 caracteres, campo de etiquetas ≤ 2.000) y convierte
+cualquier HTML a texto plano **antes** de validar, de modo que un frente que
+solo era `<p></p>` cuenta como vacío.
 
 ## Etiquetas
 
@@ -76,8 +78,10 @@ la misma convención que sigue Papa Parse (candidata nombrada en MASTER_SPEC
 ## Fuera de alcance de esta caracterización
 
 - El algoritmo exacto de detección de separador/cabecera → LEX-4.2.
-- Validación y saneamiento (límites de tamaño/filas, HTML no ejecutable,
-  neutralizar fórmulas al exportar) → LEX-4.5, `SECURITY.md` §16.2–16.3.
+- Validación y saneamiento (5 MB / 10.000 filas antes de parsear, longitud
+  de campo, nombre de archivo, HTML a texto plano, `row_sample` ≤ 200) →
+  LEX-4.5, [`SECURITY.md`](SECURITY.md). Neutralizar fórmulas al **exportar**
+  CSV no es de esta fase.
 - Mapeo de columnas en pantalla y vista previa → LEX-4.4.
 - Clasificación de duplicados → LEX-3.10 (`canonical_key`) + LEX-4.6.
 
@@ -100,3 +104,4 @@ bajo un directorio `no_visible_en_github/`, ya excluido globalmente por
 | `bom-utf8.txt` | BOM UTF-8 al inicio del archivo. |
 | `comment-line-not-a-directive.txt` | Una línea que empieza por `#` **después** de la primera fila de datos: debe leerse como fila literal, no como directiva. |
 | `errors.txt` | Filas inválidas: frente vacío, reverso vacío, una sola columna, columnas de más. |
+| `html-tags.txt` | `#html:true` con `<b>`, `<script>` y `<img onerror>`: el parser deja texto plano. |

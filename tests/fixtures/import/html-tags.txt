@@ -1,0 +1,3 @@
+#html:true
+<b>break the ice</b>	<script>alert(1)</script>romper el hielo	idioms
+<img src=x onerror=alert(1)>take off	despegar	phrasal_verbs
