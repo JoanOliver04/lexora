@@ -83,7 +83,12 @@ la misma convención que sigue Papa Parse (candidata nombrada en MASTER_SPEC
   LEX-4.5, [`SECURITY.md`](SECURITY.md). Neutralizar fórmulas al **exportar**
   CSV no es de esta fase.
 - Mapeo de columnas en pantalla y vista previa → LEX-4.4.
-- Clasificación de duplicados → LEX-3.10 (`canonical_key`) + LEX-4.6.
+- Clasificación de duplicados → LEX-4.6 (`canonical_key` de LEX-3.10).
+  Una fila válida es **nueva** o **posible duplicada** si el frente normaliza
+  a la misma clave que un concepto vivo del curso, o que otra fila anterior
+  del archivo. Estrategias en la vista previa: omitir o crear copia. No se
+  actualiza un concepto existente (no hay criterio seguro de «es el mismo»).
+  Ejecutar la estrategia es LEX-4.7.
 
 ## Fixtures
 

@@ -31,7 +31,19 @@
     "resubmitHint": "To preview a different file, pick it above and press again.",
     "separatorDetected": "Detected separator: {separator}",
     "separatorFromDirective": "(declared in the file)",
-    "counts": "{valid, plural, one {# valid row} other {# valid rows}} · {issues, plural, =0 {no problems} one {# with a problem} other {# with problems}} (with the default mapping)",
+    "counts": "{valid, plural, one {# valid row} other {# valid rows}} · {issues, plural, =0 {no problems} one {# with a problem} other {# with problems}}",
+    "plan": {
+      "counts": "{fresh, plural, one {# new} other {# new}} · {duplicates, plural, =0 {no duplicates} one {# possible duplicate} other {# possible duplicates}}",
+      "heading": "Duplicates",
+      "intro": "If the front matches a concept you already have (same key), we do not merge them. You choose what to do with those rows; nothing is imported yet.",
+      "skip": "Skip duplicate rows",
+      "copy": "Create an independent copy",
+      "updateNote": "We do not update an existing concept: a matching title is not enough to know it is the same card with a different field, and touching what you already study is not safe.",
+      "hitsHeading": "Possible duplicates",
+      "hitRow": "Row {row}: {front}",
+      "hitExisting": "(already exists: {title})",
+      "hitFile": "(also in rows {rows})"
+    },
     "separator": {
       "tab": "tab",
       "comma": "comma",
@@ -69,7 +81,8 @@
       "empty-file": "The file is empty.",
       "read-failed": "We couldn't read the file.",
       "too-large": "The file is larger than 5 MB.",
-      "too-many-rows": "The file has more than 10,000 rows."
+      "too-many-rows": "The file has more than 10,000 rows.",
+      "unavailable": "We couldn't read your course. Reload and try again."
     }
   },
   "Onboarding": {
