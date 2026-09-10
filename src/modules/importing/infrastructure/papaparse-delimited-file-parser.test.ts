@@ -63,6 +63,22 @@ describe("createPapaParseDelimitedFileParser", () => {
     ]);
   });
 
+  it("en TSV las comillas son literales, no abren un campo RFC 4180", () => {
+    const result = parser.parse(fixture("quotes-in-tab.txt"));
+
+    expect(result.separator).toBe("tab");
+    expect(result.issues).toEqual([]);
+    expect(result.rows).toEqual([
+      {
+        rowNumber: 1,
+        front: 'he said "hello"',
+        back: 'él dijo "hola"',
+        tags: ["dialogue"],
+      },
+      { rowNumber: 2, front: "normal", back: "normal", tags: ["tags"] },
+    ]);
+  });
+
   it("campos entrecomillados: el separador dentro de comillas no parte la columna", () => {
     const result = parser.parse(fixture("quoted-fields.csv"));
 

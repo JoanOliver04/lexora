@@ -52,6 +52,11 @@ export function createPapaParseDelimitedFileParser(): DelimitedFileParser {
         delimiter: separatorChar(separator),
         skipEmptyLines: false,
         newline: "\n",
+        // TSV de Anki («Notes in Plain Text») mete `"` literales en el
+        // campo y no las escapa RFC 4180. Con el quoteChar por defecto,
+        // Papa fusiona filas y aparecen `too_few_columns` fantasma
+        // (LEX-4.10, dataset real). El CSV sí va entrecomillado.
+        quoteChar: separator === "tab" ? "\0" : '"',
       });
 
       const rows: ParsedImportRow[] = [];
