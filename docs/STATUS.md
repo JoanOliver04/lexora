@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-10
-**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (7/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (8/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M4 — Importación real validada — `PENDIENTE`. M3 `HECHO`. Etiqueta de hito M3 (`v0.4.0-m3` o la que decida Joan) pendiente de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-4.1…4.7 `HECHO` · siguiente LEX-4.8 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `cd6e9de` (PR #59, LEX-4.7). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-4.1…4.8 `HECHO` · siguiente LEX-4.9 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `8bce773` (PR #61, LEX-4.8). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,31 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-4.8 — Construir wizard completo de importación — `HECHO`
+
+Informe en [`evidence/LEX-4.8.md`](evidence/LEX-4.8.md). PR #61 fusionada a
+`main` (merge `8bce773`); CI verde en los tres trabajos, runs `34484288783`
+(PR) y `34485416130` (merge). **Sin migración.**
+
+La importación deja de ser un formulario largo: cinco pasos alineados
+con MASTER_SPEC §9.7 1–8 (archivo → mapeo → mazo e inversa → duplicados
+→ confirmar). Confirmar recapitulada mazo, inversa, estrategia y
+recuentos **antes** de `intent=execute`. Sin caso de uso nuevo.
+
+- Indicador de pasos con `aria-current`; atrás sí, adelantar no.
+- Foco al heading del paso al cambiar (`tabIndex={-1}`).
+- Sin mazo: se puede recorrer el wizard; no hay botón de importar.
+  Enlace a crear un mazo. Sin mazo mágico.
+- Éxito con `FormStatus` (toma el foco) y «Importar otro archivo».
+
+```text
+pnpm check    exit 0 (format, lint, typecheck, contraste 18/18, vitest 42/280, build)
+pnpm e2e      92 passed (import-preview.spec.ts +1: foco/atrás; recap del mazo)
+```
+
+Fuera de alcance declarado: progreso y errores recuperables (LEX-4.9);
+dataset real (LEX-4.10); crear mazos embebido.
 
 ### LEX-4.7 — Implementar caso de uso de importación por lotes — `HECHO`
 
