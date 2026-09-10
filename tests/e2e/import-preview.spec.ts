@@ -183,7 +183,8 @@ test.describe("importación — vista previa", () => {
     await expect(page.getByRole("heading", { name: "Importación terminada" })).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByText("2 creadas")).toBeVisible();
+    await expect(page.getByText("Creadas: 2")).toBeVisible();
+    await expect(page.getByText("Total: 2")).toBeVisible();
 
     await page.goto("/es/concepts");
     await expect(page.getByRole("link", { name: "break the ice", exact: true })).toBeVisible();
@@ -195,8 +196,41 @@ test.describe("importación — vista previa", () => {
     await expect(page.getByText("2 posibles duplicadas")).toBeVisible();
     await walkToConfirm(page);
     await page.getByRole("button", { name: "Importar al curso" }).click();
-    await expect(page.getByText("0 creadas")).toBeVisible();
-    await expect(page.getByText("2 omitidas")).toBeVisible();
+    await expect(page.getByText("Creadas: 0")).toBeVisible();
+    await expect(page.getByText("Omitidas: 2")).toBeVisible();
+  });
+
+  test("un lote con filas inválidas lista los errores y permite descargarlos", async ({ page }) => {
+    await signUp(page);
+    await completeOnboarding(page);
+    await page.getByRole("link", { name: "Mis mazos" }).click();
+    await page.getByLabel("Nombre").fill("Importados");
+    await page.getByRole("button", { name: "Crear mazo" }).click();
+    await expect(page.getByRole("link", { name: "Importados" })).toBeVisible();
+
+    await page.goto("/es/import");
+    await page.getByLabel("Archivo").setInputFiles("tests/fixtures/import/errors.txt");
+    await page.getByRole("button", { name: "Previsualizar" }).click();
+    await walkToConfirm(page);
+    await page.getByRole("button", { name: "Importar al curso" }).click();
+
+    await expect(page.getByRole("heading", { name: "Importación terminada" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText("Creadas: 1")).toBeVisible();
+    await expect(page.getByText("Fallidas: 3")).toBeVisible();
+    await expect(page.getByText("Total: 4")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Filas que no se importaron" })).toBeVisible();
+    await expect(page.getByText("Fila 1: el frente está en blanco")).toBeVisible();
+    await expect(page.getByText("Fila 2: el reverso está en blanco")).toBeVisible();
+    await expect(
+      page.getByText("Reintentar abre un trabajo nuevo", { exact: false }),
+    ).toBeVisible();
+
+    const downloadPromise = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Descargar errores" }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe("lexora-import-errors.txt");
   });
 
   test("el wizard avanza, vuelve atrás y deja el foco en el paso", async ({ page }) => {

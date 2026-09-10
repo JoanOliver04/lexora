@@ -8,6 +8,8 @@ import { Link } from "@/i18n/navigation";
 import { Button, FormError, FormStatus, Label } from "@/shared/presentation/components";
 import { useFocusFirstInvalid } from "@/shared/presentation/hooks/use-focus-first-invalid";
 
+import { formatImportErrorReport } from "@/modules/importing/application/format-import-error-report";
+
 import { PendingButton } from "../../(auth)/_components/pending-button";
 import { previewImportAction, type ImportPreviewState } from "./actions";
 import {
@@ -22,6 +24,7 @@ import {
 const ERROR_ID = "import-preview-error";
 
 const FILE_ERRORS = new Set(["no-file", "empty-file", "read-failed", "too-large", "too-many-rows"]);
+const ERROR_LIST_LIMIT = 50;
 
 const SELECT_CLASS = [
   "min-h-11 rounded-(--radius-control) px-3",
@@ -112,19 +115,54 @@ function ImportPreviewFormSession({
     setMoved(true);
   }
 
-  if (state.result) {
+  const importResult = state.result;
+  if (importResult) {
+    const listedErrors = importResult.errors.slice(0, ERROR_LIST_LIMIT);
+    const hiddenErrorCount = importResult.errors.length - listedErrors.length;
+
     return (
       <FormStatus>
         <h2 className="text-lg font-medium">{t("result.heading")}</h2>
-        <p className="text-sm">
-          {t("result.counts", {
-            created: state.result.rowsCreated,
-            skipped: state.result.rowsSkipped,
-            duplicate: state.result.rowsDuplicate,
-            failed: state.result.rowsFailed,
-            total: state.result.rowsTotal,
-          })}
-        </p>
+        <ul className="flex flex-col gap-1 text-sm">
+          <li>{t("result.created", { count: importResult.rowsCreated })}</li>
+          <li>{t("result.skipped", { count: importResult.rowsSkipped })}</li>
+          <li>{t("result.duplicate", { count: importResult.rowsDuplicate })}</li>
+          <li>{t("result.failed", { count: importResult.rowsFailed })}</li>
+          <li>{t("result.total", { count: importResult.rowsTotal })}</li>
+        </ul>
+        {importResult.errors.length > 0 ? (
+          <section className="flex flex-col gap-2">
+            <h3 className="font-medium">{t("result.errorsHeading")}</h3>
+            <ul className="flex flex-col gap-1 text-sm text-(--color-ink-muted)">
+              {listedErrors.map((error) => (
+                <li key={`${error.rowNumber}-${error.code}`}>
+                  {t("result.errorRow", {
+                    row: error.rowNumber,
+                    reason: t(`issue.${error.code}`),
+                  })}
+                  {error.rowSample ? (
+                    <span className="mt-0.5 block font-mono text-xs text-(--color-ink-subtle)">
+                      {error.rowSample}
+                    </span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+            {hiddenErrorCount > 0 ? (
+              <p className="text-xs text-(--color-ink-subtle)">
+                {t("result.errorsMore", { count: hiddenErrorCount })}
+              </p>
+            ) : null}
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => downloadErrorReport(formatImportErrorReport(importResult.errors))}
+            >
+              {t("result.download")}
+            </Button>
+          </section>
+        ) : null}
+        <p className="text-xs text-(--color-ink-subtle)">{t("result.retryNote")}</p>
         <Button type="button" variant="secondary" onClick={onAgain}>
           {t("wizard.another")}
         </Button>
@@ -496,6 +534,16 @@ function ImportPreviewFormSession({
       </div>
     </form>
   );
+}
+
+function downloadErrorReport(text: string): void {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "lexora-import-errors.txt";
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 function ExecuteButton({ idle, pending }: { idle: string; pending: string }) {

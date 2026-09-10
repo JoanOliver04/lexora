@@ -100,7 +100,8 @@
       "back_empty": "the back is blank",
       "front_too_long": "the front is too long",
       "back_too_long": "the back is too long",
-      "tags_too_long": "the tags field is too long"
+      "tags_too_long": "the tags field is too long",
+      "rejected": "could not be saved as a concept or practice item"
     },
     "errors": {
       "no-file": "Choose a file.",
@@ -123,7 +124,16 @@
     },
     "result": {
       "heading": "Import finished",
-      "counts": "{created, plural, one {# created} other {# created}} · {skipped, plural, one {# skipped} other {# skipped}} · {duplicate, plural, one {# duplicate} other {# duplicates}} · {failed, plural, one {# failed} other {# failed}} (of {total})"
+      "created": "Created: {count}",
+      "skipped": "Skipped: {count}",
+      "duplicate": "Duplicates: {count}",
+      "failed": "Failed: {count}",
+      "total": "Total: {count}",
+      "errorsHeading": "Rows that were not imported",
+      "errorRow": "Row {row}: {reason}",
+      "errorsMore": "And {count} more. They are all in the downloadable file.",
+      "download": "Download errors",
+      "retryNote": "Retrying starts a new job. Rows that already exist are skipped if you choose to skip duplicates."
     }
   },
   "Onboarding": {
