@@ -92,7 +92,10 @@ la misma convención que sigue Papa Parse (candidata nombrada en MASTER_SPEC
   duplica la biblioteca, `copy` crea conceptos independientes. Un frente
   más largo que el título de concepto (200) o un reverso más largo que el
   ítem (500) se registra como fallo de esa fila y el lote sigue. El mazo
-  de destino tiene que existir ya en el curso.
+  de destino tiene que existir ya en el curso. Tras ejecutar (LEX-4.9) el
+  resumen muestra creadas/omitidas/duplicadas/fallidas/total, que cuadran
+  con el trabajo, y lista las filas fallidas (descargables en texto plano).
+  Reintentar es otro trabajo: no se reutiliza un job `completed`.
 
 ## Fixtures
 

@@ -1,5 +1,6 @@
 /**
- * Ejecuta una importación por lotes (LEX-4.7, MASTER_SPEC §9.7 pasos 8–10).
+ * Ejecuta una importación por lotes (LEX-4.7, resumen LEX-4.9, MASTER_SPEC
+ * §9.7 pasos 8–10).
  *
  * Cada fila válida nueva —o duplicada con estrategia `copy`— crea un
  * `Concept` (`kind: vocabulary`, título = frente, resumen = reverso) y un
@@ -38,6 +39,7 @@ import { normalizeTagName, validateTagDraft } from "@/modules/library/domain/tag
 import { importErrorMessage } from "./import-error-message";
 import {
   type ImportJob,
+  type ImportJobError,
   type ImportJobRepository,
   type ImportPersistErrorCode,
 } from "./import-job";
@@ -62,6 +64,7 @@ export interface ExecuteImportResult {
   rowsSkipped: number;
   rowsDuplicate: number;
   rowsFailed: number;
+  errors: ImportJobError[];
 }
 
 export type ExecuteImportError = "no-deck" | "empty";
@@ -162,15 +165,20 @@ export async function executeImport(
   let rowsDuplicate = 0;
   let rowsFailed = 0;
   const rowsTotal = mapped.rows.length + mapped.issues.length;
+  const errors: ImportJobError[] = [];
 
   const recordError = async (rowNumber: number, code: ImportPersistErrorCode): Promise<void> => {
-    await repos.jobs.addError({
-      ownerId: input.ownerId,
-      jobId: job.id,
+    const entry: ImportJobError = {
       rowNumber,
       code,
       message: importErrorMessage(code, input.locale),
       rowSample: sampleOf(input.rawRows, rowNumber),
+    };
+    errors.push(entry);
+    await repos.jobs.addError({
+      ownerId: input.ownerId,
+      jobId: job.id,
+      ...entry,
     });
   };
 
@@ -223,11 +231,12 @@ export async function executeImport(
       ok: true,
       result: {
         job: completed,
-        rowsTotal,
-        rowsCreated,
-        rowsSkipped,
-        rowsDuplicate,
-        rowsFailed,
+        rowsTotal: completed.rowsTotal,
+        rowsCreated: completed.rowsCreated,
+        rowsSkipped: completed.rowsSkipped,
+        rowsDuplicate: completed.rowsDuplicate,
+        rowsFailed: completed.rowsFailed,
+        errors,
       },
     };
   } catch (error) {

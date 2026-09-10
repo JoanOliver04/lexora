@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import en from "../../../messages/en.json";
 import es from "../../../messages/es.json";
+import type { ImportPersistErrorCode } from "@/modules/importing/application/import-job";
 import { IMPORT_ROW_ISSUE_CODES } from "@/modules/importing/domain/row";
+
+const PERSIST_CODES: ImportPersistErrorCode[] = [...IMPORT_ROW_ISSUE_CODES, "rejected"];
 
 const FILE_ERRORS = [
   "no-file",
@@ -17,7 +20,7 @@ const FILE_ERRORS = [
 
 describe("claves de error de importación", () => {
   it("cada código de fila tiene mensaje en es y en en", () => {
-    for (const code of IMPORT_ROW_ISSUE_CODES) {
+    for (const code of PERSIST_CODES) {
       expect(es.Import.issue, `es: falta issue.${code}`).toHaveProperty(code);
       expect(en.Import.issue, `en: falta issue.${code}`).toHaveProperty(code);
     }

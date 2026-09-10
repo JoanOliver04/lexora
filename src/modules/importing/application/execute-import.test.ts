@@ -229,6 +229,11 @@ describe("executeImport", () => {
     if (!outcome.ok) return;
     expect(outcome.result.rowsCreated).toBe(1);
     expect(outcome.result.rowsFailed).toBe(1);
+    expect(outcome.result.errors).toHaveLength(1);
+    expect(outcome.result.errors[0]).toEqual(
+      expect.objectContaining({ code: "front_empty", rowNumber: 1 }),
+    );
+    expect(outcome.result.errors).toHaveLength(outcome.result.job.rowsFailed);
     expect(fake.jobs.addError).toHaveBeenCalledWith(
       expect.objectContaining({ code: "front_empty", rowNumber: 1 }),
     );

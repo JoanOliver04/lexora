@@ -100,7 +100,8 @@
       "back_empty": "el reverso está en blanco",
       "front_too_long": "el frente es demasiado largo",
       "back_too_long": "el reverso es demasiado largo",
-      "tags_too_long": "el campo de etiquetas es demasiado largo"
+      "tags_too_long": "el campo de etiquetas es demasiado largo",
+      "rejected": "no se pudo guardar como concepto o ítem"
     },
     "errors": {
       "no-file": "Elige un archivo.",
@@ -123,7 +124,16 @@
     },
     "result": {
       "heading": "Importación terminada",
-      "counts": "{created, plural, one {# creada} other {# creadas}} · {skipped, plural, one {# omitida} other {# omitidas}} · {duplicate, plural, one {# duplicada} other {# duplicadas}} · {failed, plural, one {# fallida} other {# fallidas}} (de {total})"
+      "created": "Creadas: {count}",
+      "skipped": "Omitidas: {count}",
+      "duplicate": "Duplicadas: {count}",
+      "failed": "Fallidas: {count}",
+      "total": "Total: {count}",
+      "errorsHeading": "Filas que no se importaron",
+      "errorRow": "Fila {row}: {reason}",
+      "errorsMore": "Y {count} más. Están todas en el archivo descargable.",
+      "download": "Descargar errores",
+      "retryNote": "Reintentar abre un trabajo nuevo. Las filas que ya existen se omiten si eliges omitir duplicados."
     }
   },
   "Onboarding": {

@@ -33,6 +33,14 @@ export interface ImportJob {
   rowsFailed: number;
 }
 
+/** Fila fallida ya persistida. El cliente la lista o la descarga (LEX-4.9). */
+export interface ImportJobError {
+  rowNumber: number;
+  code: ImportPersistErrorCode;
+  message: string;
+  rowSample: string | null;
+}
+
 export interface ImportJobRepository {
   create(input: {
     ownerId: string;

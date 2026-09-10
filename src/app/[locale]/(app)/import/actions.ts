@@ -14,6 +14,7 @@ import {
   planImportDuplicates,
 } from "@/modules/importing/application/duplicates";
 import { executeImport } from "@/modules/importing/application/execute-import";
+import type { ImportJobError } from "@/modules/importing/application/import-job";
 import {
   MAX_FILE_BYTES,
   inspectImportUpload,
@@ -40,7 +41,8 @@ import type { Separator } from "@/modules/importing/domain/separator";
  * Vista previa (LEX-4.4…4.6) y ejecución del lote (LEX-4.7). El archivo
  * enorme se rechaza **antes** de parsear. `intent=execute` confirma e
  * importa; el resto solo previsualiza. El wizard (LEX-4.8) es presentación:
- * esta acción no conoce los pasos.
+ * esta acción no conoce los pasos. El resumen con errores (LEX-4.9) viaja
+ * en `result.errors`.
  */
 
 const PREVIEW_LIMIT = 50;
@@ -84,6 +86,7 @@ export interface ImportPreviewState {
     rowsSkipped: number;
     rowsDuplicate: number;
     rowsFailed: number;
+    errors: ImportJobError[];
   };
   mapping?: ColumnMapping;
   /** Lo que se vuelve a serializar en el campo oculto para el siguiente envío. */
@@ -283,6 +286,7 @@ async function executeFromForm(
       rowsSkipped: outcome.result.rowsSkipped,
       rowsDuplicate: outcome.result.rowsDuplicate,
       rowsFailed: outcome.result.rowsFailed,
+      errors: outcome.result.errors,
     },
   };
 }
