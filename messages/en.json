@@ -24,6 +24,7 @@
     "title": "Import",
     "intro": "Upload a TXT or CSV prepared for Anki. Here you only preview it and decide which column is which; nothing is imported yet.",
     "fileLabel": "File",
+    "fileHint": "Up to 5 MB and 10,000 rows. HTML is turned into plain text.",
     "submit": "Preview",
     "resubmit": "Refresh preview",
     "submitting": "Reading…",
@@ -58,12 +59,17 @@
       "too_few_columns": "too few columns for the chosen mapping",
       "too_many_columns": "too many columns",
       "front_empty": "the front is blank",
-      "back_empty": "the back is blank"
+      "back_empty": "the back is blank",
+      "front_too_long": "the front is too long",
+      "back_too_long": "the back is too long",
+      "tags_too_long": "the tags field is too long"
     },
     "errors": {
       "no-file": "Choose a file.",
       "empty-file": "The file is empty.",
-      "read-failed": "We couldn't read the file."
+      "read-failed": "We couldn't read the file.",
+      "too-large": "The file is larger than 5 MB.",
+      "too-many-rows": "The file has more than 10,000 rows."
     }
   },
   "Onboarding": {

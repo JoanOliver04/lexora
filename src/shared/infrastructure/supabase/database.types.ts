@@ -641,6 +641,9 @@ export type Database = {
         | "too_many_columns"
         | "front_empty"
         | "back_empty"
+        | "front_too_long"
+        | "back_too_long"
+        | "tags_too_long"
       import_status:
         | "pending"
         | "mapping"
@@ -809,6 +812,9 @@ export const Constants = {
         "too_many_columns",
         "front_empty",
         "back_empty",
+        "front_too_long",
+        "back_too_long",
+        "tags_too_long",
       ],
       import_status: ["pending", "mapping", "importing", "completed", "failed"],
       practice_mode: [

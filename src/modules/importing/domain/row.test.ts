@@ -49,4 +49,38 @@ describe("classifyRow", () => {
       tags: ["idioms"],
     });
   });
+
+  it("frente o reverso demasiado largo → su código; tags demasiado largo → tags_too_long", () => {
+    const longFront = "f".repeat(4001);
+    const longBack = "b".repeat(4001);
+    const longTags = "t".repeat(2001);
+    expect(classifyRow([longFront, "back", "t"], 1, 3)).toEqual({
+      rowNumber: 1,
+      code: "front_too_long",
+    });
+    expect(classifyRow(["front", longBack, "t"], 2, 3)).toEqual({
+      rowNumber: 2,
+      code: "back_too_long",
+    });
+    expect(classifyRow(["front", "back", longTags], 3, 3)).toEqual({
+      rowNumber: 3,
+      code: "tags_too_long",
+    });
+  });
+
+  it("HTML se convierte en texto plano antes de validar; un script no queda en el frente", () => {
+    expect(classifyRow(["<b>hello</b>", "<script>alert(1)</script>world", "t"], 1, 3)).toEqual({
+      rowNumber: 1,
+      front: "hello",
+      back: "world",
+      tags: ["t"],
+    });
+  });
+
+  it("un frente que solo era HTML vacío cuenta como front_empty", () => {
+    expect(classifyRow(["<p></p>", "back", "t"], 1, 3)).toEqual({
+      rowNumber: 1,
+      code: "front_empty",
+    });
+  });
 });

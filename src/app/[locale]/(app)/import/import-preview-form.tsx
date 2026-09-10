@@ -48,6 +48,7 @@ export function ImportPreviewForm({ locale }: { locale: string }) {
           accept=".txt,.csv,text/plain,text/csv"
           className="text-sm"
         />
+        <p className="text-xs text-(--color-ink-subtle)">{t("fileHint")}</p>
       </div>
 
       {hasPreview ? (
@@ -163,6 +164,11 @@ export function ImportPreviewForm({ locale }: { locale: string }) {
                       row: issue.rowNumber,
                       reason: t(`issue.${issue.code}`),
                     })}
+                    {issue.sample ? (
+                      <span className="mt-0.5 block font-mono text-xs text-(--color-ink-subtle)">
+                        {issue.sample}
+                      </span>
+                    ) : null}
                   </li>
                 ))}
               </ul>

@@ -8,11 +8,17 @@
  * más de tres columnas en el archivo (las que no se mapean se ignoran).
  *
  * No persiste nada: esto es lo que la pantalla usa para re-pintar la vista
- * previa cuando se cambia el mapeo. La validación y el saneamiento reales son
- * LEX-4.5.
+ * previa cuando se cambia el mapeo. Frente/reverso/tags pasan por
+ * `classifyFields` (HTML a texto plano, longitudes) igual que el parser.
  */
 
-import type { ImportRowIssue, ParsedImportRow, RawImportRow } from "./row";
+import {
+  type ImportRowIssue,
+  type ParsedImportRow,
+  type RawImportRow,
+  classifyFields,
+  isImportRowIssue,
+} from "./row";
 
 export interface ColumnMapping {
   /** Índice 0-indexado de la columna de frente. */
@@ -49,22 +55,19 @@ export function applyColumnMapping(rawRows: RawImportRow[], mapping: ColumnMappi
       continue;
     }
 
-    const front = (raw.columns[mapping.front] ?? "").trim();
-    const back = (raw.columns[mapping.back] ?? "").trim();
+    const rawTags = mapping.tags === null ? "" : (raw.columns[mapping.tags] ?? "");
+    const classified = classifyFields(
+      raw.columns[mapping.front] ?? "",
+      raw.columns[mapping.back] ?? "",
+      rawTags,
+      raw.rowNumber,
+    );
 
-    if (front === "") {
-      issues.push({ rowNumber: raw.rowNumber, code: "front_empty" });
-      continue;
+    if (isImportRowIssue(classified)) {
+      issues.push(classified);
+    } else {
+      rows.push(classified);
     }
-    if (back === "") {
-      issues.push({ rowNumber: raw.rowNumber, code: "back_empty" });
-      continue;
-    }
-
-    const rawTags = mapping.tags === null ? "" : (raw.columns[mapping.tags] ?? "").trim();
-    const tags = rawTags === "" ? [] : rawTags.split(/\s+/);
-
-    rows.push({ rowNumber: raw.rowNumber, front, back, tags });
   }
 
   return { rows, issues };

@@ -112,6 +112,16 @@ describe("createPapaParseDelimitedFileParser", () => {
     ]);
   });
 
+  it("HTML se convierte en texto plano: el script no sobrevive y #html:true no cambia eso", () => {
+    const result = parser.parse(fixture("html-tags.txt"));
+
+    expect(result.issues).toEqual([]);
+    expect(result.rows).toEqual([
+      { rowNumber: 2, front: "break the ice", back: "romper el hielo", tags: ["idioms"] },
+      { rowNumber: 3, front: "take off", back: "despegar", tags: ["phrasal_verbs"] },
+    ]);
+  });
+
   it("filas inválidas: cada una con su código y su número de línea", () => {
     const result = parser.parse(fixture("errors.txt"));
 

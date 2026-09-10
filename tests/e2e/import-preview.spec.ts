@@ -58,4 +58,42 @@ test.describe("importación — vista previa", () => {
     await expect(page.getByText("Fila 1: el frente está en blanco")).toBeVisible();
     await expect(page.getByText("Fila 2: el reverso está en blanco")).toBeVisible();
   });
+
+  test("un archivo de más de 5 MB se rechaza sin previsualizar", async ({ page }) => {
+    await signUp(page);
+    await completeOnboarding(page);
+    await page.goto("/es/import");
+
+    await page.getByLabel("Archivo").setInputFiles({
+      name: "huge.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.alloc(5 * 1024 * 1024 + 1, 97),
+    });
+    await page.getByRole("button", { name: "Previsualizar" }).click();
+
+    await expect(page.getByText("El archivo supera los 5 MB.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Vista previa" })).toHaveCount(0);
+  });
+
+  test("HTML importado se muestra como texto plano y un frente demasiado largo se lista", async ({
+    page,
+  }) => {
+    await signUp(page);
+    await completeOnboarding(page);
+    await page.goto("/es/import");
+
+    const longFront = "f".repeat(4001);
+    const content = `<b>hello</b>\tworld\ttags\n${longFront}\tback\ttags\n`;
+    await page.getByLabel("Archivo").setInputFiles({
+      name: "mixed.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.from(content, "utf8"),
+    });
+    await page.getByRole("button", { name: "Previsualizar" }).click();
+
+    const firstRow = page.locator("tbody tr").first();
+    await expect(firstRow).toContainText("hello");
+    await expect(firstRow).not.toContainText("<b>");
+    await expect(page.getByText("Fila 2: el frente es demasiado largo")).toBeVisible();
+  });
 });
