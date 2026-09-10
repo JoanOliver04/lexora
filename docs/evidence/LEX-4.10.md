@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-10
 **Rama:** `feat/lex-4-10-private-import`
-**Estado resultante:** gates locales en verde. PR pendiente de CI.
+**Estado resultante:** `HECHO`. PR #65 fusionada a `main` (merge `84e2dc2`);
+CI verde en los tres trabajos, runs `34492145918` (PR) y `34492734105`
+(merge).
 
 ---
 
