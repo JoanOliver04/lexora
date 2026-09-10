@@ -22,7 +22,33 @@
   "Import": {
     "backToApp": "Volver al inicio",
     "title": "Importar",
-    "intro": "Sube un TXT o CSV preparado para Anki. Previsualizas, eliges mazo y confirmas. Las filas duplicadas se omiten o se copian, nunca se fusionan.",
+    "intro": "Sube un TXT o CSV preparado para Anki. Eliges mazo, revisas duplicados y confirmas. Las filas duplicadas se omiten o se copian, nunca se fusionan.",
+    "wizard": {
+      "navLabel": "Pasos de la importación",
+      "step": {
+        "file": "Archivo",
+        "mapping": "Mapeo",
+        "destination": "Mazo",
+        "duplicates": "Duplicados",
+        "confirm": "Confirmar"
+      },
+      "fileHeading": "Archivo",
+      "destinationHeading": "Mazo e inversa",
+      "confirmHeading": "Confirmar importación",
+      "confirmIntro": "Nada se guarda hasta que confirmes. Revisa el resumen y pulsa importar.",
+      "confirmHint": "Si cambias de idea, vuelve atrás. El archivo no se almacena en el servidor.",
+      "recapFile": "Archivo: {filename}",
+      "recapCounts": "{valid} válidas · {issues} con problemas · {fresh} nuevas · {duplicates} duplicadas",
+      "recapDeck": "Mazo: {deck}",
+      "recapNoDeck": "Sin mazo de destino: créalo antes de importar.",
+      "recapReverseOn": "Se creará también la dirección inversa.",
+      "recapReverseOff": "Solo la dirección original (frente → reverso).",
+      "recapSkip": "Las filas duplicadas se omitirán.",
+      "recapCopy": "Las filas duplicadas se copiarán como conceptos nuevos.",
+      "back": "Atrás",
+      "continue": "Continuar",
+      "another": "Importar otro archivo"
+    },
     "fileLabel": "Archivo",
     "fileHint": "Hasta 5 MB y 10.000 filas. El HTML se convierte en texto plano.",
     "submit": "Previsualizar",
@@ -90,8 +116,10 @@
       "heading": "Importar al curso",
       "deck": "Mazo de destino",
       "noDeck": "Crea un mazo en el curso antes de importar. El archivo no se guarda hasta que confirmes.",
+      "createDeck": "Crear un mazo",
       "reverse": "Crear también la dirección inversa (reverso → frente)",
-      "submit": "Importar al curso"
+      "submit": "Importar al curso",
+      "submitting": "Importando…"
     },
     "result": {
       "heading": "Importación terminada",

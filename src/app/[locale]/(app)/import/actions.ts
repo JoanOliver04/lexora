@@ -39,8 +39,8 @@ import type { Separator } from "@/modules/importing/domain/separator";
 /**
  * Vista previa (LEX-4.4…4.6) y ejecución del lote (LEX-4.7). El archivo
  * enorme se rechaza **antes** de parsear. `intent=execute` confirma e
- * importa; el resto solo previsualiza. El mazo de destino tiene que existir
- * ya en el curso (selector mínimo; el wizard completo es LEX-4.8).
+ * importa; el resto solo previsualiza. El wizard (LEX-4.8) es presentación:
+ * esta acción no conoce los pasos.
  */
 
 const PREVIEW_LIMIT = 50;

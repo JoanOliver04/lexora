@@ -10,9 +10,8 @@ import { listDecks } from "@/modules/library/application/deck";
 import { ImportPreviewForm } from "./import-preview-form";
 
 /**
- * Vista previa, duplicados y ejecución del lote (LEX-4.4…4.7). El selector
- * de mazo es mínimo (mazos ya existentes del curso); el wizard completo es
- * LEX-4.8.
+ * Wizard de importación (LEX-4.8) sobre preview, duplicados y lote
+ * (LEX-4.4…4.7). El mazo de destino tiene que existir ya en el curso.
  *
  * Puerta de onboarding repetida por página, como el resto de `(app)` (deuda
  * anotada desde LEX-2.9). Un import sin curso al que importar no tiene
