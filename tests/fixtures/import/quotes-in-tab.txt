@@ -1,0 +1,2 @@
+he said "hello"	él dijo "hola"	dialogue
+normal	normal	tags

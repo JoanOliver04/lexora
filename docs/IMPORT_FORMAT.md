@@ -5,18 +5,12 @@ leer (`MASTER_SPEC.md` §9.7). Puerto y parser reales: LEX-4.2. Validación y
 saneamiento: LEX-4.5, [`SECURITY.md`](SECURITY.md). Esta página describe la
 **forma** del archivo, no cómo se procesa.
 
-> **Origen de esta caracterización (LEX-4.1, 2026-09-04):** el dataset real
-> de Anki del propietario (`07_Recursos/Anki_Mazos`) no estaba disponible en
-> el entorno donde se escribió — no es un fichero versionado ni compartido
-> con este agente. Joan decidió explícitamente proceder con el formato
-> **público y documentado** del exportador de notas en texto plano de Anki
-> («Export → Notes in Plain Text»), sin inventar ni suponer nada sobre
-> ficheros propios suyos que no se han visto. Esta página describe ese
-> formato público. **No se declara necesariamente completa**: si al importar
-> el dataset real aparecen diferencias (una directiva no documentada aquí,
-> un encoding distinto, un orden de columnas distinto), esta página se
-> actualiza entonces — es una caracterización de partida, no la última
-> palabra.
+> **Origen de esta caracterización:** LEX-4.1 partió del formato público del
+> exportador de Anki («Notes in Plain Text») porque el dataset real no
+> estaba en el clon. **LEX-4.10 (2026-09-10)** lo contrastó con los 10 TXT
+> privados de `07_Recursos/Anki_Mazos` (1.016 filas de datos). El contenido
+> de las tarjetas **no** se versiona. Hallazgos de estructura abajo; si el
+> dataset cambia, se vuelve a medir.
 
 ## Encoding
 
@@ -47,6 +41,7 @@ alguien cuyo propio campo empiece por `#` (ver
 | `#tags column:<n>` | Columna (1-indexada) que lleva las etiquetas, si no es la última. |
 | `#columns:<n>` | Número de columnas esperado. |
 | `#notetype column:<n>`, `#deck column:<n>` | Propias del formato de Anki, sin equivalente en Lexora — el mazo de destino se elige en el flujo de importación (MASTER_SPEC §9.7, paso 5), nunca se infiere del archivo. Se reconocen para no tratarlas como fila de datos, pero se ignoran. |
+| `#notetype:<nombre>` | Vista en el dataset real (p. ej. `#notetype:Basic`). No es `#notetype column:`. Al empezar por `#` queda entre las directivas de cabecera y no se lee como fila; el valor se ignora. |
 
 ## Columnas
 
@@ -69,11 +64,17 @@ separador de jerarquía ya es `::` en ambos sitios, sin conversión.
 
 ## Campos entrecomillados (CSV)
 
-Cuando el separador es coma o punto y coma y un campo contiene el propio
+Cuando el separador es **coma o punto y coma** y un campo contiene el propio
 separador, un salto de línea o comillas, el campo se entrecomilla con `"` y
 las comillas internas se escapan duplicándolas (`""`) — RFC 4180 estándar,
 la misma convención que sigue Papa Parse (candidata nombrada en MASTER_SPEC
 §9.7).
+
+En **tabulación** (export «Notes in Plain Text» de Anki) las comillas son
+**literales**: Anki no las escapa al estilo RFC. Tratarlas como delimitador
+de campo fusiona filas y fabrica `too_few_columns`. LEX-4.10 lo comprobó
+contra el dataset real; el parser desactiva el `quoteChar` solo si el
+separador es tab. Fixture `quotes-in-tab.txt`.
 
 ## Fuera de alcance de esta caracterización
 
@@ -112,6 +113,7 @@ bajo un directorio `no_visible_en_github/`, ya excluido globalmente por
 | `comma.csv` | CSV con coma, sin comillas necesarias. |
 | `semicolon.csv` | CSV con punto y coma. |
 | `quoted-fields.csv` | Campos entrecomillados con el separador y comillas internas escapadas dentro del campo. |
+| `quotes-in-tab.txt` | TSV con `"` literales en un campo (Anki no las escapa RFC 4180). |
 | `hierarchical-tags.txt` | Varias etiquetas jerárquicas `::` en el mismo campo. |
 | `bom-utf8.txt` | BOM UTF-8 al inicio del archivo. |
 | `comment-line-not-a-directive.txt` | Una línea que empieza por `#` **después** de la primera fila de datos: debe leerse como fila literal, no como directiva. |
