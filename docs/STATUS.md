@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-10
-**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (9/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (10/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M4 — Importación real validada — `PENDIENTE`. M3 `HECHO`. Etiqueta de hito M3 (`v0.4.0-m3` o la que decida Joan) pendiente de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-4.1…4.9 `HECHO` · siguiente LEX-4.10 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `d0bf459` (PR #63, LEX-4.9). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-4.1…4.10 `HECHO` · siguiente LEX-4.11 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `84e2dc2` (PR #65, LEX-4.10). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,30 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-4.10 — Probar archivos privados reales y rendimiento — `HECHO`
+
+Informe en [`evidence/LEX-4.10.md`](evidence/LEX-4.10.md). PR #65 fusionada a
+`main` (merge `84e2dc2`); CI verde en los tres trabajos, runs `34492145918`
+(PR) y `34492734105` (merge). **Sin migración.**
+
+Los 10 TXT privados (1.016 filas) parsean sin problemas y no se
+versionan. `A1_Pronunciacion.txt` crea 44; el conjunto crea 1.013,
+omite 3 duplicados intra-archivo, 0 fallidas. Parseo ~22 ms; el lote
+en el wizard ~110 s. TSV de Anki: comillas literales, no RFC 4180.
+
+- Parser: `quoteChar` desactivado solo con tabulación.
+- Tests gated por `LEXORA_PRIVATE_IMPORT_DIR` (CI los salta).
+- Originales intactos (SHA-256). Sin texto de tarjetas en el repo.
+
+```text
+pnpm check    exit 0 (format, lint, typecheck, contraste 18/18, vitest 44/283 + 1 skipped, build)
+pnpm e2e      94 passed, 4 skipped (privados, sin env)
+```
+
+Fuera de alcance declarado: auditoría M4 (LEX-4.11); publicar el
+dataset; huecos `____` como `cloze`; cola asíncrona / timeout de
+hosting.
 
 ### LEX-4.9 — Mostrar progreso, resumen y errores recuperables — `HECHO`
 
