@@ -64,6 +64,23 @@ test.describe("importación — vista previa", () => {
     await expect(page.getByText("Fila 2: el reverso está en blanco")).toBeVisible();
   });
 
+  test("un archivo de más de 10.000 filas se rechaza sin previsualizar", async ({ page }) => {
+    await signUp(page);
+    await completeOnboarding(page);
+    await page.goto("/es/import");
+
+    const content = Array.from({ length: 10_001 }, () => "a\tb\ttags").join("\n") + "\n";
+    await page.getByLabel("Archivo").setInputFiles({
+      name: "many.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.from(content, "utf8"),
+    });
+    await page.getByRole("button", { name: "Previsualizar" }).click();
+
+    await expect(page.getByText("El archivo tiene más de 10.000 filas.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Vista previa" })).toHaveCount(0);
+  });
+
   test("un archivo de más de 5 MB se rechaza sin previsualizar", async ({ page }) => {
     await signUp(page);
     await completeOnboarding(page);
@@ -198,6 +215,40 @@ test.describe("importación — vista previa", () => {
     await page.getByRole("button", { name: "Importar al curso" }).click();
     await expect(page.getByText("Creadas: 0")).toBeVisible();
     await expect(page.getByText("Omitidas: 2")).toBeVisible();
+  });
+
+  test("con inversa se crean dos ítems del mismo concepto", async ({ page }) => {
+    await signUp(page);
+    await completeOnboarding(page);
+    await page.getByRole("link", { name: "Mis mazos" }).click();
+    await page.getByLabel("Nombre").fill("Con inversa");
+    await page.getByRole("button", { name: "Crear mazo" }).click();
+    await expect(page.getByRole("link", { name: "Con inversa" })).toBeVisible();
+
+    await page.goto("/es/import");
+    await page.getByLabel("Archivo").setInputFiles("tests/fixtures/import/basic-tab.txt");
+    await page.getByRole("button", { name: "Previsualizar" }).click();
+    await continueTo(page, "Mazo e inversa");
+    await page
+      .getByRole("checkbox", { name: "Crear también la dirección inversa (reverso → frente)" })
+      .check();
+    await continueTo(page, "Duplicados");
+    await continueTo(page, "Confirmar importación");
+    await expect(page.getByText("Se creará también la dirección inversa.")).toBeVisible();
+    await page.getByRole("button", { name: "Importar al curso" }).click();
+    await expect(page.getByRole("heading", { name: "Importación terminada" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText("Creadas: 2")).toBeVisible();
+
+    await page.goto("/es/concepts");
+    await page.getByRole("link", { name: "break the ice", exact: true }).click();
+    const recognition = page.locator("li", { hasText: "break the ice → romper el hielo" });
+    const recall = page.locator("li", { hasText: "romper el hielo → break the ice" });
+    await expect(recognition).toBeVisible();
+    await expect(recognition.getByText("Reconocimiento básico", { exact: true })).toBeVisible();
+    await expect(recall).toBeVisible();
+    await expect(recall.getByText("Recuperación básica", { exact: true })).toBeVisible();
   });
 
   test("un lote con filas inválidas lista los errores y permite descargarlos", async ({ page }) => {

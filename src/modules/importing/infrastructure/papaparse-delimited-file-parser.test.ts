@@ -138,6 +138,32 @@ describe("createPapaParseDelimitedFileParser", () => {
     ]);
   });
 
+  it("entradas adversas no lanzan: el parser clasifica o deja el archivo vacío", () => {
+    const payloads = [
+      "",
+      "\n\n\n",
+      "#separator:tab\n",
+      "#notetype:Basic\n#separator:tab\nhello\thola\ttags\n",
+      "a\tb\ttags\r\nb\tc\ttags\r\n",
+      '=cmd|"/c calc"\tback\ttags\n',
+      "front\tback\ttags\n\0still-here\tback\ttags\n",
+      "#html:true\n<script>alert(1)</script>\tworld\ttags\n",
+    ];
+
+    for (const payload of payloads) {
+      expect(() => parser.parse(payload)).not.toThrow();
+    }
+
+    const formula = parser.parse("=1+1\tback\ttags\n");
+    expect(formula.rows[0]?.front).toBe("=1+1");
+
+    const unknownDirective = parser.parse("#notetype:Basic\n#separator:tab\nhello\thola\ttags\n");
+    expect(unknownDirective.issues).toEqual([]);
+    expect(unknownDirective.rows).toEqual([
+      { rowNumber: 3, front: "hello", back: "hola", tags: ["tags"] },
+    ]);
+  });
+
   it("filas inválidas: cada una con su código y su número de línea", () => {
     const result = parser.parse(fixture("errors.txt"));
 

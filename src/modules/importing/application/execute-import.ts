@@ -21,6 +21,7 @@
 
 import { type ColumnMapping, applyColumnMapping } from "@/modules/importing/domain/column-mapping";
 import { type DuplicateStrategy, classifyImportRows } from "@/modules/importing/domain/duplicates";
+import { MAX_ROWS } from "@/modules/importing/domain/limits";
 import type {
   ImportRowIssueCode,
   ParsedImportRow,
@@ -67,7 +68,7 @@ export interface ExecuteImportResult {
   errors: ImportJobError[];
 }
 
-export type ExecuteImportError = "no-deck" | "empty";
+export type ExecuteImportError = "no-deck" | "empty" | "too-many-rows";
 
 function assertUserId(userId: string): void {
   if (userId.trim() === "") {
@@ -114,6 +115,10 @@ export async function executeImport(
   },
 ): Promise<{ ok: true; result: ExecuteImportResult } | { ok: false; error: ExecuteImportError }> {
   assertUserId(input.ownerId);
+
+  if (input.rawRows.length > MAX_ROWS) {
+    return { ok: false, error: "too-many-rows" };
+  }
 
   const decks = await repos.decks.list({
     ownerId: input.ownerId,

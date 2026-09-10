@@ -6,10 +6,10 @@ Cómo trata Lexora un archivo que alguien sube. Complementa
 producto viven en `MASTER_SPEC.md` §16; este documento registra **cómo** se
 aplican en el código, sin copiar esa especificación.
 
-> **Alcance actual (LEX-4.5):** validación y saneamiento de la importación
-> TXT/CSV. Autenticación, RLS y secretos se cubren en los ADR y en las
-> evidencias de FASE 1–3. Rate limiting / cuotas de importación queda para
-> una tarea posterior de FASE 4 o FASE 8.
+> **Alcance actual (LEX-4.5, cierre M4 en LEX-4.11):** validación y
+> saneamiento de la importación TXT/CSV. Autenticación, RLS y secretos se
+> cubren en los ADR y en las evidencias de FASE 1–3. Rate limiting / cuotas
+> de importación queda para FASE 8 (gate 12.6).
 
 ## Por qué hay más de una barrera
 
@@ -27,11 +27,12 @@ navegador. Una sola defensa no basta.
 | Longitud de campo | Frente/reverso ≤ 4.000; campo de etiquetas ≤ 2.000. Códigos `front_too_long` / `back_too_long` / `tags_too_long`. | `classifyFields` |
 | Mensajes y muestras | `row_sample` sin controles, ≤ 200 caracteres. Ningún mensaje incluye la fila entera, una consulta o un secreto. | `sanitizeRowSample` |
 | CHECK en la base | `original_filename` 1–255; `message` 1–500; `row_sample` ≤ 500. Último guardián si un llamador futuro se salta el dominio. | `import_jobs` / `import_job_errors` |
+| Recuento al ejecutar | `carried.rawRows` viaja en el cliente; `executeImport` vuelve a aplicar `MAX_ROWS` y no crea el trabajo si se supera. | `executeImport`, `previewImportAction` |
 
 Los límites de campo del import son **propios** (feature-first): no se
-importan de `library/domain/taxonomy.ts`. Cuando LEX-4.7 cree conceptos e
-ítems, esos validadores aplicarán sus topes más estrictos (título 200, etc.)
-con sus propios mensajes.
+importan de `library/domain/taxonomy.ts`. Al crear conceptos e ítems
+(LEX-4.7) aplican además los topes más estrictos de cada entidad (título
+200, etc.) con sus propios mensajes.
 
 ## HTML importado
 
@@ -63,11 +64,12 @@ comparando la `canonical_key` del frente con los conceptos vivos del curso
 (y con filas anteriores del mismo archivo). La persona elige **omitir** o
 **crear copia**. No hay «actualizar coincidencia»: un título igual no basta
 para saber que es el mismo concepto con un campo distinto, y un `UPDATE`
-silencioso rompería la regla de no sobrescribir. LEX-4.7 ejecutará la
-elección; aquí no se escribe nada.
+silencioso rompería la regla de no sobrescribir. LEX-4.7 ejecuta esa
+elección.
 
 ## Qué no cubre esto
 
-- Cuotas o cooldowns de importación por cuenta.
-- Ejecutar la importación y persistir `import_jobs` (LEX-4.7).
-- Clasificación de duplicados (LEX-4.6).
+- Cuotas o cooldowns de importación por cuenta (gate 12.6 / FASE 8).
+- Neutralizar `=`/`+`/`-`/`@` al **exportar** CSV (FASE 8).
+- Timeout de Server Action en hosting para un lote de ~110 s (anotado en
+  LEX-4.10; el tope local de 1.016 filas cabe).

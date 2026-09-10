@@ -5,6 +5,8 @@ import type { Deck } from "@/modules/library/domain/deck";
 import type { PracticeItem } from "@/modules/library/domain/practice-item";
 import type { Tag } from "@/modules/library/domain/tag";
 
+import { MAX_ROWS } from "@/modules/importing/domain/limits";
+
 import { executeImport } from "./execute-import";
 import type { ImportJob, ImportJobRepository } from "./import-job";
 
@@ -256,6 +258,22 @@ describe("executeImport", () => {
       expect.objectContaining({ code: "front_too_long" }),
     );
     expect(fake.concepts.create).not.toHaveBeenCalled();
+  });
+
+  it("más filas que el tope no crea trabajo", async () => {
+    const fake = repos();
+    const outcome = await executeImport(
+      {
+        ...baseInput,
+        rawRows: Array.from({ length: MAX_ROWS + 1 }, (_, index) => ({
+          rowNumber: index + 1,
+          columns: ["a", "b", ""],
+        })),
+      },
+      fake,
+    );
+    expect(outcome).toEqual({ ok: false, error: "too-many-rows" });
+    expect(fake.jobs.create).not.toHaveBeenCalled();
   });
 
   it("sin mazo del curso → no-deck y no crea trabajo", async () => {
