@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
-**Última actualización:** 2026-09-05
-**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (4/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Última actualización:** 2026-09-10
+**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (5/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M4 — Importación real validada — `PENDIENTE`. M3 `HECHO`. Etiqueta de hito M3 (`v0.4.0-m3` o la que decida Joan) pendiente de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-4.1…4.4 `HECHO` · siguiente LEX-4.5 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `b658c78` (PR #53, LEX-4.4). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-4.1…4.5 `HECHO` · siguiente LEX-4.6 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `8d1afa7` (PR #55, LEX-4.5). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,32 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-4.5 — Validar y sanear entradas — `HECHO`
+
+Informe en [`evidence/LEX-4.5.md`](evidence/LEX-4.5.md). PR #55 fusionada a
+`main` (merge `8d1afa7`); CI verde en los tres trabajos, runs `34472011398`
+(PR) y `34472458601` (merge). Migración
+`20260910120000_import_error_codes_validation`.
+
+Barreras de MASTER_SPEC §16.2–16.3 sobre la vista previa de LEX-4.4: un
+archivo que pase de 5 MB o 10.000 filas se rechaza **antes** de Papa Parse
+(`File.size` antes de `file.text()`). Frente/reverso ≤ 4.000, etiquetas
+≤ 2.000 (`front_too_long` / `back_too_long` / `tags_too_long`). HTML a
+texto plano siempre, no solo con `#html:true`. Nombre de archivo saneado
+(sin ruta, sin controles, sin `..`, ≤ 255). `row_sample` sin controles y
+≤ 200. Tope de cuerpo de Server Action a 6 MB (el default de Next.js es
+1 MB). `docs/SECURITY.md` nuevo.
+
+```text
+pnpm check   exit 0 (format, lint, typecheck, contraste 18/18, vitest 37/262, build)
+pnpm db:reset  8 migraciones + seed desde vacío
+pnpm db:test   12 ficheros / 311 aserciones, PASS (110: 45)
+pnpm e2e       84 passed (import-preview.spec.ts +2: >5 MB rechazado; HTML plano + frente demasiado largo)
+```
+
+Fuera de alcance declarado: rate limiting de importación; ejecutar
+(LEX-4.7+); duplicados (LEX-4.6); fórmulas al exportar CSV.
 
 ### LEX-4.4 — Implementar preview y mapeo de columnas — `HECHO`
 
