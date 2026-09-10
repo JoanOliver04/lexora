@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-10
-**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (6/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (7/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M4 — Importación real validada — `PENDIENTE`. M3 `HECHO`. Etiqueta de hito M3 (`v0.4.0-m3` o la que decida Joan) pendiente de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-4.1…4.6 `HECHO` · siguiente LEX-4.7 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `19efe26` (PR #57, LEX-4.6). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-4.1…4.7 `HECHO` · siguiente LEX-4.8 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `cd6e9de` (PR #59, LEX-4.7). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,38 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-4.7 — Implementar caso de uso de importación por lotes — `HECHO`
+
+Informe en [`evidence/LEX-4.7.md`](evidence/LEX-4.7.md). PR #59 fusionada a
+`main` (merge `cd6e9de`); CI verde en los tres trabajos, runs `34480035517`
+(PR) y `34480526200` (merge). Migración
+`20260910160000_import_error_code_rejected`.
+
+Confirmar y ejecutar: cada fila válida nueva —o duplicada con `copy`—
+crea un `Concept` (`vocabulary`, título = frente, resumen = reverso) y un
+`PracticeItem` `basic_recognition`. Inversa opcional: segundo ítem del
+mismo concepto. Etiquetas al concepto (`normalizeTagName`; inválidas se
+omiten). `skip` no crea. Un fallo de fila no aborta el lote.
+
+- **`executeImport`** + puerto `ImportJobRepository` + adaptador
+  Supabase. Sin SQL en la Server Action.
+- Selector mínimo de mazo (los que ya existen) y casilla de inversa. Si
+  no hay mazo, no hay botón de confirmar: **sin mazo mágico**.
+- Trabajo `importing` → `completed` (también con fallos parciales);
+  `failed` solo si aborta. Cada confirmación es un trabajo nuevo.
+- `rejected` en `import_error_code` para filas que el parser acepta y
+  la biblioteca no.
+
+```text
+pnpm check    exit 0 (format, lint, typecheck, contraste 18/18, vitest 41/278, build)
+pnpm db:reset 9 migraciones + seed desde vacío
+pnpm db:test  12 ficheros / 312 aserciones, PASS (110: 46)
+pnpm e2e      90 passed (import-preview.spec.ts +1: sin mazo / importar / reimportar skip)
+```
+
+Fuera de alcance declarado: wizard con pasos 5–6 pulidos (LEX-4.8);
+progreso visual (LEX-4.9); dataset real (LEX-4.10).
 
 ### LEX-4.6 — Implementar plan de duplicados — `HECHO`
 
