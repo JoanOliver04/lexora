@@ -1,13 +1,22 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { completeOnboarding, signUp } from "./helpers";
 
 /**
- * Vista previa, mapeo y plan de duplicados (LEX-4.4…4.6, §9.7 pasos 1–4 y 7).
- *
- * Sube una fixture, ve el separador, la muestra y los recuentos
- * nuevas/duplicadas, cambia el mapeo sin re-subir. No persiste nada.
+ * Wizard de importación (LEX-4.8) sobre preview, duplicados y lote
+ * (LEX-4.4…4.7, §9.7 pasos 1–8).
  */
+async function continueTo(page: Page, heading: string) {
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await expect(page.getByRole("heading", { name: heading, level: 2 })).toBeVisible();
+}
+
+async function walkToConfirm(page: Page) {
+  await continueTo(page, "Mazo e inversa");
+  await continueTo(page, "Duplicados");
+  await continueTo(page, "Confirmar importación");
+}
+
 test.describe("importación — vista previa", () => {
   test("subir un TSV, ver separador y muestra, y reasignar columnas", async ({ page }) => {
     await signUp(page);
@@ -20,17 +29,15 @@ test.describe("importación — vista previa", () => {
     await page.getByLabel("Archivo").setInputFiles("tests/fixtures/import/basic-tab.txt");
     await page.getByRole("button", { name: "Previsualizar" }).click();
 
+    await expect(page.getByRole("heading", { name: "Mapeo de columnas", level: 2 })).toBeVisible();
     await expect(page.getByText("Separador detectado: tabulación")).toBeVisible();
     await expect(page.getByText("2 filas válidas · sin problemas")).toBeVisible();
     await expect(page.getByText("2 nuevas · sin duplicados")).toBeVisible();
-    await expect(page.getByRole("radio", { name: "Omitir las filas duplicadas" })).toBeChecked();
 
-    // Mapeo por defecto: frente = columna 1, reverso = columna 2.
     const firstRow = page.locator("tbody tr").first();
     await expect(firstRow).toContainText("break the ice");
     await expect(firstRow).toContainText("romper el hielo");
 
-    // Intercambiar frente y reverso, sin volver a subir el archivo.
     await page.getByLabel("Columna de frente").selectOption("1");
     await page.getByLabel("Columna de reverso").selectOption("0");
     await page.getByRole("button", { name: "Actualizar vista previa" }).click();
@@ -50,8 +57,6 @@ test.describe("importación — vista previa", () => {
     await page.getByLabel("Archivo").setInputFiles("tests/fixtures/import/errors.txt");
     await page.getByRole("button", { name: "Previsualizar" }).click();
 
-    // Con el mapeo de columnas, las columnas de más se ignoran: la cuarta
-    // fila de errors.txt es válida. Las otras tres siguen siendo problemas.
     await expect(page.getByText("1 fila válida · 3 con problemas")).toBeVisible();
     await expect(page.getByText("1 nueva · sin duplicados")).toBeVisible();
     await expect(page.getByText("Filas con problemas en la muestra")).toBeVisible();
@@ -114,13 +119,17 @@ test.describe("importación — vista previa", () => {
     await page.getByRole("button", { name: "Previsualizar" }).click();
 
     await expect(page.getByText("1 nueva · 1 posible duplicada")).toBeVisible();
+    await continueTo(page, "Mazo e inversa");
+    await continueTo(page, "Duplicados");
     await expect(page.getByText("Fila 1: break the ice")).toBeVisible();
     await expect(page.getByText("(ya existe: Break the ice)")).toBeVisible();
 
     await page.getByRole("radio", { name: "Crear una copia independiente" }).check();
+    await page.getByRole("button", { name: "2. Mapeo" }).click();
     await page.getByRole("button", { name: "Actualizar vista previa" }).click();
+    await continueTo(page, "Mazo e inversa");
+    await continueTo(page, "Duplicados");
     await expect(page.getByRole("radio", { name: "Crear una copia independiente" })).toBeChecked();
-    await expect(page.getByText("1 nueva · 1 posible duplicada")).toBeVisible();
   });
 
   test("dos frentes iguales en el archivo: la segunda fila es duplicada", async ({ page }) => {
@@ -137,6 +146,8 @@ test.describe("importación — vista previa", () => {
     await page.getByRole("button", { name: "Previsualizar" }).click();
 
     await expect(page.getByText("2 nuevas · 1 posible duplicada")).toBeVisible();
+    await continueTo(page, "Mazo e inversa");
+    await continueTo(page, "Duplicados");
     await expect(page.getByText("Fila 2: hello")).toBeVisible();
     await expect(page.getByText("(también en filas 1)")).toBeVisible();
   });
@@ -150,7 +161,8 @@ test.describe("importación — vista previa", () => {
     await page.getByLabel("Archivo").setInputFiles("tests/fixtures/import/basic-tab.txt");
     await page.getByRole("button", { name: "Previsualizar" }).click();
     await expect(page.getByText("2 nuevas · sin duplicados")).toBeVisible();
-    await expect(page.getByText("Crea un mazo en el curso antes de importar")).toBeVisible();
+    await walkToConfirm(page);
+    await expect(page.getByText("Sin mazo de destino: créalo antes de importar.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Importar al curso" })).toHaveCount(0);
 
     await page.getByRole("link", { name: "Volver al inicio" }).click();
@@ -162,7 +174,11 @@ test.describe("importación — vista previa", () => {
     await page.goto("/es/import");
     await page.getByLabel("Archivo").setInputFiles("tests/fixtures/import/basic-tab.txt");
     await page.getByRole("button", { name: "Previsualizar" }).click();
+    await continueTo(page, "Mazo e inversa");
     await expect(page.getByLabel("Mazo de destino")).toBeVisible();
+    await continueTo(page, "Duplicados");
+    await continueTo(page, "Confirmar importación");
+    await expect(page.getByText("Mazo: Importados")).toBeVisible();
     await page.getByRole("button", { name: "Importar al curso" }).click();
     await expect(page.getByRole("heading", { name: "Importación terminada" })).toBeVisible({
       timeout: 15_000,
@@ -177,8 +193,30 @@ test.describe("importación — vista previa", () => {
     await page.getByLabel("Archivo").setInputFiles("tests/fixtures/import/basic-tab.txt");
     await page.getByRole("button", { name: "Previsualizar" }).click();
     await expect(page.getByText("2 posibles duplicadas")).toBeVisible();
+    await walkToConfirm(page);
     await page.getByRole("button", { name: "Importar al curso" }).click();
     await expect(page.getByText("0 creadas")).toBeVisible();
     await expect(page.getByText("2 omitidas")).toBeVisible();
+  });
+
+  test("el wizard avanza, vuelve atrás y deja el foco en el paso", async ({ page }) => {
+    await signUp(page);
+    await completeOnboarding(page);
+    await page.goto("/es/import");
+    await page.getByLabel("Archivo").setInputFiles("tests/fixtures/import/basic-tab.txt");
+    await page.getByRole("button", { name: "Previsualizar" }).click();
+
+    const mapping = page.getByRole("heading", { name: "Mapeo de columnas", level: 2 });
+    await expect(mapping).toBeVisible();
+    await expect(mapping).toBeFocused();
+    await expect(page.getByRole("button", { name: "3. Mazo" })).toHaveCount(0);
+
+    await continueTo(page, "Mazo e inversa");
+    await expect(page.getByRole("heading", { name: "Mazo e inversa", level: 2 })).toBeFocused();
+
+    await page.getByRole("button", { name: "Atrás" }).click();
+    await expect(mapping).toBeVisible();
+    await expect(mapping).toBeFocused();
+    await expect(page.getByRole("button", { name: "3. Mazo" })).toBeVisible();
   });
 });

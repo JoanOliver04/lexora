@@ -22,7 +22,33 @@
   "Import": {
     "backToApp": "Back to home",
     "title": "Import",
-    "intro": "Upload a TXT or CSV prepared for Anki. Preview it, pick a deck, and confirm. Duplicate rows are skipped or copied, never merged.",
+    "intro": "Upload a TXT or CSV prepared for Anki. Pick a deck, review duplicates, and confirm. Duplicate rows are skipped or copied, never merged.",
+    "wizard": {
+      "navLabel": "Import steps",
+      "step": {
+        "file": "File",
+        "mapping": "Mapping",
+        "destination": "Deck",
+        "duplicates": "Duplicates",
+        "confirm": "Confirm"
+      },
+      "fileHeading": "File",
+      "destinationHeading": "Deck and reverse",
+      "confirmHeading": "Confirm import",
+      "confirmIntro": "Nothing is saved until you confirm. Check the summary and press import.",
+      "confirmHint": "If you change your mind, go back. The file is not stored on the server.",
+      "recapFile": "File: {filename}",
+      "recapCounts": "{valid} valid · {issues} with problems · {fresh} new · {duplicates} duplicates",
+      "recapDeck": "Deck: {deck}",
+      "recapNoDeck": "No destination deck: create one before importing.",
+      "recapReverseOn": "The reverse direction will also be created.",
+      "recapReverseOff": "Original direction only (front → back).",
+      "recapSkip": "Duplicate rows will be skipped.",
+      "recapCopy": "Duplicate rows will be copied as new concepts.",
+      "back": "Back",
+      "continue": "Continue",
+      "another": "Import another file"
+    },
     "fileLabel": "File",
     "fileHint": "Up to 5 MB and 10,000 rows. HTML is turned into plain text.",
     "submit": "Preview",
@@ -90,8 +116,10 @@
       "heading": "Import into the course",
       "deck": "Destination deck",
       "noDeck": "Create a deck in the course before importing. The file is not stored until you confirm.",
+      "createDeck": "Create a deck",
       "reverse": "Also create the reverse direction (back → front)",
-      "submit": "Import into the course"
+      "submit": "Import into the course",
+      "submitting": "Importing…"
     },
     "result": {
       "heading": "Import finished",
