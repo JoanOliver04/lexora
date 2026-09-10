@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-10
-**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (8/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (9/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M4 — Importación real validada — `PENDIENTE`. M3 `HECHO`. Etiqueta de hito M3 (`v0.4.0-m3` o la que decida Joan) pendiente de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-4.1…4.8 `HECHO` · siguiente LEX-4.9 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `8bce773` (PR #61, LEX-4.8). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-4.1…4.9 `HECHO` · siguiente LEX-4.10 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `d0bf459` (PR #63, LEX-4.9). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,29 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-4.9 — Mostrar progreso, resumen y errores recuperables — `HECHO`
+
+Informe en [`evidence/LEX-4.9.md`](evidence/LEX-4.9.md). PR #63 fusionada a
+`main` (merge `d0bf459`); CI verde en los tres trabajos, runs `34487576161`
+(PR) y `34488133971` (merge). **Sin migración.**
+
+Tras ejecutar, el resumen lista creadas / omitidas / duplicadas /
+fallidas / total, tomados del job `completed`. Las filas que no
+entraron se listan (código, mensaje seguro, muestra saneada) y se
+pueden descargar en texto plano. Reintentar es un trabajo nuevo.
+
+- **`executeImport`** devuelve `errors` junto a los contadores.
+- Lista en pantalla (hasta 50) + descarga `lexora-import-errors.txt`.
+- Progreso: el lote es síncrono; el botón ya dice «Importando…».
+
+```text
+pnpm check    exit 0 (format, lint, typecheck, contraste 18/18, vitest 43/282, build)
+pnpm e2e      94 passed (import-preview.spec.ts +1: errores + descarga)
+```
+
+Fuera de alcance declarado: dataset real (LEX-4.10); auditoría M4
+(LEX-4.11); cola asíncrona; historial de trabajos.
 
 ### LEX-4.8 — Construir wizard completo de importación — `HECHO`
 
