@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-10
-**Fase actual:** **FASE 4 — Importación TXT/CSV** — `EN PROCESO` (10/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
-**Hito actual:** M4 — Importación real validada — `PENDIENTE`. M3 `HECHO`. Etiqueta de hito M3 (`v0.4.0-m3` o la que decida Joan) pendiente de autorización del propietario.
+**Fase actual:** **FASE 4 — Importación TXT/CSV** — `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Hito actual:** M4 — Importación real validada — `HECHO`. M3 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-4.1…4.10 `HECHO` · siguiente LEX-4.11 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `84e2dc2` (PR #65, LEX-4.10). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-4.1…4.11 `HECHO` · siguiente LEX-5.1 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
+**Rama / commit base / HEAD:** `main` en `418ec0f` (PR #67, LEX-4.11). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,31 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-4.11 — Auditoría de seguridad, E2E y cierre de M4 — `HECHO` · cierra FASE 4 / M4
+
+Informe en [`evidence/LEX-4.11.md`](evidence/LEX-4.11.md). PR #67 fusionada a
+`main` (merge `418ec0f`); CI verde en los tres trabajos, runs `34495775177`
+(PR) y `34496371673` (merge). **Sin migración.** **Con esto FASE 4 `HECHO`
+(11/11) y M4 `HECHO`.**
+
+Sin producto nuevo. Recorre el gate 12.5 y los criterios de M4. El hueco
+era el aislamiento A/B del lote en la interfaz. Inversa y el tope de
+10.000 filas pasan a e2e. `executeImport` reaplica `MAX_ROWS` porque
+`carried` viaja en el cliente.
+
+- `import-isolation.spec.ts`: A importa; B no ve conceptos ni mazo (`404`).
+- Inversa: reconocimiento + recuperación del mismo concepto.
+- Parser: entradas adversas no lanzan.
+
+```text
+pnpm check    exit 0 (format, lint, typecheck, contraste 18/18, vitest 44/285 + 1 skipped, build)
+pnpm db:test  12 ficheros / 312 aserciones, PASS
+pnpm e2e      100 passed, 4 skipped (privados, sin env)
+```
+
+Fuera de alcance declarado: cola asíncrona / timeout de hosting; `cloze`
+desde `____`; cuotas de importación (FASE 8). §3.6 sigue abierta.
 
 ### LEX-4.10 — Probar archivos privados reales y rendimiento — `HECHO`
 

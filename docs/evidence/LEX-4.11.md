@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-10
 **Rama:** `feat/lex-4-11-m4-audit`
-**Estado resultante:** gates locales en verde. PR pendiente de CI.
+**Estado resultante:** `HECHO`. **Cierra FASE 4 / M4.** PR #67 fusionada a
+`main` (merge `418ec0f`); CI verde en los tres trabajos, runs `34495775177`
+(PR) y `34496371673` (merge).
 
 ---
 
