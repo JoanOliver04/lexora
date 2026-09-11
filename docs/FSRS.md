@@ -3,9 +3,9 @@
 Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa está en
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado (LEX-5.9, 2026-09-11):** spike, adaptador, config v1, esquema,
-> RLS, alta, cola, cálculo de repaso y **commit atómico**. `ts-fsrs@5.4.2`.
-> Sin UI.
+> **Estado (LEX-5.11, 2026-09-11):** spike, adaptador, config v1, esquema,
+> RLS, alta, cola, cálculo, commit atómico, idempotencia y **concurrencia
+> optimista**. `ts-fsrs@5.4.2`. Sin UI.
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -196,9 +196,11 @@ Dos garantías que se prueban explícitamente:
   (`pg_advisory_xact_lock`) sobre `(owner, clave)` para que dos reintentos
   concurrentes no vean `revision-conflict`. Dos dueños pueden reutilizar
   la misma clave.
-- **Concurrencia.** Si la versión cambió porque otro dispositivo revisó antes, la
-  operación devuelve conflicto y la interfaz recarga el estado. No sobrescribe en
-  silencio. LEX-5.11 cubre el caso simultáneo.
+- **Concurrencia (LEX-5.11).** Si la versión cambió porque otro dispositivo
+  revisó antes, la operación devuelve `revision-conflict` **con el estado
+  actual** para recargar. No sobrescribe. `commit_review` bloquea la fila
+  (`FOR UPDATE`); el que llega segundo ve la `revision` nueva. Claves de
+  idempotencia distintas: no es un reintento (eso es LEX-5.10).
 
 El dueño **sigue pudiendo** `UPDATE` su `learning_states` por RLS
 (LEX-5.5). El producto no usa ese camino. Cerrar el agujero exigiría
@@ -257,8 +259,7 @@ abierta (sin cascada en V1).
 
 ## Pendiente
 
-- Conflicto simultáneo entre dispositivos (LEX-5.11) sobre
-  `commit_review`.
+- Reloj, UTC y zona IANA (LEX-5.12).
 - Casos congelados de migración de scheduler (LEX-5.13). El adaptador
   ya tiene transiciones congeladas (LEX-5.2).
 - Q-006 (¿archivar un concepto en cascada sobre sus ítems?) condiciona

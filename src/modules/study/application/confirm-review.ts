@@ -8,6 +8,9 @@
  * perdida) reexpide el resultado original. Se consulta la clave **antes**
  * de calcular: si ya hay log, no se llama al planificador ni se vuelve a
  * escribir. `reviewPracticeItem` solo vería `revision-conflict`.
+ *
+ * LEX-5.11: si otro dispositivo confirmó antes, el conflicto incluye el
+ * estado actual para que la interfaz recargue. No se sobrescribe.
  */
 
 import type {
@@ -76,9 +79,13 @@ export type ConfirmReviewResult =
       transition: ReviewTransition;
       preview: RatingPreview[];
     }
+  | { ok: false; reason: "revision-conflict"; current: StoredLearningState }
   | {
       ok: false;
-      reason: ReviewPracticeItemReason | CommitReviewReason | "invalid-idempotency-key";
+      reason:
+        | Exclude<ReviewPracticeItemReason, "revision-conflict">
+        | Exclude<CommitReviewReason, "revision-conflict">
+        | "invalid-idempotency-key";
     };
 
 function assertUserId(userId: string): void {
@@ -158,7 +165,19 @@ export async function confirmReview(
     studySessionId: input.studySessionId ?? null,
     durationMs: input.durationMs ?? null,
   });
-  if (!committed.ok) return committed;
+  if (!committed.ok) {
+    if (committed.reason === "not-found") {
+      return { ok: false, reason: "not-found" };
+    }
+    const current = await repository.getByItem({
+      ownerId: input.ownerId,
+      practiceItemId: input.practiceItemId,
+    });
+    if (!current) {
+      return { ok: false, reason: "not-found" };
+    }
+    return { ok: false, reason: "revision-conflict", current };
+  }
 
   const stored = await repository.getByItem({
     ownerId: input.ownerId,
