@@ -14,7 +14,7 @@
 -- un guardián que nunca ha dicho que no no está probado.
 
 begin;
-select plan(83);
+select plan(82);
 
 -- --- Las tres tablas existen, con clave primaria --------------------------
 
@@ -65,13 +65,8 @@ select is(
   true,
   'RLS habilitado en las tres tablas de estudio'
 );
-select is(
-  (select count(*)::int from pg_policies
-    where schemaname = 'public'
-      and tablename in ('learning_states', 'study_sessions', 'review_logs')),
-  0,
-  'las tablas de estudio no tienen políticas todavía (LEX-5.5)'
-);
+-- El juego de políticas (dueño / no-dueño, logs sin UPDATE) es LEX-5.5 /
+-- 130-study-rls.sql. 120 solo comprueba que RLS está encendido.
 
 -- --- Triggers set_updated_at: solo las tablas que se actualizan ----------
 
