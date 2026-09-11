@@ -68,8 +68,8 @@ nueva de `public` a `anon`, `authenticated` y `service_role`. Por eso un
 `revoke execute on function … from public` **no basta**: `anon` conserva el
 permiso por la segunda vía y puede llamar a la función sin sesión.
 
-El patrón correcto para una función que exige sesión (LEX-2.7,
-`complete_onboarding`):
+El patrón correcto para una función que exige sesión (LEX-2.7
+`complete_onboarding`, LEX-5.9 `commit_review`):
 
 ```sql
 revoke execute on function public.mi_funcion(...) from public, anon;

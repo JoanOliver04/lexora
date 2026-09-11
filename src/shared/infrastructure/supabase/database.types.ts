@@ -799,6 +799,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      commit_review: {
+        Args: {
+          p_config_version: string
+          p_difficulty: number
+          p_due_after: string
+          p_due_at: string
+          p_due_before: string
+          p_duration_ms?: number
+          p_expected_revision: number
+          p_idempotency_key: string
+          p_lapses: number
+          p_last_reviewed_at: string
+          p_learning_step: number
+          p_phase: Database["public"]["Enums"]["memory_phase"]
+          p_practice_item_id: string
+          p_rating: Database["public"]["Enums"]["review_rating"]
+          p_reps: number
+          p_reviewed_at: string
+          p_scheduled_days: number
+          p_scheduler_version: string
+          p_stability: number
+          p_state_after: Json
+          p_state_before: Json
+          p_study_session_id?: string
+        }
+        Returns: Json
+      }
       complete_onboarding: {
         Args: {
           p_daily_new_limit: number

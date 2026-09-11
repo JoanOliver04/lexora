@@ -3,9 +3,9 @@
 Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa está en
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado (LEX-5.8, 2026-09-11):** spike, adaptador, config v1, esquema,
-> RLS, alta, cola y **cálculo de repaso**. `ts-fsrs@5.4.2`. El commit
-> atómico es LEX-5.9. Sin UI.
+> **Estado (LEX-5.9, 2026-09-11):** spike, adaptador, config v1, esquema,
+> RLS, alta, cola, cálculo de repaso y **commit atómico**. `ts-fsrs@5.4.2`.
+> Sin UI.
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -161,7 +161,16 @@ vencimiento futuro cuando no queda trabajo vencido.
 
 `reviewPracticeItem` (LEX-5.8) calcula la transición: identidad, ítem
 propio y no archivado, estado existente, `revision` esperada, reloj
-inyectado, adaptador. **No escribe.** El commit atómico es LEX-5.9.
+inyectado, adaptador. **No escribe.**
+
+`confirmReview` (LEX-5.9) llama a ese cálculo y, si es válido, al puerto
+`ReviewCommitter`. El adaptador invoca `public.commit_review(...)`
+([ADR-006](adrs/ADR-006-commit-atomico-de-repaso.md)): una transacción
+`SECURITY INVOKER` que actualiza `learning_states` (`revision + 1`) y
+añade el `review_logs`. PostgreSQL **no** reimplementa FSRS; aplica
+propiedad (`auth.uid()`), `revision` esperada, clave de idempotencia y
+los CHECK de columna. `revoke execute from public, anon`;
+`grant to authenticated`.
 
 Cada valoración pasa por un único caso de uso:
 
@@ -174,10 +183,6 @@ Cada valoración pasa por un único caso de uso:
 7. Incrementar la versión.
 8. Devolver el nuevo estado y los intervalos.
 
-La escritura atómica se implementa en una función de base de datos que verifica
-propiedad, versión esperada, correspondencia del elemento, valoración permitida y
-rangos válidos antes de escribir.
-
 **El cliente solo envía intención:** qué elemento, qué valoración, qué versión
 esperaba y una clave de idempotencia. Nunca envía valores de vencimiento,
 estabilidad o dificultad.
@@ -185,10 +190,16 @@ estabilidad o dificultad.
 Dos garantías que se prueban explícitamente:
 
 - **Idempotencia.** Un doble envío con la misma clave devuelve el resultado
-  anterior en lugar de registrar dos repasos.
+  anterior en lugar de registrar dos repasos. El SQL reexpide
+  (`replayed`) sin escribir; LEX-5.10 cubre el extremo a extremo.
 - **Concurrencia.** Si la versión cambió porque otro dispositivo revisó antes, la
   operación devuelve conflicto y la interfaz recarga el estado. No sobrescribe en
-  silencio.
+  silencio. LEX-5.11 cubre el caso simultáneo.
+
+El dueño **sigue pudiendo** `UPDATE` su `learning_states` por RLS
+(LEX-5.5). El producto no usa ese camino. Cerrar el agujero exigiría
+`SECURITY DEFINER` y quitar la política; se aplaza (ADR-006, misma
+razón que ADR-005 / §12.3).
 
 ## Tiempo
 
@@ -242,7 +253,8 @@ abierta (sin cascada en V1).
 
 ## Pendiente
 
-- Decisión documentada sobre cómo se invoca la función transaccional y con qué privilegios (LEX-5.9 / ADR).
+- Idempotencia extremo a extremo (LEX-5.10) y conflicto simultáneo
+  entre dispositivos (LEX-5.11) sobre `commit_review`.
 - Casos congelados de migración de scheduler (LEX-5.13). El adaptador
   ya tiene transiciones congeladas (LEX-5.2).
 - Q-006 (¿archivar un concepto en cascada sobre sus ítems?) condiciona
