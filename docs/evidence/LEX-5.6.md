@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-11
 **Rama:** `feat/lex-5-6-learning-state-cycle`
-**Estado resultante:** `EN PROCESO` (CI y fusión pendientes).
+**Estado resultante:** `HECHO`. PR #79 fusionada a `main` (merge `c2ed664`);
+CI verde en los tres trabajos, runs `34604164414` (PR) y `34604650538`
+(merge).
 
 ---
 
@@ -52,7 +54,10 @@ pnpm check     exit 0 (format, lint, typecheck, contraste 18/18,
                vitest 50/320 + 1 skipped, build)
 ```
 
-Sin migración. Sin e2e: no hay pantalla. CI se registra al cerrar.
+Sin migración. Sin e2e: no hay pantalla.
+
+CI verde, tres trabajos: run `34604164414` (PR #79) y run `34604650538`
+(merge).
 
 ## 5. Archivos
 

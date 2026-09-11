@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-11
-**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (5/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (6/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
-**Tarea activa:** LEX-5.6
-**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.5 `HECHO` · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8; el alta de estado no introduce cascada)
-**Rama / commit base / HEAD:** `feat/lex-5-6-learning-state-cycle` sobre `main` `994b459` (docs-close #78 de LEX-5.5).
+**Tarea activa:** ninguna
+**Estado de la tarea:** LEX-5.1…5.6 `HECHO` · siguiente LEX-5.7 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8; el alta de estado no introduce cascada)
+**Rama / commit base / HEAD:** `main` en `c2ed664` (PR #79, LEX-5.6). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,22 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-5.6 — Alta/activación de `LearningState` — `HECHO`
+
+Informe en [`evidence/LEX-5.6.md`](evidence/LEX-5.6.md). PR #79 fusionada a
+`main` (merge `c2ed664`); CI verde en los tres trabajos, runs `34604164414`
+(PR) y `34604650538` (merge). **Sin migración.**
+
+`ensureLearningState` crea `New` al estudiar/activar, no al crear el
+ítem. Idempotente. Archivar no borra memoria; reactivar conserva.
+Q-006 sin cascada.
+
+```text
+pnpm check    exit 0 (format, lint, typecheck, contraste 18/18, vitest 50/320 + 1 skipped, build)
+```
+
+Fuera de alcance declarado: cola diaria (LEX-5.7); UI.
 
 ### LEX-5.5 — RLS e índices de estudio — `HECHO`
 
