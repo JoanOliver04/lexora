@@ -475,10 +475,11 @@ anterior/siguiente).
 
 ### Estudio
 
-Migración `20260911120000_study_schema` (LEX-5.4), **solo estructura**. RLS
-habilitado sin políticas (deny-all → LEX-5.5). Índices de cola, historial y
-políticas de dueño también LEX-5.5. Aquí solo los índices que respaldan una
-unicidad de negocio o una FK cuyo lado padre no cubre ya una PK.
+Migración `20260911120000_study_schema` (LEX-5.4), estructura. Políticas RLS
+por dueño, índices de `owner_id`, cola (`due_at`) e historial
+(`reviewed_at`) en `20260911150000_study_rls` (LEX-5.5). LEX-5.4 solo dejó
+los índices que respaldan una unicidad de negocio o una FK cuyo lado padre
+no cubre ya una PK.
 
 | Tabla | Papel |
 |---|---|
@@ -547,7 +548,15 @@ sus logs: no hay trigger. Borrar el ítem sí cascada. Q-006 (¿archivar un
 concepto en cascada sobre sus ítems?) sigue abierta; el esquema no introduce
 cascada de archivo.
 
-Probado en `supabase/tests/database/120-study-schema.sql`.
+Probado en `supabase/tests/database/120-study-schema.sql` (estructura) y
+`130-study-rls.sql` (dueño / no-dueño / anon / `service_role`; `review_logs`
+sin `UPDATE` ni siquiera para el dueño).
+
+Índices de LEX-5.5: `(owner_id)` en las tres; cola
+`learning_states (owner_id, due_at)`; lista de sesiones
+`(owner_id, started_at desc)`; historial
+`review_logs (owner_id, reviewed_at desc)` y
+`(owner_id, practice_item_id, reviewed_at desc)`.
 
 ### Importación
 
@@ -612,9 +621,9 @@ No se crean tablas vacías por anticipación.
 
 ## Pendiente
 
-- Políticas RLS, índices de cola/historial y aislamiento dueño/no-dueño de
-  las tablas de estudio: LEX-5.5. Identidad, biblioteca, importación y la
-  estructura de estudio (LEX-5.4) ya están arriba.
+- Identidad, biblioteca, importación y estudio (estructura LEX-5.4, RLS
+  LEX-5.5) ya están arriba. La cola diaria y el alta de `LearningState`
+  son LEX-5.6 / 5.7.
 - Índice de **búsqueda por título** de `concepts`/`decks`: LEX-3.9, cuando la
   consulta real decida si compensa `pg_trgm`.
 - Regla «un mazo y sus conceptos son del mismo curso, no solo del mismo dueño»

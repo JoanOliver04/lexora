@@ -3,9 +3,9 @@
 **Última actualización:** 2026-09-11
 **Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (4/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
-**Tarea activa:** ninguna
-**Estado de la tarea:** LEX-5.1…5.4 `HECHO` · siguiente LEX-5.5 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8; condiciona LEX-5.6)
-**Rama / commit base / HEAD:** `main` en `10a391f` (PR #75, LEX-5.4). Sin rama de trabajo activa.
+**Tarea activa:** LEX-5.5
+**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.4 `HECHO` · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8; condiciona LEX-5.6)
+**Rama / commit base / HEAD:** `feat/lex-5-5-study-rls` sobre `main` `383aee3` (docs-close #76 de LEX-5.4).
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
