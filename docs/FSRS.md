@@ -3,9 +3,9 @@
 Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa está en
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado (LEX-5.6, 2026-09-11):** spike, adaptador, config v1, esquema,
-> RLS y **alta idempotente de `LearningState`**. `ts-fsrs@5.4.2`. Sin UI.
-> Cola diaria: LEX-5.7.
+> **Estado (LEX-5.7, 2026-09-11):** spike, adaptador, config v1, esquema,
+> RLS, alta de estado y **cola diaria**. `ts-fsrs@5.4.2`. Sin UI de
+> sesión (FASE 6).
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -130,23 +130,32 @@ que todavía no existe.
 
 ## Cola diaria
 
-Orden base:
+`assembleDailyQueue` (LEX-5.7) ordena en memoria. El adaptador solo trae
+candidatos del curso: mazos no archivados, conceptos no archivados
+(Q-006, sin cascada: el filtro es de lectura), ítems no archivados y
+`enabled`. Un array vacío de mazos es «ninguno», no «todos».
 
-1. Elementos en aprendizaje o reaprendizaje que ya han vencido.
-2. Elementos en repaso que han vencido.
-3. Elementos nuevos, hasta el límite diario.
+Orden:
 
-Dentro de cada grupo, criterio determinista y documentado: vencimiento
-ascendente, con un desempate estable.
+1. Learning y Relearning vencidos (`due_at <= now`).
+2. Review vencidos.
+3. New (con estado o sin fila todavía), hasta el cupo diario.
 
-La selección respeta el curso, los mazos activos, lo archivado y los límites
-configurados. Si un límite oculta repasos que siguen vencidos, la interfaz lo
-dice: no afirma que el usuario ha terminado todo lo pendiente.
+Dentro de Learning/Review: `dueAt` ascendente, desempate
+`practiceItemId`. Dentro de New: solo `practiceItemId`. El cupo de
+nuevos cuenta `PracticeItem` (ADR-003), restando los que hoy salieron
+de `new` en un `review_log`. El límite de repasos recorta **solo**
+Review; los pasos cortos no lo consumen. `hiddenDueReviews` /
+`hiddenNew` existen para que la UI no afirme que no queda nada. El
+día (`dayStart`/`dayEnd`) lo inyecta el llamador; LEX-5.12 lo
+calculará con la zona IANA.
 
-Los pasos cortos de aprendizaje forman parte de la cola. Si un elemento vuelve a
-vencer durante la sesión, reaparece. Si no queda nada más y el siguiente paso aún
-no ha vencido, la interfaz informa del tiempo restante o permite terminar; no
-mantiene al usuario esperando.
+La cola **no** crea estados. Un New sin fila llega con
+`learningStateId` nulo; `ensureLearningState` es al estudiar.
+
+Los pasos cortos forman parte de la cola. Si un elemento vuelve a
+vencer durante la sesión, reaparece. `nextDueAt` es el próximo
+vencimiento futuro cuando no queda trabajo vencido.
 
 ## Transacción de repaso
 
