@@ -3,9 +3,9 @@
 **Última actualización:** 2026-09-11
 **Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (9/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
-**Tarea activa:** ninguna
-**Estado de la tarea:** LEX-5.1…5.9 `HECHO` · siguiente LEX-5.10 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
-**Rama / commit base / HEAD:** `main` en `70375ab` (PR #84, LEX-5.9). Sin rama de trabajo activa.
+**Tarea activa:** LEX-5.10
+**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.9 `HECHO` · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
+**Rama / commit base / HEAD:** `feat/lex-5-10-review-idempotency` sobre `main` `83f433a` (docs-close #86 de LEX-5.9).
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,12 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-5.10 — Idempotencia extremo a extremo — `EN PROCESO`
+
+Rama `feat/lex-5-10-review-idempotency` sobre `83f433a`. Misma clave
+reexpide; dueños distintos no colisionan; reintento con `revision`
+obsoleta no choca. Sin UI. Gates y evidencia al cerrar.
 
 ### LEX-5.9 — Commit atómico de repaso — `HECHO`
 

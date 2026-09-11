@@ -565,8 +565,11 @@ sin `UPDATE` ni siquiera para el dueño).
 `revoke execute from public, anon`; `grant to authenticated`. La
 presentación no llama a esta RPC: el camino es Server Action →
 `confirmReview` → adaptador. El dueño sigue pudiendo `UPDATE` su estado
-por RLS; el producto no lo usa. Cobertura:
-`supabase/tests/database/140-commit-review.sql`.
+por RLS; el producto no lo usa. LEX-5.10 añade un candado de
+transacción por `(owner, idempotency_key)` y relee el log bajo ese
+candado: un reintento no choca con `revision`. Cobertura:
+`supabase/tests/database/140-commit-review.sql` y
+`150-commit-review-idempotency.sql`.
 
 Índices de LEX-5.5: `(owner_id)` en las tres; cola
 `learning_states (owner_id, due_at)`; lista de sesiones

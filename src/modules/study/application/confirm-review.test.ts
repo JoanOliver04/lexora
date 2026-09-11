@@ -80,6 +80,7 @@ function fakeScheduler(
 
 function fakeCommitter(overrides: Partial<ReviewCommitter> = {}): ReviewCommitter {
   return {
+    findByIdempotencyKey: vi.fn().mockResolvedValue(null),
     commit: vi.fn().mockResolvedValue({ ok: true, replayed: false }),
     ...overrides,
   };
@@ -199,6 +200,47 @@ describe("confirmReview", () => {
     if (!outcome.ok) return;
     expect(outcome.replayed).toBe(true);
     expect(outcome.stored.revision).toBe(2);
+  });
+
+  it("rechaza una clave de idempotencia vacía o demasiado larga", async () => {
+    const committer = fakeCommitter();
+    const empty = await confirmReview(fakeRepository(), fakeScheduler(), committer, {
+      ...baseInput,
+      idempotencyKey: "   ",
+    });
+    expect(empty).toEqual({ ok: false, reason: "invalid-idempotency-key" });
+    expect(committer.findByIdempotencyKey).not.toHaveBeenCalled();
+    expect(committer.commit).not.toHaveBeenCalled();
+  });
+
+  it("un reintento con la misma clave reexpide sin calcular ni escribir", async () => {
+    const repository = fakeRepository({
+      getByItem: vi.fn().mockResolvedValue(storedAfter),
+    });
+    const scheduler = fakeScheduler();
+    const committer = fakeCommitter({
+      findByIdempotencyKey: vi.fn().mockResolvedValue({
+        practiceItemId: "item-1",
+        rating: "good" as const,
+        reviewedAt: NOW,
+      }),
+    });
+
+    const outcome = await confirmReview(repository, scheduler, committer, {
+      ...baseInput,
+      rating: "again",
+      expectedRevision: 1,
+    });
+
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    expect(outcome.replayed).toBe(true);
+    expect(outcome.rating).toBe("good");
+    expect(outcome.stored.revision).toBe(2);
+    expect(outcome.transition.state.dueAt).toEqual(LATER);
+    expect(scheduler.review).not.toHaveBeenCalled();
+    expect(committer.commit).not.toHaveBeenCalled();
+    expect(scheduler.preview).toHaveBeenCalledWith(afterGood, NOW, V1_SCHEDULER_CONFIG);
   });
 });
 

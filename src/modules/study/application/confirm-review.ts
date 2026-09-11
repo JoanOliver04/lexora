@@ -3,6 +3,11 @@
  *
  * El cliente sigue enviando solo intención. El committer es un puerto;
  * la RPC `commit_review` (ADR-006) es el adaptador.
+ *
+ * LEX-5.10: un reintento con la misma clave (doble clic, respuesta
+ * perdida) reexpide el resultado original. Se consulta la clave **antes**
+ * de calcular: si ya hay log, no se llama al planificador ni se vuelve a
+ * escribir. `reviewPracticeItem` solo vería `revision-conflict`.
  */
 
 import type {
@@ -21,7 +26,17 @@ export type CommitReviewReason = "not-found" | "revision-conflict";
 export type CommitReviewResult =
   { ok: true; replayed: boolean } | { ok: false; reason: CommitReviewReason };
 
+export interface ReplayLookup {
+  practiceItemId: string;
+  rating: ReviewRating;
+  reviewedAt: Date;
+}
+
 export interface ReviewCommitter {
+  findByIdempotencyKey(input: {
+    ownerId: string;
+    idempotencyKey: string;
+  }): Promise<ReplayLookup | null>;
   commit(input: {
     ownerId: string;
     practiceItemId: string;
@@ -61,7 +76,21 @@ export type ConfirmReviewResult =
       transition: ReviewTransition;
       preview: RatingPreview[];
     }
-  | { ok: false; reason: ReviewPracticeItemReason | CommitReviewReason };
+  | {
+      ok: false;
+      reason: ReviewPracticeItemReason | CommitReviewReason | "invalid-idempotency-key";
+    };
+
+function assertUserId(userId: string): void {
+  if (userId.trim() === "") {
+    throw new Error("caso de uso de estudio invocado sin identificador de usuario");
+  }
+}
+
+export function isIdempotencyKey(value: string): boolean {
+  const trimmed = value.trim();
+  return trimmed.length >= 1 && trimmed.length <= 128;
+}
 
 export async function confirmReview(
   repository: LearningStateRepository,
@@ -79,6 +108,39 @@ export async function confirmReview(
     durationMs?: number | null;
   },
 ): Promise<ConfirmReviewResult> {
+  assertUserId(input.ownerId);
+
+  if (!isIdempotencyKey(input.idempotencyKey)) {
+    return { ok: false, reason: "invalid-idempotency-key" };
+  }
+
+  const existing = await committer.findByIdempotencyKey({
+    ownerId: input.ownerId,
+    idempotencyKey: input.idempotencyKey,
+  });
+  if (existing) {
+    const stored = await repository.getByItem({
+      ownerId: input.ownerId,
+      practiceItemId: existing.practiceItemId,
+    });
+    if (!stored) {
+      return { ok: false, reason: "not-found" };
+    }
+    const preview = scheduler.preview(stored.state, input.now, input.config);
+    return {
+      ok: true,
+      stored,
+      replayed: true,
+      rating: existing.rating,
+      transition: {
+        state: stored.state,
+        rating: existing.rating,
+        reviewedAt: existing.reviewedAt,
+      },
+      preview,
+    };
+  }
+
   const computed = await reviewPracticeItem(repository, scheduler, input);
   if (!computed.ok) return computed;
 
