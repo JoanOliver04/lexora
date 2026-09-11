@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-11
 **Rama:** `feat/lex-5-9-atomic-review-commit`
-**Estado resultante:** `EN PROCESO` (CI y fusión pendientes).
+**Estado resultante:** `HECHO`. PR #84 fusionada a `main` (merge `70375ab`);
+CI verde en los tres trabajos, runs `34610911009` (PR) y `34611485614`
+(merge).
 
 ---
 
@@ -64,6 +66,9 @@ pnpm check     exit 0 (format, lint, typecheck, contraste 18/18,
 ```
 
 Sin e2e: no hay pantalla.
+
+CI verde, tres trabajos: run `34610911009` (PR #84) y run `34611485614`
+(merge).
 
 ## 5. Archivos
 
