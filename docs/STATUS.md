@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-11
-**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (1/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (2/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-5.1 `HECHO` · siguiente LEX-5.2 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8; condiciona LEX-5.6)
-**Rama / commit base / HEAD:** `main` en `74959e6` (PR #69, LEX-5.1). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-5.1…5.2 `HECHO` · siguiente LEX-5.3 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8; condiciona LEX-5.6)
+**Rama / commit base / HEAD:** `main` en `27638c0` (PR #71, LEX-5.2). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,26 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-5.2 — Tipos internos y adaptador `TsFsrsScheduler` — `HECHO`
+
+Informe en [`evidence/LEX-5.2.md`](evidence/LEX-5.2.md). PR #71 fusionada a
+`main` (merge `27638c0`); CI verde en los tres trabajos, runs `34593793939`
+(PR) y `34594230232` (merge). **Sin migración.**
+
+Módulo `study`: tipos propios, puerto `SpacedRepetitionScheduler` y
+adaptador sobre `ts-fsrs@5.4.2`. El dominio no importa la librería.
+Sin UI.
+
+- `New+Good` → Learning +10 min; `New+Easy` → Review +8 días.
+- Preview coincide con review. Ida/vuelta del estado.
+
+```text
+pnpm check    exit 0 (format, lint, typecheck, contraste 18/18, vitest 48/305 + 1 skipped, build)
+```
+
+Fuera de alcance declarado: config de producto (LEX-5.3); persistencia
+(LEX-5.4); UI.
 
 ### LEX-5.1 — Spike controlado de `ts-fsrs` — `HECHO`
 
