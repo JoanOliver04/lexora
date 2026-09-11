@@ -3,11 +3,11 @@
 Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa está en
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado (LEX-5.1, 2026-09-11):** spike hecho. Versión fijada
-> `ts-fsrs@5.4.2` (algoritmo **FSRS-6.0**, `FSRSVersion` =
-> `v5.4.2 using FSRS-6.0`). Node `>=20` (Lexora usa 24). MIT, 0
-> dependencias transitivas. El adaptador `TsFsrsScheduler` es LEX-5.2;
-> la configuración de producto versionada, LEX-5.3. Sin UI.
+> **Estado (LEX-5.2, 2026-09-11):** spike LEX-5.1 y adaptador hechos.
+> Versión `ts-fsrs@5.4.2` (FSRS-6.0). Puerto
+> `SpacedRepetitionScheduler` + `createTsFsrsScheduler()`. El dominio
+> no importa la librería. Configuración de producto versionada: LEX-5.3.
+> Sin UI.
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -57,9 +57,10 @@ interface SpacedRepetitionScheduler {
 }
 ```
 
-`TsFsrsScheduler` (LEX-5.2) implementa este puerto y traduce entre los
-tipos internos del dominio y los de la librería. Si la librería cambia
-su API, cambia el adaptador y nada más.
+`createTsFsrsScheduler()` (LEX-5.2) implementa este puerto y traduce
+entre los tipos internos (`LearningState`, `ReviewRating`) y los de la
+librería. Si la librería cambia su API, cambia el adaptador y nada más.
+Composición: `createSpacedRepetitionScheduler()` en `src/composition/study.ts`.
 
 API observada en 5.4.2 (el adaptador llamará a esto, el dominio no):
 
@@ -223,8 +224,8 @@ directamente vencimiento, estabilidad ni dificultad.
 
 - Valores concretos de configuración de producto (LEX-5.3), a partir
   de los defaults de 5.4.2.
-- Puerto y adaptador `TsFsrsScheduler` (LEX-5.2).
 - Decisión documentada sobre cómo se invoca la función transaccional y con qué privilegios (LEX-5.9 / ADR).
-- Conjunto de casos congelados del **adaptador** (LEX-5.2 / LEX-5.13).
+- Casos congelados de migración de scheduler (LEX-5.13). El adaptador
+  ya tiene transiciones congeladas (LEX-5.2).
 - Q-006 (¿archivar un concepto en cascada sobre sus ítems?) condiciona
   LEX-5.6; no se resuelve aquí.
