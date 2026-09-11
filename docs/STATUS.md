@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
-**Última actualización:** 2026-09-10
-**Fase actual:** **FASE 4 — Importación TXT/CSV** — `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
-**Hito actual:** M4 — Importación real validada — `HECHO`. M3 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
+**Última actualización:** 2026-09-11
+**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (1/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-4.1…4.11 `HECHO` · siguiente LEX-5.1 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8)
-**Rama / commit base / HEAD:** `main` en `418ec0f` (PR #67, LEX-4.11). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-5.1 `HECHO` · siguiente LEX-5.2 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8; condiciona LEX-5.6)
+**Rama / commit base / HEAD:** `main` en `74959e6` (PR #69, LEX-5.1). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,26 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-5.1 — Spike controlado de `ts-fsrs` — `HECHO`
+
+Informe en [`evidence/LEX-5.1.md`](evidence/LEX-5.1.md). PR #69 fusionada a
+`main` (merge `74959e6`); CI verde en los tres trabajos, runs `34589353696`
+(PR) y `34589815103` (merge). **Sin migración.**
+
+`ts-fsrs@5.4.2` fijado (FSRS-6.0). Node `>=20`. Sin UI ni adaptador.
+El dominio sigue sin importar la librería.
+
+- Spike: estados, ratings (Manual no es Grade), pasos `1m`/`10m`,
+  fuzz sembrado, parámetros JSON, `Date` a mapear.
+- No se usa el beta 6 ni el optimizador.
+
+```text
+pnpm check    exit 0 (format, lint, typecheck, contraste 18/18, vitest 45/294 + 1 skipped, build)
+```
+
+Fuera de alcance declarado: puerto/adaptador (LEX-5.2); config de
+producto (LEX-5.3).
 
 ### LEX-4.11 — Auditoría de seguridad, E2E y cierre de M4 — `HECHO` · cierra FASE 4 / M4
 
