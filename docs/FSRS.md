@@ -3,9 +3,9 @@
 Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa está en
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado (LEX-5.11, 2026-09-11):** spike, adaptador, config v1, esquema,
-> RLS, alta, cola, cálculo, commit atómico, idempotencia y **concurrencia
-> optimista**. `ts-fsrs@5.4.2`. Sin UI.
+> **Estado (LEX-5.12, 2026-09-11):** spike, adaptador, config v1, esquema,
+> RLS, alta, cola, cálculo, commit, idempotencia, concurrencia y **reloj
+> inyectado**. `ts-fsrs@5.4.2`. Sin UI.
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -147,8 +147,8 @@ nuevos cuenta `PracticeItem` (ADR-003), restando los que hoy salieron
 de `new` en un `review_log`. El límite de repasos recorta **solo**
 Review; los pasos cortos no lo consumen. `hiddenDueReviews` /
 `hiddenNew` existen para que la UI no afirme que no queda nada. El
-día (`dayStart`/`dayEnd`) lo inyecta el llamador; LEX-5.12 lo
-calculará con la zona IANA.
+día local lo calcula `studyDayWindow` (LEX-5.12) con la zona IANA del
+perfil (`Europe/Madrid` por defecto) y el instante del `Clock`.
 
 La cola **no** crea estados. Un New sin fila llega con
 `learningStateId` nulo; `ensureLearningState` es al estudiar.
@@ -210,13 +210,17 @@ razón que ADR-005 / §12.3).
 ## Tiempo
 
 El comportamiento depende del tiempo, así que el tiempo se trata como una
-dependencia, no como un detalle:
+dependencia, no como un detalle (LEX-5.12):
 
 - Vencimientos y momentos de revisión se almacenan en UTC.
-- El día de estudio y las estadísticas diarias se calculan con la zona horaria del perfil.
-- El reloj se inyecta. No hay `new Date()` repartido por el código.
+- El día de estudio se calcula con `profiles.timezone` (IANA). Por
+  defecto `Europe/Madrid`. Medianoche–medianoche, fin exclusivo.
+- El puerto `Clock` se inyecta. `createSystemClock()` es el único
+  `new Date()` vacío de infraestructura compartida. Dominio,
+  aplicación y composición no pueden llamarlo (lint).
 - El servidor es la autoridad. El reloj del navegador es manipulable.
-- Se prueban explícitamente el cambio de día, el cambio de horario estacional y la zona horaria del primer usuario.
+- Se prueban el cambio de día, el DST de primavera (23 h) y de otoño
+  (25 h) en `Europe/Madrid`.
 
 ## Actualizaciones del algoritmo
 
@@ -259,7 +263,6 @@ abierta (sin cascada en V1).
 
 ## Pendiente
 
-- Reloj, UTC y zona IANA (LEX-5.12).
 - Casos congelados de migración de scheduler (LEX-5.13). El adaptador
   ya tiene transiciones congeladas (LEX-5.2).
 - Q-006 (¿archivar un concepto en cascada sobre sus ítems?) condiciona

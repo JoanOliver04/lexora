@@ -131,5 +131,15 @@ export function createSupabaseDailyQueueRepository(
       }
       return { newIntroduced: newIds.size, reviewsDone };
     },
+
+    async getTimeZone({ ownerId }) {
+      const { data, error } = await client
+        .from("profiles")
+        .select("timezone")
+        .eq("id", ownerId)
+        .maybeSingle();
+      if (error) throw studyErrorFrom(error, "no se pudo leer la zona horaria");
+      return data?.timezone ?? null;
+    },
   };
 }
