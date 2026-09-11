@@ -5,7 +5,7 @@
 **Hito actual:** M5 — Motor FSRS fiable — `HECHO`. M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
 **Tarea activa:** ninguna
 **Estado de la tarea:** LEX-5.1…5.14 `HECHO` · siguiente LEX-6.1 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
-**Rama / commit base / HEAD:** `feat/lex-5-14-m5-audit` sobre `main` `6734b1a`. Sin fusionar todavía.
+**Rama / commit base / HEAD:** `main` en `05a08c4` (PR #95, LEX-5.14). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -17,8 +17,9 @@
 
 ### LEX-5.14 — Auditoría y cierre de M5 — `HECHO`
 
-Informe en [`evidence/LEX-5.14.md`](evidence/LEX-5.14.md). **Cierra FASE 5 /
-M5.** Sin migración. Sin UI.
+Informe en [`evidence/LEX-5.14.md`](evidence/LEX-5.14.md). PR #95 fusionada a
+`main` (merge `05a08c4`); CI verde en los tres trabajos, runs `34630188250`
+(PR) y `34630790203` (merge). **Cierra FASE 5 / M5.** Sin migración. Sin UI.
 
 Un TSV público de importación recorre alta, cola y commit. La inversa
 cuenta por `PracticeItem`. Dos dueños no mezclan colas. El lint de

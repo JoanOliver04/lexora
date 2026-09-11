@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-11
 **Rama:** `feat/lex-5-14-m5-audit`
-**Estado resultante:** `HECHO`. **Cierra FASE 5 / M5.**
+**Estado resultante:** `HECHO`. **Cierra FASE 5 / M5.** PR #95 fusionada a
+`main` (merge `05a08c4`); CI verde en los tres trabajos, runs `34630188250`
+(PR) y `34630790203` (merge).
 
 ---
 
@@ -148,7 +150,11 @@ pnpm db:test  17 ficheros / 477 aserciones, PASS
 ```
 
 Sin migración. Sin e2e nuevo: no hay pantalla de estudio. Los e2e de
-FASE 1–4 no se tocan.
+FASE 1–4 no se tocan. CI de e2e existente: verde (trabajo «Extremo a
+extremo» en los runs de PR y merge).
+
+CI verde, tres trabajos: run `34630188250` (PR #95) y run `34630790203`
+(merge).
 
 Migraciones: **0**.
 
