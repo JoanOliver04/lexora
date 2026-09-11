@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-11
 **Rama:** `feat/lex-5-10-review-idempotency`
-**Estado resultante:** `EN PROCESO` (CI y fusión pendientes).
+**Estado resultante:** `HECHO`. PR #87 fusionada a `main` (merge `c144a49`);
+CI verde en los tres trabajos, runs `34614407545` (PR) y `34614916884`
+(merge).
 
 ---
 
@@ -56,6 +58,9 @@ pnpm check     exit 0 (format, lint, typecheck, contraste 18/18,
 ```
 
 Sin e2e: no hay pantalla.
+
+CI verde, tres trabajos: run `34614407545` (PR #87) y run `34614916884`
+(merge).
 
 ## 5. Archivos
 

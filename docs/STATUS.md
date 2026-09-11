@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-11
-**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (9/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (10/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
-**Tarea activa:** LEX-5.10
-**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.9 `HECHO` · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
-**Rama / commit base / HEAD:** `feat/lex-5-10-review-idempotency` sobre `main` `83f433a` (docs-close #86 de LEX-5.9).
+**Tarea activa:** ninguna
+**Estado de la tarea:** LEX-5.1…5.10 `HECHO` · siguiente LEX-5.11 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
+**Rama / commit base / HEAD:** `main` en `c144a49` (PR #87, LEX-5.10). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -15,11 +15,23 @@
 
 ## Terminado en esta sesión
 
-### LEX-5.10 — Idempotencia extremo a extremo — `EN PROCESO`
+### LEX-5.10 — Idempotencia extremo a extremo — `HECHO`
 
-Rama `feat/lex-5-10-review-idempotency` sobre `83f433a`. Misma clave
-reexpide; dueños distintos no colisionan; reintento con `revision`
-obsoleta no choca. Sin UI. Gates y evidencia al cerrar.
+Informe en [`evidence/LEX-5.10.md`](evidence/LEX-5.10.md). PR #87 fusionada a
+`main` (merge `c144a49`); CI verde en los tres trabajos, runs `34614407545`
+(PR) y `34614916884` (merge). Migración
+`20260911190000_commit_review_idempotency`.
+
+Misma clave reexpide; dueños distintos no colisionan; reintento con
+`revision` obsoleta no choca. Candado de transacción en la RPC.
+
+```text
+pnpm db:reset  13 migraciones + seed desde vacío
+pnpm db:test   16 ficheros / 469 aserciones, PASS (150: 14)
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 54/345 + 1 skipped, build)
+```
+
+Fuera de alcance declarado: conflicto entre dispositivos (LEX-5.11); UI.
 
 ### LEX-5.9 — Commit atómico de repaso — `HECHO`
 
