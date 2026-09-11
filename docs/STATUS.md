@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-11
-**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (3/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (4/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
-**Tarea activa:** LEX-5.4
-**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.3 `HECHO` · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8; condiciona LEX-5.6)
-**Rama / commit base / HEAD:** `feat/lex-5-4-study-schema` sobre `main` `6f40f58` (docs-close #74 de LEX-5.3).
+**Tarea activa:** ninguna
+**Estado de la tarea:** LEX-5.1…5.4 `HECHO` · siguiente LEX-5.5 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8; condiciona LEX-5.6)
+**Rama / commit base / HEAD:** `main` en `10a391f` (PR #75, LEX-5.4). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,26 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-5.4 — Migraciones de estudio — `HECHO`
+
+Informe en [`evidence/LEX-5.4.md`](evidence/LEX-5.4.md). PR #75 fusionada a
+`main` (merge `10a391f`); CI verde en los tres trabajos, runs `34600614752`
+(PR) y `34601083487` (merge). Migración
+`20260911120000_study_schema`.
+
+Tres tablas: `learning_states`, `study_sessions`, `review_logs`. RLS
+habilitado, sin políticas (LEX-5.5). Mapeo campo a campo; `elapsed_days`
+omitido; `learning_step` incluido. Un estado por ítem; clave de
+idempotencia por dueño. Archivar un ítem no borra memoria.
+
+```text
+pnpm db:reset  10 migraciones + seed desde vacío
+pnpm db:test   13 ficheros / 395 aserciones, PASS (120: 83)
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 49/312 + 1 skipped, build)
+```
+
+Fuera de alcance declarado: políticas e índices de cola (LEX-5.5); UI.
 
 ### LEX-5.3 — Configuración FSRS v1 — `HECHO`
 
