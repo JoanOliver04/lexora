@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-11
-**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (7/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (8/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
 **Tarea activa:** LEX-5.9
-**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.7 `HECHO` · LEX-5.8 fusionada en `main` (PR #83, docs-close pendiente) · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
-**Rama / commit base / HEAD:** `feat/lex-5-9-atomic-review-commit` sobre `main` `2cabb38` (merge de PR #83, LEX-5.8).
+**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.8 `HECHO` · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
+**Rama / commit base / HEAD:** `main` en `70375ab` (PR #84, LEX-5.9 feature). Docs-close de LEX-5.9 pendiente.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -22,10 +22,20 @@ Rama `feat/lex-5-9-atomic-review-commit` sobre `2cabb38`. ADR-006
 `20260911180000_commit_review`, pgTAP `140`, `confirmReview` +
 adaptador. Sin UI. Gates y evidencia al cerrar.
 
-### LEX-5.8 — `ReviewPracticeItem` — feature en `main`, docs-close pendiente
+### LEX-5.8 — `ReviewPracticeItem` — `HECHO`
 
-PR #83 fusionada (`2cabb38`). Cálculo de transición, no escribe.
-Docs-close tras CI de merge y cierre de LEX-5.9.
+Informe en [`evidence/LEX-5.8.md`](evidence/LEX-5.8.md). PR #83 fusionada a
+`main` (merge `2cabb38`); CI verde en los tres trabajos, runs `34608800875`
+(PR) y `34609364061` (merge). **Sin migración.**
+
+`reviewPracticeItem` calcula la transición desde intención. No escribe.
+El commit atómico es LEX-5.9.
+
+```text
+pnpm check    exit 0 (format, lint, typecheck, contraste 18/18, vitest 53/337 + 1 skipped, build)
+```
+
+Fuera de alcance declarado: escritura (LEX-5.9); UI.
 
 ### LEX-5.7 — Cola diaria — `HECHO`
 
