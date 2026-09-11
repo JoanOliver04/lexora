@@ -1,14 +1,21 @@
 import { describe, expect, it } from "vitest";
 
-import { type SchedulerConfig, isSchedulerStep, validateSchedulerConfig } from "./scheduler-config";
+import {
+  type SchedulerConfig,
+  V1_FSRS6_WEIGHTS,
+  V1_SCHEDULER_CONFIG,
+  isSchedulerStep,
+  validateSchedulerConfig,
+} from "./scheduler-config";
 
-const valid = {
+const valid: SchedulerConfig = {
   requestedRetention: 0.9,
   maximumIntervalDays: 36_500,
   enableFuzz: false,
   enableShortTerm: true,
-  learningSteps: ["1m", "10m"] as const,
-  relearningSteps: ["10m"] as const,
+  learningSteps: ["1m", "10m"],
+  relearningSteps: ["10m"],
+  weights: V1_FSRS6_WEIGHTS,
 };
 
 describe("isSchedulerStep", () => {
@@ -24,8 +31,12 @@ describe("isSchedulerStep", () => {
 });
 
 describe("validateSchedulerConfig", () => {
-  it("acepta una config dentro de rango", () => {
+  it("acepta una config dentro de rango y la v1 de producto", () => {
     expect(validateSchedulerConfig(valid)).toEqual([]);
+    expect(validateSchedulerConfig(V1_SCHEDULER_CONFIG)).toEqual([]);
+    expect(V1_SCHEDULER_CONFIG.configVersion).toBe("v1");
+    expect(V1_SCHEDULER_CONFIG.enableFuzz).toBe(true);
+    expect(V1_SCHEDULER_CONFIG.weights).toHaveLength(21);
   });
 
   it("rechaza retención fuera de 0.70–0.97 e intervalo no entero", () => {
@@ -44,5 +55,11 @@ describe("validateSchedulerConfig", () => {
         learningSteps: ["1m", "nope"] as unknown as SchedulerConfig["learningSteps"],
       }),
     ).toEqual(["schedulerConfig.learningSteps.invalid"]);
+  });
+
+  it("exige 21 pesos finitos", () => {
+    expect(validateSchedulerConfig({ ...valid, weights: [1, 2, 3] })).toEqual([
+      "schedulerConfig.weights.invalid",
+    ]);
   });
 });

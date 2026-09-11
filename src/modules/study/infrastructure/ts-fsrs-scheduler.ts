@@ -63,6 +63,7 @@ function toFsrsParams(config: SchedulerConfig) {
     enable_short_term: config.enableShortTerm,
     learning_steps: [...config.learningSteps],
     relearning_steps: [...config.relearningSteps],
+    w: [...config.weights],
   });
 }
 

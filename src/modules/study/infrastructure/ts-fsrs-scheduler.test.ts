@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import type { SchedulerConfig } from "@/modules/study/domain/scheduler-config";
+import { default_w } from "ts-fsrs";
+
+import { V1_SCHEDULER_CONFIG } from "@/modules/study/domain/scheduler-config";
 
 import { createTsFsrsScheduler } from "./ts-fsrs-scheduler";
 
@@ -12,14 +14,8 @@ import { createTsFsrsScheduler } from "./ts-fsrs-scheduler";
 
 const NOW = new Date("2026-09-11T10:00:00.000Z");
 
-const config: SchedulerConfig = {
-  requestedRetention: 0.9,
-  maximumIntervalDays: 36_500,
-  enableFuzz: false,
-  enableShortTerm: true,
-  learningSteps: ["1m", "10m"],
-  relearningSteps: ["10m"],
-};
+/** Reloj congelado: fuzz apagado para números exactos. La v1 de producto lo enciende. */
+const config = { ...V1_SCHEDULER_CONFIG, enableFuzz: false };
 
 const scheduler = createTsFsrsScheduler();
 
@@ -80,5 +76,16 @@ describe("createTsFsrsScheduler", () => {
     const second = scheduler.review(fresh, "good", NOW, config);
     expect(first.state.dueAt.getTime()).toBe(second.state.dueAt.getTime());
     expect(first.state.difficulty).toBe(second.state.difficulty);
+  });
+
+  it("los pesos v1 coinciden con default_w de 5.4.2; si cambia la librería, hay que decidir un v2", () => {
+    expect([...V1_SCHEDULER_CONFIG.weights]).toEqual([...default_w]);
+  });
+
+  it("la v1 con fuzz encendido sigue programando", () => {
+    const fresh = scheduler.createInitialState(NOW, V1_SCHEDULER_CONFIG);
+    const reviewed = scheduler.review(fresh, "good", NOW, V1_SCHEDULER_CONFIG);
+    expect(reviewed.state.phase).toBe("learning");
+    expect(reviewed.state.dueAt.getTime()).toBeGreaterThan(NOW.getTime());
   });
 });
