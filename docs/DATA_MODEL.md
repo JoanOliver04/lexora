@@ -556,6 +556,18 @@ Probado en `supabase/tests/database/120-study-schema.sql` (estructura) y
 `130-study-rls.sql` (dueño / no-dueño / anon / `service_role`; `review_logs`
 sin `UPDATE` ni siquiera para el dueño).
 
+**Función (migración `20260911180000_commit_review`, LEX-5.9 / ADR-006):**
+
+| Función | Papel |
+|---|---|
+| `public.commit_review(...) → jsonb` | Escritura atómica de un repaso: `UPDATE` de `learning_states` (`revision + 1`) y `INSERT` de `review_logs`. `SECURITY INVOKER`, `search_path` fijado. Verifica `auth.uid()`, estado existente, `revision` esperada e idempotencia. No calcula FSRS. `{ok, replayed, revision}` o `{ok:false, reason}`. |
+
+`revoke execute from public, anon`; `grant to authenticated`. La
+presentación no llama a esta RPC: el camino es Server Action →
+`confirmReview` → adaptador. El dueño sigue pudiendo `UPDATE` su estado
+por RLS; el producto no lo usa. Cobertura:
+`supabase/tests/database/140-commit-review.sql`.
+
 Índices de LEX-5.5: `(owner_id)` en las tres; cola
 `learning_states (owner_id, due_at)`; lista de sesiones
 `(owner_id, started_at desc)`; historial

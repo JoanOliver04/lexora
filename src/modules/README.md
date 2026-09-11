@@ -13,7 +13,7 @@ La organización es *feature-first*: todo lo que hace falta para entender
 | `courses` | Idiomas, cursos y configuración educativa | Fase 2 — **existe** (`domain/`, `application/`, `infrastructure/`) |
 | `library` | Mazos, conceptos, ítems de práctica y etiquetas | Fase 3 — **existe** (`domain/` LEX-3.1, `application/` + `infrastructure/` LEX-3.4; `presentation/` en LEX-3.5+) |
 | `importing` | Previsualización, validación e importación de archivos | Fase 4 — **existe** (parser LEX-4.2; preview LEX-4.4; saneamiento LEX-4.5; duplicados LEX-4.6; lote LEX-4.7; wizard LEX-4.8; resumen LEX-4.9; dataset real LEX-4.10; auditoría M4 LEX-4.11) |
-| `study` | Cola diaria, sesiones, repetición espaciada e historial | Fases 5 y 6 — **existe** (`domain/` + puerto + adaptador `ts-fsrs` LEX-5.2; sin UI) |
+| `study` | Cola diaria, sesiones, repetición espaciada e historial | Fases 5 y 6 — **existe** (`domain/` + puertos + adaptadores LEX-5.2…5.9; sin UI) |
 | `analytics` | Consultas y estadísticas | Fase 7 |
 | `settings` | Preferencias, exportación y eliminación | Fase 8 |
 | `demo` | Experiencia pública sin registro | Fase 10 |

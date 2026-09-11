@@ -3,9 +3,9 @@
 **Última actualización:** 2026-09-11
 **Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (7/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
-**Tarea activa:** LEX-5.8
-**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.7 `HECHO` · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
-**Rama / commit base / HEAD:** `feat/lex-5-8-review-practice-item` sobre `main` `ac1c325` (docs-close #82 de LEX-5.7).
+**Tarea activa:** LEX-5.9
+**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.7 `HECHO` · LEX-5.8 fusionada en `main` (PR #83, docs-close pendiente) · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
+**Rama / commit base / HEAD:** `feat/lex-5-9-atomic-review-commit` sobre `main` `2cabb38` (merge de PR #83, LEX-5.8).
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,18 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-5.9 — Commit atómico de repaso — `EN PROCESO`
+
+Rama `feat/lex-5-9-atomic-review-commit` sobre `2cabb38`. ADR-006
+(RPC SECURITY INVOKER; no se reutiliza ADR-005). Migración
+`20260911180000_commit_review`, pgTAP `140`, `confirmReview` +
+adaptador. Sin UI. Gates y evidencia al cerrar.
+
+### LEX-5.8 — `ReviewPracticeItem` — feature en `main`, docs-close pendiente
+
+PR #83 fusionada (`2cabb38`). Cálculo de transición, no escribe.
+Docs-close tras CI de merge y cierre de LEX-5.9.
 
 ### LEX-5.7 — Cola diaria — `HECHO`
 

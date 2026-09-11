@@ -13,6 +13,7 @@ explicarse y, si hace falta, revertirse con conocimiento de causa.
 | [ADR-003](ADR-003-fsrs-programa-practice-item.md) | FSRS programa `PracticeItem`, no `Concept` | Aceptado |
 | [ADR-004](ADR-004-pwa-online-first.md) | PWA online-first, sin estudio offline en V1 | Aceptado |
 | [ADR-005](ADR-005-creacion-de-perfil.md) | La creación del perfil es un caso de uso, no un trigger | Aceptado |
+| [ADR-006](ADR-006-commit-atomico-de-repaso.md) | El commit de un repaso es una RPC SECURITY INVOKER | Aceptado |
 
 ## Reglas
 
