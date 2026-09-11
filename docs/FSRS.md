@@ -3,10 +3,11 @@
 Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa está en
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado (LEX-5.3, 2026-09-11):** spike, adaptador y **config v1**
-> hechos. `ts-fsrs@5.4.2` (FSRS-6.0). Puerto +
-> `V1_SCHEDULER_CONFIG` (`config_version` = `v1`). Sin UI. Sin
-> persistencia de estados (LEX-5.4).
+> **Estado (LEX-5.4, 2026-09-11):** spike, adaptador, config v1 y
+> **esquema de persistencia** hechos. `ts-fsrs@5.4.2` (FSRS-6.0). Puerto +
+> `V1_SCHEDULER_CONFIG` (`config_version` = `v1`). Tablas
+> `learning_states`, `study_sessions`, `review_logs` (RLS en LEX-5.5).
+> Sin UI.
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),

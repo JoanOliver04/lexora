@@ -8,14 +8,18 @@ Las decisiones que lo condicionan están en
 > **Estado:** existen las cuatro tablas de identidad y curso (`profiles`,
 > `languages`, `courses`, `course_settings`), con sus políticas RLS
 > (migraciones `20260828143434_identity_and_course` y
-> `20260831162304_identity_and_course_rls`), y las seis tablas de biblioteca
+> `20260831162304_identity_and_course_rls`); las seis tablas de biblioteca
 > (`decks`, `concepts`, `deck_concepts`, `practice_items`, `tags`,
 > `concept_tags`) con estructura (migración `20260902193649_library_schema`,
 > LEX-3.2), políticas RLS por dueño, índices de `owner_id` y unicidad de
-> `tags.normalized_name` por curso (`20260904122347_library_rls`, LEX-3.3). El
-> resto del modelo descrito aquí es lo acordado; las columnas exactas,
-> restricciones, índices y políticas se fijan en las migraciones SQL de cada
-> fase, que son la fuente de verdad del esquema.
+> `tags.normalized_name` por curso (`20260904122347_library_rls`, LEX-3.3);
+> las dos de importación (`import_jobs`, `import_job_errors`, LEX-4.3);
+> y las tres de estudio (`learning_states`, `study_sessions`, `review_logs`)
+> con estructura (migración `20260911120000_study_schema`, LEX-5.4). Las
+> políticas RLS de estudio, los índices de cola y el aislamiento dueño /
+> no-dueño son LEX-5.5. El resto del modelo descrito aquí es lo acordado;
+> las columnas exactas, restricciones, índices y políticas se fijan en las
+> migraciones SQL de cada fase, que son la fuente de verdad del esquema.
 
 ## La distinción que lo explica todo
 
@@ -54,8 +58,7 @@ erDiagram
     tags          ||--o{ concept_tags     : etiqueta
     practice_items ||--o{ learning_states : programa
     practice_items ||--o{ review_logs     : registra
-    profiles      ||--o{ learning_states  : memoriza
-    profiles      ||--o{ review_logs      : revisa
+    courses       ||--o{ study_sessions   : agrupa
     study_sessions ||--o{ review_logs     : agrupa
     import_jobs   ||--o{ import_job_errors : detalla
 ```
@@ -472,11 +475,16 @@ anterior/siguiente).
 
 ### Estudio
 
+Migración `20260911120000_study_schema` (LEX-5.4), **solo estructura**. RLS
+habilitado sin políticas (deny-all → LEX-5.5). Índices de cola, historial y
+políticas de dueño también LEX-5.5. Aquí solo los índices que respaldan una
+unicidad de negocio o una FK cuyo lado padre no cubre ya una PK.
+
 | Tabla | Papel |
 |---|---|
-| `learning_states` | Una fila por usuario e ítem de práctica: vencimiento, estabilidad, dificultad, repeticiones, lapsos, estado y última revisión. Incluye un contador de versión para control de concurrencia. |
+| `learning_states` | Una fila por usuario e ítem de práctica: vencimiento, estabilidad, dificultad, paso de aprendizaje, repeticiones, lapsos, fase y última revisión. Incluye `revision` para control de concurrencia. |
 | `study_sessions` | Agrupa repasos para poder resumirlos. No persiste la cola completa. |
-| `review_logs` | Registro **append-only** de cada repaso: valoración, momento, y una instantánea del estado antes y después. |
+| `review_logs` | Registro **append-only** de cada repaso: valoración, momento autoritativo, y una instantánea del estado antes y después. |
 
 `review_logs` es la pieza que permite auditar, reconstruir estados y migrar entre
 versiones del algoritmo. El usuario no edita estas filas.
@@ -484,6 +492,62 @@ versiones del algoritmo. El usuario no edita estas filas.
 *Matiz importante:* «append-only» describe el funcionamiento normal, no impide
 cumplir una solicitud de eliminación de cuenta. Borrar los datos propios sigue
 siendo un derecho del usuario.
+
+#### Esquema exacto (migración `20260911120000_study_schema`, LEX-5.4)
+
+Enums: `memory_phase` (`new`/`learning`/`review`/`relearning`),
+`study_session_status` (`active`/`paused`/`completed`/`abandoned`),
+`review_rating` (`again`/`hard`/`good`/`easy`). `Rating.Manual` de la
+librería no es una valoración de usuario y no entra en el enum.
+
+**Pertenencia estructural**, patrón de biblioteca: `owner_id` denormalizado +
+FK compuesta `(x_id, owner_id) → padre (id, owner_id)`. Sin FK suelta
+`owner_id → profiles`. `practice_items` gana `UNIQUE (id, owner_id)` en esta
+misma migración para poder ser destino de esas FK.
+
+| Tabla | FK compuesta |
+|---|---|
+| `learning_states` | `(practice_item_id, owner_id) → practice_items (id, owner_id)` `on delete cascade` |
+| `study_sessions` | `(course_id, owner_id) → courses (id, owner_id)` `on delete cascade` |
+| `review_logs` | `(practice_item_id, owner_id) → practice_items` cascade **y** `(study_session_id, owner_id) → study_sessions` `on delete set null (study_session_id)` |
+
+Unicidades de negocio (estructurales, no de consulta): un estado por
+`(owner_id, practice_item_id)`; una clave de idempotencia por
+`(owner_id, idempotency_key)`. Dos dueños pueden reutilizar la misma clave.
+
+**Mapeo campo a campo** desde `LearningState` (LEX-5.2). No se serializa un
+`Card` de `ts-fsrs`.
+
+| Dominio / §13.11 | Columna | Notas |
+|---|---|---|
+| `phase` / `state` | `phase` (`memory_phase`) | El dominio evita `state` (sobrecargado). |
+| `dueAt` | `due_at` | `timestamptz`, UTC. |
+| `lastReviewedAt` / `last_review_at` | `last_reviewed_at` | Nulo en `new`. |
+| `stability`, `difficulty` | `stability`, `difficulty` | `double precision`, `>= 0`. Un `New` es 0. |
+| `scheduledDays` | `scheduled_days` | Entero `>= 0`. |
+| `learningStep` | `learning_step` | Entero `>= 0`. **§13.11 lo omitió**; el dominio y `Card.learning_steps` lo tienen. Sin esta columna no hay ida/vuelta de una carta en Learning. |
+| `reps`, `lapses` | `reps`, `lapses` | Enteros `>= 0`. |
+| `elapsed_days` | — | **Omitido.** ts-fsrs 5.4.2 lo marca deprecado; desaparece en 6.0; el dominio no lo tiene. No se persiste una columna muerta. |
+| — | `scheduler_version`, `config_version` | Texto 1–64. Anotan con qué paquete y qué config v1 se calculó el snapshot. |
+| — | `revision` | Entero `>= 1`, default 1. Concurrencia optimista (LEX-5.11). |
+| `user_id` | `owner_id` | Mismo vocabulario que el resto del esquema. |
+
+`study_sessions.scope` es JSONB objeto (el filtro elegido: mazos, incluir
+nuevos, …), no la cola. `ended_at` es nulo exactamente cuando `status` es
+`active` o `paused`. Contadores `reviews_count` / `new_count` `>= 0`.
+
+`review_logs` no tiene `updated_at`. `reviewed_at` es el reloj del servidor;
+`client_occurred_at` es diagnóstico, nunca autoritativo. `duration_ms` nulo o
+0–3.600.000 (última guarda, una hora). `state_before` / `state_after` son
+objetos JSON; la forma exacta se versiona con las columnas de scheduler/config
+(LEX-5.13).
+
+Archivar un `practice_item` (`archived_at`) **no** toca su `learning_state` ni
+sus logs: no hay trigger. Borrar el ítem sí cascada. Q-006 (¿archivar un
+concepto en cascada sobre sus ítems?) sigue abierta; el esquema no introduce
+cascada de archivo.
+
+Probado en `supabase/tests/database/120-study-schema.sql`.
 
 ### Importación
 
@@ -548,9 +612,9 @@ No se crean tablas vacías por anticipación.
 
 ## Pendiente
 
-- Columnas exactas, tipos y restricciones de las tablas de fase 4 y 5: se fijan
-  en su migración. Identidad (LEX-2.1…2.9) y biblioteca (LEX-3.2, LEX-3.3) ya
-  están arriba.
+- Políticas RLS, índices de cola/historial y aislamiento dueño/no-dueño de
+  las tablas de estudio: LEX-5.5. Identidad, biblioteca, importación y la
+  estructura de estudio (LEX-5.4) ya están arriba.
 - Índice de **búsqueda por título** de `concepts`/`decks`: LEX-3.9, cuando la
   consulta real decida si compensa `pg_trgm`.
 - Regla «un mazo y sus conceptos son del mismo curso, no solo del mismo dueño»
