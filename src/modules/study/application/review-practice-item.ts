@@ -17,12 +17,20 @@ import {
   type RatingPreview,
   type ReviewTransition,
 } from "@/modules/study/domain/memory";
-import type { VersionedSchedulerConfig } from "@/modules/study/domain/scheduler-config";
+import {
+  schedulerCompatibility,
+  type VersionedSchedulerConfig,
+} from "@/modules/study/domain/scheduler-config";
 import type { LearningStateRepository, StoredLearningState } from "./learning-state";
 import type { SpacedRepetitionScheduler } from "./spaced-repetition-scheduler";
 
 export type ReviewPracticeItemReason =
-  "not-found" | "archived" | "no-state" | "revision-conflict" | "invalid-rating";
+  | "not-found"
+  | "archived"
+  | "no-state"
+  | "revision-conflict"
+  | "invalid-rating"
+  | "scheduler-mismatch";
 
 export type ReviewPracticeItemResult =
   | {
@@ -79,6 +87,9 @@ export async function reviewPracticeItem(
   }
   if (current.revision !== input.expectedRevision) {
     return { ok: false, reason: "revision-conflict", current };
+  }
+  if (!schedulerCompatibility(current, input.config).ok) {
+    return { ok: false, reason: "scheduler-mismatch" };
   }
 
   const preview = scheduler.preview(current.state, input.now, input.config);

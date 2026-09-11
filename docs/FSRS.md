@@ -3,9 +3,9 @@
 Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa está en
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado (LEX-5.12, 2026-09-11):** spike, adaptador, config v1, esquema,
-> RLS, alta, cola, cálculo, commit, idempotencia, concurrencia y **reloj
-> inyectado**. `ts-fsrs@5.4.2`. Sin UI.
+> **Estado (LEX-5.13, 2026-09-11):** spike, adaptador, config v1, esquema,
+> RLS, alta, cola, cálculo, commit, idempotencia, concurrencia, reloj y
+> **snapshots versionados**. `ts-fsrs@5.4.2`. Sin UI.
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -228,10 +228,22 @@ Una actualización mayor de la librería requiere, antes de aplicarse: un ADR, u
 prueba de migración y regresión sobre casos congelados. Los registros históricos
 se conservan para poder reconstruir estados.
 
+LEX-5.13: cada `learning_states` / `review_logs` anota `scheduler_version`
+y `config_version`. `snapshotLearningState` / `learningStateFromSnapshot`
+reconstruyen el estado desde el JSON del log, sin `ts-fsrs`.
+`schedulerCompatibility` bloquea un repaso si el par no coincide con
+la config activa: no hay `migrateParameters()` silencioso. Los fixtures
+`V1_FROZEN_*` (New+Good, New+Easy, fuzz off) fallan si 5.4.2 cambia
+los números.
+
 `migrateParameters()` rellena un vector `w` corto hasta los 21 pesos
 de FSRS-6. Eso no sustituye el ADR: un salto de paquete 5.x → 6.x
 sigue siendo major (la propia librería marca `elapsed_days` y
 parches de `Date` como rotos en 6.0).
+
+El log es append-only en operación; borrar la cuenta sigue pudiendo
+borrar las filas (`DELETE` de dueño, cascade al borrar el ítem). No se
+añade una FK que impida el derecho de supresión.
 
 La función «deshacer el último repaso» no llega en la V1. Cuando llegue, será una
 operación compensatoria registrada, nunca un borrado o una edición silenciosa del
@@ -263,8 +275,6 @@ abierta (sin cascada en V1).
 
 ## Pendiente
 
-- Casos congelados de migración de scheduler (LEX-5.13). El adaptador
-  ya tiene transiciones congeladas (LEX-5.2).
 - Q-006 (¿archivar un concepto en cascada sobre sus ítems?) condiciona
   el planificador de cola (LEX-5.7); el alta de estado (LEX-5.6) no
   introduce cascada.

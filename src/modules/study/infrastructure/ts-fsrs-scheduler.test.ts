@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { default_w } from "ts-fsrs";
 
+import { learningStateFromSnapshot, snapshotLearningState } from "@/modules/study/domain/memory";
+import { V1_FROZEN_TRANSITIONS } from "@/modules/study/domain/scheduler-fixtures";
 import { V1_SCHEDULER_CONFIG } from "@/modules/study/domain/scheduler-config";
 
 import { createTsFsrsScheduler } from "./ts-fsrs-scheduler";
@@ -68,6 +70,18 @@ describe("createTsFsrsScheduler", () => {
     const second = scheduler.review(afterGood, "good", later, config);
     expect(second.state.reps).toBe(2);
     expect(second.state.dueAt.getTime()).toBeGreaterThan(later.getTime());
+  });
+
+  it("los fixtures congelados v1 se reconstruyen y reproducen el after", () => {
+    for (const fixture of V1_FROZEN_TRANSITIONS) {
+      expect(fixture.schedulerPackageVersion).toBe("5.4.2");
+      expect(fixture.configVersion).toBe("v1");
+      const before = learningStateFromSnapshot(fixture.before);
+      expect(before).not.toBeNull();
+      if (!before) return;
+      const live = scheduler.review(before, fixture.rating, NOW, config).state;
+      expect(snapshotLearningState(live)).toEqual(fixture.after);
+    }
   });
 
   it("sin fuzz, el mismo reloj produce el mismo vencimiento dos veces", () => {
