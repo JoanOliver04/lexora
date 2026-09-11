@@ -3,9 +3,9 @@
 Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa está en
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado (LEX-5.7, 2026-09-11):** spike, adaptador, config v1, esquema,
-> RLS, alta de estado y **cola diaria**. `ts-fsrs@5.4.2`. Sin UI de
-> sesión (FASE 6).
+> **Estado (LEX-5.8, 2026-09-11):** spike, adaptador, config v1, esquema,
+> RLS, alta, cola y **cálculo de repaso**. `ts-fsrs@5.4.2`. El commit
+> atómico es LEX-5.9. Sin UI.
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -158,6 +158,10 @@ vencer durante la sesión, reaparece. `nextDueAt` es el próximo
 vencimiento futuro cuando no queda trabajo vencido.
 
 ## Transacción de repaso
+
+`reviewPracticeItem` (LEX-5.8) calcula la transición: identidad, ítem
+propio y no archivado, estado existente, `revision` esperada, reloj
+inyectado, adaptador. **No escribe.** El commit atómico es LEX-5.9.
 
 Cada valoración pasa por un único caso de uso:
 
