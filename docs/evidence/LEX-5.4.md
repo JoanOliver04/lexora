@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-11
 **Rama:** `feat/lex-5-4-study-schema`
-**Estado resultante:** `EN PROCESO` (CI y fusión pendientes).
+**Estado resultante:** `HECHO`. PR #75 fusionada a `main` (merge `10a391f`);
+CI verde en los tres trabajos, runs `34600614752` (PR) y `34601083487`
+(merge).
 
 ---
 
@@ -73,7 +75,10 @@ pnpm check     exit 0 (format, lint, typecheck, contraste 18/18,
                vitest 49/312 + 1 skipped, build)
 ```
 
-Sin `pnpm e2e`: no hay pantalla. CI se registra al cerrar.
+Sin `pnpm e2e`: no hay pantalla.
+
+CI verde, tres trabajos: run `34600614752` (PR #75) y run `34601083487`
+(merge).
 
 ## 5. Archivos
 
