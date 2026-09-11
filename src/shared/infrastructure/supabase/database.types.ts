@@ -472,6 +472,74 @@ export type Database = {
         }
         Relationships: []
       }
+      learning_states: {
+        Row: {
+          config_version: string
+          created_at: string
+          difficulty: number
+          due_at: string
+          id: string
+          lapses: number
+          last_reviewed_at: string | null
+          learning_step: number
+          owner_id: string
+          phase: Database["public"]["Enums"]["memory_phase"]
+          practice_item_id: string
+          reps: number
+          revision: number
+          scheduled_days: number
+          scheduler_version: string
+          stability: number
+          updated_at: string
+        }
+        Insert: {
+          config_version: string
+          created_at?: string
+          difficulty?: number
+          due_at: string
+          id?: string
+          lapses?: number
+          last_reviewed_at?: string | null
+          learning_step?: number
+          owner_id: string
+          phase?: Database["public"]["Enums"]["memory_phase"]
+          practice_item_id: string
+          reps?: number
+          revision?: number
+          scheduled_days?: number
+          scheduler_version: string
+          stability?: number
+          updated_at?: string
+        }
+        Update: {
+          config_version?: string
+          created_at?: string
+          difficulty?: number
+          due_at?: string
+          id?: string
+          lapses?: number
+          last_reviewed_at?: string | null
+          learning_step?: number
+          owner_id?: string
+          phase?: Database["public"]["Enums"]["memory_phase"]
+          practice_item_id?: string
+          reps?: number
+          revision?: number
+          scheduled_days?: number
+          scheduler_version?: string
+          stability?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_states_item_owner_fk"
+            columns: ["practice_item_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "practice_items"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
       practice_items: {
         Row: {
           answer_text: string
@@ -566,6 +634,128 @@ export type Database = {
           },
         ]
       }
+      review_logs: {
+        Row: {
+          client_occurred_at: string | null
+          config_version: string
+          created_at: string
+          due_after: string
+          due_before: string
+          duration_ms: number | null
+          id: string
+          idempotency_key: string
+          owner_id: string
+          practice_item_id: string
+          rating: Database["public"]["Enums"]["review_rating"]
+          reviewed_at: string
+          scheduler_version: string
+          state_after: Json
+          state_before: Json
+          study_session_id: string | null
+        }
+        Insert: {
+          client_occurred_at?: string | null
+          config_version: string
+          created_at?: string
+          due_after: string
+          due_before: string
+          duration_ms?: number | null
+          id?: string
+          idempotency_key: string
+          owner_id: string
+          practice_item_id: string
+          rating: Database["public"]["Enums"]["review_rating"]
+          reviewed_at: string
+          scheduler_version: string
+          state_after: Json
+          state_before: Json
+          study_session_id?: string | null
+        }
+        Update: {
+          client_occurred_at?: string | null
+          config_version?: string
+          created_at?: string
+          due_after?: string
+          due_before?: string
+          duration_ms?: number | null
+          id?: string
+          idempotency_key?: string
+          owner_id?: string
+          practice_item_id?: string
+          rating?: Database["public"]["Enums"]["review_rating"]
+          reviewed_at?: string
+          scheduler_version?: string
+          state_after?: Json
+          state_before?: Json
+          study_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_logs_item_owner_fk"
+            columns: ["practice_item_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "practice_items"
+            referencedColumns: ["id", "owner_id"]
+          },
+          {
+            foreignKeyName: "review_logs_session_owner_fk"
+            columns: ["study_session_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "study_sessions"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      study_sessions: {
+        Row: {
+          course_id: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          new_count: number
+          owner_id: string
+          reviews_count: number
+          scope: Json
+          started_at: string
+          status: Database["public"]["Enums"]["study_session_status"]
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          new_count?: number
+          owner_id: string
+          reviews_count?: number
+          scope?: Json
+          started_at?: string
+          status?: Database["public"]["Enums"]["study_session_status"]
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          new_count?: number
+          owner_id?: string
+          reviews_count?: number
+          scope?: Json
+          started_at?: string
+          status?: Database["public"]["Enums"]["study_session_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_sessions_course_owner_fk"
+            columns: ["course_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
       tags: {
         Row: {
           course_id: string
@@ -651,6 +841,7 @@ export type Database = {
         | "importing"
         | "completed"
         | "failed"
+      memory_phase: "new" | "learning" | "review" | "relearning"
       practice_mode:
         | "basic_recognition"
         | "basic_recall"
@@ -659,6 +850,8 @@ export type Database = {
         | "guided_production"
         | "free_production"
         | "pronunciation"
+      review_rating: "again" | "hard" | "good" | "easy"
+      study_session_status: "active" | "paused" | "completed" | "abandoned"
       ui_locale: "es" | "en"
     }
     CompositeTypes: {
@@ -819,6 +1012,7 @@ export const Constants = {
         "rejected",
       ],
       import_status: ["pending", "mapping", "importing", "completed", "failed"],
+      memory_phase: ["new", "learning", "review", "relearning"],
       practice_mode: [
         "basic_recognition",
         "basic_recall",
@@ -828,6 +1022,8 @@ export const Constants = {
         "free_production",
         "pronunciation",
       ],
+      review_rating: ["again", "hard", "good", "easy"],
+      study_session_status: ["active", "paused", "completed", "abandoned"],
       ui_locale: ["es", "en"],
     },
   },

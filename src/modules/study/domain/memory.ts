@@ -3,7 +3,8 @@
  *
  * Lógica pura: sin `ts-fsrs`, sin React, sin base de datos. El adaptador
  * traduce estos tipos a `Card`/`Rating`/`State` de la librería. La fila
- * persistida (`owner_id`, `practice_item_id`, `revision`) llega en LEX-5.4.
+ * persistida (`owner_id`, `practice_item_id`, `revision`) vive en
+ * `learning_states` (LEX-5.4); este tipo es la instantánea, no esa fila.
  */
 
 export const REVIEW_RATINGS = ["again", "hard", "good", "easy"] as const;
