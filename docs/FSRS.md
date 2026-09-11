@@ -3,11 +3,10 @@
 Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa está en
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado (LEX-5.2, 2026-09-11):** spike LEX-5.1 y adaptador hechos.
-> Versión `ts-fsrs@5.4.2` (FSRS-6.0). Puerto
-> `SpacedRepetitionScheduler` + `createTsFsrsScheduler()`. El dominio
-> no importa la librería. Configuración de producto versionada: LEX-5.3.
-> Sin UI.
+> **Estado (LEX-5.3, 2026-09-11):** spike, adaptador y **config v1**
+> hechos. `ts-fsrs@5.4.2` (FSRS-6.0). Puerto +
+> `V1_SCHEDULER_CONFIG` (`config_version` = `v1`). Sin UI. Sin
+> persistencia de estados (LEX-5.4).
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -99,23 +98,23 @@ configuración se calcularon.
 Esa anotación es lo que permitirá, más adelante, actualizar el algoritmo sin
 perder la capacidad de interpretar el historial anterior.
 
-`generatorParameters()` devuelve un `FSRSParameters` completo y
-redondea por `JSON.stringify` (solo números, booleanos y pasos
-`1m`/`10m`). Hay que validarlo en el borde (Zod, LEX-5.3) antes de
-pasarlo a `fsrs()`.
+`V1_SCHEDULER_CONFIG` (`config_version` = `v1`) es la config de
+producto. Se serializa con JSON y se valida en el borde (Zod) antes
+de pasarla al adaptador. Los pesos son los `default_w` de 5.4.2
+**copiados**: un parche de la librería no cambia el calendario.
 
-Defaults de **la librería** 5.4.2, no todavía la config de producto
-(eso lo congela LEX-5.3):
+| Parámetro | V1 (producto) | Default librería 5.4.2 |
+|---|---|---|
+| `requestedRetention` | `0.9` | `0.9` |
+| `maximumIntervalDays` | `36500` | `36500` |
+| `enableFuzz` | **`true`** (evitar vencimientos agrupados; sembrado) | `false` |
+| `enableShortTerm` | `true` | `true` |
+| `learningSteps` | `['1m', '10m']` | igual |
+| `relearningSteps` | `['10m']` | igual |
+| `weights` | 21 pesos FSRS-6 congelados | `default_w` |
 
-| Parámetro | Default 5.4.2 |
-|---|---|
-| `request_retention` | `0.9` (el 0,90 de partida acordado) |
-| `maximum_interval` | `36500` días |
-| `enable_fuzz` | `false` |
-| `enable_short_term` | `true` |
-| `learning_steps` | `['1m', '10m']` |
-| `relearning_steps` | `['10m']` |
-| `w` | 21 pesos FSRS-6 |
+Los tests de transiciones congeladas apagan el fuzz para leer minutos
+exactos. La v1 de producto lo deja encendido.
 
 **Fuzz:** con `enable_fuzz: true` el intervalo largo cambia respecto
 al modo sin fuzz, pero está **sembrado**: mismo `Card` + mismo `now`
@@ -222,8 +221,6 @@ directamente vencimiento, estabilidad ni dificultad.
 
 ## Pendiente
 
-- Valores concretos de configuración de producto (LEX-5.3), a partir
-  de los defaults de 5.4.2.
 - Decisión documentada sobre cómo se invoca la función transaccional y con qué privilegios (LEX-5.9 / ADR).
 - Casos congelados de migración de scheduler (LEX-5.13). El adaptador
   ya tiene transiciones congeladas (LEX-5.2).
