@@ -4,10 +4,11 @@ Cómo está organizado el código de Lexora y por qué. Las decisiones que hay d
 están en [ADR-001](adrs/ADR-001-monolito-modular-clean-architecture.md) y
 [ADR-002](adrs/ADR-002-supabase-sin-orm.md).
 
-> **Estado:** documento vivo. Las secciones marcadas como *pendiente* se
-> completarán cuando la fase correspondiente las implemente. Hoy el proyecto está
-> en fase 0: la estructura descrita aquí es la que se va a construir, no la que
-> ya existe.
+> **Estado:** documento vivo. M5 cerrado (LEX-5.14): el módulo `study` existe
+> con puerto, adaptador `ts-fsrs@5.4.2`, cola, commit atómico y `Clock`
+> inyectado. FASE 6 construye la UI diaria sobre ese motor. Las secciones
+> marcadas como *pendiente* se completan cuando la fase correspondiente las
+> implemente.
 
 ## Estilo
 

@@ -3,9 +3,10 @@
 Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa está en
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado (LEX-5.13, 2026-09-11):** spike, adaptador, config v1, esquema,
-> RLS, alta, cola, cálculo, commit, idempotencia, concurrencia, reloj y
-> **snapshots versionados**. `ts-fsrs@5.4.2`. Sin UI.
+> **Estado (LEX-5.14, 2026-09-11):** **M5 cerrado.** Spike, adaptador,
+> config v1, esquema, RLS, alta, cola, cálculo, commit, idempotencia,
+> concurrencia, reloj, snapshots y auditoría con ítems importados.
+> `ts-fsrs@5.4.2`. Sin UI (FASE 6).
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -275,6 +276,7 @@ abierta (sin cascada en V1).
 
 ## Pendiente
 
-- Q-006 (¿archivar un concepto en cascada sobre sus ítems?) condiciona
-  el planificador de cola (LEX-5.7); el alta de estado (LEX-5.6) no
-  introduce cascada.
+- UI diaria, Hoy, pausa/resumen y E2E multidispositivo: FASE 6 / M6.
+- Q-006 (¿archivar un concepto en cascada sobre sus ítems?) sigue
+  abierta. La cola filtra `concepts.archived_at` (opción 1, sin cascada).
+- Salto de paquete 5.x→6.x: ADR + migración + regresión. No hay fecha.
