@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-11
 **Rama:** `feat/lex-5-13-scheduler-snapshots`
-**Estado resultante:** `EN PROCESO` (CI y fusión pendientes).
+**Estado resultante:** `HECHO`. PR #93 fusionada a `main` (merge `ecb4a87`);
+CI verde en los tres trabajos, runs `34621272492` (PR) y `34621776600`
+(merge).
 
 ---
 
@@ -45,6 +47,9 @@ pnpm check     exit 0 (format, lint, typecheck, contraste 18/18,
 ```
 
 Sin migración. Sin e2e: no hay pantalla.
+
+CI verde, tres trabajos: run `34621272492` (PR #93) y run `34621776600`
+(merge).
 
 ## 5. Archivos
 
