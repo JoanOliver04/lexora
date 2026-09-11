@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-11
-**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (2/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (3/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-5.1…5.2 `HECHO` · siguiente LEX-5.3 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8; condiciona LEX-5.6)
-**Rama / commit base / HEAD:** `main` en `27638c0` (PR #71, LEX-5.2). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-5.1…5.3 `HECHO` · siguiente LEX-5.4 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8; condiciona LEX-5.6)
+**Rama / commit base / HEAD:** `main` en `6ff8b5d` (PR #73, LEX-5.3). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,22 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-5.3 — Configuración FSRS v1 — `HECHO`
+
+Informe en [`evidence/LEX-5.3.md`](evidence/LEX-5.3.md). PR #73 fusionada a
+`main` (merge `6ff8b5d`); CI verde en los tres trabajos, runs `34596435352`
+(PR) y `34596876298` (merge). **Sin migración.**
+
+`V1_SCHEDULER_CONFIG` (`configVersion: v1`): retención 0,90, pasos
+`1m`/`10m`, fuzz encendido, 21 pesos FSRS-6 copiados. Zod en el borde.
+El adaptador pasa `w` explícitos.
+
+```text
+pnpm check    exit 0 (format, lint, typecheck, contraste 18/18, vitest 49/312 + 1 skipped, build)
+```
+
+Fuera de alcance declarado: persistencia (LEX-5.4); UI.
 
 ### LEX-5.2 — Tipos internos y adaptador `TsFsrsScheduler` — `HECHO`
 
