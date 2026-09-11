@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-11
 **Rama:** `feat/lex-5-8-review-practice-item`
-**Estado resultante:** `EN PROCESO` (CI y fusión pendientes).
+**Estado resultante:** `HECHO`. PR #83 fusionada a `main` (merge `2cabb38`);
+CI verde en los tres trabajos, runs `34608800875` (PR) y `34609364061`
+(merge).
 
 ---
 
@@ -44,6 +46,9 @@ pnpm check     exit 0 (format, lint, typecheck, contraste 18/18,
 
 Sin migración. Sin e2e.
 
+CI verde, tres trabajos: run `34608800875` (PR #83) y run `34609364061`
+(merge).
+
 ## 5. Archivos
 
 - `src/modules/study/application/review-practice-item.ts` (+ test)
@@ -53,4 +58,4 @@ Migraciones: **0**.
 
 ## 6. Siguiente
 
-**LEX-5.9** — Commit atómico de repaso. No empezada.
+**LEX-5.9** — Commit atómico de repaso. Feature fusionada (PR #84); docs-close pendiente.
