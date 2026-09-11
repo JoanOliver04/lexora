@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-11
 **Rama:** `feat/lex-5-3-fsrs-v1-config`
-**Estado resultante:** gates locales en verde. PR pendiente de CI.
+**Estado resultante:** `HECHO`. PR #73 fusionada a `main` (merge `6ff8b5d`);
+CI verde en los tres trabajos, runs `34596435352` (PR) y `34596876298`
+(merge).
 
 ---
 
