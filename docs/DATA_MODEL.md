@@ -548,6 +548,10 @@ sus logs: no hay trigger. Borrar el ítem sí cascada. Q-006 (¿archivar un
 concepto en cascada sobre sus ítems?) sigue abierta; el esquema no introduce
 cascada de archivo.
 
+La fila se crea con `ensureLearningState` (LEX-5.6) al activar o estudiar
+el ítem, no al darlo de alta en la biblioteca. Un segundo `ensure` es
+idempotente. Reactivar conserva el estado; no hay reinicio implícito.
+
 Probado en `supabase/tests/database/120-study-schema.sql` (estructura) y
 `130-study-rls.sql` (dueño / no-dueño / anon / `service_role`; `review_logs`
 sin `UPDATE` ni siquiera para el dueño).
@@ -622,8 +626,8 @@ No se crean tablas vacías por anticipación.
 ## Pendiente
 
 - Identidad, biblioteca, importación y estudio (estructura LEX-5.4, RLS
-  LEX-5.5) ya están arriba. La cola diaria y el alta de `LearningState`
-  son LEX-5.6 / 5.7.
+  LEX-5.5, alta idempotente LEX-5.6) ya están arriba. La cola diaria es
+  LEX-5.7.
 - Índice de **búsqueda por título** de `concepts`/`decks`: LEX-3.9, cuando la
   consulta real decida si compensa `pg_trgm`.
 - Regla «un mazo y sus conceptos son del mismo curso, no solo del mismo dueño»

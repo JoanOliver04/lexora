@@ -3,10 +3,9 @@
 Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa está en
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado (LEX-5.5, 2026-09-11):** spike, adaptador, config v1, esquema
-> y **RLS de estudio** hechos. `ts-fsrs@5.4.2` (FSRS-6.0). Tablas
-> `learning_states`, `study_sessions`, `review_logs` con políticas de
-> dueño; logs sin `UPDATE`. Sin UI. Alta de estado: LEX-5.6.
+> **Estado (LEX-5.6, 2026-09-11):** spike, adaptador, config v1, esquema,
+> RLS y **alta idempotente de `LearningState`**. `ts-fsrs@5.4.2`. Sin UI.
+> Cola diaria: LEX-5.7.
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -219,10 +218,20 @@ Fuera del alcance de la V1. Cuando llegue, podrá **sugerir** cómo de correcta 
 una respuesta libre, pero no escribirá el calendario. Ningún modelo escribe
 directamente vencimiento, estabilidad ni dificultad.
 
+## Alta de estado
+
+`ensureLearningState` (LEX-5.6) crea el `New` **al estudiar o activar**
+un ítem, no al crearlo en la biblioteca. Un segundo `ensure` del mismo
+par `(usuario, ítem)` relee la fila y no llama al planificador. Archivar
+el ítem no borra la memoria; reactivar la conserva. Reiniciar el
+calendario es una acción explícita que no existe en la V1. Q-006 sigue
+abierta (sin cascada en V1).
+
 ## Pendiente
 
 - Decisión documentada sobre cómo se invoca la función transaccional y con qué privilegios (LEX-5.9 / ADR).
 - Casos congelados de migración de scheduler (LEX-5.13). El adaptador
   ya tiene transiciones congeladas (LEX-5.2).
 - Q-006 (¿archivar un concepto en cascada sobre sus ítems?) condiciona
-  LEX-5.6; no se resuelve aquí.
+  el planificador de cola (LEX-5.7); el alta de estado (LEX-5.6) no
+  introduce cascada.
