@@ -150,4 +150,17 @@ describe("reviewPracticeItem", () => {
     expect(outcome).toEqual({ ok: false, reason: "revision-conflict", current: stored });
     expect(scheduler.review).not.toHaveBeenCalled();
   });
+
+  it("no reprograma un estado de otro scheduler o config", async () => {
+    const scheduler = fakeScheduler();
+    const outcome = await reviewPracticeItem(
+      fakeRepository({
+        getByItem: vi.fn().mockResolvedValue({ ...stored, configVersion: "v2" }),
+      }),
+      scheduler,
+      baseInput,
+    );
+    expect(outcome).toEqual({ ok: false, reason: "scheduler-mismatch" });
+    expect(scheduler.review).not.toHaveBeenCalled();
+  });
 });

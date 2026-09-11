@@ -5,6 +5,7 @@ import {
   V1_FSRS6_WEIGHTS,
   V1_SCHEDULER_CONFIG,
   isSchedulerStep,
+  schedulerCompatibility,
   validateSchedulerConfig,
 } from "./scheduler-config";
 
@@ -61,5 +62,21 @@ describe("validateSchedulerConfig", () => {
     expect(validateSchedulerConfig({ ...valid, weights: [1, 2, 3] })).toEqual([
       "schedulerConfig.weights.invalid",
     ]);
+  });
+});
+
+describe("schedulerCompatibility", () => {
+  it("acepta el par v1 / 5.4.2 y rechaza un salto de config o de paquete", () => {
+    const stored = { schedulerVersion: "5.4.2", configVersion: "v1" };
+    expect(schedulerCompatibility(stored, V1_SCHEDULER_CONFIG)).toEqual({ ok: true });
+    expect(schedulerCompatibility({ ...stored, configVersion: "v2" }, V1_SCHEDULER_CONFIG)).toEqual(
+      {
+        ok: false,
+        reason: "scheduler-mismatch",
+      },
+    );
+    expect(
+      schedulerCompatibility({ ...stored, schedulerVersion: "6.0.0" }, V1_SCHEDULER_CONFIG),
+    ).toEqual({ ok: false, reason: "scheduler-mismatch" });
   });
 });

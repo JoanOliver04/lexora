@@ -529,7 +529,7 @@ Unicidades de negocio (estructurales, no de consulta): un estado por
 | `learningStep` | `learning_step` | Entero `>= 0`. **§13.11 lo omitió**; el dominio y `Card.learning_steps` lo tienen. Sin esta columna no hay ida/vuelta de una carta en Learning. |
 | `reps`, `lapses` | `reps`, `lapses` | Enteros `>= 0`. |
 | `elapsed_days` | — | **Omitido.** ts-fsrs 5.4.2 lo marca deprecado; desaparece en 6.0; el dominio no lo tiene. No se persiste una columna muerta. |
-| — | `scheduler_version`, `config_version` | Texto 1–64. Anotan con qué paquete y qué config v1 se calculó el snapshot. |
+| — | `scheduler_version`, `config_version` | Texto 1–64. Anotan con qué paquete y qué config v1 se calculó el snapshot. LEX-5.13: un par distinto bloquea el repaso hasta ADR+migración. |
 | — | `revision` | Entero `>= 1`, default 1. Concurrencia optimista (LEX-5.11). |
 | `user_id` | `owner_id` | Mismo vocabulario que el resto del esquema. |
 

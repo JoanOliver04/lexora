@@ -1,11 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
-  learningStateSnapshot,
   type CommitReviewReason,
   type CommitReviewResult,
   type ReviewCommitter,
 } from "@/modules/study/application/confirm-review";
+import { snapshotLearningState } from "@/modules/study/domain/memory";
 import { studyErrorFrom, StudyError } from "@/modules/study/application/study-error";
 import { isReviewRating } from "@/modules/study/domain/memory";
 import type { Database, Json } from "@/shared/infrastructure/supabase/database.types";
@@ -64,8 +64,8 @@ export function createSupabaseReviewCommitter(client: SupabaseClient<Database>):
         p_last_reviewed_at: (input.next.lastReviewedAt ?? input.reviewedAt).toISOString(),
         p_scheduler_version: input.schedulerVersion,
         p_config_version: input.configVersion,
-        p_state_before: learningStateSnapshot(input.previous) as Json,
-        p_state_after: learningStateSnapshot(input.next) as Json,
+        p_state_before: snapshotLearningState(input.previous) as unknown as Json,
+        p_state_after: snapshotLearningState(input.next) as unknown as Json,
         p_due_before: input.previous.dueAt.toISOString(),
         p_due_after: input.next.dueAt.toISOString(),
         ...(input.studySessionId ? { p_study_session_id: input.studySessionId } : {}),

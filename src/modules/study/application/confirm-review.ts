@@ -56,19 +56,7 @@ export interface ReviewCommitter {
   }): Promise<CommitReviewResult>;
 }
 
-export function learningStateSnapshot(state: LearningState): Record<string, unknown> {
-  return {
-    phase: state.phase,
-    dueAt: state.dueAt.toISOString(),
-    lastReviewedAt: state.lastReviewedAt ? state.lastReviewedAt.toISOString() : null,
-    stability: state.stability,
-    difficulty: state.difficulty,
-    scheduledDays: state.scheduledDays,
-    learningStep: state.learningStep,
-    reps: state.reps,
-    lapses: state.lapses,
-  };
-}
+export { snapshotLearningState as learningStateSnapshot } from "@/modules/study/domain/memory";
 
 export type ConfirmReviewResult =
   | {

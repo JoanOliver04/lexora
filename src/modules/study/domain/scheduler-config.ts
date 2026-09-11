@@ -64,6 +64,25 @@ export const V1_SCHEDULER_CONFIG: VersionedSchedulerConfig = {
   weights: V1_FSRS6_WEIGHTS,
 };
 
+/**
+ * Un estado persistido solo se reprograma con el mismo par
+ * (paquete, config). Un salto de `configVersion` o de paquete exige
+ * ADR + migración + regresión sobre fixtures (LEX-5.13). No hay
+ * `migrateParameters()` silencioso.
+ */
+export function schedulerCompatibility(
+  stored: { schedulerVersion: string; configVersion: string },
+  config: VersionedSchedulerConfig,
+): { ok: true } | { ok: false; reason: "scheduler-mismatch" } {
+  if (
+    stored.schedulerVersion === config.schedulerPackageVersion &&
+    stored.configVersion === config.configVersion
+  ) {
+    return { ok: true };
+  }
+  return { ok: false, reason: "scheduler-mismatch" };
+}
+
 const STEP_PATTERN = /^[1-9]\d*[mhd]$/;
 
 export function isSchedulerStep(value: unknown): value is SchedulerStep {
