@@ -3,9 +3,17 @@
 Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa está en
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado:** sin implementar. Este documento fija el contrato acordado antes de
-> escribir código. Los valores concretos de configuración se decidirán tras un
-> ensayo con la versión instalada de la librería, en la fase 5.
+> **Estado (LEX-5.1, 2026-09-11):** spike hecho. Versión fijada
+> `ts-fsrs@5.4.2` (algoritmo **FSRS-6.0**, `FSRSVersion` =
+> `v5.4.2 using FSRS-6.0`). Node `>=20` (Lexora usa 24). MIT, 0
+> dependencias transitivas. El adaptador `TsFsrsScheduler` es LEX-5.2;
+> la configuración de producto versionada, LEX-5.3. Sin UI.
+
+Fuentes oficiales leídas: README de
+[`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
+`packages/fsrs/README.md`, tipos de `5.4.2`, `CHANGELOG.md`. No se
+usa `6.0.0-beta`: no es `latest`, y un major exige ADR + migración
+(§14.7) antes de aplicarse.
 
 ## Qué se programa
 
@@ -22,12 +30,19 @@ Consecuencias directas:
 
 ## El algoritmo no se reimplementa
 
-Lexora usa [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs), la
-implementación mantenida por Open Spaced Repetition. No se reescribe la
-matemática del algoritmo, ni en TypeScript ni dentro de PostgreSQL.
+Lexora usa [`ts-fsrs@5.4.2`](https://www.npmjs.com/package/ts-fsrs), la
+implementación mantenida por Open Spaced Repetition. Implementa
+**FSRS-6** (21 pesos `w`). No se reescribe la matemática del algoritmo,
+ni en TypeScript ni dentro de PostgreSQL.
 
 Lo que sí es responsabilidad del proyecto: el mapeo de datos, el versionado, la
 atomicidad de la escritura y la corrección del tiempo.
+
+El optimizador [`@open-spaced-repetition/binding`](https://www.npmjs.com/package/@open-spaced-repetition/binding)
+**no** se añade: la V1 no entrena parámetros. `rollback` / `forget` /
+`reschedule` existen en la librería; deshacer un repaso sigue fuera de
+la V1. `Rating.Manual` (0) no es una valoración de usuario: la UI solo
+ofrecerá Again / Hard / Good / Easy (`Grades`).
 
 ## Puerto y adaptador
 
@@ -42,13 +57,37 @@ interface SpacedRepetitionScheduler {
 }
 ```
 
-`TsFsrsScheduler` implementa este puerto y traduce entre los tipos internos del
-dominio y los de la librería. Si la librería cambia su API, cambia el adaptador y
-nada más.
+`TsFsrsScheduler` (LEX-5.2) implementa este puerto y traduce entre los
+tipos internos del dominio y los de la librería. Si la librería cambia
+su API, cambia el adaptador y nada más.
 
-**El mapeo es explícito, campo a campo.** No se serializa a ciegas un objeto
-externo hacia la base de datos: eso ataría el esquema a la representación interna
-de una dependencia.
+API observada en 5.4.2 (el adaptador llamará a esto, el dominio no):
+
+| Producto (puerto) | `ts-fsrs` |
+|---|---|
+| `createInitialState(now)` | `createEmptyCard(now)` → `State.New`, `due = now` |
+| `preview(state, now)` | `scheduler.repeat(card, now)` — las cuatro `Grade` |
+| `review(state, rating, now)` | `scheduler.next(card, now, grade)` — `{ card, log }` |
+
+`repeat` y `next` con el mismo `(card, now, Good)` coinciden. El
+reloj se pasa como argumento; no se usa `Date.now()` dentro del
+adaptador.
+
+**El mapeo es explícito, campo a campo.** `Card.due` y
+`Card.last_review` son `Date`. Un `JSON.stringify` de la carta no es
+un esquema. Campos a traducir (LEX-5.2/5.4), sin copiar el objeto
+externo:
+
+| `Card` / `ReviewLog` | Notas |
+|---|---|
+| `due`, `last_review`, `log.review` | UTC ISO / timestamptz |
+| `stability`, `difficulty` | números; no los escribe el cliente |
+| `scheduled_days`, `learning_steps`, `reps`, `lapses` | enteros |
+| `state` | `0 New / 1 Learning / 2 Review / 3 Relearning` |
+| `elapsed_days` | **deprecado**, se elimina en 6.0. No es columna propia. |
+
+`Date.prototype.scheduler` / `.diff` también están deprecados hacia
+6.0: no se usan.
 
 ## Configuración
 
@@ -59,9 +98,33 @@ configuración se calcularon.
 Esa anotación es lo que permitirá, más adelante, actualizar el algoritmo sin
 perder la capacidad de interpretar el historial anterior.
 
-*Pendiente de la fase 5:* retención objetivo, pasos de aprendizaje y
-reaprendizaje, intervalo máximo y uso de dispersión aleatoria. Se decidirán tras
-un ensayo con la versión instalada, no copiando los parámetros de otra persona.
+`generatorParameters()` devuelve un `FSRSParameters` completo y
+redondea por `JSON.stringify` (solo números, booleanos y pasos
+`1m`/`10m`). Hay que validarlo en el borde (Zod, LEX-5.3) antes de
+pasarlo a `fsrs()`.
+
+Defaults de **la librería** 5.4.2, no todavía la config de producto
+(eso lo congela LEX-5.3):
+
+| Parámetro | Default 5.4.2 |
+|---|---|
+| `request_retention` | `0.9` (el 0,90 de partida acordado) |
+| `maximum_interval` | `36500` días |
+| `enable_fuzz` | `false` |
+| `enable_short_term` | `true` |
+| `learning_steps` | `['1m', '10m']` |
+| `relearning_steps` | `['10m']` |
+| `w` | 21 pesos FSRS-6 |
+
+**Fuzz:** con `enable_fuzz: true` el intervalo largo cambia respecto
+al modo sin fuzz, pero está **sembrado**: mismo `Card` + mismo `now`
+→ mismo vencimiento. Los tests de contrato pueden ir con fuzz
+apagado para leer el número exacto; no hace falta apagarlo en
+producción para que sea reproducible.
+
+**Pasos cortos:** `New` + `Good` → `Learning`, vencimiento **+10 min**
+(segundo paso). `New` + `Easy` → `Review` (+8 días en el default).
+Con `enable_short_term: false` la librería no aplica esos pasos.
 
 En la V1 no hay optimización personalizada de parámetros: requiere un historial
 que todavía no existe.
@@ -132,15 +195,23 @@ Una actualización mayor de la librería requiere, antes de aplicarse: un ADR, u
 prueba de migración y regresión sobre casos congelados. Los registros históricos
 se conservan para poder reconstruir estados.
 
+`migrateParameters()` rellena un vector `w` corto hasta los 21 pesos
+de FSRS-6. Eso no sustituye el ADR: un salto de paquete 5.x → 6.x
+sigue siendo major (la propia librería marca `elapsed_days` y
+parches de `Date` como rotos en 6.0).
+
 La función «deshacer el último repaso» no llega en la V1. Cuando llegue, será una
 operación compensatoria registrada, nunca un borrado o una edición silenciosa del
-historial.
+historial. La librería expone `rollback(card, log)`; no se usa todavía.
 
 ## Qué no se prueba
 
 No se reimplementa ni se verifica matemáticamente todo el algoritmo: eso es
 responsabilidad de la librería. Se prueban el contrato del adaptador, el mapeo de
 campos, las configuraciones elegidas y un conjunto de transiciones conocidas.
+
+El spike (LEX-5.1) cubre API, estados, ratings, pasos, fuzz sembrado y
+ida/vuelta de parámetros. No es el adaptador.
 
 ## Relación con la inteligencia artificial
 
@@ -150,6 +221,10 @@ directamente vencimiento, estabilidad ni dificultad.
 
 ## Pendiente
 
-- Valores concretos de configuración, tras el ensayo de la fase 5.
-- Decisión documentada sobre cómo se invoca la función transaccional y con qué privilegios.
-- Conjunto de casos congelados que servirá de regresión ante futuras actualizaciones.
+- Valores concretos de configuración de producto (LEX-5.3), a partir
+  de los defaults de 5.4.2.
+- Puerto y adaptador `TsFsrsScheduler` (LEX-5.2).
+- Decisión documentada sobre cómo se invoca la función transaccional y con qué privilegios (LEX-5.9 / ADR).
+- Conjunto de casos congelados del **adaptador** (LEX-5.2 / LEX-5.13).
+- Q-006 (¿archivar un concepto en cascada sobre sus ítems?) condiciona
+  LEX-5.6; no se resuelve aquí.

@@ -83,9 +83,9 @@ describe("la capa de aplicación", () => {
   it("no puede importar implementaciones concretas, solo puertos", async () => {
     const messages = await lint(
       "src/modules/example/application/use-case.ts",
-      `import { createClient } from "@supabase/supabase-js";\nimport Papa from "papaparse";\nexport const x = [createClient, Papa];\n`,
+      `import { createClient } from "@supabase/supabase-js";\nimport { fsrs } from "ts-fsrs";\nimport Papa from "papaparse";\nexport const x = [createClient, fsrs, Papa];\n`,
     );
-    expect(restrictedImportErrors(messages)).toHaveLength(2);
+    expect(restrictedImportErrors(messages)).toHaveLength(3);
   });
 
   it("sí puede importar del dominio", async () => {
