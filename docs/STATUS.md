@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-11
-**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (6/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (7/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
-**Tarea activa:** LEX-5.7
-**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.6 `HECHO` · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
-**Rama / commit base / HEAD:** `feat/lex-5-7-daily-queue` sobre `main` `8f95782` (docs-close #80 de LEX-5.6).
+**Tarea activa:** ninguna
+**Estado de la tarea:** LEX-5.1…5.7 `HECHO` · siguiente LEX-5.8 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
+**Rama / commit base / HEAD:** `main` en `03a6d54` (PR #81, LEX-5.7). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,22 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-5.7 — Cola diaria — `HECHO`
+
+Informe en [`evidence/LEX-5.7.md`](evidence/LEX-5.7.md). PR #81 fusionada a
+`main` (merge `03a6d54`); CI verde en los tres trabajos, runs `34607003177`
+(PR) y `34607509543` (merge). **Sin migración.**
+
+`getDailyQueue`: Learning/Relearning vencidos → Review vencidos → New.
+Desempate por id. Cupo de nuevos por `PracticeItem`. Límite de repasos
+solo sobre Review. Q-006: filtra conceptos archivados.
+
+```text
+pnpm check    exit 0 (format, lint, typecheck, contraste 18/18, vitest 52/332 + 1 skipped, build)
+```
+
+Fuera de alcance declarado: UI de sesión (FASE 6); `Clock` (LEX-5.12).
 
 ### LEX-5.6 — Alta/activación de `LearningState` — `HECHO`
 
