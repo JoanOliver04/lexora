@@ -2,7 +2,9 @@
 
 **Fecha:** 2026-09-11
 **Rama:** `feat/lex-5-12-clock-timezone`
-**Estado resultante:** `EN PROCESO` (CI y fusión pendientes).
+**Estado resultante:** `HECHO`. PR #91 fusionada a `main` (merge `46427cc`);
+CI verde en los tres trabajos, runs `34618993838` (PR) y `34619533416`
+(merge).
 
 ---
 
@@ -51,6 +53,9 @@ pnpm check     exit 0 (format, lint, typecheck, contraste 18/18,
 ```
 
 Sin migración. Sin e2e: no hay pantalla.
+
+CI verde, tres trabajos: run `34618993838` (PR #91) y run `34619533416`
+(merge).
 
 ## 5. Archivos
 
