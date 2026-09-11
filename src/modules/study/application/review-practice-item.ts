@@ -32,7 +32,8 @@ export type ReviewPracticeItemResult =
       preview: RatingPreview[];
       rating: ReviewRating;
     }
-  | { ok: false; reason: ReviewPracticeItemReason };
+  | { ok: false; reason: "revision-conflict"; current: StoredLearningState }
+  | { ok: false; reason: Exclude<ReviewPracticeItemReason, "revision-conflict"> };
 
 function assertUserId(userId: string): void {
   if (userId.trim() === "") {
@@ -77,7 +78,7 @@ export async function reviewPracticeItem(
     return { ok: false, reason: "no-state" };
   }
   if (current.revision !== input.expectedRevision) {
-    return { ok: false, reason: "revision-conflict" };
+    return { ok: false, reason: "revision-conflict", current };
   }
 
   const preview = scheduler.preview(current.state, input.now, input.config);

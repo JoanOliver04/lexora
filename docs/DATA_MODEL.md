@@ -568,8 +568,9 @@ presentación no llama a esta RPC: el camino es Server Action →
 por RLS; el producto no lo usa. LEX-5.10 añade un candado de
 transacción por `(owner, idempotency_key)` y relee el log bajo ese
 candado: un reintento no choca con `revision`. Cobertura:
-`supabase/tests/database/140-commit-review.sql` y
-`150-commit-review-idempotency.sql`.
+`supabase/tests/database/140-commit-review.sql`,
+`150-commit-review-idempotency.sql` y
+`160-commit-review-concurrency.sql`.
 
 Índices de LEX-5.5: `(owner_id)` en las tres; cola
 `learning_states (owner_id, due_at)`; lista de sesiones

@@ -147,7 +147,7 @@ describe("reviewPracticeItem", () => {
       ...baseInput,
       expectedRevision: 2,
     });
-    expect(outcome).toEqual({ ok: false, reason: "revision-conflict" });
+    expect(outcome).toEqual({ ok: false, reason: "revision-conflict", current: stored });
     expect(scheduler.review).not.toHaveBeenCalled();
   });
 });

@@ -142,7 +142,11 @@ describe("confirmReview", () => {
       ...baseInput,
       expectedRevision: 2,
     });
-    expect(conflict).toEqual({ ok: false, reason: "revision-conflict" });
+    expect(conflict).toEqual({
+      ok: false,
+      reason: "revision-conflict",
+      current: stored,
+    });
 
     expect(committer.commit).not.toHaveBeenCalled();
   });
@@ -179,13 +183,60 @@ describe("confirmReview", () => {
     expect(repository.create).not.toHaveBeenCalled();
   });
 
-  it("si el committer informa conflicto, no finge éxito", async () => {
+  it("si el committer informa conflicto, no finge éxito y relee el estado", async () => {
+    const repository = fakeRepository({
+      getByItem: vi.fn().mockResolvedValueOnce(stored).mockResolvedValueOnce(storedAfter),
+    });
     const committer = fakeCommitter({
       commit: vi.fn().mockResolvedValue({ ok: false, reason: "revision-conflict" }),
     });
-    const outcome = await confirmReview(fakeRepository(), fakeScheduler(), committer, baseInput);
-    expect(outcome).toEqual({ ok: false, reason: "revision-conflict" });
+    const outcome = await confirmReview(repository, fakeScheduler(), committer, baseInput);
+    expect(outcome).toEqual({
+      ok: false,
+      reason: "revision-conflict",
+      current: storedAfter,
+    });
     expect(committer.commit).toHaveBeenCalled();
+  });
+
+  it("dos dispositivos con la misma revision: el segundo recibe el estado ganador", async () => {
+    const repository = fakeRepository({
+      getByItem: vi
+        .fn()
+        .mockResolvedValueOnce(stored)
+        .mockResolvedValueOnce(storedAfter)
+        .mockResolvedValueOnce(stored)
+        .mockResolvedValueOnce(storedAfter),
+    });
+    const committer = fakeCommitter({
+      commit: vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, replayed: false })
+        .mockResolvedValueOnce({ ok: false, reason: "revision-conflict" }),
+    });
+    const scheduler = fakeScheduler();
+
+    const first = await confirmReview(repository, scheduler, committer, {
+      ...baseInput,
+      idempotencyKey: "device-a",
+    });
+    const second = await confirmReview(repository, scheduler, committer, {
+      ...baseInput,
+      rating: "again",
+      idempotencyKey: "device-b",
+    });
+
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    expect(first.replayed).toBe(false);
+    expect(second).toEqual({
+      ok: false,
+      reason: "revision-conflict",
+      current: storedAfter,
+    });
+    if (!second.ok && second.reason === "revision-conflict") {
+      expect(second.current.revision).toBe(2);
+    }
   });
 
   it("un reenvío replayed sigue siendo éxito", async () => {
