@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-11
-**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (13/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
-**Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
+**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Hito actual:** M5 — Motor FSRS fiable — `HECHO`. M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
 **Tarea activa:** ninguna
-**Estado de la tarea:** LEX-5.1…5.13 `HECHO` · siguiente LEX-5.14 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
-**Rama / commit base / HEAD:** `main` en `ecb4a87` (PR #93, LEX-5.13). Sin rama de trabajo activa.
+**Estado de la tarea:** LEX-5.1…5.14 `HECHO` · siguiente LEX-6.1 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
+**Rama / commit base / HEAD:** `feat/lex-5-14-m5-audit` sobre `main` `6734b1a`. Sin fusionar todavía.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,23 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-5.14 — Auditoría y cierre de M5 — `HECHO`
+
+Informe en [`evidence/LEX-5.14.md`](evidence/LEX-5.14.md). **Cierra FASE 5 /
+M5.** Sin migración. Sin UI.
+
+Un TSV público de importación recorre alta, cola y commit. La inversa
+cuenta por `PracticeItem`. Dos dueños no mezclan colas. El lint de
+`Clock` tiene test de regresión.
+
+```text
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 56 passed + 1 skipped / 371 passed + 1 skipped, build)
+pnpm db:test   17 ficheros / 477 aserciones, PASS
+```
+
+Fuera de alcance declarado: UI de Hoy (LEX-6.1); etiqueta de hito
+(autorización del propietario).
 
 ### LEX-5.13 — Snapshots y migraciones del scheduler — `HECHO`
 

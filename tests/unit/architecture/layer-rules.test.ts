@@ -122,3 +122,56 @@ describe("la capa de presentación y las rutas", () => {
     expect(restrictedImportErrors(messages)).toHaveLength(0);
   });
 });
+
+function clockErrors(messages: Awaited<ReturnType<typeof lint>>) {
+  return messages.filter(
+    (message) => message.ruleId === "no-restricted-syntax" && message.message.includes("Clock"),
+  );
+}
+
+describe("el reloj se inyecta (LEX-5.12 / LEX-5.14)", () => {
+  it("el dominio no puede llamar new Date() sin argumentos", async () => {
+    const messages = await lint(
+      "src/modules/example/domain/thing.ts",
+      `export const x = new Date();\n`,
+    );
+    expect(clockErrors(messages)).toHaveLength(1);
+  });
+
+  it("la aplicación tampoco", async () => {
+    const messages = await lint(
+      "src/modules/example/application/use-case.ts",
+      `export const x = new Date();\n`,
+    );
+    expect(clockErrors(messages)).toHaveLength(1);
+  });
+
+  it("la composición tampoco", async () => {
+    const messages = await lint("src/composition/study.ts", `export const x = new Date();\n`);
+    expect(clockErrors(messages)).toHaveLength(1);
+  });
+
+  it("un instante explícito sí está permitido en dominio", async () => {
+    const messages = await lint(
+      "src/modules/example/domain/thing.ts",
+      `export const x = new Date("2026-09-11T10:00:00.000Z");\n`,
+    );
+    expect(clockErrors(messages)).toHaveLength(0);
+  });
+
+  it("un test de dominio sí puede usar new Date() vacío", async () => {
+    const messages = await lint(
+      "src/modules/example/domain/thing.test.ts",
+      `export const x = new Date();\n`,
+    );
+    expect(clockErrors(messages)).toHaveLength(0);
+  });
+
+  it("infraestructura sí puede: ahí vive createSystemClock", async () => {
+    const messages = await lint(
+      "src/shared/infrastructure/system-clock.ts",
+      `export const x = new Date();\n`,
+    );
+    expect(clockErrors(messages)).toHaveLength(0);
+  });
+});
