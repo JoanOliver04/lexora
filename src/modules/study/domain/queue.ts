@@ -17,8 +17,8 @@
  * Learning/Relearning no consumen ese cupo. Los nuevos se cuentan por
  * `PracticeItem` (ADR-003), no por concepto.
  *
- * El día local (`dayStart`/`dayEnd`) lo inyecta el llamador. LEX-5.12
- * calculará esa ventana con la zona IANA del perfil.
+ * El día local lo calcula `studyDayWindow` (LEX-5.12) a partir del
+ * instante y la zona IANA; esta función solo recibe `now`.
  */
 
 import type { MemoryPhase } from "./memory";

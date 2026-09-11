@@ -3,9 +3,9 @@
 **Última actualización:** 2026-09-11
 **Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (11/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
-**Tarea activa:** ninguna
-**Estado de la tarea:** LEX-5.1…5.11 `HECHO` · siguiente LEX-5.12 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
-**Rama / commit base / HEAD:** `main` en `9743019` (PR #89, LEX-5.11). Sin rama de trabajo activa.
+**Tarea activa:** LEX-5.12
+**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.11 `HECHO` · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
+**Rama / commit base / HEAD:** `feat/lex-5-12-clock-timezone` sobre `main` `1fdedbb` (docs-close #90 de LEX-5.11).
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,11 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-5.12 — Reloj, UTC y zona IANA — `EN PROCESO`
+
+Rama `feat/lex-5-12-clock-timezone` sobre `1fdedbb`. `Clock` inyectado;
+día local por `profiles.timezone`. Sin UI. Gates y evidencia al cerrar.
 
 ### LEX-5.11 — Concurrencia optimista — `HECHO`
 

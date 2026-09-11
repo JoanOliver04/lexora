@@ -9,8 +9,8 @@
  * Q-006 opción 1: archivar un concepto no cascada a sus ítems; la cola
  * los deja fuera leyendo `concepts.archived_at`.
  *
- * `dayStart`/`dayEnd` son el día de estudio en UTC (fin exclusivo).
- * LEX-5.12 calculará esa ventana con la zona IANA del perfil.
+ * El día local lo calcula `studyDayWindow` (LEX-5.12) con la zona IANA
+ * del perfil y el instante del reloj inyectado. Fin exclusivo, UTC.
  */
 
 import {
@@ -18,6 +18,7 @@ import {
   type DailyQueue,
   type QueueCandidate,
 } from "@/modules/study/domain/queue";
+import { isIanaTimeZone, studyDayWindow } from "@/modules/study/domain/study-day";
 
 export type {
   DailyQueue,
@@ -48,10 +49,11 @@ export interface DailyQueueRepository {
     dayStart: Date;
     dayEnd: Date;
   }): Promise<TodayStudyActivity>;
+  getTimeZone(input: { ownerId: string }): Promise<string | null>;
 }
 
 export type GetDailyQueueResult =
-  { ok: true; queue: DailyQueue } | { ok: false; reason: "not-found" };
+  { ok: true; queue: DailyQueue } | { ok: false; reason: "not-found" | "invalid-timezone" };
 
 function assertUserId(userId: string): void {
   if (userId.trim() === "") {
@@ -66,11 +68,15 @@ export async function getDailyQueue(
     courseId: string;
     deckIds?: string[] | null;
     now: Date;
-    dayStart: Date;
-    dayEnd: Date;
+    timeZone: string;
   },
 ): Promise<GetDailyQueueResult> {
   assertUserId(input.ownerId);
+
+  if (!isIanaTimeZone(input.timeZone)) {
+    return { ok: false, reason: "invalid-timezone" };
+  }
+  const { start: dayStart, end: dayEnd } = studyDayWindow(input.now, input.timeZone);
 
   const limits = await repository.getCourseLimits({
     ownerId: input.ownerId,
@@ -89,8 +95,8 @@ export async function getDailyQueue(
     }),
     repository.countTodayActivity({
       ownerId: input.ownerId,
-      dayStart: input.dayStart,
-      dayEnd: input.dayEnd,
+      dayStart,
+      dayEnd,
     }),
   ]);
 

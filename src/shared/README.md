@@ -5,7 +5,7 @@ Lo que usan varios módulos y no pertenece a ninguno en concreto.
 ```text
 shared/
   domain/          Tipos y primitivas de negocio transversales.
-  application/     Puertos transversales: reloj, generador de identificadores.
+  application/     Puertos transversales: reloj (`Clock`, LEX-5.12), salud.
   infrastructure/  Clientes de Supabase, observabilidad.
   presentation/    Componentes base, estilos, utilidades de interfaz.
 ```

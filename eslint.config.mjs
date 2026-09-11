@@ -56,6 +56,28 @@ const eslintConfig = defineConfig([
     },
   },
 
+  // LEX-5.12: el reloj se inyecta. `new Date()` sin argumentos en dominio
+  // o aplicacion (salvo tests) vuelve a esparcir el reloj del sistema.
+  {
+    files: ["src/**/domain/**/*.ts", "src/**/application/**/*.ts", "src/composition/**/*.ts"],
+    ignores: ["**/*.test.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "NewExpression[callee.name='Date'][arguments.length=0]",
+          message:
+            "El reloj se inyecta (LEX-5.12). No uses new Date() en dominio, aplicacion ni composicion; usa Clock.",
+        },
+        {
+          selector: "CallExpression[callee.property.name='getSession']",
+          message:
+            "getSession() no verifica la firma del token: devuelve lo que diga la cookie. Usa getClaims() para cualquier decision de permisos.",
+        },
+      ],
+    },
+  },
+
   // Scripts de linea de comandos: aqui `console.log` es la salida del programa,
   // no depuracion olvidada.
   {
