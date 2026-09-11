@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-11
-**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (10/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (11/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
-**Tarea activa:** LEX-5.11
-**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.10 `HECHO` · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
-**Rama / commit base / HEAD:** `feat/lex-5-11-optimistic-concurrency` sobre `main` `70f0f2c` (docs-close #88 de LEX-5.10).
+**Tarea activa:** ninguna
+**Estado de la tarea:** LEX-5.1…5.11 `HECHO` · siguiente LEX-5.12 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
+**Rama / commit base / HEAD:** `main` en `9743019` (PR #89, LEX-5.11). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -15,11 +15,21 @@
 
 ## Terminado en esta sesión
 
-### LEX-5.11 — Concurrencia optimista — `EN PROCESO`
+### LEX-5.11 — Concurrencia optimista — `HECHO`
 
-Rama `feat/lex-5-11-optimistic-concurrency` sobre `70f0f2c`. Dos
-dispositivos, misma `revision`: uno confirma, el otro recibe el estado
-ganador para recargar. Sin UI. Gates y evidencia al cerrar.
+Informe en [`evidence/LEX-5.11.md`](evidence/LEX-5.11.md). PR #89 fusionada a
+`main` (merge `9743019`); CI verde en los tres trabajos, runs `34616489514`
+(PR) y `34616958668` (merge). **Sin migración.**
+
+Dos dispositivos, misma `revision`: uno confirma, el otro recibe el
+estado ganador para recargar. Sin lost update.
+
+```text
+pnpm db:test   17 ficheros / 477 aserciones, PASS (160: 8)
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 54/346 + 1 skipped, build)
+```
+
+Fuera de alcance declarado: UI de recarga (FASE 6); reloj (LEX-5.12).
 
 ### LEX-5.10 — Idempotencia extremo a extremo — `HECHO`
 
