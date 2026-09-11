@@ -7,6 +7,7 @@ import {
   type ReviewCommitter,
 } from "@/modules/study/application/confirm-review";
 import { studyErrorFrom, StudyError } from "@/modules/study/application/study-error";
+import { isReviewRating } from "@/modules/study/domain/memory";
 import type { Database, Json } from "@/shared/infrastructure/supabase/database.types";
 
 /**
@@ -21,6 +22,30 @@ import type { Database, Json } from "@/shared/infrastructure/supabase/database.t
  */
 export function createSupabaseReviewCommitter(client: SupabaseClient<Database>): ReviewCommitter {
   return {
+    async findByIdempotencyKey({ ownerId, idempotencyKey }) {
+      const { data, error } = await client
+        .from("review_logs")
+        .select("practice_item_id, rating, reviewed_at")
+        .eq("owner_id", ownerId)
+        .eq("idempotency_key", idempotencyKey)
+        .maybeSingle();
+      if (error) {
+        throw studyErrorFrom(error, "no se pudo leer la clave de idempotencia");
+      }
+      if (!data) return null;
+      if (!isReviewRating(data.rating)) {
+        throw new StudyError(
+          "unavailable",
+          `review_logs.rating no es una valoración de usuario (${data.rating})`,
+        );
+      }
+      return {
+        practiceItemId: data.practice_item_id,
+        rating: data.rating,
+        reviewedAt: new Date(data.reviewed_at),
+      };
+    },
+
     async commit(input) {
       const { data, error } = await client.rpc("commit_review", {
         p_practice_item_id: input.practiceItemId,

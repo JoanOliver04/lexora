@@ -189,9 +189,13 @@ estabilidad o dificultad.
 
 Dos garantías que se prueban explícitamente:
 
-- **Idempotencia.** Un doble envío con la misma clave devuelve el resultado
-  anterior en lugar de registrar dos repasos. El SQL reexpide
-  (`replayed`) sin escribir; LEX-5.10 cubre el extremo a extremo.
+- **Idempotencia (LEX-5.10).** Un doble envío o un reintento de red con
+  la misma clave reexpide el resultado original y un solo log. El caso
+  de uso consulta la clave **antes** de calcular: si ya hay log, no llama
+  al planificador. El SQL toma un candado de transacción
+  (`pg_advisory_xact_lock`) sobre `(owner, clave)` para que dos reintentos
+  concurrentes no vean `revision-conflict`. Dos dueños pueden reutilizar
+  la misma clave.
 - **Concurrencia.** Si la versión cambió porque otro dispositivo revisó antes, la
   operación devuelve conflicto y la interfaz recarga el estado. No sobrescribe en
   silencio. LEX-5.11 cubre el caso simultáneo.
@@ -253,8 +257,8 @@ abierta (sin cascada en V1).
 
 ## Pendiente
 
-- Idempotencia extremo a extremo (LEX-5.10) y conflicto simultáneo
-  entre dispositivos (LEX-5.11) sobre `commit_review`.
+- Conflicto simultáneo entre dispositivos (LEX-5.11) sobre
+  `commit_review`.
 - Casos congelados de migración de scheduler (LEX-5.13). El adaptador
   ya tiene transiciones congeladas (LEX-5.2).
 - Q-006 (¿archivar un concepto en cascada sobre sus ítems?) condiciona
