@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-11
-**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (8/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (9/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
-**Tarea activa:** LEX-5.9
-**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.8 `HECHO` · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
-**Rama / commit base / HEAD:** `main` en `70375ab` (PR #84, LEX-5.9 feature). Docs-close de LEX-5.9 pendiente.
+**Tarea activa:** ninguna
+**Estado de la tarea:** LEX-5.1…5.9 `HECHO` · siguiente LEX-5.10 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
+**Rama / commit base / HEAD:** `main` en `70375ab` (PR #84, LEX-5.9). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -15,12 +15,23 @@
 
 ## Terminado en esta sesión
 
-### LEX-5.9 — Commit atómico de repaso — `EN PROCESO`
+### LEX-5.9 — Commit atómico de repaso — `HECHO`
 
-Rama `feat/lex-5-9-atomic-review-commit` sobre `2cabb38`. ADR-006
-(RPC SECURITY INVOKER; no se reutiliza ADR-005). Migración
-`20260911180000_commit_review`, pgTAP `140`, `confirmReview` +
-adaptador. Sin UI. Gates y evidencia al cerrar.
+Informe en [`evidence/LEX-5.9.md`](evidence/LEX-5.9.md). PR #84 fusionada a
+`main` (merge `70375ab`); CI verde en los tres trabajos, runs `34610911009`
+(PR) y `34611485614` (merge). Migración `20260911180000_commit_review`.
+
+`commit_review` SECURITY INVOKER (ADR-006) escribe estado + log en una
+transacción. `confirmReview` calcula (LEX-5.8) y confirma. Sin FSRS en SQL.
+
+```text
+pnpm db:reset  12 migraciones + seed desde vacío
+pnpm db:test   15 ficheros / 455 aserciones, PASS (140: 16)
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 54/343 + 1 skipped, build)
+```
+
+Fuera de alcance declarado: idempotencia e2e (LEX-5.10); conflicto
+simultáneo (LEX-5.11); UI.
 
 ### LEX-5.8 — `ReviewPracticeItem` — `HECHO`
 
