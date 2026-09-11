@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-09-11
-**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (4/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `EN PROCESO` (5/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M5 — Motor FSRS fiable — `PENDIENTE`. M4 `HECHO`. Etiquetas de hito M3/M4 pendientes de autorización del propietario.
-**Tarea activa:** LEX-5.5
-**Estado de la tarea:** `EN PROCESO` · LEX-5.1…5.4 `HECHO` · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8; condiciona LEX-5.6)
-**Rama / commit base / HEAD:** `feat/lex-5-5-study-rls` sobre `main` `383aee3` (docs-close #76 de LEX-5.4).
+**Tarea activa:** ninguna
+**Estado de la tarea:** LEX-5.1…5.5 `HECHO` · siguiente LEX-5.6 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada, no bloqueante, documentada y probada en LEX-3.8; condiciona LEX-5.6)
+**Rama / commit base / HEAD:** `main` en `81f5d0b` (PR #77, LEX-5.5). Sin rama de trabajo activa.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,25 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-5.5 — RLS e índices de estudio — `HECHO`
+
+Informe en [`evidence/LEX-5.5.md`](evidence/LEX-5.5.md). PR #77 fusionada a
+`main` (merge `81f5d0b`); CI verde en los tres trabajos, runs `34602539398`
+(PR) y `34602997962` (merge). Migración
+`20260911150000_study_rls`.
+
+Políticas de dueño en las tres tablas. `review_logs` sin `UPDATE`.
+Índices de cola `(owner_id, due_at)` e historial. pgTAP `130` (45):
+A no alcanza lo de B ni por UUID; el dueño no edita su log.
+
+```text
+pnpm db:reset  11 migraciones + seed desde vacío
+pnpm db:test   14 ficheros / 439 aserciones, PASS (130: 45)
+pnpm check     exit 0 (format, lint, typecheck, contraste 18/18, vitest 49/312 + 1 skipped, build)
+```
+
+Fuera de alcance declarado: alta de `LearningState` (LEX-5.6); UI.
 
 ### LEX-5.4 — Migraciones de estudio — `HECHO`
 
