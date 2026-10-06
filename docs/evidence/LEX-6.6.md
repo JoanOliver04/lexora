@@ -2,7 +2,8 @@
 
 **Fecha:** 2026-10-06
 **Rama / base:** `feat/lex-6-6-interval-preview` / `cc98478`
-**Estado:** `HECHO` con gates locales; publicación del conjunto solicitada y en preparación.
+**Estado:** `HECHO`, gates locales y CI del código publicado verdes. Entrega en PR #97;
+la revisión final se integra únicamente con sus propios checks verdes. Producción pendiente Q-007.
 
 ## Entregado
 
@@ -68,6 +69,22 @@ GitHub Actions/producción. El acceso GitHub está validado y `origin/main` sigu
 en la base. Los cambios previos no tenían commits: la entrega conjunta se
 publicará en una PR de integración del conjunto, con la CI del árbol final;
 no se atribuye a snapshots intermedios la verificación local del árbol completo.
+
+Publicados seis commits de implementación (`5e75c8e`, `6867bf8`, `669e077`,
+`fbb9251`, `5816003`, `449b877`) en
+[PR #97](https://github.com/JoanOliver04/lexora/pull/97). La
+[ejecución `37490868423`](https://github.com/JoanOliver04/lexora/actions/runs/37490868423)
+del código `449b877f7868ced9410303cca7c4b0dda2ff16ed` terminó con **success** en
+Calidad, Base de datos y Extremo a extremo. Logs remotos: pgTAP 17/477 PASS,
+integración PostgREST ejecutada y E2E 108 passed + 4 skipped. Calidad omite
+la integración local gated; el trabajo de base de datos la ejecuta por separado.
+Auditoría previa: .env.local, roadmap y artefactos de test fuera de Git;
+patrones de claves privadas/tokens sin coincidencias en los archivos públicos.
+Se revisó el árbol completo de 70 archivos antes de publicar.
+
+Esta actualización registra el run de implementación ya terminado; cualquier
+revisión posterior y el commit de integración deben tener también sus tres
+trabajos verdes. No se etiqueta ni declara producción basándose en esa CI.
 
 Producción no está configurada/identificada en el contexto disponible. La base
 actual es local; GitHub registra cero despliegues. Se encontró Vercel disponible

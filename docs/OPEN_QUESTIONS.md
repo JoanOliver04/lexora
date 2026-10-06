@@ -308,7 +308,7 @@ el workflow exige producción desde una rama protegida.
 
 ### Impacto
 
-Se puede publicar código y verificar CI; eso no constituye producción.
+Código publicado mediante PR #97 y CI de implementación verde; eso no constituye producción.
 No usar `localhost` como backend alojado ni cambiar de proveedor, crear cuentas
 o contratar un plan por inferencia. La prueba de humo en la URL real queda
 pendiente de resolver esta pregunta. No se han tocado datos reales.

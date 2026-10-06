@@ -3,9 +3,9 @@
 **Última actualización:** 2026-10-06
 **Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (6/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M6 — Alfa personal multidispositivo — `EN PROCESO`. M5 y M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
-**Tarea activa:** ninguna del roadmap. Publicación autorizada del conjunto en preparación; siguiente LEX-6.7, sin comenzar.
-**Estado de la tarea:** LEX-6.6 `HECHO` local. Gates completos verdes. CI remota pendiente de publicación; producción pendiente de Q-007. Q-005/Q-006 sin cambios.
-**Rama / commit base:** `feat/lex-6-6-interval-preview` / `cc98478`. Cambios anteriores conservados; publicación LEX-6.1…LEX-6.6 autorizada.
+**Tarea activa:** ninguna del roadmap. Siguiente LEX-6.7, sin comenzar; producción pendiente de Q-007.
+**Estado de la tarea:** LEX-6.1…LEX-6.6 `HECHO`, publicado mediante PR #97. Los tres trabajos de CI del código `449b877` están verdes (run `37490868423`). Revisión final de entrega sujeta a sus propios checks antes de integrar. Q-005/Q-006 sin cambios.
+**Rama de implementación / base:** `feat/lex-6-6-interval-preview` / `cc98478`. Seis commits de implementación; entrega mediante PR #97, sin pérdida de cambios previos.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -34,7 +34,8 @@ pnpm e2e --workers=2        108 passed + 4 skipped (casos privados existentes), 
 
 Contrato real de cuatro fases: preview coincide con review para el mismo estado,
 Clock y config con fuzz. Capturas de escritorio/móvil emulado inspeccionadas.
-Publicación y producción solicitadas; GitHub accesible, CI remota aún pendiente.
+Publicación y producción solicitadas; [PR #97](https://github.com/JoanOliver04/lexora/pull/97)
+con [CI del código en verde](https://github.com/JoanOliver04/lexora/actions/runs/37490868423).
 Q-007 recoge el destino y acceso a producción, que no están configurados en este
 contexto. No se usan credenciales locales para desplegar. Físico/revisión
 independiente pendientes. LEX-6.7 no se ha iniciado.
@@ -2223,9 +2224,10 @@ contenido real exista, más cara la corrección.
 
 ## Siguiente acción exacta
 
-Publicar el árbol verificado y confirmar los tres trabajos de GitHub Actions
-para el commit de integración. Después verificar destino/conexión/configuración
-de producción y URL real (Q-007); no confundir GitHub/CI con despliegue.
+Resolver Q-007: verificar destino/conexión/configuración de producción y URL
+real. La entrega se integra solo con los tres checks de su revisión final verdes;
+resultados en [PR #97](https://github.com/JoanOliver04/lexora/pull/97).
+No confundir GitHub/CI con despliegue.
 La siguiente tarea del roadmap es **LEX-6.7**, sin comenzar.
 
 ---
@@ -2247,7 +2249,8 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama de trabajo: `feat/lex-6-6-interval-preview`, base `cc98478`.
-- Publicación del conjunto LEX-6.1…LEX-6.6 autorizada; CI remota pendiente.
+- Rama de implementación: `feat/lex-6-6-interval-preview`, base `cc98478`.
+- Conjunto LEX-6.1…LEX-6.6 publicado en PR #97. Código `449b877`, seis commits;
+  run `37490868423` verde en Calidad, Base de datos y Extremo a extremo.
 - Sin nuevas migraciones, dependencias, cambios de lockfile ni tipos generados.
 - Sin despliegue verificado. Q-007 abierta; etiquetas de hito pendientes.
