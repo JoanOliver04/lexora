@@ -1,30 +1,22 @@
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Suspense } from "react";
 
 import { logoutAction } from "@/app/[locale]/(auth)/actions";
 import { getActiveCourseForCurrentUser } from "@/composition/courses";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/shared/presentation/components";
+import { DashboardContent } from "./dashboard-content";
 
-/**
- * Shell del área autenticada (LEX-2.9).
- *
- * Todavía **vacío a propósito**: el panel «Hoy» (repasos vencidos, ítems
- * nuevos, tiempo estimado, `Empezar sesión`) es `MASTER_SPEC.md` §9.4 y
- * necesita mazos y planificador (FASE 3+). Lo que sí hace ya: asociar la home
- * al **curso activo** del usuario (`profiles.active_course_id`, resuelto en
- * `courses` con caída al más antiguo).
- *
- * Dos comprobaciones antes de pintar, cada una en su página para no crear un
- * bucle con `/onboarding` (la centralización en el layout necesita el
- * `pathname`, que un layout de Server Component no tiene a mano; queda para
- * cuando `(app)` tenga más de dos rutas — deuda anotada en `STATUS.md`):
- *
- *   · sin onboarding → `/onboarding`;
- *   · con onboarding pero sin curso (no debería ocurrir) → `/onboarding`.
- */
-export default async function AppHome({ params }: { params: Promise<{ locale: string }> }) {
+/** Today is read-only. Session creation is introduced separately in LEX-6.3. */
+export default async function AppHome({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ deck?: string | string[] }>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -39,33 +31,65 @@ export default async function AppHome({ params }: { params: Promise<{ locale: st
 
   const t = await getTranslations("App");
   const tAuth = await getTranslations("Auth");
+  const tToday = await getTranslations("Today");
+  const { deck } = await searchParams;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center gap-6 px-6 py-12">
-      <header className="flex flex-col gap-1">
-        <p className="text-xs tracking-wide text-(--color-ink-subtle) uppercase">
-          {t("courseLabel")}
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">{activeCourse.title}</h1>
+    <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-12">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <Link
+          href="/app"
+          className="inline-flex min-h-11 items-center text-lg font-semibold tracking-tight"
+        >
+          Lexora
+        </Link>
+        <form action={logoutAction}>
+          <input type="hidden" name="locale" value={locale} />
+          <Button type="submit" variant="secondary">
+            {tAuth("logout")}
+          </Button>
+        </form>
+      </div>
+      <header className="flex flex-col gap-2">
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{tToday("title")}</h1>
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-(--color-ink-muted)">
+          <p>{t("courseLabel")}</p>
+          <h2 className="font-medium break-words text-(--color-ink)">{activeCourse.title}</h2>
+        </div>
       </header>
-      <p className="text-(--color-ink-muted)">{t("placeholder")}</p>
-      <div className="flex flex-wrap gap-4">
-        <Link href="/decks" className="text-(--color-accent) underline underline-offset-4">
+      <Suspense
+        fallback={
+          <div
+            role="status"
+            aria-live="polite"
+            className="rounded-(--radius-surface) border border-(--color-border) bg-(--color-surface) p-6"
+          >
+            {tToday("loading")}
+          </div>
+        }
+      >
+        <DashboardContent courseId={activeCourse.id} locale={locale} deckQuery={deck} />
+      </Suspense>
+      <nav className="flex flex-wrap gap-x-6 gap-y-2">
+        <Link
+          href="/decks"
+          className="inline-flex min-h-11 items-center text-(--color-accent) underline underline-offset-4"
+        >
           {t("decksLink")}
         </Link>
-        <Link href="/concepts" className="text-(--color-accent) underline underline-offset-4">
+        <Link
+          href="/concepts"
+          className="inline-flex min-h-11 items-center text-(--color-accent) underline underline-offset-4"
+        >
           {t("conceptsLink")}
         </Link>
-        <Link href="/import" className="text-(--color-accent) underline underline-offset-4">
+        <Link
+          href="/import"
+          className="inline-flex min-h-11 items-center text-(--color-accent) underline underline-offset-4"
+        >
           {t("importLink")}
         </Link>
-      </div>
-      <form action={logoutAction}>
-        <input type="hidden" name="locale" value={locale} />
-        <Button type="submit" variant="secondary">
-          {tAuth("logout")}
-        </Button>
-      </form>
+      </nav>
     </main>
   );
 }
