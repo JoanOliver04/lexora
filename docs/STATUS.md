@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
-**Última actualización:** 2026-09-11
-**Fase actual:** **FASE 5 — Núcleo FSRS y persistencia de repasos** — `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
-**Hito actual:** M5 — Motor FSRS fiable — `HECHO`. M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
-**Tarea activa:** ninguna
-**Estado de la tarea:** LEX-5.1…5.14 `HECHO` · siguiente LEX-6.1 · Q-005 abierta (opción 1 aplicada, reversible, visible en la UI de mazos desde LEX-3.5) · Q-006 abierta (sin cascada; la cola filtra conceptos archivados)
-**Rama / commit base / HEAD:** `main` en `05a08c4` (PR #95, LEX-5.14). Sin rama de trabajo activa.
+**Última actualización:** 2026-10-06
+**Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (6/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Hito actual:** M6 — Alfa personal multidispositivo — `EN PROCESO`. M5 y M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
+**Tarea activa:** ninguna del roadmap. Publicación autorizada del conjunto en preparación; siguiente LEX-6.7, sin comenzar.
+**Estado de la tarea:** LEX-6.6 `HECHO` local. Gates completos verdes. CI remota pendiente de publicación; producción pendiente de Q-007. Q-005/Q-006 sin cambios.
+**Rama / commit base:** `feat/lex-6-6-interval-preview` / `cc98478`. Cambios anteriores conservados; publicación LEX-6.1…LEX-6.6 autorizada.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,147 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-6.6 — Preview de intervalos — `HECHO` (local)
+
+Preview tras reveal autorizado, mismo scheduler/config v1/instante del servidor
+que el cálculo de repaso. Estado inicial hipotético si no hay memoria; ninguna
+escritura. Duraciones aproximadas ES/EN, aviso de fuzz y control local reversible
+para ocultarlas. Versión incompatible no se calcula ni migra. README actualizado.
+Sin migración, dependencia o ADR nuevo; sin guardado ni avance.
+
+Evidencia en [`evidence/LEX-6.6.md`](evidence/LEX-6.6.md).
+
+```text
+LEXORA_DB_TESTS=1 pnpm check  exit 0: formato, lint, tipos, contraste 18/18,
+                            75 files passed + 1 skipped / 533 tests passed + 1 skipped, build
+pnpm db:test                17 files / 477 assertions, PASS
+pnpm e2e --workers=2        108 passed + 4 skipped (casos privados existentes), exit 0
+```
+
+Contrato real de cuatro fases: preview coincide con review para el mismo estado,
+Clock y config con fuzz. Capturas de escritorio/móvil emulado inspeccionadas.
+Publicación y producción solicitadas; GitHub accesible, CI remota aún pendiente.
+Q-007 recoge el destino y acceso a producción, que no están configurados en este
+contexto. No se usan credenciales locales para desplegar. Físico/revisión
+independiente pendientes. LEX-6.7 no se ha iniciado.
+
+### LEX-6.5 — Revelado y cuatro valoraciones — `HECHO` (local)
+
+Instrucción de recuperación activa; respuesta consultada al revelar, con
+sesión/cola/ítem reautorizados y reloj del servidor. Muestra soluciones cloze,
+ejemplo y explicación opcionales como texto literal. Pending/retry y foco.
+Otra vez/Difícil/Bien/Fácil con descripciones visibles, bloqueadas antes del
+éxito; elección local con aviso «no guardada». Recarga reinicia reveal/rating.
+Memoria, logs y contadores intactos. Sin migración, dependencia ni ADR nuevo.
+
+Evidencia y manifiesto en [`evidence/LEX-6.5.md`](evidence/LEX-6.5.md).
+
+```text
+LEXORA_DB_TESTS=1 pnpm check  exit 0: formato, lint, tipos, contraste 18/18,
+                            74 ficheros passed + 1 skipped / 522 tests passed + 1 skipped, build
+pnpm db:test                17 ficheros / 477 aserciones, PASS
+pnpm e2e --workers=2        108 passed + 4 skipped (casos privados existentes), exit 0
+```
+
+Reveal de tres modos con teclado, foco y contexto adverso escapado; HTML/RSC
+inicial sin soluciones/contexto, desactivación entre lecturas rechazada, A/B/anon
+aislados. Capturas reveladas inspeccionadas en escritorio y móvil emulado;
+Poco F5 físico y lector de pantalla físico pendientes. Sin intervalos,
+guardado o avance de sesión. Sin CI remota, commit, PR ni despliegue.
+El preview se añadió después en LEX-6.6.
+
+### LEX-6.4 — Renderer de contenido V1 — `HECHO` (local)
+
+Renderer de prompt/pista y respuesta/soluciones compartido entre biblioteca
+y sesión. Reconocimiento, recuperación y cloze conservan el texto y dirección
+guardados; no se interpreta HTML ni se infieren huecos. La sesión carga solo
+el primer frente de su cola vigente, sin enviar soluciones al cliente.
+RLS y filtros de curso/archivo/activación; modos futuros fuera de candidatos.
+Sin migración, dependencia ni ADR nuevo; memoria, logs y contadores intactos.
+
+Evidencia en [`evidence/LEX-6.4.md`](evidence/LEX-6.4.md).
+
+```text
+LEXORA_DB_TESTS=1 pnpm check  exit 0: formato, lint, tipos, contraste 18/18,
+                            72 ficheros passed + 1 skipped / 495 tests passed + 1 skipped, build
+pnpm db:test                17 ficheros / 477 aserciones, PASS
+pnpm e2e --workers=2        108 passed + 4 skipped (casos privados existentes), exit 0
+```
+
+Tres modos y texto adverso probados en navegador; HTML/RSC sin soluciones,
+preview con teclado, temas y 200 % sin overflow. Capturas inspeccionadas en
+escritorio y móvil emulado; prueba física pendiente de LEX-6.13. El helper
+de alta existente recuperó una incidencia local de Auth (`JWT issued at future`);
+se documenta sin cambios ni retries nuevos. Todavía no hay revelado,
+valoraciones o avance en estudio. Sin CI remota, commit, PR ni despliegue.
+Revelado y elección local se añadieron después en LEX-6.5.
+
+### LEX-6.3 — Alcance y creación de sesiones — `HECHO` (local)
+
+Selector ES/EN de todos los mazos o subconjunto del curso activo. Creación
+real con RLS, límites diarios y reloj del servidor; reintentos y envíos
+simultáneos devuelven una sola sesión. Guarda alcance, no cola; la confirmación
+reconstruye disponibilidad. Memoria y logs intactos. Sin migración ni dependencia.
+
+Evidencia en [`evidence/LEX-6.3.md`](evidence/LEX-6.3.md).
+
+```text
+LEXORA_DB_TESTS=1 pnpm check  exit 0: formato, lint, tipos, contraste 18/18,
+                            69 ficheros passed + 1 skipped / 467 tests passed + 1 skipped, build
+pnpm db:test                17 ficheros / 477 aserciones, PASS
+pnpm e2e --workers=2        106 passed + 4 skipped (casos privados existentes), exit 0
+```
+
+La integración demuestra aislamiento A/B/anon y carrera idempotente. El
+navegador prueba selección conservada tras error, campos falsificados
+ignorados, recarga sin duplicar y HTTP 404 ajeno. Capturas del selector y
+confirmación inspeccionadas en móvil emulado y selector en escritorio.
+No hay tarjetas ni valoraciones en esta entrega. Sin CI remota, commit, PR
+ni despliegue. El primer frente se añadió después en LEX-6.4;
+prueba física pendiente de LEX-6.13.
+
+### LEX-6.2 — Dashboard Hoy — `HECHO` (local)
+
+Interfaz ES/EN sobre `getTodayOverview`, resumen de siete días locales y acceso
+al último filtro de sesión. Carga con Suspense, errores recuperables y estados
+vacío/límite/espera. Sin migración ni dependencia nueva. La creación de sesiones
+es LEX-6.3: el botón principal está deshabilitado y explica su disponibilidad.
+
+Evidencia en [`evidence/LEX-6.2.md`](evidence/LEX-6.2.md).
+
+```text
+LEXORA_DB_TESTS=1 pnpm check  exit 0: formato, lint, tipos, contraste 18/18,
+                            66 ficheros passed + 1 skipped / 429 tests passed + 1 skipped, build
+pnpm db:test                17 ficheros / 477 aserciones, PASS
+pnpm e2e --workers=2        104 passed + 4 skipped (casos privados existentes), exit 0
+```
+
+Se inspeccionaron capturas claras/oscuras en escritorio y Poco F5 emulado;
+texto ampliado al 200 % sin overflow horizontal. La prueba física de ergonomía
+queda para su tarea específica. Sin CI remota, commit, PR ni despliegue.
+El lanzador descrito en este cierre se ha habilitado después, en LEX-6.3.
+
+### LEX-6.1 — Read model de Hoy — `HECHO` (local)
+
+Consulta de recuentos, backlog oculto, difíciles y tiempo aproximado; reutiliza
+la cola diaria. Adaptador de historia y composición. Lecturas paginadas para
+evitar truncamiento de PostgREST. Reglas y límites en
+[`STUDY_OVERVIEW.md`](STUDY_OVERVIEW.md). Sin UI, migración ni dependencia nueva.
+
+Evidencia en [`evidence/LEX-6.1.md`](evidence/LEX-6.1.md).
+
+```text
+LEXORA_DB_TESTS=1 pnpm check  exit 0: formato, lint, tipos, contraste 18/18,
+                            61 ficheros passed + 1 skipped / 397 tests passed + 1 skipped, build
+pnpm db:test                17 ficheros / 477 aserciones, PASS
+```
+
+Integración local incluida en el gate: cuatro tests con clientes normales,
+RLS, 1.101 ítems y más de 1.000 logs. CI configurada, pendiente de ejecutar
+en remoto. Sin commit, PR ni despliegue. No se ejecutó E2E: no cambia la UI.
+
+No se han cerrado Q-005/Q-006 ni la deuda de revisión independiente de M5.
 
 ### LEX-5.14 — Auditoría y cierre de M5 — `HECHO`
 
@@ -1667,23 +1808,14 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-Ninguna tarea `EN PROCESO`. FASE 3 en 8/12. LEX-3.8 en `main` (`e495613`).
+LEX-6.1…LEX-6.6 terminadas con evidencia local. FASE 6 en 6/14; M5 cerrado.
+Siguiente LEX-6.7, sin iniciar. Sesión con reveal, valoración local e intervalos
+aproximados, sin guardado ni avance. Publicación del conjunto en curso;
+producción requiere resolver Q-007. No se han tocado datos reales.
 
-Siguiente: **LEX-3.9** — Biblioteca con búsqueda, filtros y paginación: buscar
-por título/prompt/respuesta/tag; filtrar curso/mazo/nivel/tipo/estado;
-consultas paginadas sin N+1 — paga la deuda anotada en LEX-3.5/3.6/3.7 (un
-`listDeckConcepts`/`listConceptTags` por fila). Decidir si compensa `pg_trgm`
-(LEX-3.3 lo dejó explícitamente para aquí) o si `ilike` con el índice ya
-existente basta. Puede necesitar migración, a diferencia de LEX-3.5…3.8.
-Depende de LEX-3.4.
-
-Acción pendiente del propietario: **etiqueta de hito M2** (`v0.3.0-m2` o la que
-Joan decida) — no se crea sin autorización expresa (CLAUDE.md §4); **decidir
-Q-005** (la opción 1 ya está aplicada en la migración de LEX-3.2 y ahora es
-visible en la UI de mazos —LEX-3.5—, pero sigue siendo reversible); y
-**decidir Q-006** (archivar un concepto, ¿en cascada sobre sus ítems? — no
-bloqueante, recomendación: sin cascada, ya construida y probada en LEX-3.8;
-condiciona el diseño del planificador de FASE 5).
+Q-005 y Q-006 siguen abiertas. Las etiquetas de hito pendientes requieren
+autorización del propietario. LEX-3.13 y la revisión independiente de M5
+permanecen como deuda no bloqueante; esta tarea no las cierra.
 
 ---
 
@@ -2091,52 +2223,10 @@ contenido real exista, más cara la corrección.
 
 ## Siguiente acción exacta
 
-Empezar **LEX-3.5** — CRUD y archivado de mazos. La primera parte visible de la
-biblioteca, sobre la capa de aplicación de LEX-3.4.
-
-- **Ruta** en `src/app/[locale]/(app)/` para la lista de mazos del curso activo
-  y el detalle/edición de un mazo. Server Components para leer, Server Actions
-  delgadas para escribir: piden `getLibraryContextForCurrentUser()`, llaman a
-  `createDeck` / `updateDeck` / `archiveDeck` / `restoreDeck` / `listDecks` /
-  `listDeckConcepts`.
-- **Crear, renombrar, describir, categorizar, ordenar y archivar/restaurar**.
-  La reordenación (`position`) es aquí: define el caso de uso de reordenación en
-  bloque que LEX-3.4 dejó fuera.
-- **Recuentos** (conceptos por mazo) y **estados vacíos** (curso sin mazos;
-  mazo sin conceptos). Namespace i18n nuevo en `messages/{es,en}.json`; las
-  claves de error del dominio (`deck.title.empty`, …) se traducen en la
-  presentación. `LibraryError.kind` → mensaje (`parent-missing` / `forbidden` /
-  `unavailable` → genérico + registro).
-- **E2E:** crear un mazo, renombrarlo, archivarlo y verlo salir de la lista por
-  defecto. El aislamiento A/B ya lo cubre `090`; no se repite.
-- Gate general + e2e. Sin migración.
-
-Rama `feat/lex-3-5-…` desde `main` (`c7b0871`).
-
-Acción pendiente del propietario: **decidir Q-005** (opción 1 aplicada en
-LEX-3.2, reversible; decidir antes de LEX-3.5); **etiqueta de hito M2**
-(`v0.3.0-m2` o la que Joan decida) — no se crea sin autorización expresa
-(CLAUDE.md §4).
-
-Decisiones vivas: `force row level security` **no** activado (LEX-2.3); creación
-de perfil = caso de uso, **no** trigger (ADR-005); errores de autenticación con
-clave estable + traducción en presentación (LEX-2.5); área privada con doble
-barrera —proxy + layout de `(app)`— y `next` en poder del proxy (LEX-2.6);
-operaciones atómicas en función SQL SECURITY INVOKER tras un puerto, idioma de
-apoyo/objetivo fijos en la V1 (LEX-2.7); puerta de onboarding por página en
-`(app)` hasta que exista el shell (LEX-2.8); curso activo por FK compuesta
-`(active_course_id, id) → courses (id, owner_id)`, `on delete set null` con
-lista de columnas (LEX-2.9); biblioteca con `owner_id` denormalizado + FK
-compuesta de pertenencia en las seis tablas, `concepts.canonical_key` como
-columna generada, `practice_items.config` JSONB sin default con CHECK de `mode`
-(LEX-3.2); RLS de biblioteca de dueño por `owner_id`, `010` **no** ampliado a
-«≥1 política» (la acotada va en `090`), «mismo curso ≠ mismo dueño» en las
-tablas de enlace aceptada como no impuesta, índice de búsqueda por título
-trasladado a LEX-3.9 (LEX-3.3); capa de aplicación de biblioteca = cuatro
-puertos (uno por entidad, enlaces en el agregado), casos de uso que validan con
-el dominio y delegan, Zod solo para el `config` de ítems (§13.9),
-`archived_at` en vez de `DELETE` para el contenido con historial,
-`getLibraryContextForCurrentUser()` devuelve repos con tipo de puerto (LEX-3.4).
+Publicar el árbol verificado y confirmar los tres trabajos de GitHub Actions
+para el commit de integración. Después verificar destino/conexión/configuración
+de producción y URL real (Q-007); no confundir GitHub/CI con despliegue.
+La siguiente tarea del roadmap es **LEX-6.7**, sin comenzar.
 
 ---
 
@@ -2157,21 +2247,7 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- Rama por defecto: `main` en `c7b0871` (PR #29, LEX-3.4).
-  Etiquetas `v0.1.0-m0` y `v0.2.0-m1` publicadas; `v0.3.0-m2` **pendiente de
-  autorización de Joan**.
-- Sin rama de trabajo activa.
-- LEX-1.14 → PR #3; LEX-2.1 → PR #4 (+ #5 docs); LEX-2.2 → PR #6 (+ #7 docs);
-  LEX-2.3 → PR #8 (+ #9 cierre docs); LEX-2.4 → PR #10; LEX-2.5 → PR #11;
-  LEX-2.6 → PR #12; LEX-2.7 → PR #13; LEX-2.8 → PR #14 (+ #15 cierre docs);
-  LEX-2.9 → PR #16 (+ #17 cierre docs); LEX-2.10 → PR #18 (+ #19 cierre docs);
-  LEX-2.11 → PR #20 (+ #21 cierre docs); LEX-3.1 → PR #22 (+ #23 cierre docs);
-  endurecer CI → PR #24; LEX-3.2 → PR #25 (+ #26 cierre docs);
-  LEX-3.3 → PR #27 (+ #28 cierre docs); LEX-3.4 → PR #29 (+ #30 cierre docs).
-  Ramas borradas.
-- Contenido versionado: aplicación Next.js completa (módulos `identity`,
-  `courses` y `library` con `domain/` + `application/` + `infrastructure/`),
-  `supabase/` (config, seed, tests, **migrations** — seis:
-  `…_identity_and_course`, `…_identity_and_course_rls`, `…_onboarding_rpc`,
-  `20260831215553_active_course`, `20260902193649_library_schema`,
-  `20260904122347_library_rls`), CI, documentación en `docs/` y ADR (001–005).
+- Rama de trabajo: `feat/lex-6-6-interval-preview`, base `cc98478`.
+- Publicación del conjunto LEX-6.1…LEX-6.6 autorizada; CI remota pendiente.
+- Sin nuevas migraciones, dependencias, cambios de lockfile ni tipos generados.
+- Sin despliegue verificado. Q-007 abierta; etiquetas de hito pendientes.

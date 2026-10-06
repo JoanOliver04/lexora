@@ -533,9 +533,21 @@ Unicidades de negocio (estructurales, no de consulta): un estado por
 | — | `revision` | Entero `>= 1`, default 1. Concurrencia optimista (LEX-5.11). |
 | `user_id` | `owner_id` | Mismo vocabulario que el resto del esquema. |
 
-`study_sessions.scope` es JSONB objeto (el filtro elegido: mazos, incluir
-nuevos, …), no la cola. `ended_at` es nulo exactamente cuando `status` es
+`study_sessions.scope` es JSONB objeto, no la cola. LEX-6.3 guarda
+`{ deckIds: null }` para todos los mazos activos o `{ deckIds: [UUID, ...] }`
+para un subconjunto validado del curso (máximo 100, sin duplicados). El objeto
+vacío legado equivale a todos; un subconjunto vacío no se puede crear.
+`ended_at` es nulo exactamente cuando `status` es
 `active` o `paused`. Contadores `reviews_count` / `new_count` `>= 0`.
+
+LEX-6.3 reutiliza `study_sessions.id` como clave de petición: UUID generado
+al preparar el formulario, estable durante sus reintentos. La PK existente
+garantiza una sola fila ante envíos simultáneos; una colisión se relee con el
+cliente del dueño, sin eludir RLS. Repetir curso y alcance devuelve la fila
+original; cambiar la intención con el mismo ID produce conflicto. El servidor
+determina dueño, curso activo y `started_at`; crea `active` con contadores cero
+sin modificar memoria ni logs. La cola se vuelve a calcular desde el alcance
+guardado y los límites diarios vigentes. No hay migración nueva.
 
 `review_logs` no tiene `updated_at`. `reviewed_at` es el reloj del servidor;
 `client_occurred_at` es diagnóstico, nunca autoritativo. `duration_ms` nulo o
