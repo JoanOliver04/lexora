@@ -55,6 +55,18 @@ export interface DailyQueueRepository {
 export type GetDailyQueueResult =
   { ok: true; queue: DailyQueue } | { ok: false; reason: "not-found" | "invalid-timezone" };
 
+export type LoadDailyQueueResult =
+  | { ok: true; queue: DailyQueue; candidates: QueueCandidate[] }
+  | { ok: false; reason: "not-found" | "invalid-timezone" };
+
+export interface DailyQueueInput {
+  ownerId: string;
+  courseId: string;
+  deckIds?: string[] | null;
+  now: Date;
+  timeZone: string;
+}
+
 function assertUserId(userId: string): void {
   if (userId.trim() === "") {
     throw new Error("caso de uso de estudio invocado sin identificador de usuario");
@@ -63,14 +75,17 @@ function assertUserId(userId: string): void {
 
 export async function getDailyQueue(
   repository: DailyQueueRepository,
-  input: {
-    ownerId: string;
-    courseId: string;
-    deckIds?: string[] | null;
-    now: Date;
-    timeZone: string;
-  },
+  input: DailyQueueInput,
 ): Promise<GetDailyQueueResult> {
+  const result = await loadDailyQueue(repository, input);
+  return result.ok ? { ok: true, queue: result.queue } : result;
+}
+
+/** Share eligibility and limits with Today without loading candidates twice. */
+export async function loadDailyQueue(
+  repository: DailyQueueRepository,
+  input: DailyQueueInput,
+): Promise<LoadDailyQueueResult> {
   assertUserId(input.ownerId);
 
   if (!isIanaTimeZone(input.timeZone)) {
@@ -102,6 +117,7 @@ export async function getDailyQueue(
 
   return {
     ok: true,
+    candidates,
     queue: assembleDailyQueue({
       candidates,
       now: input.now,
