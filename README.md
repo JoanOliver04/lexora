@@ -8,10 +8,11 @@ Su idea central es que **reconocer una palabra no es lo mismo que poder producir
 cada concepto se descompone en competencias distintas, y cada competencia tiene su
 propio estado de memoria.
 
-> ⚠️ **Estado: en desarrollo temprano.** Fase 1 de 10 (fundación técnica). La
-> aplicación ya se instala, se compila y arranca en local, pero todavía no tiene
-> funciones de producto ni demo pública. Este repositorio se construye por hitos
-> pequeños y verificables.
+> ⚠️ **Estado: en desarrollo.** Cuenta, onboarding, biblioteca, importación y
+> núcleo FSRS implementados. Hoy permite preparar sesiones, revelar el primer
+> ítem y elegir una valoración con intervalos aproximados. La valoración aún
+> no se guarda desde la UI ni avanza la tarjeta; no es una V1 terminada.
+> Ver [`docs/STATUS.md`](docs/STATUS.md) para evidencia y límites actuales.
 
 ## Modelo conceptual
 
@@ -29,7 +30,7 @@ Saber reconocer *achievement* no marca automáticamente como dominada su producc
 - **Aplicación:** Next.js (App Router), React, TypeScript estricto, pnpm
 - **Datos e identidad:** Supabase — PostgreSQL, Auth con sesión SSR, Row Level Security
 - **Repetición espaciada:** `ts-fsrs`, encapsulado tras un puerto de dominio
-- **Interfaz:** Tailwind CSS, shadcn/ui, next-intl (ES/EN), Zod
+- **Interfaz:** Tailwind CSS, controles y tokens propios, next-intl (ES/EN), Zod
 - **Testing:** Vitest, React Testing Library, Playwright, pgTAP
 - **Infraestructura:** GitHub Actions, Vercel
 

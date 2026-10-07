@@ -110,6 +110,11 @@ jobs:
       - name: pgTAP y RLS
         run: pnpm db:test
 
+      - name: Read model de Hoy contra Supabase local
+        env:
+          LEXORA_DB_TESTS: "1"
+        run: pnpm test tests/unit/study/today-supabase.integration.test.ts
+
       - name: Comprobar que los tipos generados estan al dia
         # El esquema es la fuente de verdad; `database.types.ts` es su reflejo.
         # Si se separan, el compilador aprueba consultas que la base rechazara

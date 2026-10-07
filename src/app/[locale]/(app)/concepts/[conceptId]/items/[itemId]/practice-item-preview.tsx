@@ -3,6 +3,11 @@
 import { useTranslations } from "next-intl";
 
 import type { PracticeItem } from "@/modules/library/domain/practice-item";
+import { practiceItemContentFrom } from "@/modules/library/application/practice-item-content";
+import {
+  PracticeItemAnswer,
+  PracticeItemPrompt,
+} from "@/modules/library/presentation/practice-item-content";
 
 /**
  * Previsualización de un ítem de práctica (LEX-3.11): cómo se vería al
@@ -22,43 +27,28 @@ import type { PracticeItem } from "@/modules/library/domain/practice-item";
  */
 export function PracticeItemPreview({ item }: { item: PracticeItem }) {
   const t = useTranslations("Concepts");
+  const tCard = useTranslations("PracticeCard");
+  const content = practiceItemContentFrom(item);
+  if (!content) return <p role="status">{tCard("unavailable")}</p>;
 
   return (
-    <section className="flex flex-col gap-3 rounded-(--radius-control) border border-(--color-border) p-4">
+    <section className="flex min-w-0 flex-col gap-3 rounded-(--radius-control) border border-(--color-border) p-4">
       <div className="flex items-baseline justify-between gap-2">
         <h2 className="text-lg font-medium">{t("items.preview.heading")}</h2>
         <span className="text-xs text-(--color-ink-subtle)">{t(`items.modes.${item.mode}`)}</span>
       </div>
 
-      <p className="whitespace-pre-wrap text-sm">{item.promptText}</p>
-
-      {item.hintText ? (
-        <p className="text-sm text-(--color-ink-muted)">
-          {t("items.preview.hintLabel")}: {item.hintText}
-        </p>
-      ) : null}
+      <PracticeItemPrompt content={content} hintLabel={t("items.preview.hintLabel")} />
 
       <details>
-        <summary className="cursor-pointer text-sm underline underline-offset-4">
+        <summary className="min-h-11 cursor-pointer py-3 text-sm underline underline-offset-4">
           {t("items.preview.reveal")}
         </summary>
-        <div className="mt-2 flex flex-col gap-2">
-          <p className="whitespace-pre-wrap text-sm">{item.answerText}</p>
-          {item.config.mode === "cloze" ? (
-            <div className="flex flex-col gap-1">
-              <p className="text-xs text-(--color-ink-subtle)">
-                {t("items.preview.clozeAnswersLabel")}
-              </p>
-              {/* El orden es el dato: `config.answers` no tiene un
-                  identificador propio por hueco, solo su posición — el
-                  índice es una clave estable aquí. */}
-              <ol className="list-inside list-decimal text-sm">
-                {item.config.answers.map((answer, index) => (
-                  <li key={index}>{answer}</li>
-                ))}
-              </ol>
-            </div>
-          ) : null}
+        <div className="mt-2">
+          <PracticeItemAnswer
+            content={content}
+            clozeAnswersLabel={t("items.preview.clozeAnswersLabel")}
+          />
         </div>
       </details>
     </section>

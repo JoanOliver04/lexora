@@ -8,6 +8,8 @@ describe("isProtectedPath", () => {
     expect(isProtectedPath("/en/app")).toBe(true);
     expect(isProtectedPath("/es/app/")).toBe(true);
     expect(isProtectedPath("/es/app/decks")).toBe(true);
+    expect(isProtectedPath("/es/app/study")).toBe(true);
+    expect(isProtectedPath("/en/app/study/session-id")).toBe(true);
   });
 
   it("protege también el onboarding", () => {

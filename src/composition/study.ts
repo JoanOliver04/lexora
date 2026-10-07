@@ -2,11 +2,19 @@ import type { ReviewCommitter } from "@/modules/study/application/confirm-review
 import type { DailyQueueRepository } from "@/modules/study/application/daily-queue";
 import type { LearningStateRepository } from "@/modules/study/application/learning-state";
 import type { SpacedRepetitionScheduler } from "@/modules/study/application/spaced-repetition-scheduler";
+import type { TodayOverviewRepository } from "@/modules/study/application/today-overview";
+import type { TodayDashboardRepository } from "@/modules/study/application/today-dashboard";
+import type { StudySessionRepository } from "@/modules/study/application/study-session";
+import type { StudyCardRepository } from "@/modules/study/application/study-card";
 import { DEFAULT_STUDY_TIMEZONE } from "@/modules/study/domain/study-day";
 import { createSupabaseDailyQueueRepository } from "@/modules/study/infrastructure/supabase-daily-queue-repository";
 import { createSupabaseLearningStateRepository } from "@/modules/study/infrastructure/supabase-learning-state-repository";
 import { createSupabaseReviewCommitter } from "@/modules/study/infrastructure/supabase-review-committer";
 import { createTsFsrsScheduler } from "@/modules/study/infrastructure/ts-fsrs-scheduler";
+import { createSupabaseTodayOverviewRepository } from "@/modules/study/infrastructure/supabase-today-overview-repository";
+import { createSupabaseTodayDashboardRepository } from "@/modules/study/infrastructure/supabase-today-dashboard-repository";
+import { createSupabaseStudySessionRepository } from "@/modules/study/infrastructure/supabase-study-session-repository";
+import { createSupabaseStudyCardRepository } from "@/modules/study/infrastructure/supabase-study-card-repository";
 import type { Clock } from "@/shared/application/clock";
 import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/server-client";
 import { createSystemClock } from "@/shared/infrastructure/system-clock";
@@ -23,12 +31,21 @@ export function createSpacedRepetitionScheduler(): SpacedRepetitionScheduler {
   return createTsFsrsScheduler();
 }
 
+/** One request key per setup form, retained when the user retries creation. */
+export function createStudySessionId(): string {
+  return crypto.randomUUID();
+}
+
 export interface StudyContext {
   ownerId: string;
   timeZone: string;
   clock: Clock;
   learningStates: LearningStateRepository;
   dailyQueue: DailyQueueRepository;
+  todayOverview: TodayOverviewRepository;
+  todayDashboard: TodayDashboardRepository;
+  sessions: StudySessionRepository;
+  cards: StudyCardRepository;
   scheduler: SpacedRepetitionScheduler;
   reviewCommitter: ReviewCommitter;
 }
@@ -51,6 +68,10 @@ export async function getStudyContextForCurrentUser(): Promise<StudyContext | nu
     clock: createSystemClock(),
     learningStates: createSupabaseLearningStateRepository(client),
     dailyQueue,
+    todayOverview: createSupabaseTodayOverviewRepository(client),
+    todayDashboard: createSupabaseTodayDashboardRepository(client),
+    sessions: createSupabaseStudySessionRepository(client),
+    cards: createSupabaseStudyCardRepository(client),
     scheduler: createTsFsrsScheduler(),
     reviewCommitter: createSupabaseReviewCommitter(client),
   };

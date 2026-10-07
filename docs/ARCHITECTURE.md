@@ -6,7 +6,22 @@ están en [ADR-001](adrs/ADR-001-monolito-modular-clean-architecture.md) y
 
 > **Estado:** documento vivo. M5 cerrado (LEX-5.14): el módulo `study` existe
 > con puerto, adaptador `ts-fsrs@5.4.2`, cola, commit atómico y `Clock`
-> inyectado. FASE 6 construye la UI diaria sobre ese motor. Las secciones
+> inyectado. LEX-6.1 añade el [read model de Hoy](STUDY_OVERVIEW.md),
+> reutilizando la cola y leyendo historia mediante un puerto propio.
+> LEX-6.2 lo conecta al dashboard ES/EN, con actividad de siete días y último
+> filtro leído de las sesiones. LEX-6.3 añade selección de alcance y creación
+> idempotente mediante `StudySessionRepository`, con RLS y reloj del servidor.
+> Se guarda el filtro, no la cola; el destino muestra la sesión guardada y
+> reconstruye su disponibilidad. LEX-6.4 comparte el renderer de contenido con
+> la biblioteca y consulta el primer frente de la cola mediante
+> `StudyCardRepository`. La proyección de sesión excluye respuestas y
+> soluciones antes del revelado. LEX-6.5 obtiene la respuesta mediante una
+> Server Action de lectura que reautoriza sesión, cola e ítem. El cliente
+> habilita las cuatro valoraciones tras el éxito y conserva la elección solo
+> localmente. LEX-6.6 añade intervalos aproximados tras revelar, mediante el
+> scheduler/config/Clock del servidor; el estado inicial es hipotético si aún
+> no hay memoria. Todavía no guarda repasos ni avanza desde la UI.
+> Las secciones
 > marcadas como *pendiente* se completan cuando la fase correspondiente las
 > implemente.
 

@@ -4,7 +4,7 @@
 > Cada entrada tiene un ID estable `Q-nnn` que nunca se reutiliza.
 > Protocolo: `ROADMAP.md` §3.5 (documento privado y local).
 
-**Última actualización:** 2026-09-04
+**Última actualización:** 2026-10-06
 
 ## Índice de estado
 
@@ -16,6 +16,7 @@
 | Q-004 | Primer push al remoto público | `RESUELTA` | — |
 | Q-005 | «Profesional» en un mazo: ¿nivel o categoría? | `ABIERTA` | LEX-3.1, LEX-3.2, LEX-3.5 |
 | Q-006 | Archivar un concepto, ¿en cascada sobre sus ítems de práctica? | `ABIERTA` | LEX-3.8 |
+| Q-007 | Identificar y conectar el entorno de producción | `ABIERTA` | Publicación solicitada |
 
 > Este archivo es público. Se aplican las mismas exclusiones que en
 > [`STATUS.md`](STATUS.md): sin credenciales, sin datos personales, sin contenido
@@ -279,6 +280,38 @@ que se archivara el concepto (¿se distingue el motivo?).
 ### Resolución
 
 _(pendiente)_
+
+---
+
+## Q-007 — Identificar y conectar el entorno de producción
+
+**Estado:** `ABIERTA`
+**Fecha:** 2026-10-06
+**Afecta:** despliegue solicitado; no bloquea la implementación ni GitHub Actions.
+
+### Contexto
+
+Joan autoriza publicar y comprobar producción. El clon disponible solo está
+configurado contra Supabase local; no hay proyecto Vercel enlazado, pipeline de
+despliegue ni despliegues registrados en GitHub. La conexión de Vercel encontrada
+no está conectada. `main` tampoco tiene protección de rama configurada, aunque
+el workflow exige producción desde una rama protegida.
+
+### Opciones y recomendación
+
+1. **Reutilizar el entorno existente** (recomendado si existe): Joan identifica
+   URL/proyecto y conecta el proveedor; verificar destino, variables, base de
+   producción y política de rama antes de desplegar. No copiar claves al repo.
+2. **Primer despliegue:** Joan confirma proveedor/cuenta y la creación del
+   entorno, costes/plan, base de producción y acceso. Configurar esos recursos
+   por separado antes de enviar usuarios reales al sitio.
+
+### Impacto
+
+Código publicado mediante PR #97 y CI de implementación verde; eso no constituye producción.
+No usar `localhost` como backend alojado ni cambiar de proveedor, crear cuentas
+o contratar un plan por inferencia. La prueba de humo en la URL real queda
+pendiente de resolver esta pregunta. No se han tocado datos reales.
 
 ---
 
