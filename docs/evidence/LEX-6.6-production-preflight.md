@@ -4,16 +4,19 @@
 **Rama / base:** `fix/lex-6-6-production-catalogue` / `58da082`.
 **Alcance autorizado:** comprobaciones, preparar el catálogo, enlazar el proyecto
 verificado y ejecutar dry-run. Ampliado por Joan a la corrección mínima de la
-sonda y sus pruebas. **No** aplicar migraciones, seed o reset remoto.
+sonda y sus pruebas. Posteriormente, autorización expresa para aplicar las
+14 migraciones revisadas y desactivar temporalmente Preview. **No** seed local,
+reset remoto, cambios de plan ni compartir producción con Preview.
 LEX-6.7 no iniciada. Q-007 sigue abierta.
 
 Publicación del código autorizada: [PR #98](https://github.com/JoanOliver04/lexora/pull/98),
 producto `ed9163e`. La integración requiere los tres checks de la revisión final;
 el estado de la entrega y sus ejecuciones se consulta en ese PR. Publicar el SQL
-no lo aplica al proyecto remoto. La aplicación de las 14 migraciones conserva
-su autorización separada pendiente.
+no lo aplica al proyecto remoto. La aplicación real autorizada y su evidencia
+posterior se registran al final; las observaciones iniciales se conservan como
+historial del preflight.
 
-## Estado observado
+## Estado observado antes de la aplicación
 
 - Vercel: último redeploy Ready, Production, fuente `main` / `58da082`.
 - Variables públicas necesarias presentes con alcance Production. Site URL
@@ -165,10 +168,52 @@ SQL o que las tablas, grants, RLS, RPC y Auth estén aceptados. La aplicación r
 y las comprobaciones posteriores requieren autorización expresa. No se ejecuta
 el seed local ni se reinicia la base remota.
 
-## Pendiente del propietario
+## Aplicación autorizada y verificación remota
 
-Protección de `main` y autorización de la sonda completadas y verificadas.
-Integrar la revisión final de PR #98 solo con sus tres checks verdes y verificar
-los checks de `main` y el despliegue correspondiente.
-Solicitar aprobación explícita para aplicar las 14 migraciones antes de realizar
-la aceptación de health, aislamiento y onboarding remotos. LEX-6.7 sin iniciar.
+Joan aprueba expresamente las 14 migraciones el 2026-10-11. Destino y link
+revalidados; historial todavía vacío y archivos SQL intactos respecto a la
+revisión con CI verde `50d4a74`. Dry-run repetido: exactamente el mismo orden,
+sin seeds ni roles. [CI `38145356216`](https://github.com/JoanOliver04/lexora/actions/runs/38145356216):
+Calidad, Base de datos y Extremo a extremo SUCCESS. pgTAP 17/477, catálogo
+15 aserciones, integración 10 tests, E2E 108 PASS + 4 casos privados omitidos.
+
+```text
+supabase db push --linked --skip-vault --yes     exit 0; 14 migraciones aplicadas
+dryRun: false; seeds: []; roles: []
+supabase migration list --linked                exit 0; 14 pares local/remoto coinciden
+supabase db push --linked --dry-run --skip-vault exit 0; upToDate: true; migrations: []
+```
+
+Verificación posterior, sin escrituras de prueba:
+
+- Sonda pública exacta: HTTP 200, JSON `[]`, cero registros descargados.
+- Catálogo público: tres pares activos `es/es`, `en/en` y `en/en-GB`.
+- Metadatos SQL: las 15 tablas públicas llevan RLS y políticas explícitas.
+  Las RPC `complete_onboarding` y `commit_review` son SECURITY INVOKER;
+  anon no tiene EXECUTE y authenticated sí. No se ejecutaron las RPC.
+- Lecturas REST anónimas de las 14 tablas privadas: HTTP 200 y cero filas
+  visibles. Los recuentos comprobados de aplicación son cero: no se crearon
+  perfiles, cursos, mazos, conceptos, ítems, sesiones, memoria ni logs.
+- Una primera consulta de metadatos usó una firma RPC incorrecta y recibió
+  42883; corregida consultando `pg_proc` por OID. Ambas consultas de solo lectura.
+
+Esto verifica esquema, catálogo y permisos, pero las tablas vacías no prueban
+aislamiento entre dos cuentas reales. La suite local/CI cubre dueño/no-dueño;
+onboarding y correo reales requieren una cuenta del propietario.
+
+## Preview y siguiente comprobación
+
+Vercel Preview de `50d4a74` falló al validar las dos variables públicas de
+Supabase ausentes. Es coherente con la integración exclusiva para Production,
+no un motivo para compartir la base real ni saltarse la validación.
+Joan autoriza desactivar temporalmente despliegues automáticos fuera de `main`.
+`vercel.json` usa `git.deploymentEnabled` con `**: false` y `main: true`;
+la regla positiva mantiene Production según la
+[configuración oficial de Vercel](https://vercel.com/docs/project-configuration/git-configuration).
+Los tres checks de GitHub Actions y la protección de `main` siguen intactos.
+Decisión Q-008; no hay dependencia ni ADR nuevo.
+
+Integrar la nueva revisión de PR #98 solo con sus tres checks verdes y verificar
+CI de `main`, estado Ready de Production y health HTTP 200 del nuevo código.
+El onboarding, confirmación de correo y prueba física del propietario quedan
+como aceptación manual pendiente. Ningún seed ni reset. LEX-6.7 sin iniciar.

@@ -3,8 +3,8 @@
 **Última actualización:** 2026-10-11
 **Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (6/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M6 — Alfa personal multidispositivo — `EN PROCESO`. M5 y M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
-**Tarea activa:** cierre del despliegue de LEX-6.6, preparación autorizada; LEX-6.7 sin comenzar. Aplicación remota pendiente de Q-007.
-**Estado de la tarea:** LEX-6.1…LEX-6.6 `HECHO`, integrado mediante PR #97 en `main` (`58da082`). CI del merge `37613287678` verde en los tres trabajos. Preflight: CLI autenticada/enlazada; 14 migraciones pendientes; catálogo preparado y probado sin seed. Protección de `main` completa y verificada. Sonda corregida con lectura pública vacía: check 539 PASS + 11 omitidos; smoke health 2 PASS. Preparación publicada mediante PR #98, sujeta a sus propios checks antes de integrar; esquema y aceptación de producción pendientes. Q-005/Q-006 sin cambios.
+**Tarea activa:** cierre del despliegue de LEX-6.6; LEX-6.7 sin comenzar. Aplicación remota autorizada y ejecutada; publicación final en verificación.
+**Estado de la tarea:** LEX-6.1…LEX-6.6 `HECHO`, integrado mediante PR #97 en `main` (`58da082`). Preparación en PR #98: revisión `50d4a74`, CI `38145356216` verde en los tres trabajos. Las 14 migraciones se han aplicado con autorización expresa; historial coincidente y dry-run posterior sin cambios. Catálogo público completo, sonda directa HTTP 200, 15 tablas con RLS y RPC privadas. Protección de `main` completa y verificada. Corrección local: check 539 PASS + 11 omitidos; smoke health 2 PASS. Preview se desactiva temporalmente por decisión Q-008, conservando Production y CI. Nueva revisión, merge, despliegue y aceptación manual pendientes. Q-005/Q-006 sin cambios.
 **Rama de preparación / base:** `fix/lex-6-6-production-catalogue` / `58da082`. Producto `ed9163e`, entrega mediante PR #98.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
@@ -39,7 +39,8 @@ con [CI del código en verde](https://github.com/JoanOliver04/lexora/actions/run
 Entrega fusionada a `main` (`58da082`) y CI del merge `37613287678` verde.
 El preflight de producción del 2026-10-11 está en
 [`evidence/LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
-Destino y acceso verificados; migraciones no aplicadas y health remoto no verde.
+Destino y acceso verificados; 14 migraciones aplicadas por autorización posterior.
+Sonda directa de base de datos verde; health de la nueva aplicación pendiente de despliegue.
 Q-007 sigue abierta. Físico/revisión independiente pendientes. LEX-6.7 no iniciada.
 
 ### LEX-6.5 — Revelado y cuatro valoraciones — `HECHO` (local)
@@ -2226,11 +2227,12 @@ contenido real exista, más cara la corrección.
 
 ## Siguiente acción exacta
 
-Resolver Q-007: protección y corrección local de la sonda verificadas. Integrar
+Resolver Q-007: migraciones aplicadas y lectura pública de base verificada. Integrar
 la revisión final de [PR #98](https://github.com/JoanOliver04/lexora/pull/98) solo
-con sus tres checks verdes y comprobar CI de `main` y despliegue. Solicitar
-aprobación explícita para aplicar las 14 migraciones del dry-run. El remoto sigue sin tabla
-de idiomas; la sonda no debe declararlo sano. Ningún reset remoto ni seed local. Ver
+con sus tres checks verdes y comprobar CI de `main`, Ready y health del nuevo
+despliegue. Q-008 autoriza desactivar Preview sin backend aislado, no la CI.
+Onboarding y correo reales requieren aceptación manual del propietario.
+Ningún reset remoto ni seed local. Ver
 [`LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
 No confundir CI, Ready y aceptación de producción.
 La siguiente tarea del roadmap es **LEX-6.7**, sin comenzar.
@@ -2260,4 +2262,5 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
   sonda, regresiones y documentación; entrega en PR #98, producto `ed9163e`.
   Sin nuevas dependencias ni cambios de esquema por la corrección.
 - Link en archivos ignorados; ninguna credencial se incorpora a Git.
-- Producción no aceptada: dry-run solamente, health 503 y Q-007 abierta.
+- Las 14 migraciones remotas están aplicadas; sin seed/reset, datos de aplicación vacíos.
+- Producción no aceptada todavía: despliegue final y aceptación manual pendientes; Q-007 abierta.
