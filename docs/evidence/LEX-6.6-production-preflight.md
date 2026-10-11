@@ -7,7 +7,8 @@ verificado y ejecutar dry-run. Ampliado por Joan a la corrección mínima de la
 sonda y sus pruebas. Posteriormente, autorización expresa para aplicar las
 14 migraciones revisadas y desactivar temporalmente Preview. **No** seed local,
 reset remoto, cambios de plan ni compartir producción con Preview.
-LEX-6.7 no iniciada. Q-007 sigue abierta.
+LEX-6.7 no iniciada. Q-007 resuelta tras la comprobación técnica y la
+confirmación manual del propietario registradas al final.
 
 Publicación del código autorizada: [PR #98](https://github.com/JoanOliver04/lexora/pull/98),
 producto `ed9163e`. La integración requiere los tres checks de la revisión final;
@@ -201,7 +202,7 @@ Esto verifica esquema, catálogo y permisos, pero las tablas vacías no prueban
 aislamiento entre dos cuentas reales. La suite local/CI cubre dueño/no-dueño;
 onboarding y correo reales requieren una cuenta del propietario.
 
-## Preview y siguiente comprobación
+## Preview y publicación
 
 Vercel Preview de `50d4a74` falló al validar las dos variables públicas de
 Supabase ausentes. Es coherente con la integración exclusiva para Production,
@@ -213,7 +214,59 @@ la regla positiva mantiene Production según la
 Los tres checks de GitHub Actions y la protección de `main` siguen intactos.
 Decisión Q-008; no hay dependencia ni ADR nuevo.
 
-Integrar la nueva revisión de PR #98 solo con sus tres checks verdes y verificar
-CI de `main`, estado Ready de Production y health HTTP 200 del nuevo código.
-El onboarding, confirmación de correo y prueba física del propietario quedan
-como aceptación manual pendiente. Ningún seed ni reset. LEX-6.7 sin iniciar.
+La revisión final `298fb23` pasó los tres checks en
+[CI `38146136173`](https://github.com/JoanOliver04/lexora/actions/runs/38146136173).
+PR #98 fusionada sin bypass de protección, merge `144ca9f`.
+[CI del merge `38146529702`](https://github.com/JoanOliver04/lexora/actions/runs/38146529702):
+tres trabajos SUCCESS. No se generó otra Preview para la
+revisión final; los fallos de las revisiones anteriores se conservan como historial.
+
+## Producción: evidencia ejecutada
+
+Despliegue automático de `main` / `144ca9f`: **Production, Ready**, duración
+24 s, 2026-10-11 14:17:11 UTC. Node 24.x, región de funciones iad1. Se conserva
+el plan y la configuración de funciones existentes; la base está en región
+europea y no se ha cambiado su ubicación.
+
+La configuración visible de variables conserva el alcance exclusivo Production,
+Site URL del origen público y validación de entorno activa. El health ejecutado
+en el despliegue nuevo confirma acceso efectivo con las variables públicas
+consumidas por el adaptador. No se extraen ni publican valores sensibles, ni se
+afirma haber comparado sus literales internos. La aceptación de cuenta y
+onboarding del propietario se registra abajo; no se certifica un flujo real de
+recuperación de contraseña ni una inspección independiente de los cuatro callbacks.
+
+```text
+GET /api/health, tres peticiones: 200, 200, 200
+{"status":"ok","app":true,"database":true}
+Cache-Control: no-store, max-age=0
+Duraciones observadas: 1590 ms, 390 ms, 589 ms
+Solo los tres campos del contrato; sin hosts, claves o errores internos
+GET /es, /en, /es/login, /en/login, /es/signup, /es/forgot-password: 200
+GET /es/app sin sesión: 307 hacia /es/login?next=%2Fes%2Fapp
+```
+
+Lectura anterior al nuevo despliegue: health 503 incluso después de aplicar el
+esquema. La lectura posterior 200 demuestra que se ha corregido la sonda,
+no simplemente declarado Ready. Formulario de acceso inspeccionado en navegador;
+no se han enviado credenciales ni creado cuentas de prueba en producción.
+
+La integración GitHub directa de Supabase es opcional para el flujo CLI, según
+su [documentación de despliegue](https://supabase.com/docs/guides/deployment).
+Las migraciones versionadas quedan enlazadas y aplicadas mediante la CLI;
+no se activa sincronización automática de futuras migraciones, ni branching.
+Una etiqueta «No repository connected» no invalida ese historial verificado.
+
+## Aceptación manual del propietario y límites
+
+El 2026-10-11 el propietario confirma haber llegado al dashboard Hoy tras crear
+su cuenta y completar onboarding en producción. Se le indicó confirmar el correo
+si se solicitaba y no compartir credenciales, códigos o enlaces. Evidencia
+manual comunicada por el propietario, no una sesión autenticada automatizada
+por el agente ni una inspección independiente del correo. Q-007 resuelta.
+El health y la CI local no sustituyen esa aceptación real. No se certifica
+aislamiento de dos cuentas reales en producción con tablas vacías, ni prueba
+física multidispositivo; los gates de código cubren dueño/no-dueño en CI y los
+gates físicos/revisión independiente mantienen su alcance pendiente.
+No se ejecutó seed en producción ni en la base local del propietario, ni reset
+remoto. No hay dependencia ni ADR nuevo. LEX-6.7 sin iniciar.
