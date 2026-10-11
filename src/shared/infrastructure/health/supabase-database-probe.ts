@@ -3,12 +3,12 @@ import type { DatabaseProbe } from "@/shared/application/health/check-health";
 import { clientEnv } from "@/env/client";
 
 /**
- * Sonda real contra la API de Supabase.
+ * Database access probe through the Supabase Data API.
  *
- * Pide la raíz de PostgREST, que responde sin necesidad de que exista ninguna
- * tabla. Comprueba lo que un health check debe comprobar —que el servicio está
- * levantado y es alcanzable desde este proceso— y nada más: no consulta datos,
- * no crea sesión y no toca el esquema.
+ * An empty SELECT on the public language catalogue checks database access with
+ * the publishable key, without downloading rows, creating a session or writing.
+ * The hosted OpenAPI root rejects publishable keys and cannot serve this check.
+ * A missing table or denied read remains unhealthy; it is not a successful probe.
  *
  * Tiene un tiempo límite propio. Sin él, una base de datos que acepta la
  * conexión pero no responde dejaría la petición colgada hasta que la agotara el
@@ -22,13 +22,22 @@ export function createSupabaseDatabaseProbe(timeoutMs = 3000): DatabaseProbe {
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
       try {
-        const response = await fetch(`${clientEnv.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/`, {
-          headers: { apikey: clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY },
-          signal: controller.signal,
-          cache: "no-store",
-        });
+        const response = await fetch(
+          `${clientEnv.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/languages?select=id&limit=0`,
+          {
+            headers: {
+              apikey: clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+              Accept: "application/json",
+            },
+            signal: controller.signal,
+            cache: "no-store",
+          },
+        );
 
-        return response.ok;
+        if (!response.ok) return false;
+
+        const rows: unknown = await response.json();
+        return Array.isArray(rows) && rows.length === 0;
       } catch {
         // Cualquier fallo —red, tiempo agotado, DNS— significa lo mismo para
         // quien pregunta: no es alcanzable. El detalle se queda aquí a

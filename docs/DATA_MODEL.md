@@ -136,6 +136,15 @@ _Semillas (LEX-2.2, `supabase/seed.sql`):_ tres filas con UUID fijos —
 do nothing`. El seed solo se aplica en local y en CI, nunca en preview ni
 producción. El idioma de **interfaz** no vive aquí: es `profiles.ui_locale`.
 
+El bootstrap de entornos sin seed se prepara mediante
+`20261011120000_language_catalogue.sql`: inserta únicamente esos tres pares de
+referencia. Conserva UUID, traducción, activación y timestamps de cualquier fila
+existente con la misma clave natural. No crea usuarios, cursos ni contenido de
+estudio. Una colisión de UUID con otro idioma falla, sin sobrescribir datos.
+No se eliminan filas como rollback: podrían estar referenciadas por cursos.
+La aplicación remota está pendiente de autorización; ver
+[`evidence/LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
+
 **`courses`** — un par origen→destino de un solo dueño.
 
 | Columna | Tipo | Notas |

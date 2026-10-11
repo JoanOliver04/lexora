@@ -4,7 +4,7 @@
 > Cada entrada tiene un ID estable `Q-nnn` que nunca se reutiliza.
 > Protocolo: `ROADMAP.md` §3.5 (documento privado y local).
 
-**Última actualización:** 2026-10-06
+**Última actualización:** 2026-10-11
 
 ## Índice de estado
 
@@ -17,6 +17,7 @@
 | Q-005 | «Profesional» en un mazo: ¿nivel o categoría? | `ABIERTA` | LEX-3.1, LEX-3.2, LEX-3.5 |
 | Q-006 | Archivar un concepto, ¿en cascada sobre sus ítems de práctica? | `ABIERTA` | LEX-3.8 |
 | Q-007 | Identificar y conectar el entorno de producción | `ABIERTA` | Publicación solicitada |
+| Q-008 | Preview sin backend aislado | `RESUELTA` | Publicación solicitada |
 
 > Este archivo es público. Se aplican las mismas exclusiones que en
 > [`STATUS.md`](STATUS.md): sin credenciales, sin datos personales, sin contenido
@@ -291,27 +292,72 @@ _(pendiente)_
 
 ### Contexto
 
-Joan autoriza publicar y comprobar producción. El clon disponible solo está
-configurado contra Supabase local; no hay proyecto Vercel enlazado, pipeline de
-despliegue ni despliegues registrados en GitHub. La conexión de Vercel encontrada
-no está conectada. `main` tampoco tiene protección de rama configurada, aunque
-el workflow exige producción desde una rama protegida.
+Joan autoriza publicar y comprobar producción. El código de LEX-6.6 está
+integrado en `main` (`58da082`, PR #97), con CI verde. El propietario ha creado
+los entornos y configurado la integración solo para Production, Site URL,
+callbacks y un redeploy. CLI autenticada y enlazada al destino verificado.
+El dry-run inicial propuso 14 migraciones, sin seeds. Joan las autoriza
+expresamente el 2026-10-11; aplicadas con exit 0, historial local/remoto coincidente
+y dry-run posterior sin pendientes. Protección de `main` verificada:
+PR, tres checks de GitHub Actions con rama actualizada, conversaciones resueltas
+y reglas para administradores; sin force push, borrado, bloqueo o historial lineal.
+
+El health remoto devuelve 503. La misma ruta REST que usa la sonda rechaza una
+clave pública válida con 401 «Secret API key required»; Auth sí responde 200.
+La raíz REST no es una sonda compatible con el acceso público de este entorno.
+Joan autoriza la corrección mínima: lectura vacía del catálogo público con la
+clave pública, sin clave privilegiada. Preparada, verificada localmente y publicada
+mediante PR #98; integración solo con checks verdes. La tabla de idiomas ausente responde PGRST205 y la sonda corregida
+no declara salud falsa. Tras aplicar las migraciones, la sonda directa devuelve
+200 y `[]`, el catálogo contiene los tres pares activos y las 15 tablas llevan
+RLS. RPC sin permiso anon. Despliegue final y aceptación manual pendientes.
 
 ### Opciones y recomendación
 
-1. **Reutilizar el entorno existente** (recomendado si existe): Joan identifica
-   URL/proyecto y conecta el proveedor; verificar destino, variables, base de
-   producción y política de rama antes de desplegar. No copiar claves al repo.
-2. **Primer despliegue:** Joan confirma proveedor/cuenta y la creación del
-   entorno, costes/plan, base de producción y acceso. Configurar esos recursos
-   por separado antes de enviar usuarios reales al sitio.
+1. **Cerrar el preflight actual** (recomendado): integrar la corrección
+   y el catálogo mediante PR #98, con checks verdes. La revisión `50d4a74`
+   tiene CI verde; la revisión posterior debe probarse otra vez. Migraciones y
+   permisos ya comprobados; verificar health del despliegue y onboarding real.
+   Mantener el seed local fuera de producción.
+2. **Posponer la aceptación:** conservar el esquema aplicado y detener la
+   publicación mientras se realizan las comprobaciones pendientes.
 
 ### Impacto
 
-Código publicado mediante PR #97 y CI de implementación verde; eso no constituye producción.
-No usar `localhost` como backend alojado ni cambiar de proveedor, crear cuentas
-o contratar un plan por inferencia. La prueba de humo en la URL real queda
-pendiente de resolver esta pregunta. No se han tocado datos reales.
+Código publicado y sitio Ready no equivalen a aceptación de producción. Faltan
+despliegue de la sonda compatible y aceptación del propietario. Esquema,
+catálogo, RLS y protección comprobados. La autorización se amplió a aplicar
+exactamente las 14 migraciones revisadas, no reset, seed, datos de estudio ni
+cambios de proveedor/plan. Preview temporalmente desactivada según Q-008.
+Evidencia: [`LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
+
+---
+
+## Q-008 — Preview sin backend aislado
+
+**Estado:** `RESUELTA`
+**Fecha:** 2026-10-11 · **Resuelta:** 2026-10-11 por Joan.
+
+### Contexto
+
+Integración Supabase exclusiva para Production. Preview del PR falla porque
+faltan las dos variables públicas de Supabase. No se puede compartir la base
+real con ramas de prueba ni desactivar la validación para conseguir un verde.
+
+### Opciones y resolución
+
+1. **Desactivar temporalmente Preview** (elegida y autorizada): configuración
+   versionada de Vercel limita despliegues automáticos a `main`. Production,
+   GitHub Actions y protección de rama se conservan.
+2. Preparar un backend aislado antes de habilitar Preview: necesita configuración
+   y decisión posterior del propietario; no se crea en esta entrega.
+
+### Impacto
+
+Las ramas de PR siguen pasando los tres checks, pero no generan una web Preview
+automática. Rehabilitarla exige un entorno de pruebas separado y revisar
+`vercel.json`; nunca copiar credenciales ni usar la base de producción en Preview.
+No hay cambio de plan, dependencia o ADR nuevo. LEX-6.7 no iniciada.
 
 ---
 
