@@ -4,7 +4,7 @@
 > Cada entrada tiene un ID estable `Q-nnn` que nunca se reutiliza.
 > Protocolo: `ROADMAP.md` §3.5 (documento privado y local).
 
-**Última actualización:** 2026-10-06
+**Última actualización:** 2026-10-11
 
 ## Índice de estado
 
@@ -291,27 +291,40 @@ _(pendiente)_
 
 ### Contexto
 
-Joan autoriza publicar y comprobar producción. El clon disponible solo está
-configurado contra Supabase local; no hay proyecto Vercel enlazado, pipeline de
-despliegue ni despliegues registrados en GitHub. La conexión de Vercel encontrada
-no está conectada. `main` tampoco tiene protección de rama configurada, aunque
-el workflow exige producción desde una rama protegida.
+Joan autoriza publicar y comprobar producción. El código de LEX-6.6 está
+integrado en `main` (`58da082`, PR #97), con CI verde. El propietario ha creado
+los entornos y configurado la integración solo para Production, Site URL,
+callbacks y un redeploy. CLI autenticada y enlazada al destino verificado.
+El historial remoto sigue vacío: el dry-run propone 14 migraciones, sin seeds.
+No hay autorización para aplicarlas todavía. Protección de `main` verificada:
+PR, tres checks de GitHub Actions con rama actualizada, conversaciones resueltas
+y reglas para administradores; sin force push, borrado, bloqueo o historial lineal.
+
+El health remoto devuelve 503. La misma ruta REST que usa la sonda rechaza una
+clave pública válida con 401 «Secret API key required»; Auth sí responde 200.
+La raíz REST no es una sonda compatible con el acceso público de este entorno.
+Joan autoriza la corrección mínima: lectura vacía del catálogo público con la
+clave pública, sin clave privilegiada. Preparada, verificada localmente y publicada
+mediante PR #98; integración solo con checks verdes. La tabla de idiomas ausente responde PGRST205 y la sonda corregida
+no declara salud falsa. Las migraciones y aceptación remota siguen pendientes.
 
 ### Opciones y recomendación
 
-1. **Reutilizar el entorno existente** (recomendado si existe): Joan identifica
-   URL/proyecto y conecta el proveedor; verificar destino, variables, base de
-   producción y política de rama antes de desplegar. No copiar claves al repo.
-2. **Primer despliegue:** Joan confirma proveedor/cuenta y la creación del
-   entorno, costes/plan, base de producción y acceso. Configurar esos recursos
-   por separado antes de enviar usuarios reales al sitio.
+1. **Cerrar el preflight actual** (recomendado): integrar la corrección
+   y el catálogo mediante PR #98, con checks verdes. Revisar el dry-run y solicitar
+   aprobación expresa antes de aplicar las 14 migraciones. Comprobar health,
+   RLS y onboarding tras la aprobación. Mantener el seed local fuera de producción.
+2. **Posponer la aplicación remota:** conservar el esquema remoto sin cambios y
+   continuar la revisión del preflight; no presentar la web como funcional.
 
 ### Impacto
 
-Código publicado mediante PR #97 y CI de implementación verde; eso no constituye producción.
-No usar `localhost` como backend alojado ni cambiar de proveedor, crear cuentas
-o contratar un plan por inferencia. La prueba de humo en la URL real queda
-pendiente de resolver esta pregunta. No se han tocado datos reales.
+Código publicado y sitio Ready no equivalen a aceptación de producción. Faltan
+esquema, catálogo, sonda compatible, protección de rama y pruebas de humo.
+La autorización actual cubre preparación, link, dry-run y corrección mínima de
+la sonda, no aplicación remota de migraciones, reset, seed ni cambios de
+proveedor/plan. No se han migrado datos reales.
+Evidencia: [`LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
 
 ---
 
