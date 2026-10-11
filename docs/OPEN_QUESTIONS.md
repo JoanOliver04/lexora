@@ -16,7 +16,7 @@
 | Q-004 | Primer push al remoto público | `RESUELTA` | — |
 | Q-005 | «Profesional» en un mazo: ¿nivel o categoría? | `ABIERTA` | LEX-3.1, LEX-3.2, LEX-3.5 |
 | Q-006 | Archivar un concepto, ¿en cascada sobre sus ítems de práctica? | `ABIERTA` | LEX-3.8 |
-| Q-007 | Identificar y conectar el entorno de producción | `ABIERTA` | Publicación solicitada |
+| Q-007 | Identificar y conectar el entorno de producción | `RESUELTA` | Publicación solicitada |
 | Q-008 | Preview sin backend aislado | `RESUELTA` | Publicación solicitada |
 
 > Este archivo es público. Se aplican las mismas exclusiones que en
@@ -286,8 +286,8 @@ _(pendiente)_
 
 ## Q-007 — Identificar y conectar el entorno de producción
 
-**Estado:** `ABIERTA`
-**Fecha:** 2026-10-06
+**Estado:** `RESUELTA`
+**Fecha:** 2026-10-06 · **Resuelta:** 2026-10-11 por Joan.
 **Afecta:** despliegue solicitado; no bloquea la implementación ni GitHub Actions.
 
 ### Contexto
@@ -302,34 +302,46 @@ y dry-run posterior sin pendientes. Protección de `main` verificada:
 PR, tres checks de GitHub Actions con rama actualizada, conversaciones resueltas
 y reglas para administradores; sin force push, borrado, bloqueo o historial lineal.
 
-El health remoto devuelve 503. La misma ruta REST que usa la sonda rechaza una
+El health inicial devuelve 503. La misma ruta REST que usaba la sonda rechaza una
 clave pública válida con 401 «Secret API key required»; Auth sí responde 200.
 La raíz REST no es una sonda compatible con el acceso público de este entorno.
 Joan autoriza la corrección mínima: lectura vacía del catálogo público con la
 clave pública, sin clave privilegiada. Preparada, verificada localmente y publicada
-mediante PR #98; integración solo con checks verdes. La tabla de idiomas ausente responde PGRST205 y la sonda corregida
+mediante PR #98; integración solo con checks verdes. La tabla de idiomas ausente respondía PGRST205 y la sonda corregida
 no declara salud falsa. Tras aplicar las migraciones, la sonda directa devuelve
 200 y `[]`, el catálogo contiene los tres pares activos y las 15 tablas llevan
-RLS. RPC sin permiso anon. Despliegue final y aceptación manual pendientes.
+RLS. RPC sin permiso anon. PR #98 fusionada sin bypass (`144ca9f`), CI de la
+revisión final `38146136173` verde. Production Ready y health público 3/3 HTTP
+200, app/database true. El propietario confirma alta, onboarding y llegada al
+dashboard Hoy en producción. CI del merge `38146529702`, tres trabajos SUCCESS.
 
 ### Opciones y recomendación
 
 1. **Cerrar el preflight actual** (recomendado): integrar la corrección
-   y el catálogo mediante PR #98, con checks verdes. La revisión `50d4a74`
-   tiene CI verde; la revisión posterior debe probarse otra vez. Migraciones y
-   permisos ya comprobados; verificar health del despliegue y onboarding real.
+   y el catálogo ya integrados mediante PR #98, con checks verdes. Migraciones,
+   permisos, Ready, health y CI del merge comprobados. El onboarding real está
+   confirmado por el propietario; publicación de evidencia sujeta a sus checks.
    Mantener el seed local fuera de producción.
 2. **Posponer la aceptación:** conservar el esquema aplicado y detener la
    publicación mientras se realizan las comprobaciones pendientes.
 
 ### Impacto
 
-Código publicado y sitio Ready no equivalen a aceptación de producción. Faltan
-despliegue de la sonda compatible y aceptación del propietario. Esquema,
+Código publicado y sitio Ready no equivalen por sí solos a aceptación de producción.
+Aquí se comprueban health, permisos y onboarding real, no solo Ready. Esquema,
 catálogo, RLS y protección comprobados. La autorización se amplió a aplicar
 exactamente las 14 migraciones revisadas, no reset, seed, datos de estudio ni
 cambios de proveedor/plan. Preview temporalmente desactivada según Q-008.
 Evidencia: [`LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
+
+### Resolución
+
+Destino identificado y conectado, protección completa, 14 migraciones autorizadas
+y aplicadas, Production Ready, health real verde y alta/onboarding hasta Hoy
+confirmados por Joan. Ninguna credencial ni dato personal publicado. La
+publicación de evidencia conserva PR protegido y sus propios checks; las
+pruebas físicas y revisión independiente pertenecen a sus gates específicos.
+No se inicia LEX-6.7.
 
 ---
 

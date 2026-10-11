@@ -3,9 +3,9 @@
 **Última actualización:** 2026-10-11
 **Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (6/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M6 — Alfa personal multidispositivo — `EN PROCESO`. M5 y M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
-**Tarea activa:** cierre del despliegue de LEX-6.6; LEX-6.7 sin comenzar. Aplicación remota autorizada y ejecutada; publicación final en verificación.
-**Estado de la tarea:** LEX-6.1…LEX-6.6 `HECHO`, integrado mediante PR #97 en `main` (`58da082`). Preparación en PR #98: revisión `50d4a74`, CI `38145356216` verde en los tres trabajos. Las 14 migraciones se han aplicado con autorización expresa; historial coincidente y dry-run posterior sin cambios. Catálogo público completo, sonda directa HTTP 200, 15 tablas con RLS y RPC privadas. Protección de `main` completa y verificada. Corrección local: check 539 PASS + 11 omitidos; smoke health 2 PASS. Preview se desactiva temporalmente por decisión Q-008, conservando Production y CI. Nueva revisión, merge, despliegue y aceptación manual pendientes. Q-005/Q-006 sin cambios.
-**Rama de preparación / base:** `fix/lex-6-6-production-catalogue` / `58da082`. Producto `ed9163e`, entrega mediante PR #98.
+**Tarea activa:** cierre del despliegue de LEX-6.6 verificado; LEX-6.7 sin comenzar.
+**Estado de la tarea:** LEX-6.1…LEX-6.6 `HECHO`. PR #98 fusionada sin bypass, merge `144ca9f`; revisión final `298fb23`, CI `38146136173` verde en los tres trabajos. CI del merge `38146529702` verde en los tres trabajos. Las 14 migraciones se han aplicado con autorización expresa; historial coincidente y dry-run posterior sin cambios. Catálogo público completo, 15 tablas con RLS y RPC privadas. Protección de `main` completa y verificada. Production Ready del nuevo código, health público 3/3 HTTP 200 con app/database true y no-store; páginas ES/EN y login 200, ruta privada redirige sin sesión. Preview desactivada temporalmente según Q-008, conservando Production y CI. El propietario confirma alta/onboarding y dashboard Hoy en producción; Q-007 resuelta. Físico/revisión independiente pendientes en sus gates específicos. Q-005/Q-006 sin cambios.
+**Entrega / documentación de cierre:** código integrado en `main` / `144ca9f`, PR #98. Rama de evidencia `docs/lex-6-6-production-evidence`, sin cambios de producto.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -40,8 +40,9 @@ Entrega fusionada a `main` (`58da082`) y CI del merge `37613287678` verde.
 El preflight de producción del 2026-10-11 está en
 [`evidence/LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
 Destino y acceso verificados; 14 migraciones aplicadas por autorización posterior.
-Sonda directa de base de datos verde; health de la nueva aplicación pendiente de despliegue.
-Q-007 sigue abierta. Físico/revisión independiente pendientes. LEX-6.7 no iniciada.
+Production Ready del nuevo código, health público 3/3 HTTP 200 y CI del merge verde.
+Alta/onboarding y dashboard Hoy confirmados por el propietario; Q-007 resuelta.
+Físico/revisión independiente pendientes. LEX-6.7 no iniciada.
 
 ### LEX-6.5 — Revelado y cuatro valoraciones — `HECHO` (local)
 
@@ -2227,11 +2228,13 @@ contenido real exista, más cara la corrección.
 
 ## Siguiente acción exacta
 
-Resolver Q-007: migraciones aplicadas y lectura pública de base verificada. Integrar
-la revisión final de [PR #98](https://github.com/JoanOliver04/lexora/pull/98) solo
-con sus tres checks verdes y comprobar CI de `main`, Ready y health del nuevo
-despliegue. Q-008 autoriza desactivar Preview sin backend aislado, no la CI.
-Onboarding y correo reales requieren aceptación manual del propietario.
+El cierre del despliegue de código `144ca9f` está verificado. Toda publicación
+de evidencia conserva PR protegido, tres checks verdes y verificación en `main`;
+no cambia producto ni SQL. El propietario confirma alta, onboarding y
+llegada a Hoy en producción; Q-007 resuelta.
+Despliegue Ready, health, migraciones y protección ya verificados. Q-008 limita
+despliegues automáticos a `main`, no la CI; no hace falta otra acción en paneles
+para esos pasos. No activar sincronización automática de futuras migraciones.
 Ningún reset remoto ni seed local. Ver
 [`LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
 No confundir CI, Ready y aceptación de producción.
@@ -2256,11 +2259,12 @@ Referencias por ID (`LEX-n.m`, `Q-nnn`) sí: identifican sin revelar.
 
 ## Estado de git
 
-- LEX-6.1…LEX-6.6 integrado por PR #97; `main` en `58da082`, CI `37613287678` verde.
-- Rama de preparación: `fix/lex-6-6-production-catalogue`, base `58da082`.
+- LEX-6.1…LEX-6.6 integrado por PR #97; entrega operativa posterior PR #98, `144ca9f`.
+- Preparación `298fb23` con CI `38146136173` verde; documentación de cierre en rama específica.
 - Nueva migración de datos de referencia, prueba local sin seed, corrección de
   sonda, regresiones y documentación; entrega en PR #98, producto `ed9163e`.
   Sin nuevas dependencias ni cambios de esquema por la corrección.
 - Link en archivos ignorados; ninguna credencial se incorpora a Git.
-- Las 14 migraciones remotas están aplicadas; sin seed/reset, datos de aplicación vacíos.
-- Producción no aceptada todavía: despliegue final y aceptación manual pendientes; Q-007 abierta.
+- Las 14 migraciones remotas están aplicadas sin seed/reset; datos de aplicación vacíos
+  en la verificación inicial, anterior al alta real del propietario.
+- Production Ready, health 200 y aceptación manual de alta/onboarding hasta Hoy; Q-007 resuelta.
