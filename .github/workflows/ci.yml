@@ -110,6 +110,9 @@ jobs:
       - name: pgTAP y RLS
         run: pnpm db:test
 
+      - name: Catálogo de idiomas sin seed
+        run: pnpm db:test:catalogue
+
       - name: Read model de Hoy contra Supabase local
         env:
           LEXORA_DB_TESTS: "1"
