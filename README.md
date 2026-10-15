@@ -10,8 +10,8 @@ propio estado de memoria.
 
 > ⚠️ **Estado: en desarrollo.** Cuenta, onboarding, biblioteca, importación y
 > núcleo FSRS implementados. Hoy permite preparar sesiones, revelar el primer
-> ítem y elegir una valoración con intervalos aproximados. La valoración aún
-> no se guarda desde la UI ni avanza la tarjeta; no es una V1 terminada.
+> ítem y guardar una valoración con intervalos aproximados. El siguiente ítem
+> aparece tras confirmar el guardado; no es una V1 terminada.
 > Ver [`docs/STATUS.md`](docs/STATUS.md) para evidencia y límites actuales.
 
 ## Modelo conceptual

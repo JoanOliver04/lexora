@@ -36,6 +36,11 @@ export function createStudySessionId(): string {
   return crypto.randomUUID();
 }
 
+/** Mint a key only after an authorized reveal; retain it for the same intent. */
+export function createReviewIdempotencyKey(): string {
+  return crypto.randomUUID();
+}
+
 export interface StudyContext {
   ownerId: string;
   timeZone: string;

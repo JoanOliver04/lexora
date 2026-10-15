@@ -17,10 +17,12 @@ están en [ADR-001](adrs/ADR-001-monolito-modular-clean-architecture.md) y
 > `StudyCardRepository`. La proyección de sesión excluye respuestas y
 > soluciones antes del revelado. LEX-6.5 obtiene la respuesta mediante una
 > Server Action de lectura que reautoriza sesión, cola e ítem. El cliente
-> habilita las cuatro valoraciones tras el éxito y conserva la elección solo
-> localmente. LEX-6.6 añade intervalos aproximados tras revelar, mediante el
+> habilita las cuatro valoraciones tras el éxito. LEX-6.6 añade intervalos
+> aproximados tras revelar, mediante el
 > scheduler/config/Clock del servidor; el estado inicial es hipotético si aún
-> no hay memoria. Todavía no guarda repasos ni avanza desde la UI.
+> no hay memoria. LEX-6.7 conecta la intención a `saveSessionReview`, que
+> reautoriza sesión/primer pendiente y reutiliza el commit atómico existente.
+> La UI bloquea el envío y solo cambia de frente tras confirmación del servidor.
 > Las secciones
 > marcadas como *pendiente* se completan cuando la fase correspondiente las
 > implemente.

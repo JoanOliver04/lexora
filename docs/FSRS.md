@@ -188,6 +188,13 @@ Cada valoración pasa por un único caso de uso:
 esperaba y una clave de idempotencia. Nunca envía valores de vencimiento,
 estabilidad o dificultad.
 
+Desde LEX-6.7, `saveSessionReview` aplica ese contrato a la UI de estudio:
+reautoriza la sesión activa y el primer pendiente, crea memoria inicial solo
+cuando corresponde y delega en `confirmReview`. El log queda ligado a la sesión.
+Un replay debe coincidir en ítem, sesión y rating; funciona aunque el ítem ya
+no esté en la cola. La confirmación visible no devuelve snapshots al cliente
+ni realiza un avance optimista. Ver [STUDY_OVERVIEW.md](STUDY_OVERVIEW.md).
+
 Dos garantías que se prueban explícitamente:
 
 - **Idempotencia (LEX-5.10).** Un doble envío o un reintento de red con

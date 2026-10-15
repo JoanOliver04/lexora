@@ -10,7 +10,10 @@ const { context, reveal, preview, redirect } = vi.hoisted(() => ({
     throw new Error(`redirect:${path}`);
   }),
 }));
-vi.mock("@/composition/study", () => ({ getStudyContextForCurrentUser: context }));
+vi.mock("@/composition/study", () => ({
+  getStudyContextForCurrentUser: context,
+  createReviewIdempotencyKey: () => "60000000-0000-4000-8000-000000000001",
+}));
 vi.mock("@/modules/study/application/study-card", () => ({ revealStudySessionCard: reveal }));
 vi.mock("@/modules/study/application/rating-interval-preview", () => ({
   getRatingIntervalPreview: preview,
@@ -68,6 +71,7 @@ describe("read-only reveal action", () => {
     ).toEqual({
       content: { answerText: "answer" },
       preview: { intervals: [] },
+      reviewKey: "60000000-0000-4000-8000-000000000001",
     });
     expect(reveal).toHaveBeenCalledExactlyOnceWith(
       {},

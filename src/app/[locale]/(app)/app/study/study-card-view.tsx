@@ -15,6 +15,7 @@ import {
 } from "@/modules/study/application/study-card";
 import { Button, FormError } from "@/shared/presentation/components";
 import { revealStudyCardAction, type RevealFormState } from "./reveal-actions";
+import { saveStudyReviewAction, type ReviewFormState } from "./review-actions";
 
 export function StudyCardView({
   locale,
@@ -23,10 +24,72 @@ export function StudyCardView({
 }: {
   locale: string;
   sessionId: string;
-  card: StudyCard;
+  card: StudyCard | null;
 }) {
   const t = useTranslations("PracticeCard");
   const router = useRouter();
+  const [reloadVersion, setReloadVersion] = useState(0);
+  const [reviewState, reviewAction, reviewPending] = useActionState<ReviewFormState, FormData>(
+    saveStudyReviewAction,
+    {},
+  );
+  const saveStatus = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (!card && reviewState.receipt) saveStatus.current?.focus();
+  }, [card, reviewState.receipt]);
+  return (
+    <div className="flex min-w-0 flex-col gap-3">
+      <p
+        ref={saveStatus}
+        tabIndex={-1}
+        role="status"
+        aria-live="polite"
+        data-testid="review-save-status"
+        className="text-sm text-(--color-ink-muted)"
+      >
+        {reviewPending
+          ? t("saving")
+          : reviewState.receipt
+            ? t("reviewSaved", { rating: t(`ratings.${reviewState.receipt.rating}.label`) })
+            : ""}
+      </p>
+      {card && (
+        <StudyCardControls
+          key={`${sessionId}:${card.practiceItemId}:${card.revision}:${JSON.stringify(card.prompt)}:${reloadVersion}`}
+          locale={locale}
+          sessionId={sessionId}
+          card={card}
+          reviewState={reviewState}
+          reviewAction={reviewAction}
+          reviewPending={reviewPending}
+          onReload={() => {
+            setReloadVersion((value) => value + 1);
+            router.refresh();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function StudyCardControls({
+  locale,
+  sessionId,
+  card,
+  reviewState,
+  reviewAction,
+  reviewPending,
+  onReload,
+}: {
+  locale: string;
+  sessionId: string;
+  card: StudyCard;
+  reviewState: ReviewFormState;
+  reviewAction: (data: FormData) => void;
+  reviewPending: boolean;
+  onReload: () => void;
+}) {
+  const t = useTranslations("PracticeCard");
   const [state, action, pending] = useActionState<RevealFormState, FormData>(
     revealStudyCardAction,
     {},
@@ -34,7 +97,18 @@ export function StudyCardView({
   const [rating, setRating] = useState<ReviewRating | null>(null);
   const [showIntervals, setShowIntervals] = useState(true);
   const answerHeading = useRef<HTMLHeadingElement>(null);
+  const promptHeading = useRef<HTMLHeadingElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
+  const reviewErrorRef = useRef<HTMLDivElement>(null);
+  const submitLock = useRef(false);
+  const reviewError = reviewState.requestId === state.reviewKey ? reviewState.error : undefined;
+  useEffect(() => {
+    promptHeading.current?.focus();
+  }, []);
+  useEffect(() => {
+    submitLock.current = reviewPending;
+    if (reviewError && !reviewPending) reviewErrorRef.current?.focus();
+  }, [reviewPending, reviewError, reviewState]);
   useEffect(() => {
     if (state.content) answerHeading.current?.focus();
     else if (state.error) errorRef.current?.focus();
@@ -47,7 +121,12 @@ export function StudyCardView({
       className="flex min-w-0 flex-col gap-4 rounded-(--radius-surface) border border-(--color-border) bg-(--color-surface) p-5"
     >
       <header className="flex flex-col gap-2">
-        <h2 id="study-card-heading" className="text-xl font-semibold">
+        <h2
+          ref={promptHeading}
+          tabIndex={-1}
+          id="study-card-heading"
+          className="text-xl font-semibold"
+        >
           {t("heading")}
         </h2>
         <p className="text-sm font-medium text-(--color-ink-muted)">{t(`modes.${content.mode}`)}</p>
@@ -60,7 +139,7 @@ export function StudyCardView({
             <p>{t(`revealErrors.${state.error}`)}</p>
           </FormError>
           {state.error !== "generic" && (
-            <Button variant="secondary" className="mt-3" onClick={() => router.refresh()}>
+            <Button variant="secondary" className="mt-3" onClick={onReload}>
               {t("reload")}
             </Button>
           )}
@@ -128,48 +207,81 @@ export function StudyCardView({
           {t("intervalUnavailable")}
         </p>
       )}
-      <fieldset disabled={!state.content || pending} className="min-w-0">
-        <legend className="mb-3 font-medium">{t("ratingHeading")}</legend>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {REVIEW_RATINGS.map((value) => {
-            const interval = state.preview?.intervals.find((entry) => entry.rating === value);
-            return (
-              <div key={value} className="min-w-0 space-y-2">
-                <Button
-                  aria-pressed={rating === value}
-                  aria-describedby={`rating-${value}-help`}
-                  variant={rating === value ? "primary" : "secondary"}
-                  className="w-full"
-                  onClick={() => {
-                    if (state.content && !pending) setRating(value);
-                  }}
-                >
-                  {t(`ratings.${value}.label`)}
-                </Button>
-                {showIntervals && interval && (
-                  <p data-testid={`interval-${value}`} className="text-sm font-medium">
-                    {t("intervalApproximate", {
-                      duration: intervalDuration(interval.intervalMs, t),
-                    })}
-                  </p>
-                )}
-                <p
-                  id={`rating-${value}-help`}
-                  className="text-sm leading-relaxed text-(--color-ink-muted)"
-                >
-                  {t(`ratings.${value}.description`)}
-                </p>
-              </div>
-            );
-          })}
+      {reviewError && (
+        <div ref={reviewErrorRef} tabIndex={-1}>
+          <FormError id="study-review-error">
+            <p>{t(`saveErrors.${reviewError}`)}</p>
+          </FormError>
+          {reviewError !== "generic" && (
+            <Button variant="secondary" className="mt-3" onClick={onReload}>
+              {t("reload")}
+            </Button>
+          )}
         </div>
-      </fieldset>
-      <p className="text-sm leading-relaxed text-(--color-ink-muted)">{t("notSavedHint")}</p>
-      {rating && (
-        <p role="status" className="text-sm">
-          {t("ratingSelected", { rating: t(`ratings.${rating}.label`) })}
-        </p>
       )}
+      <form
+        action={reviewAction}
+        onSubmit={(event) => {
+          if (submitLock.current || !state.content || !state.preview || !state.reviewKey) {
+            event.preventDefault();
+            return;
+          }
+          submitLock.current = true;
+        }}
+      >
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="sessionId" value={sessionId} />
+        <input type="hidden" name="practiceItemId" value={card.practiceItemId} />
+        <input type="hidden" name="idempotencyKey" value={state.reviewKey ?? ""} />
+        <input type="hidden" name="expectedRevision" value={state.preview?.revision ?? "new"} />
+        <fieldset
+          disabled={
+            !state.content || !state.preview || !state.reviewKey || pending || reviewPending
+          }
+          className="min-w-0"
+        >
+          <legend className="mb-3 font-medium">{t("ratingHeading")}</legend>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {REVIEW_RATINGS.map((value) => {
+              const interval = state.preview?.intervals.find((entry) => entry.rating === value);
+              return (
+                <div key={value} className="min-w-0 space-y-2">
+                  <Button
+                    type="submit"
+                    name="rating"
+                    value={value}
+                    disabled={rating !== null && rating !== value}
+                    aria-pressed={rating === value}
+                    aria-describedby={`rating-${value}-help`}
+                    variant={rating === value ? "primary" : "secondary"}
+                    className="w-full"
+                    onClick={(event) => {
+                      if (submitLock.current || pending || reviewPending) event.preventDefault();
+                      else if (state.content) setRating(value);
+                    }}
+                  >
+                    {t(`ratings.${value}.label`)}
+                  </Button>
+                  {showIntervals && interval && (
+                    <p data-testid={`interval-${value}`} className="text-sm font-medium">
+                      {t("intervalApproximate", {
+                        duration: intervalDuration(interval.intervalMs, t),
+                      })}
+                    </p>
+                  )}
+                  <p
+                    id={`rating-${value}-help`}
+                    className="text-sm leading-relaxed text-(--color-ink-muted)"
+                  >
+                    {t(`ratings.${value}.description`)}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </fieldset>
+      </form>
+      <p className="text-sm leading-relaxed text-(--color-ink-muted)">{t("saveHint")}</p>
     </section>
   );
 }

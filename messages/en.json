@@ -91,8 +91,20 @@
     "exampleLabel": "Example",
     "explanationLabel": "Explanation",
     "ratingHeading": "How well did you recall it?",
-    "notSavedHint": "You can choose a rating, but it is not saved and you will not move to the next item yet. Your choice is lost on reload.",
-    "ratingSelected": "Rating selected: {rating}. Not saved.",
+    "saveHint": "Your rating is saved before moving to the next item. Wait for confirmation before closing the tab.",
+    "saving": "Saving review…",
+    "reviewSaved": "Last review saved: {rating}.",
+    "saveErrors": {
+      "invalid-input": "The rating could not be validated. Reload the session before continuing.",
+      "not-found": "This session is no longer available. Return to Today to continue.",
+      "inactive-session": "This session is no longer active. Return to Today to continue.",
+      "invalid-timezone": "The study time could not be checked. Check your time zone and reload.",
+      "card-changed": "The pending items have changed or this item is no longer available. Reload the session before continuing.",
+      "idempotency-conflict": "This attempt already belongs to another review. No other rating has been saved. Reload the session.",
+      "revision-conflict": "The state has changed since you revealed the answer. It has not been overwritten. Reload the session.",
+      "scheduler-mismatch": "This state uses another scheduler version. Your memory has not been recalculated or migrated.",
+      "generic": "The save could not be confirmed. The card and rating are preserved; select the same rating to retry without duplication."
+    },
     "ratings": {
       "again": {
         "label": "Again",
@@ -143,7 +155,7 @@
     "scopeAll": "All decks",
     "scopeSelected": "{count, plural, one {# selected deck} other {# selected decks}}",
     "availableNow": "{count, plural, one {# item available now} other {# items available now}}",
-    "practicePending": "This is the first available item. You can reveal and choose a rating; reviews are not saved and you will not move on yet.",
+    "practicePending": "This is the first available item. Reveal the answer and rate your recall. The review is saved before moving on.",
     "changedAvailability": "Your selection is still saved, but no items are available right now. Return to Today to see what's pending.",
     "inactive": "This session is no longer active. Prepare another from Today.",
     "prepareAnother": "Prepare another session",

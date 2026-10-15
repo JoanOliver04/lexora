@@ -91,8 +91,20 @@
     "exampleLabel": "Ejemplo",
     "explanationLabel": "Explicación",
     "ratingHeading": "¿Cómo la recordaste?",
-    "notSavedHint": "Puedes elegir una valoración, pero aún no se guarda ni se avanza al siguiente ítem. La elección se pierde al recargar.",
-    "ratingSelected": "Valoración elegida: {rating}. No guardada.",
+    "saveHint": "La valoración se guarda antes de pasar al siguiente ítem. Espera la confirmación antes de cerrar la pestaña.",
+    "saving": "Guardando repaso…",
+    "reviewSaved": "Último repaso guardado: {rating}.",
+    "saveErrors": {
+      "invalid-input": "No se pudo validar la valoración. Recarga la sesión antes de continuar.",
+      "not-found": "La sesión ya no está disponible. Vuelve a Hoy para continuar.",
+      "inactive-session": "Esta sesión ya no está activa. Vuelve a Hoy para continuar.",
+      "invalid-timezone": "No se pudo comprobar la hora de estudio. Revisa tu zona horaria y recarga.",
+      "card-changed": "Los pendientes han cambiado o este ítem ya no está disponible. Recarga la sesión antes de continuar.",
+      "idempotency-conflict": "Este intento ya corresponde a otro repaso. No se ha guardado otra valoración. Recarga la sesión.",
+      "revision-conflict": "El estado ha cambiado desde que revelaste la respuesta. No se ha sobrescrito. Recarga la sesión.",
+      "scheduler-mismatch": "Este estado usa otra versión del scheduler. No se ha recalculado ni migrado tu memoria.",
+      "generic": "No se pudo confirmar el guardado. Conservamos la tarjeta y la valoración; pulsa la misma valoración para reintentar sin duplicarla."
+    },
     "ratings": {
       "again": {
         "label": "Otra vez",
@@ -146,7 +158,7 @@
     "scopeAll": "Todos los mazos",
     "scopeSelected": "{count, plural, one {# mazo seleccionado} other {# mazos seleccionados}}",
     "availableNow": "{count, plural, one {# ítem disponible ahora} other {# ítems disponibles ahora}}",
-    "practicePending": "Este es el primer ítem disponible. Ya puedes revelar y elegir una valoración; todavía no se guardan repasos ni se avanza.",
+    "practicePending": "Este es el primer ítem disponible. Revela la respuesta y valora cómo la recordaste. El repaso se guarda antes de avanzar.",
     "changedAvailability": "Tu selección sigue guardada, pero ahora no hay ítems disponibles. Puedes volver a Hoy para ver qué queda pendiente.",
     "inactive": "Esta sesión ya no está activa. Prepara otra desde Hoy.",
     "prepareAnother": "Preparar otra sesión",

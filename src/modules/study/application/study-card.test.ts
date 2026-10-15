@@ -59,6 +59,7 @@ describe("getStudySessionCard", () => {
     const result = await getStudySessionCard(sessions, queue, cards, input);
     expect(result.ok && result.card).toEqual({
       practiceItemId: "review",
+      revision: 1,
       prompt: { mode: "cloze", promptText: "I ___ to work.", hintText: "A verb" },
     });
     expect(cards.findContent).toHaveBeenCalledExactlyOnceWith({

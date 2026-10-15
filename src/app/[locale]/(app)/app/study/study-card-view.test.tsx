@@ -1,14 +1,20 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import es from "../../../../../../messages/es.json";
 import en from "../../../../../../messages/en.json";
 import type { StudyCardContent } from "@/modules/study/application/study-card";
 import { StudyCardView } from "./study-card-view";
+import type { ReviewFormState } from "./review-actions";
 
-const { reveal, refresh } = vi.hoisted(() => ({ reveal: vi.fn(), refresh: vi.fn() }));
+const { reveal, refresh, save } = vi.hoisted(() => ({
+  reveal: vi.fn(),
+  refresh: vi.fn(),
+  save: vi.fn(),
+}));
 vi.mock("./reveal-actions", () => ({ revealStudyCardAction: reveal }));
+vi.mock("./review-actions", () => ({ saveStudyReviewAction: save }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 const content: StudyCardContent = {
   mode: "cloze",
@@ -19,6 +25,8 @@ const content: StudyCardContent = {
   exampleText: "<script>example()</script>",
   explanationText: "A note",
 };
+const reviewKey = "60000000-0000-4000-8000-000000000001";
+const revealed = { content, preview: { revision: null, intervals: [] }, reviewKey };
 function mount(locale: "es" | "en" = "es", itemId = "item") {
   return render(
     <NextIntlClientProvider locale={locale} messages={locale === "es" ? es : en}>
@@ -27,6 +35,7 @@ function mount(locale: "es" | "en" = "es", itemId = "item") {
         sessionId="session"
         card={{
           practiceItemId: itemId,
+          revision: null,
           prompt: {
             mode: content.mode,
             promptText: content.promptText,
@@ -39,7 +48,11 @@ function mount(locale: "es" | "en" = "es", itemId = "item") {
 }
 describe("study reveal and rating controls", () => {
   beforeEach(() => {
-    reveal.mockReset().mockResolvedValue({ content });
+    reveal.mockReset().mockResolvedValue(revealed);
+    save.mockReset().mockImplementation(async (_previous, data: FormData) => ({
+      receipt: { rating: data.get("rating"), replayed: false },
+      requestId: data.get("idempotencyKey"),
+    }));
     refresh.mockClear();
   });
   it("asks for recall and prevents ratings before reveal, with no answer or context in the DOM", () => {
@@ -48,12 +61,13 @@ describe("study reveal and rating controls", () => {
     for (const name of ["Otra vez", "Difícil", "Bien", "Fácil"])
       expect(screen.getByRole("button", { name })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Bien" }));
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByTestId("review-save-status")).toBeEmptyDOMElement();
     expect(container).not.toHaveTextContent(content.answerText);
     expect(container).not.toHaveTextContent("example()");
     expect(reveal).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
   });
-  it("reveals authorized text, focuses the answer, then selects every rating locally without advancing", async () => {
+  it("reveals authorized text, focuses the answer, and sends only the rating intent after reveal", async () => {
     const { container } = mount();
     fireEvent.click(screen.getByRole("button", { name: "Revelar respuesta" }));
     await waitFor(() => expect(screen.getByRole("heading", { name: "Respuesta" })).toHaveFocus());
@@ -62,14 +76,24 @@ describe("study reveal and rating controls", () => {
     expect(screen.getByText("A note")).toBeVisible();
     expect(container.querySelector("script")).toBeNull();
     expect(screen.getByRole("listitem")).toHaveTextContent("walk");
-    for (const name of ["Otra vez", "Difícil", "Bien", "Fácil"]) {
-      const button = screen.getByRole("button", { name });
-      fireEvent.click(button);
-      expect(button).toHaveAttribute("aria-pressed", "true");
-      expect(screen.getByRole("status")).toHaveTextContent(
-        `Valoración elegida: ${name}. No guardada.`,
-      );
-    }
+    for (const name of ["Otra vez", "Difícil", "Bien", "Fácil"])
+      expect(screen.getByRole("button", { name })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Bien" }));
+    await waitFor(() =>
+      expect(screen.getByTestId("review-save-status")).toHaveTextContent(
+        "Último repaso guardado: Bien.",
+      ),
+    );
+    expect(save).toHaveBeenCalledTimes(1);
+    const intent = save.mock.calls[0]![1] as FormData;
+    expect(Object.fromEntries(intent)).toEqual({
+      locale: "es",
+      sessionId: "session",
+      practiceItemId: "item",
+      idempotencyKey: reviewKey,
+      expectedRevision: "new",
+      rating: "good",
+    });
     expect(reveal).toHaveBeenCalledTimes(1);
     const data = reveal.mock.calls[0]![1] as FormData;
     expect(data.get("sessionId")).toBe("session");
@@ -110,11 +134,14 @@ describe("study reveal and rating controls", () => {
     expect(loading).toBeDisabled();
     fireEvent.click(loading);
     expect(reveal).toHaveBeenCalledTimes(1);
-    finish({ content });
+    finish(revealed);
     await screen.findByText(content.answerText);
   });
   it("renders complete English descriptions and omits missing optional context", async () => {
-    reveal.mockResolvedValue({ content: { ...content, exampleText: null, explanationText: null } });
+    reveal.mockResolvedValue({
+      ...revealed,
+      content: { ...content, exampleText: null, explanationText: null },
+    });
     mount("en");
     for (const rating of Object.values(en.PracticeCard.ratings))
       expect(screen.getByText(rating.description)).toBeVisible();
@@ -122,7 +149,11 @@ describe("study reveal and rating controls", () => {
     await screen.findByRole("heading", { name: "Answer" });
     expect(screen.queryByRole("heading", { name: "Example" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Good" }));
-    expect(screen.getByRole("status")).toHaveTextContent("Rating selected: Good. Not saved.");
+    await waitFor(() =>
+      expect(screen.getByTestId("review-save-status")).toHaveTextContent(
+        "Last review saved: Good.",
+      ),
+    );
   });
   it("a fresh mount has no revealed content or previous rating", async () => {
     const view = mount();
@@ -132,13 +163,15 @@ describe("study reveal and rating controls", () => {
     view.unmount();
     mount("es", "next-item");
     expect(screen.queryByText(content.answerText)).not.toBeInTheDocument();
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByTestId("review-save-status")).toBeEmptyDOMElement();
     expect(screen.getByRole("button", { name: "Bien" })).toBeDisabled();
   });
   it("shows approximate server durations only after reveal and can hide them without altering the rating", async () => {
     reveal.mockResolvedValue({
       content,
+      reviewKey,
       preview: {
+        revision: 7,
         intervals: [
           { rating: "again", intervalMs: 30_000 },
           { rating: "hard", intervalMs: 120_000 },
@@ -162,6 +195,8 @@ describe("study reveal and rating controls", () => {
     fireEvent.click(screen.getByLabelText("Show approximate intervals"));
     expect(screen.getByTestId("interval-good")).toHaveTextContent("≈ 2 hours");
     expect(reveal).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+    expect((save.mock.calls[0]![1] as FormData).get("expectedRevision")).toBe("7");
   });
   it("does not invent estimates for incompatible memory", async () => {
     reveal.mockResolvedValue({ content, previewUnavailable: true });
@@ -170,6 +205,98 @@ describe("study reveal and rating controls", () => {
     await screen.findByText(es.PracticeCard.intervalUnavailable);
     expect(screen.queryByTestId("interval-good")).not.toBeInTheDocument();
     expect(screen.queryByLabelText(es.PracticeCard.showIntervals)).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Bien" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Bien" })).toBeDisabled();
+    expect(save).not.toHaveBeenCalled();
+  });
+  it("blocks double clicks and every rating while saving, retaining the card until acknowledgement", async () => {
+    let finish!: (result: ReviewFormState) => void;
+    save.mockImplementation(
+      () =>
+        new Promise<ReviewFormState>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    mount();
+    fireEvent.click(screen.getByRole("button", { name: "Revelar respuesta" }));
+    await screen.findByText(content.answerText);
+    const button = screen.getByRole("button", { name: "Bien" });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    await waitFor(() =>
+      expect(screen.getByTestId("review-save-status")).toHaveTextContent("Guardando repaso…"),
+    );
+    for (const name of ["Otra vez", "Difícil", "Bien", "Fácil"])
+      expect(screen.getByRole("button", { name })).toBeDisabled();
+    expect(screen.getByText(content.answerText)).toBeVisible();
+    expect(save).toHaveBeenCalledTimes(1);
+    await act(async () =>
+      finish({ receipt: { rating: "good", replayed: false }, requestId: reviewKey }),
+    );
+    expect(screen.getByTestId("review-save-status")).toHaveTextContent(
+      "Último repaso guardado: Bien.",
+    );
+  });
+  it("does not announce success after an error and retries only the same rating/key/revision", async () => {
+    save.mockResolvedValue({ error: "generic", requestId: reviewKey });
+    mount();
+    fireEvent.click(screen.getByRole("button", { name: "Revelar respuesta" }));
+    await screen.findByText(content.answerText);
+    fireEvent.click(screen.getByRole("button", { name: "Bien" }));
+    await screen.findByRole("alert");
+    expect(screen.getByTestId("review-save-status")).toBeEmptyDOMElement();
+    expect(screen.getByRole("button", { name: "Fácil" })).toBeDisabled();
+    expect(screen.getByText(content.answerText)).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Bien" }));
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(2));
+    expect(Object.fromEntries(save.mock.calls[0]![1] as FormData)).toEqual(
+      Object.fromEntries(save.mock.calls[1]![1] as FormData),
+    );
+    expect(refresh).not.toHaveBeenCalled();
+  });
+  it("keeps the saved status across the next front and when the queue becomes empty", async () => {
+    const view = mount();
+    fireEvent.click(screen.getByRole("button", { name: "Revelar respuesta" }));
+    await screen.findByText(content.answerText);
+    fireEvent.click(screen.getByRole("button", { name: "Bien" }));
+    await waitFor(() =>
+      expect(screen.getByTestId("review-save-status")).toHaveTextContent("guardado"),
+    );
+    view.rerender(
+      <NextIntlClientProvider locale="es" messages={es}>
+        <StudyCardView
+          locale="es"
+          sessionId="session"
+          card={{
+            practiceItemId: "next",
+            revision: null,
+            prompt: { mode: "basic_recall", promptText: "Next front", hintText: null },
+          }}
+        />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByText("Next front")).toBeVisible();
+    expect(screen.getByRole("heading", { name: es.PracticeCard.heading })).toHaveFocus();
+    expect(screen.queryByText(content.answerText)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bien" })).toBeDisabled();
+    expect(screen.getByTestId("review-save-status")).toHaveTextContent("guardado");
+    view.rerender(
+      <NextIntlClientProvider locale="es" messages={es}>
+        <StudyCardView locale="es" sessionId="session" card={null} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.queryByTestId("study-card")).not.toBeInTheDocument();
+    expect(screen.getByTestId("review-save-status")).toHaveTextContent("guardado");
+    expect(screen.getByTestId("review-save-status")).toHaveFocus();
+  });
+  it("explicit reload clears a rejected reveal even if the same card/revision is still pending", async () => {
+    save.mockResolvedValue({ error: "revision-conflict", requestId: reviewKey });
+    mount();
+    fireEvent.click(screen.getByRole("button", { name: "Revelar respuesta" }));
+    await screen.findByText(content.answerText);
+    fireEvent.click(screen.getByRole("button", { name: "Bien" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Recargar sesión" }));
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText(content.answerText)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bien" })).toBeDisabled();
   });
 });

@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-10-11
-**Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (6/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (7/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M6 — Alfa personal multidispositivo — `EN PROCESO`. M5 y M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
-**Tarea activa:** cierre del despliegue de LEX-6.6 verificado; LEX-6.7 sin comenzar.
-**Estado de la tarea:** LEX-6.1…LEX-6.6 `HECHO`. PR #98 fusionada sin bypass, merge `144ca9f`; revisión final `298fb23`, CI `38146136173` verde en los tres trabajos. CI del merge `38146529702` verde en los tres trabajos. Las 14 migraciones se han aplicado con autorización expresa; historial coincidente y dry-run posterior sin cambios. Catálogo público completo, 15 tablas con RLS y RPC privadas. Protección de `main` completa y verificada. Production Ready del nuevo código, health público 3/3 HTTP 200 con app/database true y no-store; páginas ES/EN y login 200, ruta privada redirige sin sesión. Preview desactivada temporalmente según Q-008, conservando Production y CI. El propietario confirma alta/onboarding y dashboard Hoy en producción; Q-007 resuelta. Físico/revisión independiente pendientes en sus gates específicos. Q-005/Q-006 sin cambios.
-**Entrega / documentación de cierre:** código integrado en `main` / `144ca9f`, PR #98. Rama de evidencia `docs/lex-6-6-production-evidence`, sin cambios de producto.
+**Tarea activa:** ninguna; LEX-6.7 `HECHO` localmente, LEX-6.8 sin iniciar.
+**Estado de la tarea:** guardado inmediato de valoraciones, replay y avance tras confirmación implementados. Gate general 608 PASS + 1 omitida; pgTAP 17/477 PASS; E2E 110 PASS + 4 omitidas sin reintentos. Revisión independiente final sin hallazgos pendientes. Sin migración/dependencia/ADR nuevo. Despliegue anterior de LEX-6.6 verificado y aceptado por el propietario; esta rama no se ha publicado. Q-005/Q-006/Q-008 sin cambios. Físico y lector de pantalla permanecen en sus gates específicos.
+**Rama / base:** `feat/lex-6-7-immediate-review-save` / `8bce8ae`. Cambios de la tarea sin commit ni push; sin cambios en producción.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,29 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-6.7 — Guardado inmediato de valoraciones — `HECHO` (local)
+
+Caso de uso autorizado de sesión, acción delgada y UI ES/EN. Reutiliza la
+persistencia atómica existente, vincula el log a la sesión y comprueba que un
+replay corresponda al mismo ítem, sesión y rating. Botones bloqueados durante
+pending; no avanza ni anuncia guardado antes de confirmación. El siguiente
+frente y el dashboard proceden de revalidación del servidor. Foco y estado de
+guardado conservados al avanzar o agotar los pendientes.
+
+```text
+LEXORA_DB_TESTS=1 pnpm check             exit 0; 608 passed + 1 skipped, build
+pnpm db:test                           17 files / 477 assertions, PASS
+CI=1 pnpm e2e --workers=2 --retries=0   110 passed + 4 skipped, exit 0
+```
+
+Integración real local con RLS A/B/anon, cuatro ratings, conflicto de revisión
+y envíos concurrentes. E2E verifica replay HTTP, controles pending, siguiente
+frente y persistencia al cerrar la pestaña confirmada. Capturas de escritorio y
+móvil emulado inspeccionadas. Revisión independiente final sin hallazgos.
+Sin seed, reset, migración, dependencia ni publicación. Pruebas físicas y CI
+remota no realizadas en esta entrega. LEX-6.8 no iniciada. Evidencia completa:
+[`evidence/LEX-6.7.md`](evidence/LEX-6.7.md).
 
 ### LEX-6.6 — Preview de intervalos — `HECHO` (local)
 
@@ -42,7 +65,8 @@ El preflight de producción del 2026-10-11 está en
 Destino y acceso verificados; 14 migraciones aplicadas por autorización posterior.
 Production Ready del nuevo código, health público 3/3 HTTP 200 y CI del merge verde.
 Alta/onboarding y dashboard Hoy confirmados por el propietario; Q-007 resuelta.
-Físico/revisión independiente pendientes. LEX-6.7 no iniciada.
+Físico/revisión independiente pendientes en sus gates. LEX-6.7 se completó después,
+según el apartado anterior.
 
 ### LEX-6.5 — Revelado y cuatro valoraciones — `HECHO` (local)
 
@@ -1813,10 +1837,10 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-LEX-6.1…LEX-6.6 terminadas con evidencia local. FASE 6 en 6/14; M5 cerrado.
-Siguiente LEX-6.7, sin iniciar. Sesión con reveal, valoración local e intervalos
-aproximados, sin guardado ni avance. Publicación del conjunto en curso;
-producción requiere resolver Q-007. No se han tocado datos reales.
+LEX-6.1…LEX-6.7 terminadas con evidencia local. FASE 6 en 7/14; M5 cerrado.
+Siguiente LEX-6.8, sin iniciar. La sesión guarda valoraciones y avanza después
+de confirmar. Esta rama no está publicada; producción conserva la entrega
+anterior aceptada y Q-007 está resuelta. No se han tocado datos reales en LEX-6.7.
 
 Q-005 y Q-006 siguen abiertas. Las etiquetas de hito pendientes requieren
 autorización del propietario. LEX-3.13 y la revisión independiente de M5
@@ -2228,6 +2252,14 @@ contenido real exista, más cara la corrección.
 
 ## Siguiente acción exacta
 
+LEX-6.7 cumple los gates locales, documentada en `evidence/LEX-6.7.md`.
+Al retomar, revisar esta rama y su diff; decidir publicación o inicio autorizado
+de LEX-6.8 según el roadmap privado. No comenzar otra tarea en este cierre.
+Publicación, CI remota y despliegue de esta rama no ejecutados. No seed local,
+reset remoto ni cambios en producción.
+
+### Despliegue anterior verificado
+
 El cierre del despliegue de código `144ca9f` está verificado. Toda publicación
 de evidencia conserva PR protegido, tres checks verdes y verificación en `main`;
 no cambia producto ni SQL. El propietario confirma alta, onboarding y
@@ -2238,7 +2270,7 @@ para esos pasos. No activar sincronización automática de futuras migraciones.
 Ningún reset remoto ni seed local. Ver
 [`LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
 No confundir CI, Ready y aceptación de producción.
-La siguiente tarea del roadmap es **LEX-6.7**, sin comenzar.
+La siguiente tarea del roadmap es **LEX-6.8**, sin comenzar.
 
 ---
 

@@ -22,6 +22,7 @@ export { REVIEW_RATINGS, type ReviewRating } from "@/modules/study/domain/memory
 
 export interface StudyCard {
   practiceItemId: string;
+  revision: number | null;
   prompt: PracticeItemPromptContent;
 }
 
@@ -43,7 +44,11 @@ export async function getStudySessionCard(
       practiceItemId: first.practiceItemId,
     });
     if (content)
-      card = { practiceItemId: first.practiceItemId, prompt: practiceItemPromptFrom(content) };
+      card = {
+        practiceItemId: first.practiceItemId,
+        revision: first.revision,
+        prompt: practiceItemPromptFrom(content),
+      };
   }
   return { ...result, card };
 }

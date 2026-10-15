@@ -31,6 +31,7 @@ export type CommitReviewResult =
 
 export interface ReplayLookup {
   practiceItemId: string;
+  studySessionId: string | null;
   rating: ReviewRating;
   reviewedAt: Date;
 }

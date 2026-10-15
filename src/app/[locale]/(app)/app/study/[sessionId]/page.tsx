@@ -80,13 +80,8 @@ export default async function StudySessionPage({
           )}
         </section>
       )}
-      {result.ok && result.card && (
-        <StudyCardView
-          key={`${sessionId}:${result.card.practiceItemId}:${JSON.stringify(result.card.prompt)}`}
-          locale={locale}
-          sessionId={sessionId}
-          card={result.card}
-        />
+      {result.ok && (
+        <StudyCardView key={sessionId} locale={locale} sessionId={sessionId} card={result.card} />
       )}
       {result.ok && result.queue && result.queue.entries.length > 0 && !result.card && (
         <div className="flex flex-col gap-3">

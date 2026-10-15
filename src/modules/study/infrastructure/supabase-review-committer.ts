@@ -25,7 +25,7 @@ export function createSupabaseReviewCommitter(client: SupabaseClient<Database>):
     async findByIdempotencyKey({ ownerId, idempotencyKey }) {
       const { data, error } = await client
         .from("review_logs")
-        .select("practice_item_id, rating, reviewed_at")
+        .select("practice_item_id, study_session_id, rating, reviewed_at")
         .eq("owner_id", ownerId)
         .eq("idempotency_key", idempotencyKey)
         .maybeSingle();
@@ -41,6 +41,7 @@ export function createSupabaseReviewCommitter(client: SupabaseClient<Database>):
       }
       return {
         practiceItemId: data.practice_item_id,
+        studySessionId: data.study_session_id,
         rating: data.rating,
         reviewedAt: new Date(data.reviewed_at),
       };

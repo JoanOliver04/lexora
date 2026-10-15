@@ -277,17 +277,17 @@ ocultas o anuncios antes del éxito. No se interpreta HTML de ningún campo.
 
 La elección `again/hard/good/easy` conserva los valores del dominio. Cada
 botón tiene una explicación visible y referenciada por `aria-describedby`,
-y `aria-pressed` señala la elección sin depender solo del color. Se informa
-explícitamente de que la valoración no está guardada y se pierde al recargar.
-Cambiar de tarjeta o recargar reinicia reveal y elección. No hay atajos globales
-ni presentación de intervalos en esta entrega.
+y `aria-pressed` señala la elección sin depender solo del color.
+La elección era local en LEX-6.5; desde LEX-6.7 se envía para guardar según el
+contrato descrito abajo. Cambiar de tarjeta o recargar reinicia reveal y elección,
+no el repaso ya confirmado. No hay atajos globales. LEX-6.6 añade los intervalos.
 
-Reveal es una lectura: no crea memoria, calcula FSRS, escribe logs o contadores,
-ni avanza la cola. Desde LEX-6.6 calcula únicamente el preview del scheduler
-descrito abajo. Elegir un rating solo cambia estado local de React. No existe
-todavía una acción de guardar que pueda invocarse antes de revelar. La UI no
-afirma que el repaso esté confirmado. La recuperación activa se solicita al
-usuario; no es una comprobación automática de si realmente recordó la respuesta.
+Reveal es una lectura: no crea memoria, escribe logs o contadores ni avanza la
+cola. Desde LEX-6.6 calcula únicamente el preview del scheduler
+descrito abajo. Desde LEX-6.7 elegir un rating invoca una acción de guardado,
+habilitada solo tras revelar y obtener un preview compatible. La recuperación
+activa se solicita al usuario; no es una comprobación automática de si realmente
+recordó la respuesta.
 
 Pruebas de aplicación, acción y UI cubren autorizaciones, primer pendiente,
 límites cambiados, sesión inactiva, pending/retry, selección local y foco. La
@@ -313,7 +313,7 @@ guardar puede variar por otro instante, estado actualizado o fuzz.
 El control «Mostrar intervalos aproximados» permite ocultarlos sin cambiar el
 rating, solicitar otra lectura ni tocar configuración FSRS. Es un ajuste local
 de esta tarjeta, reiniciado al recargar; no se simula una preferencia de cuenta
-persistida. Solo aparece tras revelar. No hay todavía guardado ni avance.
+persistida. Solo aparece tras revelar. El guardado y avance se añaden en LEX-6.7.
 
 El contrato real de `ts-fsrs@5.4.2` compara preview con `review` usando el mismo
 estado, instante y configuración v1 con fuzz habilitado, en New, Learning,
@@ -321,3 +321,31 @@ Review y Relearning. Prueba también alta hipotética sin escrituras, versiones
 incompatibles y estado original intacto. UI y E2E verifican traducción, ocultar/
 mostrar y ausencia de intervalos en el frente. Evidencia en
 [`evidence/LEX-6.6.md`](evidence/LEX-6.6.md).
+
+## Guardado inmediato — LEX-6.7
+
+`saveStudyReviewAction` obtiene dueño, zona, reloj y configuración del servidor.
+Solo acepta la intención: sesión, ítem, rating, revisión observada y clave UUID
+creada tras revelar. `saveSessionReview` exige sesión propia activa y el primer
+pendiente de la cola vigente; el contenido debe seguir siendo estudiable.
+Para memoria nueva, la revisión esperada es 1, nunca una revisión posterior
+encontrada durante una carrera. El cálculo usa los puertos existentes y
+`confirmReview` persiste memoria y log mediante la RPC atómica.
+
+La clave se consulta antes de reconstruir la cola y después de detectar carreras.
+Solo se reconoce un recibo del mismo ítem, sesión y rating. Así un reintento de
+un repaso confirmado no crea otro log, aunque la tarjeta ya haya salido de la
+cola. Un conflicto no sobrescribe memoria; la UI ofrece recargar desde servidor.
+
+El formulario bloquea envíos repetidos tanto síncronamente como durante pending.
+Mantiene tarjeta y respuesta mientras guarda; solo anuncia éxito después de la
+confirmación. La revalidación actualiza el dashboard y la cola, sin avance
+optimista. El recibo permanece visible al mostrar el siguiente frente o quedar
+sin ítems disponibles. El foco pasa al nuevo frente o al estado de guardado.
+Un error de infraestructura conserva la intención para reintentar el mismo
+rating y clave, sin fingir guardado. No hay cola offline.
+
+Pruebas de aplicación, acción, UI y Supabase local cubren autenticación, RLS,
+revisiones, replay y carreras. El navegador comprueba pending, las cuatro
+valoraciones, replay HTTP y persistencia al cerrar la pestaña confirmada.
+Evidencia en [`evidence/LEX-6.7.md`](evidence/LEX-6.7.md).
