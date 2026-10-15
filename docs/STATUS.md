@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-10-15
-**Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (8/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (9/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M6 — Alfa personal multidispositivo — `EN PROCESO`. M5 y M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
-**Tarea activa:** ninguna; LEX-6.8 `HECHO` localmente, LEX-6.9 sin iniciar.
-**Estado de la tarea:** recuperación de guardado implementada: timeout de 15 s, resultado desconocido sin falso éxito, reintento manual de la misma intención, offline sin autoenvío y conflicto recargable. Gate general 637 PASS + 1 omitida; pgTAP 17/477 PASS; E2E 114 PASS + 4 omitidas sin reintentos. Revisión independiente sin hallazgos pendientes. Sin migración/dependencia/ADR nuevo; aclaración de transporte en ADR-006. Producción anterior intacta. Q-005/Q-006/Q-008 sin cambios. Físico y lector de pantalla permanecen en sus gates específicos.
-**Rama / base:** `feat/lex-6-8-review-recovery` / `9f90b58`. LEX-6.7 conservada en ese checkpoint; entrega LEX-6.8 en commit local de esta rama. Sin push, CI remota ni cambios en producción.
+**Tarea activa:** ninguna; LEX-6.9 `HECHO` localmente, LEX-6.10 sin iniciar.
+**Estado de la tarea:** pasos Learning/Relearning integrados sin adelantar vencimientos. Cola vacía muestra minutos aproximados del servidor y permite comprobar o volver a Hoy, sin espera obligatoria ni cuenta atrás. Gate general 650 PASS + 1 omitida; pgTAP 17/477 PASS; E2E 118 PASS + 4 omitidas sin reintentos. Revisión independiente sin hallazgos pendientes. Sin migración/dependencia/ADR nuevo. Producción anterior intacta. Q-005/Q-006/Q-008 sin cambios. Físico y lector de pantalla permanecen en sus gates específicos.
+**Rama / base:** `feat/lex-6-9-short-learning-steps` / `3ca6c71`. LEX-6.8 conservada en ese checkpoint; entrega LEX-6.9 en commit local de esta rama. Sin push, CI remota ni cambios en producción.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,29 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-6.9 — Pasos cortos de aprendizaje — `HECHO` (local)
+
+La cola distingue el próximo Learning/Relearning futuro de Review. La sesión
+usa un único instante del servidor para elegibilidad y duración aproximada.
+Con otro trabajo disponible se sigue estudiando; sin él se puede comprobar
+pendientes o volver a Hoy sin perder lo confirmado. Sin temporizador, sondeo
+automático, adelanto por reloj del navegador ni cambio del ciclo de vida.
+
+```text
+LEXORA_DB_TESTS=1 pnpm check             exit 0; 650 passed + 1 skipped, build
+pnpm db:test                           17 files / 477 assertions, PASS
+CI=1 pnpm e2e --workers=2 --retries=0   118 passed + 4 skipped, exit 0
+```
+
+Integración local real de ambas fases: rechazo justo antes del vencimiento,
+admisión exacta con ambos cupos agotados, RLS B/anon y replay sin otro log.
+Navegador con reloj adelantado no admite pasos tempranos. Al reaparecer el ítem
+exige nuevo reveal y guarda una nueva revisión. Capturas desktop/móvil emulado
+inspeccionadas; revisión independiente sin hallazgos. Sin seed, reset, SQL,
+dependencias, ADR ni publicación. No requiere acciones manuales para este cierre
+local; físico y lector de pantalla siguen en sus gates. Evidencia en
+[`evidence/LEX-6.9.md`](evidence/LEX-6.9.md). LEX-6.10 no iniciada.
 
 ### LEX-6.8 — Recuperación del guardado — `HECHO` (local)
 
@@ -38,7 +61,8 @@ Capturas desktop/móvil emulado inspeccionadas. Revisión independiente sin
 hallazgos. Sin seed, reset, SQL, dependencias ni publicación. ADR-006 aclarada
 sin cambiar su decisión. Evidencia en [`evidence/LEX-6.8.md`](evidence/LEX-6.8.md).
 No se requieren acciones manuales para este cierre local. Pruebas físicas y
-lector de pantalla siguen en sus gates específicos. LEX-6.9 no iniciada.
+lector de pantalla siguen en sus gates específicos. LEX-6.9 completada después,
+según el apartado anterior.
 
 ### LEX-6.7 — Guardado inmediato de valoraciones — `HECHO` (local)
 
@@ -2279,9 +2303,9 @@ contenido real exista, más cara la corrección.
 
 ## Siguiente acción exacta
 
-LEX-6.8 cumple los gates locales, documentada en `evidence/LEX-6.8.md`.
-Entrega conservada en un commit local sobre el checkpoint LEX-6.7 `9f90b58`.
-Al retomar, revisar esta rama y su historial; siguiente tarea LEX-6.9 según el
+LEX-6.9 cumple los gates locales, documentada en `evidence/LEX-6.9.md`.
+Entrega conservada en un commit local sobre el checkpoint LEX-6.8 `3ca6c71`.
+Al retomar, revisar esta rama y su historial; siguiente tarea LEX-6.10 según el
 roadmap privado. No se inicia en este cierre. Publicación, CI remota y despliegue
 de esta rama no ejecutados. No seed local, reset remoto ni cambios en producción.
 
@@ -2297,7 +2321,7 @@ para esos pasos. No activar sincronización automática de futuras migraciones.
 Ningún reset remoto ni seed local. Ver
 [`LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
 No confundir CI, Ready y aceptación de producción.
-La siguiente tarea del roadmap es **LEX-6.9**, sin comenzar.
+La siguiente tarea del roadmap es **LEX-6.10**, sin comenzar.
 
 ---
 

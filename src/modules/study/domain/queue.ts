@@ -54,6 +54,8 @@ export interface DailyQueue {
   newRemaining: number;
   /** Próximo vencimiento futuro entre los candidatos no vencidos. */
   nextDueAt: Date | null;
+  /** Future Learning/Relearning step, independent of the Review daily cap. */
+  nextLearningDueAt: Date | null;
 }
 
 export interface AssembleDailyQueueInput {
@@ -105,6 +107,7 @@ export function assembleDailyQueue(input: AssembleDailyQueueInput): DailyQueue {
   const reviewDue: QueueCandidate[] = [];
   const availableNew: QueueCandidate[] = [];
   let nextDueAt: Date | null = null;
+  let nextLearningDueAt: Date | null = null;
 
   for (const candidate of input.candidates) {
     const phase = candidate.phase;
@@ -112,6 +115,9 @@ export function assembleDailyQueue(input: AssembleDailyQueueInput): DailyQueue {
       if (isDue(candidate, now)) {
         learningDue.push(candidate);
       } else if (candidate.dueAt) {
+        if (!nextLearningDueAt || candidate.dueAt.getTime() < nextLearningDueAt.getTime()) {
+          nextLearningDueAt = candidate.dueAt;
+        }
         if (!nextDueAt || candidate.dueAt.getTime() < nextDueAt.getTime()) {
           nextDueAt = candidate.dueAt;
         }
@@ -155,5 +161,6 @@ export function assembleDailyQueue(input: AssembleDailyQueueInput): DailyQueue {
     hiddenNew: availableNew.length - takenNew.length,
     newRemaining: newRemaining - takenNew.length,
     nextDueAt,
+    nextLearningDueAt,
   };
 }

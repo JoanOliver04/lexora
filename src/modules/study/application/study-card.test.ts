@@ -54,6 +54,45 @@ function repositories() {
   return { sessions, queue, cards };
 }
 describe("getStudySessionCard", () => {
+  it.each(["learning", "relearning"] as const)(
+    "reconstructs %s before, at and after its server deadline while other work stays available",
+    async (phase) => {
+      const { sessions, queue, cards } = repositories();
+      const dueAt = new Date(now.getTime() + 60_000);
+      vi.mocked(queue.listEligibleItems).mockResolvedValue([
+        { practiceItemId: "step", phase, dueAt, learningStateId: "memory", revision: 2 },
+        {
+          practiceItemId: "other",
+          phase: null,
+          dueAt: null,
+          learningStateId: null,
+          revision: null,
+        },
+      ]);
+      const before = await getStudySessionCard(sessions, queue, cards, {
+        ...input,
+        now: new Date(dueAt.getTime() - 1),
+      });
+      expect(before.ok && before.card?.practiceItemId).toBe("other");
+      expect(before.ok && before.queue?.nextLearningDueAt).toEqual(dueAt);
+      expect(
+        await revealStudySessionCard(sessions, queue, cards, {
+          ...input,
+          practiceItemId: "step",
+          now: new Date(dueAt.getTime() - 1),
+        }),
+      ).toEqual({ ok: false, reason: "card-changed" });
+      for (const instant of [dueAt, new Date(dueAt.getTime() + 1)]) {
+        const current = await getStudySessionCard(sessions, queue, cards, {
+          ...input,
+          now: instant,
+        });
+        expect(current.ok && current.card).toMatchObject({ practiceItemId: "step", revision: 2 });
+        expect(current.ok && current.queue?.nextLearningDueAt).toBeNull();
+      }
+      expect(sessions.create).not.toHaveBeenCalled();
+    },
+  );
   it("loads only the first ordered item using the saved course/scope, and returns only its front", async () => {
     const { sessions, queue, cards } = repositories();
     const result = await getStudySessionCard(sessions, queue, cards, input);

@@ -6,6 +6,7 @@ import { getStudyContextForCurrentUser } from "@/composition/study";
 import { Link } from "@/i18n/navigation";
 import { getStudySessionCard } from "@/modules/study/application/study-card";
 import { StudyCardView } from "../study-card-view";
+import { StudyStepWait } from "../study-step-wait";
 import { FormError } from "@/shared/presentation/components";
 
 export default async function StudySessionPage({
@@ -18,10 +19,11 @@ export default async function StudySessionPage({
   if (!(await hasCompletedOnboardingForCurrentUser())) redirect(`/${locale}/onboarding`);
   const context = await getStudyContextForCurrentUser();
   if (!context) redirect(`/${locale}/login`);
+  const now = context.clock.now();
   const result = await getStudySessionCard(context.sessions, context.dailyQueue, context.cards, {
     ownerId: context.ownerId,
     sessionId,
-    now: context.clock.now(),
+    now,
     timeZone: context.timeZone,
   });
   if (!result.ok && result.reason === "not-found") notFound();
@@ -82,6 +84,9 @@ export default async function StudySessionPage({
       )}
       {result.ok && (
         <StudyCardView key={sessionId} locale={locale} sessionId={sessionId} card={result.card} />
+      )}
+      {result.ok && result.queue?.entries.length === 0 && result.queue.nextLearningDueAt && (
+        <StudyStepWait remainingMs={result.queue.nextLearningDueAt.getTime() - now.getTime()} />
       )}
       {result.ok && result.queue && result.queue.entries.length > 0 && !result.card && (
         <div className="flex flex-col gap-3">

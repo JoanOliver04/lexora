@@ -385,3 +385,32 @@ El intento pendiente no sobrevive a cerrar/recargar la pestaña. La UI lo advier
 el progreso que el servidor ya confirmó sí permanece. No se implementa estudio
 offline ni sincronización en segundo plano. Evidencia en
 [`evidence/LEX-6.8.md`](evidence/LEX-6.8.md).
+
+## Pasos cortos en la sesión — LEX-6.9
+
+`DailyQueue.nextLearningDueAt` indica el próximo vencimiento futuro de
+Learning/Relearning dentro del alcance ya autorizado. Se calcula con los mismos
+candidatos filtrados, sin consultas adicionales. No sustituye `nextDueAt` ni
+cambia el contrato de `TodayOverview`: un Review futuro puede vencer antes,
+pero estar sujeto a otro cupo, y no debe presentarse como un paso corto.
+
+La sesión captura un solo `Clock.now()` para construir su cola y calcular el
+tiempo restante que recibe `StudyStepWait`. El aviso solo aparece con sesión
+activa, cola vacía y algún paso corto futuro. Los minutos se redondean hacia
+arriba para presentar una aproximación de la última comprobación; no se usa el
+reloj del dispositivo ni se actualiza una cuenta atrás. Mientras haya otras
+tarjetas disponibles, se sigue trabajando sin mostrar una espera.
+
+«Comprobar pendientes» hace `router.refresh()` dentro de una transición, sin
+crear sesión, escribir memoria o valorar nada. Reautoriza y reconstruye la cola.
+Antes del vencimiento el ítem no se puede revelar ni valorar; en el instante
+exacto entra con prioridad de aprendizaje, incluso con cupos New/Review agotados.
+Al reaparecer se monta un frente sin respuesta y se requiere un reveal nuevo,
+con la revisión vigente y una clave nueva para el siguiente repaso.
+
+El enlace a Hoy permanece utilizable: no hay que quedarse esperando para
+conservar lo guardado. Salir no marca la sesión como completada o pausada; no
+se añade aquí ciclo de vida, resumen, temporizador, cola offline ni Realtime.
+Pruebas de dominio, aplicación, Supabase real y navegador cubren ambas fases,
+límites, reloj del navegador adelantado y reaparición del mismo ítem.
+Evidencia en [`evidence/LEX-6.9.md`](evidence/LEX-6.9.md).

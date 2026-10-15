@@ -26,6 +26,9 @@ están en [ADR-001](adrs/ADR-001-monolito-modular-clean-architecture.md) y
 > LEX-6.8 usa un contrato HTTP de guardado con timeout, reintento idempotente
 > manual y validación de origen. El cliente refresca la ruta solo tras recibir
 > confirmación, sin cola offline ni cancelación implícita del commit del servidor.
+> LEX-6.9 distingue el próximo paso Learning/Relearning en la cola y muestra
+> una espera informativa cuando no hay trabajo disponible. La comprobación
+> manual vuelve al servidor; el reloj del navegador nunca admite una tarjeta.
 > Las secciones
 > marcadas como *pendiente* se completan cuando la fase correspondiente las
 > implemente.

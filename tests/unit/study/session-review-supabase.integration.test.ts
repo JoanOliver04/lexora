@@ -4,7 +4,10 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { saveSessionReview } from "@/modules/study/application/save-session-review";
-import { getStudySessionCard } from "@/modules/study/application/study-card";
+import {
+  getStudySessionCard,
+  revealStudySessionCard,
+} from "@/modules/study/application/study-card";
 import { V1_SCHEDULER_CONFIG } from "@/modules/study/domain/scheduler-config";
 import { createSupabaseDailyQueueRepository } from "@/modules/study/infrastructure/supabase-daily-queue-repository";
 import { createSupabaseLearningStateRepository } from "@/modules/study/infrastructure/supabase-learning-state-repository";
@@ -317,4 +320,164 @@ describe.skipIf(!enabled)("Session reviews against local Supabase", () => {
       (await f.memory.getByItem({ ownerId, practiceItemId: front.card.practiceItemId }))?.revision,
     ).toBe(3);
   });
+  it.each(["learning", "relearning"] as const)(
+    "reintroduces a real FSRS %s step only at its deadline, independently of both daily caps",
+    async (phase) => {
+      const f = ports(clientA);
+      const stepDeck = randomUUID();
+      const stepConcept = randomUUID();
+      const stepSession = randomUUID();
+      const [stepItem, otherItem] = [randomUUID(), randomUUID()].sort() as [string, string];
+      await checked(
+        clientA
+          .from("course_settings")
+          .update({ daily_new_limit: 100, maximum_reviews_per_day: null })
+          .eq("course_id", courseId),
+      );
+      await checked(
+        clientA.from("decks").insert({
+          id: stepDeck,
+          owner_id: ownerId,
+          course_id: courseId,
+          title: "Synthetic short steps",
+        }),
+      );
+      await checked(
+        clientA.from("concepts").insert({
+          id: stepConcept,
+          owner_id: ownerId,
+          course_id: courseId,
+          kind: "vocabulary",
+          title: "Original steps",
+          summary: "Original",
+        }),
+      );
+      await checked(
+        clientA
+          .from("deck_concepts")
+          .insert({ owner_id: ownerId, deck_id: stepDeck, concept_id: stepConcept }),
+      );
+      await checked(
+        clientA.from("practice_items").insert(
+          [stepItem, otherItem].map((id) => ({
+            id,
+            owner_id: ownerId,
+            concept_id: stepConcept,
+            mode: "basic_recall" as const,
+            prompt_text: "Original step front",
+            answer_text: "Original step answer",
+            config: { mode: "basic_recall" },
+          })),
+        ),
+      );
+      if (phase === "relearning")
+        await f.memory.create({
+          ownerId,
+          practiceItemId: stepItem,
+          schedulerVersion: "5.4.2",
+          configVersion: "v1",
+          state: {
+            ...f.scheduler.createInitialState(now, V1_SCHEDULER_CONFIG),
+            phase: "review",
+            stability: 5,
+            difficulty: 4,
+            reps: 5,
+            lastReviewedAt: new Date(now.getTime() - 86_400_000),
+            scheduledDays: 1,
+          },
+        });
+      await f.sessions.create({
+        ownerId,
+        courseId,
+        sessionId: stepSession,
+        scope: { deckIds: [stepDeck] },
+        startedAt: now,
+      });
+      const command = {
+        ...request(),
+        sessionId: stepSession,
+        practiceItemId: stepItem,
+        idempotencyKey: randomUUID(),
+        rating: "again",
+        expectedRevision: phase === "relearning" ? 1 : null,
+      };
+      expect(await saveSessionReview(f, command)).toEqual({
+        ok: true,
+        rating: "again",
+        replayed: false,
+      });
+      const stored = await f.memory.getByItem({ ownerId, practiceItemId: stepItem });
+      expect(stored).toMatchObject({ revision: 2, state: { phase } });
+      const dueAt = stored!.state.dueAt;
+      expect(dueAt.getTime() - now.getTime()).toBe(phase === "learning" ? 60_000 : 600_000);
+      const read = (at: Date) =>
+        getStudySessionCard(f.sessions, f.queue, f.cards, {
+          ownerId,
+          sessionId: stepSession,
+          now: at,
+          timeZone: "Europe/Madrid",
+        });
+      const working = await read(now);
+      expect(working.ok && working.card?.practiceItemId).toBe(otherItem);
+      await checked(
+        clientA
+          .from("course_settings")
+          .update({ daily_new_limit: 0, maximum_reviews_per_day: 0 })
+          .eq("course_id", courseId),
+      );
+      const before = new Date(dueAt.getTime() - 1);
+      const waiting = await read(before);
+      expect(waiting.ok && waiting.card).toBeNull();
+      expect(waiting.ok && waiting.queue?.nextLearningDueAt).toEqual(dueAt);
+      const nextIntent = {
+        ...command,
+        idempotencyKey: randomUUID(),
+        expectedRevision: 2,
+        rating: "good",
+      };
+      expect(await saveSessionReview(f, { ...nextIntent, now: before })).toEqual({
+        ok: false,
+        reason: "card-changed",
+      });
+      expect(
+        await revealStudySessionCard(f.sessions, f.queue, f.cards, {
+          ownerId,
+          sessionId: stepSession,
+          practiceItemId: stepItem,
+          now: before,
+          timeZone: "Europe/Madrid",
+        }),
+      ).toEqual({ ok: false, reason: "card-changed" });
+      for (const client of [clientB, anonymous]) {
+        const alien = ports(client);
+        expect(
+          await getStudySessionCard(alien.sessions, alien.queue, alien.cards, {
+            ownerId,
+            sessionId: stepSession,
+            now: before,
+            timeZone: "Europe/Madrid",
+          }),
+        ).toEqual({ ok: false, reason: "not-found" });
+      }
+      const available = await read(dueAt);
+      expect(available.ok && available.card).toMatchObject({
+        practiceItemId: stepItem,
+        revision: 2,
+      });
+      expect(await saveSessionReview(f, { ...nextIntent, now: dueAt })).toEqual({
+        ok: true,
+        rating: "good",
+        replayed: false,
+      });
+      expect(await saveSessionReview(f, command)).toEqual({
+        ok: true,
+        rating: "again",
+        replayed: true,
+      });
+      expect(
+        await checked(clientA.from("review_logs").select("id").eq("study_session_id", stepSession)),
+      ).toHaveLength(2);
+      expect((await f.memory.getByItem({ ownerId, practiceItemId: stepItem }))?.revision).toBe(3);
+    },
+  );
 });

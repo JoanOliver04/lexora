@@ -6,7 +6,8 @@ Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa est
 > **Estado (LEX-5.14, 2026-09-11):** **M5 cerrado.** Spike, adaptador,
 > config v1, esquema, RLS, alta, cola, cálculo, commit, idempotencia,
 > concurrencia, reloj, snapshots y auditoría con ítems importados.
-> `ts-fsrs@5.4.2`. Sin UI (FASE 6).
+> `ts-fsrs@5.4.2`. La UI de FASE 6 reutiliza estos contratos sin recalcular FSRS
+> en el navegador; guardado, recuperación y pasos cortos integrados hasta LEX-6.9.
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -156,7 +157,12 @@ La cola **no** crea estados. Un New sin fila llega con
 
 Los pasos cortos forman parte de la cola. Si un elemento vuelve a
 vencer durante la sesión, reaparece. `nextDueAt` es el próximo
-vencimiento futuro cuando no queda trabajo vencido.
+vencimiento futuro entre todos los candidatos. Desde LEX-6.9 la cola expone
+también `nextLearningDueAt`, solo para Learning/Relearning futuros, sin
+confundirlo con un Review sujeto al cupo diario. Si no hay trabajo disponible,
+la sesión muestra minutos aproximados calculados desde el mismo instante del
+servidor que formó la cola. El usuario puede comprobar de nuevo o volver a Hoy:
+no hay espera obligatoria, sondeo continuo ni cuenta atrás que habilite ítems.
 
 ## Transacción de repaso
 

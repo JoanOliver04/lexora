@@ -131,6 +131,7 @@ describe("assembleDailyQueue", () => {
 
     expect(queue.entries.map((e) => e.practiceItemId)).toEqual(["l-due"]);
     expect(queue.nextDueAt).toEqual(later);
+    expect(queue.nextLearningDueAt).toEqual(later);
   });
 
   it("cupo de nuevos ya agotado no introduce ninguno", () => {
@@ -145,4 +146,40 @@ describe("assembleDailyQueue", () => {
     expect(queue.hiddenNew).toBe(1);
     expect(queue.newRemaining).toBe(0);
   });
+  it("keeps the nearest short step separate from earlier future Review items", () => {
+    const queue = assembleDailyQueue({
+      ...emptyLimits,
+      candidates: [
+        candidate("review", "review", minutesAhead(1)),
+        candidate("learning", "learning", minutesAhead(10)),
+        candidate("relearning", "relearning", minutesAhead(5)),
+      ],
+    });
+    expect(queue.nextDueAt).toEqual(minutesAhead(1));
+    expect(queue.nextLearningDueAt).toEqual(minutesAhead(5));
+    expect(
+      assembleDailyQueue({
+        ...emptyLimits,
+        candidates: [candidate("review", "review", minutesAhead(1))],
+      }).nextLearningDueAt,
+    ).toBeNull();
+  });
+  it.each(["learning", "relearning"] as const)(
+    "admits %s exactly at its deadline, even with both daily caps exhausted",
+    (phase) => {
+      const dueAt = minutesAhead(10);
+      const input = {
+        ...emptyLimits,
+        dailyNewLimit: 0,
+        maximumReviewsPerDay: 0,
+        candidates: [candidate("step", phase, dueAt)],
+      };
+      const before = assembleDailyQueue({ ...input, now: new Date(dueAt.getTime() - 1) });
+      expect(before.entries).toEqual([]);
+      expect(before.nextLearningDueAt).toEqual(dueAt);
+      const at = assembleDailyQueue({ ...input, now: dueAt });
+      expect(at.entries.map((item) => item.practiceItemId)).toEqual(["step"]);
+      expect(at.nextLearningDueAt).toBeNull();
+    },
+  );
 });
