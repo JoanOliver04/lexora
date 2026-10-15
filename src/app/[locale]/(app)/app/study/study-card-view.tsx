@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import {
   PracticeItemAnswer,
@@ -15,7 +15,28 @@ import {
 } from "@/modules/study/application/study-card";
 import { Button, FormError } from "@/shared/presentation/components";
 import { revealStudyCardAction, type RevealFormState } from "./reveal-actions";
-import { saveStudyReviewAction, type ReviewFormState } from "./review-actions";
+import { submitStudyReview } from "./review-request";
+import type { ReviewFormState } from "./review-state";
+
+function subscribeConnection(notify: () => void) {
+  window.addEventListener("online", notify);
+  window.addEventListener("offline", notify);
+  return () => {
+    window.removeEventListener("online", notify);
+    window.removeEventListener("offline", notify);
+  };
+}
+
+async function revealWithRecovery(
+  previous: RevealFormState,
+  data: FormData,
+): Promise<RevealFormState> {
+  try {
+    return await revealStudyCardAction(previous, data);
+  } catch {
+    return { error: "generic" };
+  }
+}
 
 export function StudyCardView({
   locale,
@@ -27,13 +48,16 @@ export function StudyCardView({
   card: StudyCard | null;
 }) {
   const t = useTranslations("PracticeCard");
-  const router = useRouter();
+  const { refresh } = useRouter();
   const [reloadVersion, setReloadVersion] = useState(0);
   const [reviewState, reviewAction, reviewPending] = useActionState<ReviewFormState, FormData>(
-    saveStudyReviewAction,
+    submitStudyReview,
     {},
   );
   const saveStatus = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (reviewState.receipt) refresh();
+  }, [reviewState.receipt, refresh]);
   useEffect(() => {
     if (!card && reviewState.receipt) saveStatus.current?.focus();
   }, [card, reviewState.receipt]);
@@ -64,7 +88,7 @@ export function StudyCardView({
           reviewPending={reviewPending}
           onReload={() => {
             setReloadVersion((value) => value + 1);
-            router.refresh();
+            refresh();
           }}
         />
       )}
@@ -91,7 +115,7 @@ function StudyCardControls({
 }) {
   const t = useTranslations("PracticeCard");
   const [state, action, pending] = useActionState<RevealFormState, FormData>(
-    revealStudyCardAction,
+    revealWithRecovery,
     {},
   );
   const [rating, setRating] = useState<ReviewRating | null>(null);
@@ -101,14 +125,22 @@ function StudyCardControls({
   const errorRef = useRef<HTMLDivElement>(null);
   const reviewErrorRef = useRef<HTMLDivElement>(null);
   const submitLock = useRef(false);
+  const online = useSyncExternalStore(
+    subscribeConnection,
+    () => navigator.onLine,
+    () => true,
+  );
   const reviewError = reviewState.requestId === state.reviewKey ? reviewState.error : undefined;
+  const confirmed = reviewState.requestId === state.reviewKey && !!reviewState.receipt;
+  const retryable =
+    reviewError === "generic" || reviewError === "offline" || reviewError === "timeout";
   useEffect(() => {
     promptHeading.current?.focus();
   }, []);
   useEffect(() => {
-    submitLock.current = reviewPending;
+    submitLock.current = reviewPending || confirmed;
     if (reviewError && !reviewPending) reviewErrorRef.current?.focus();
-  }, [reviewPending, reviewError, reviewState]);
+  }, [reviewPending, reviewError, reviewState, confirmed]);
   useEffect(() => {
     if (state.content) answerHeading.current?.focus();
     else if (state.error) errorRef.current?.focus();
@@ -133,6 +165,11 @@ function StudyCardControls({
       </header>
       <p className="text-sm leading-relaxed text-(--color-ink-muted)">{t("recallInstruction")}</p>
       <PracticeItemPrompt content={content} hintLabel={t("hintLabel")} />
+      {!online && (
+        <p role="status" className="text-sm">
+          {t("offlineHint")}
+        </p>
+      )}
       {state.error && (
         <div ref={errorRef} tabIndex={-1}>
           <FormError id="study-reveal-error">
@@ -152,7 +189,7 @@ function StudyCardControls({
           <input type="hidden" name="practiceItemId" value={card.practiceItemId} />
           <Button
             type="submit"
-            disabled={pending}
+            disabled={pending || !online}
             aria-describedby="study-recall-hint"
             className="w-full"
           >
@@ -212,17 +249,30 @@ function StudyCardControls({
           <FormError id="study-review-error">
             <p>{t(`saveErrors.${reviewError}`)}</p>
           </FormError>
-          {reviewError !== "generic" && (
+          {!retryable && (
             <Button variant="secondary" className="mt-3" onClick={onReload}>
               {t("reload")}
             </Button>
           )}
         </div>
       )}
+      {confirmed && (
+        <Button variant="secondary" onClick={onReload}>
+          {t("reload")}
+        </Button>
+      )}
       <form
         action={reviewAction}
         onSubmit={(event) => {
-          if (submitLock.current || !state.content || !state.preview || !state.reviewKey) {
+          if (
+            submitLock.current ||
+            !online ||
+            confirmed ||
+            (reviewError && !retryable) ||
+            !state.content ||
+            !state.preview ||
+            !state.reviewKey
+          ) {
             event.preventDefault();
             return;
           }
@@ -236,7 +286,14 @@ function StudyCardControls({
         <input type="hidden" name="expectedRevision" value={state.preview?.revision ?? "new"} />
         <fieldset
           disabled={
-            !state.content || !state.preview || !state.reviewKey || pending || reviewPending
+            !state.content ||
+            !state.preview ||
+            !state.reviewKey ||
+            pending ||
+            reviewPending ||
+            !online ||
+            confirmed ||
+            (!!reviewError && !retryable)
           }
           className="min-w-0"
         >
@@ -280,6 +337,17 @@ function StudyCardControls({
             })}
           </div>
         </fieldset>
+        {retryable && rating && (
+          <Button
+            type="submit"
+            name="rating"
+            value={rating}
+            disabled={!online || reviewPending}
+            className="mt-3 w-full"
+          >
+            {t("retrySave")}
+          </Button>
+        )}
       </form>
       <p className="text-sm leading-relaxed text-(--color-ink-muted)">{t("saveHint")}</p>
     </section>

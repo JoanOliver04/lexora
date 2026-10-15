@@ -37,6 +37,11 @@ razón que ADR-005.
 usuario (`createSupabaseServerClient`), nunca el navegador de forma
 directa en el diseño de producto.
 
+**Aclaración LEX-6.8 (2026-10-15):** la UI de estudio usa un Route Handler con
+contrato HTTP para controlar timeout y reintento. La identidad, el caso de uso
+y el adaptador de servidor siguen siendo los mismos. No cambia la decisión de
+esta ADR ni los permisos de la RPC; abortar el transporte no revierte un commit.
+
 - `auth.uid()` es el dueño. Sin sesión → `28000`.
 - Si `(owner_id, idempotency_key)` ya existe, devuelve el resultado
   anterior (`replayed`).

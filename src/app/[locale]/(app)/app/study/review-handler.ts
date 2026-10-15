@@ -1,25 +1,16 @@
-"use server";
+import "server-only";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 import { getStudyContextForCurrentUser } from "@/composition/study";
 import { routing } from "@/i18n/routing";
-import {
-  saveSessionReview,
-  type SaveSessionReviewReason,
-} from "@/modules/study/application/save-session-review";
-import type { ReviewRating } from "@/modules/study/application/study-card";
+import { saveSessionReview } from "@/modules/study/application/save-session-review";
 import { StudyError } from "@/modules/study/application/study-error";
 import { V1_SCHEDULER_CONFIG } from "@/modules/study/domain/scheduler-config";
 
-export interface ReviewFormState {
-  receipt?: { rating: ReviewRating; replayed: boolean };
-  error?: SaveSessionReviewReason | "generic";
-  requestId?: string;
-}
+import type { ReviewFormState } from "./review-state";
 
-export async function saveStudyReviewAction(
+export async function saveStudyReviewRequest(
   _previous: ReviewFormState,
   data: FormData,
 ): Promise<ReviewFormState> {
@@ -41,7 +32,7 @@ export async function saveStudyReviewAction(
   let result;
   try {
     const context = await getStudyContextForCurrentUser();
-    if (!context) redirect(`/${locale}/login`);
+    if (!context) return { error: "unauthenticated", requestId };
     result = await saveSessionReview(
       {
         sessions: context.sessions,

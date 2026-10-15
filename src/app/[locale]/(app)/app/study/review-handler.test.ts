@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { StudyError } from "@/modules/study/application/study-error";
-import { saveStudyReviewAction } from "./review-actions";
+import { saveStudyReviewRequest as saveStudyReviewAction } from "./review-handler";
+vi.mock("server-only", () => ({}));
 
 const { context, save, revalidate, redirect } = vi.hoisted(() => ({
   context: vi.fn(),
@@ -84,7 +85,10 @@ describe("saveStudyReviewAction", () => {
     context.mockResolvedValue(null);
     const data = form();
     data.set("locale", "//evil.invalid");
-    await expect(saveStudyReviewAction({}, data)).rejects.toThrow("redirect:/es/login");
+    expect(await saveStudyReviewAction({}, data)).toEqual({
+      error: "unauthenticated",
+      requestId: key,
+    });
     expect(save).not.toHaveBeenCalled();
     expect(revalidate).not.toHaveBeenCalled();
   });

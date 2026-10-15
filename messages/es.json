@@ -94,6 +94,8 @@
     "saveHint": "La valoración se guarda antes de pasar al siguiente ítem. Espera la confirmación antes de cerrar la pestaña.",
     "saving": "Guardando repaso…",
     "reviewSaved": "Último repaso guardado: {rating}.",
+    "offlineHint": "Sin conexión. Conservamos esta tarjeta en la pestaña, pero no puedes enviar valoraciones. Reconecta y reintenta; no se enviará nada automáticamente.",
+    "retrySave": "Reintentar guardado",
     "saveErrors": {
       "invalid-input": "No se pudo validar la valoración. Recarga la sesión antes de continuar.",
       "not-found": "La sesión ya no está disponible. Vuelve a Hoy para continuar.",
@@ -103,7 +105,10 @@
       "idempotency-conflict": "Este intento ya corresponde a otro repaso. No se ha guardado otra valoración. Recarga la sesión.",
       "revision-conflict": "El estado ha cambiado desde que revelaste la respuesta. No se ha sobrescrito. Recarga la sesión.",
       "scheduler-mismatch": "Este estado usa otra versión del scheduler. No se ha recalculado ni migrado tu memoria.",
-      "generic": "No se pudo confirmar el guardado. Conservamos la tarjeta y la valoración; pulsa la misma valoración para reintentar sin duplicarla."
+      "generic": "No se pudo confirmar el guardado. Puede haberse guardado en el servidor. Conservamos la tarjeta y la valoración; reintenta el mismo repaso sin duplicarlo.",
+      "offline": "Se perdió la conexión. No podemos confirmar el guardado. No cierres ni recargues esta pestaña; reconecta y reintenta el mismo repaso.",
+      "timeout": "La confirmación ha tardado demasiado. El repaso puede haberse guardado. Conservamos el intento: reintenta sin cambiar la valoración ni recargar la pestaña.",
+      "unauthenticated": "La sesión de acceso ha caducado. Recarga para volver a iniciar sesión y consultar el progreso guardado."
     },
     "ratings": {
       "again": {

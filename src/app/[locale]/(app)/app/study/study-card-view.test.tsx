@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import es from "../../../../../../messages/es.json";
 import en from "../../../../../../messages/en.json";
 import type { StudyCardContent } from "@/modules/study/application/study-card";
 import { StudyCardView } from "./study-card-view";
-import type { ReviewFormState } from "./review-actions";
+import type { ReviewFormState } from "./review-state";
 
 const { reveal, refresh, save } = vi.hoisted(() => ({
   reveal: vi.fn(),
@@ -14,7 +14,7 @@ const { reveal, refresh, save } = vi.hoisted(() => ({
   save: vi.fn(),
 }));
 vi.mock("./reveal-actions", () => ({ revealStudyCardAction: reveal }));
-vi.mock("./review-actions", () => ({ saveStudyReviewAction: save }));
+vi.mock("./review-request", () => ({ submitStudyReview: save }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 const content: StudyCardContent = {
   mode: "cloze",
@@ -47,6 +47,7 @@ function mount(locale: "es" | "en" = "es", itemId = "item") {
   );
 }
 describe("study reveal and rating controls", () => {
+  afterEach(() => vi.restoreAllMocks());
   beforeEach(() => {
     reveal.mockReset().mockResolvedValue(revealed);
     save.mockReset().mockImplementation(async (_previous, data: FormData) => ({
@@ -298,5 +299,52 @@ describe("study reveal and rating controls", () => {
     expect(refresh).toHaveBeenCalledTimes(1);
     expect(screen.queryByText(content.answerText)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bien" })).toBeDisabled();
+  });
+  it("preserves the revealed card offline and never sends automatically on reconnect", async () => {
+    const connection = vi.spyOn(navigator, "onLine", "get").mockReturnValue(true);
+    mount();
+    fireEvent.click(screen.getByRole("button", { name: "Revelar respuesta" }));
+    await screen.findByText(content.answerText);
+    connection.mockReturnValue(false);
+    act(() => window.dispatchEvent(new Event("offline")));
+    expect(screen.getByText(es.PracticeCard.offlineHint)).toBeVisible();
+    for (const name of ["Otra vez", "Difícil", "Bien", "Fácil"])
+      expect(screen.getByRole("button", { name })).toBeDisabled();
+    expect(screen.getByText(content.answerText)).toBeVisible();
+    connection.mockReturnValue(true);
+    act(() => window.dispatchEvent(new Event("online")));
+    expect(save).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Bien" })).toBeEnabled();
+    expect(screen.getByTestId("review-save-status")).toBeEmptyDOMElement();
+  });
+  it("recovers a rejected reveal transport instead of unmounting the card", async () => {
+    reveal
+      .mockRejectedValueOnce(new Error("PRIVATE_NETWORK_DETAIL"))
+      .mockResolvedValueOnce(revealed);
+    mount();
+    fireEvent.click(screen.getByRole("button", { name: "Revelar respuesta" }));
+    await screen.findByRole("alert");
+    expect(screen.queryByText("PRIVATE_NETWORK_DETAIL")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar revelado" }));
+    await screen.findByText(content.answerText);
+  });
+  it("retries an unknown timeout outcome with the same intent and refreshes only after a receipt", async () => {
+    save.mockResolvedValueOnce({ requestId: reviewKey, error: "timeout" });
+    mount();
+    fireEvent.click(screen.getByRole("button", { name: "Revelar respuesta" }));
+    await screen.findByText(content.answerText);
+    fireEvent.click(screen.getByRole("button", { name: "Bien" }));
+    await screen.findByText(es.PracticeCard.saveErrors.timeout);
+    expect(refresh).not.toHaveBeenCalled();
+    expect(screen.getByText(content.answerText)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Fácil" })).toBeDisabled();
+    expect(screen.getByTestId("review-save-status")).toBeEmptyDOMElement();
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar guardado" }));
+    await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
+    expect(Object.fromEntries(save.mock.calls[0]![1] as FormData)).toEqual(
+      Object.fromEntries(save.mock.calls[1]![1] as FormData),
+    );
+    expect(screen.getByRole("button", { name: "Bien" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Recargar sesión" })).toBeEnabled();
   });
 });

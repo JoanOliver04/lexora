@@ -94,6 +94,8 @@
     "saveHint": "Your rating is saved before moving to the next item. Wait for confirmation before closing the tab.",
     "saving": "Saving review…",
     "reviewSaved": "Last review saved: {rating}.",
+    "offlineHint": "You are offline. This tab keeps the card, but ratings cannot be sent. Reconnect and retry; nothing will be sent automatically.",
+    "retrySave": "Retry save",
     "saveErrors": {
       "invalid-input": "The rating could not be validated. Reload the session before continuing.",
       "not-found": "This session is no longer available. Return to Today to continue.",
@@ -103,7 +105,10 @@
       "idempotency-conflict": "This attempt already belongs to another review. No other rating has been saved. Reload the session.",
       "revision-conflict": "The state has changed since you revealed the answer. It has not been overwritten. Reload the session.",
       "scheduler-mismatch": "This state uses another scheduler version. Your memory has not been recalculated or migrated.",
-      "generic": "The save could not be confirmed. The card and rating are preserved; select the same rating to retry without duplication."
+      "generic": "The save could not be confirmed. It may have been saved on the server. The card and rating are preserved; retry the same review without duplication.",
+      "offline": "The connection was lost. The save cannot be confirmed. Do not close or reload this tab; reconnect and retry the same review.",
+      "timeout": "Confirmation took too long. The review may have been saved. The attempt is preserved: retry without changing the rating or reloading the tab.",
+      "unauthenticated": "Your sign-in session has expired. Reload to sign in again and check your saved progress."
     },
     "ratings": {
       "again": {

@@ -88,14 +88,10 @@ test("ratings save once before advancing and survive closing the confirmed tab",
     const blocked = new Promise<void>((resolve) => {
       release = resolve;
     });
-    await page.route("**/app/study/**", async (route) => {
+    await page.route("**/api/study/reviews", async (route) => {
       const request = route.request();
       const body = request.postData() ?? "";
-      if (
-        request.method() === "POST" &&
-        request.headers()["next-action"] &&
-        body.includes("idempotencyKey")
-      ) {
+      if (request.method() === "POST" && body.includes("idempotencyKey")) {
         captured.push({ url: request.url(), body, headers: request.headers() });
         if (captured.length === 1) await blocked;
       }
@@ -144,7 +140,6 @@ test("ratings save once before advancing and survive closing the confirmed tab",
     const original = captured[0]!;
     const replay = await page.request.post(original.url, {
       headers: {
-        "next-action": original.headers["next-action"]!,
         "content-type": original.headers["content-type"]!,
         origin: new URL(original.url).origin,
       },

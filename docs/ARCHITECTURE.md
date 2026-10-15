@@ -23,6 +23,9 @@ están en [ADR-001](adrs/ADR-001-monolito-modular-clean-architecture.md) y
 > no hay memoria. LEX-6.7 conecta la intención a `saveSessionReview`, que
 > reautoriza sesión/primer pendiente y reutiliza el commit atómico existente.
 > La UI bloquea el envío y solo cambia de frente tras confirmación del servidor.
+> LEX-6.8 usa un contrato HTTP de guardado con timeout, reintento idempotente
+> manual y validación de origen. El cliente refresca la ruta solo tras recibir
+> confirmación, sin cola offline ni cancelación implícita del commit del servidor.
 > Las secciones
 > marcadas como *pendiente* se completan cuando la fase correspondiente las
 > implemente.

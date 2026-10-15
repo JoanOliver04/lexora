@@ -1,5 +1,9 @@
 # LEX-6.7 — Guardado inmediato de valoraciones
 
+> Checkpoint posterior, 2026-10-15: trabajo conservado en el commit local
+> `9f90b58`, sin push ni despliegue. El informe siguiente registra el cierre
+> original del 2026-10-11, que todavía no tenía commit.
+
 **Fecha:** 2026-10-11  
 **Rama / base:** `feat/lex-6-7-immediate-review-save` / `8bce8ae`  
 **Estado:** `HECHO` con evidencia local y revisión independiente.

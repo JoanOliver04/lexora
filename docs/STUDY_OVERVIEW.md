@@ -324,7 +324,8 @@ mostrar y ausencia de intervalos en el frente. Evidencia en
 
 ## Guardado inmediato — LEX-6.7
 
-`saveStudyReviewAction` obtiene dueño, zona, reloj y configuración del servidor.
+El límite de servidor obtiene dueño, zona, reloj y configuración del servidor
+(`saveStudyReviewRequest` desde LEX-6.8).
 Solo acepta la intención: sesión, ítem, rating, revisión observada y clave UUID
 creada tras revelar. `saveSessionReview` exige sesión propia activa y el primer
 pendiente de la cola vigente; el contenido debe seguir siendo estudiable.
@@ -349,3 +350,38 @@ Pruebas de aplicación, acción, UI y Supabase local cubren autenticación, RLS,
 revisiones, replay y carreras. El navegador comprueba pending, las cuatro
 valoraciones, replay HTTP y persistencia al cerrar la pestaña confirmada.
 Evidencia en [`evidence/LEX-6.7.md`](evidence/LEX-6.7.md).
+
+## Recuperación de guardado — LEX-6.8
+
+El guardado usa `POST /api/study/reviews` y un adaptador `review-request.ts` con
+timeout de 15 segundos mediante `AbortController`. Se eligió un contrato HTTP
+explícito para controlar la cancelación de la espera y el refresco; no se intenta
+cancelar ni revertir una transacción que el servidor ya pueda haber confirmado.
+El caso de uso, los filtros RLS y la RPC no cambian. El reveal continúa siendo
+una Server Action de lectura, con recuperación de fallos de transporte.
+
+El endpoint exige el Origin configurado en `NEXT_PUBLIC_SITE_URL`, no uno
+derivado de Host o cabeceras reenviadas. Limita el cuerpo a 2048 bytes reales,
+solo acepta el formato del formulario, rechaza campos obligatorios duplicados
+y no reenvía metadatos adicionales. Verifica identidad en cada petición y
+devuelve 401 si caducó. Todas sus respuestas llevan `private, no-store`.
+
+El recibo se valida antes de usarlo: estructura, clave y rating deben coincidir.
+Un timeout, desconexión o respuesta rota significa resultado desconocido, no
+«repaso no guardado». Se conserva la tarjeta revelada y la misma intención
+(clave, rating, revisión) mientras viva la pestaña. El botón de reintento usa
+esos valores; no permite sustituir el rating ni afirma éxito. Solo un recibo
+válido habilita `router.refresh()`. Mientras llega el frente actualizado, la
+tarjeta confirmada sigue bloqueada y permite recargar si falla ese refresco.
+
+La detección de conexión usa eventos del navegador como indicio, no como prueba
+de acceso al servidor. Sin conexión se bloquean reveal y valoraciones. Perderla
+durante el envío aborta la espera; reconectar solo habilita el reintento manual,
+sin enviar nada automáticamente. Un conflicto confirmado exige recargar desde
+servidor y descarta el reveal anterior, no sobrescribe progreso del otro
+dispositivo. No hay localStorage, IndexedDB, service worker ni cola de repasos.
+
+El intento pendiente no sobrevive a cerrar/recargar la pestaña. La UI lo advierte;
+el progreso que el servidor ya confirmó sí permanece. No se implementa estudio
+offline ni sincronización en segundo plano. Evidencia en
+[`evidence/LEX-6.8.md`](evidence/LEX-6.8.md).

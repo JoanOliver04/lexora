@@ -195,6 +195,12 @@ Un replay debe coincidir en ítem, sesión y rating; funciona aunque el ítem ya
 no esté en la cola. La confirmación visible no devuelve snapshots al cliente
 ni realiza un avance optimista. Ver [STUDY_OVERVIEW.md](STUDY_OVERVIEW.md).
 
+LEX-6.8 conserva esa escritura al añadir un timeout HTTP y recuperación en la
+UI. Abortar la espera no implica rollback del servidor: el resultado es
+desconocido hasta reintentar la misma clave y recibir confirmación. No se cambia
+rating, revisión ni configuración del intento durante ese reintento; no se
+calcula FSRS offline. Un conflicto requiere recargar la cola desde servidor.
+
 Dos garantías que se prueban explícitamente:
 
 - **Idempotencia (LEX-5.10).** Un doble envío o un reintento de red con
