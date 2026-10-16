@@ -72,6 +72,7 @@
     "retry": "Try again"
   },
   "PracticeCard": {
+    "shortcuts": "With focus in the card: Space reveals; 1 Again, 2 Hard, 3 Good and 4 Easy save after reveal. On buttons and checkboxes, use Tab, Shift+Tab, Enter or Space as usual.",
     "showIntervals": "Show approximate intervals",
     "intervalHint": "Scheduler estimates using server time. They may change when saved because time has passed, another review was made or random adjustment (fuzz) applies.",
     "intervalApproximate": "≈ {duration}",

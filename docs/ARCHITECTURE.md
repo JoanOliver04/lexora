@@ -36,6 +36,9 @@ están en [ADR-001](adrs/ADR-001-monolito-modular-clean-architecture.md) y
 > LEX-6.11 muestra un resumen de sesiones pausadas/cerradas con un puerto de
 > historial de solo lectura. Agrega logs confirmados y separa los pendientes
 > actuales de las valoraciones guardadas; no inventa duración ni porcentajes.
+> LEX-6.12 mantiene los atajos en la presentación y solo dentro de la tarjeta
+> con foco. Activan los mismos botones/formularios, sin otro camino de escritura
+> ni listeners globales; la navegación nativa de controles se conserva.
 > Las secciones
 > marcadas como *pendiente* se completan cuando la fase correspondiente las
 > implemente.

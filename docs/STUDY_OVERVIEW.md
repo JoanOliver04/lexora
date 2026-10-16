@@ -500,3 +500,41 @@ Mensajes ES/EN y pruebas de dominio, aplicación, ruta, presentación y Supabase
 real cubren duración parcial, datos legados, más de 1.000 eventos, RLS B/anon y
 persistencia tras pausa/cierre. Evidencia:
 [`evidence/LEX-6.11.md`](evidence/LEX-6.11.md).
+
+## Teclado y semántica accesible — LEX-6.12
+
+La tarjeta explica en ES/EN los atajos disponibles: Espacio revela y 1–4
+corresponden a Otra vez/Difícil/Bien/Fácil. `useStudyShortcuts` escucha solo su
+elemento raíz, no el documento. Al salir de la tarjeta dejan de actuar; tampoco
+interceptan botones, enlaces, inputs, casillas, otros controles o contenido
+editable. Ignoran repetición de una tecla mantenida, composición IME, eventos
+cancelados y modificadores. No hay atajo de edición ni nuevos ajustes globales.
+
+Cada atajo activa el botón nativo correspondiente, con `aria-keyshortcuts` y
+comprobación de `:disabled`, incluidos fieldsets ancestros. Mantiene formularios,
+rating, recibo, revisión e idempotencia existentes. Antes de revelar o sin preview
+compatible no guarda; durante guardado, cambio de sesión u offline permanece
+bloqueado. Un reintento incierto solo admite la misma valoración, no crea una
+intención distinta. No calcula memoria ni acumula operaciones offline.
+
+Tab, Mayús+Tab, Intro y Espacio conservan su comportamiento nativo en los
+controles. Frente y respuesta reciben foco programático, sin añadir pasos de
+tabulación: sus headings describen respectivamente el prompt/instrucción y la
+respuesta autorizada. El contenido de respuesta no está presente en DOM, payload
+inicial ni árbol accesible antes del reveal. No se convierte toda la tarjeta en
+una región live: el estado de guardado anuncia solo mensajes breves y completos.
+
+El siguiente frente toma el foco tras confirmación; si no queda tarjeta, lo toma
+el estado de guardado. Pausa/cierre enfocan el heading del resumen, y un error de
+cambio de sesión enfoca el bloque de recuperación. Actualizar el resumen no roba
+el foco: su botón usa `aria-disabled` y guarda de activación durante pending, en
+vez de perder foco por `disabled`. Una consulta manual no reanuda ni guarda.
+
+Se reutilizan los targets de al menos 44 px del sistema de controles, el foco
+visible y el CSS global de `prefers-reduced-motion`; no se añade animación.
+Los tests de navegador comprueban tamaños y duración reducida efectiva, recorrido
+con teclado ES/EN, árbol accesible, desconexión, guardado retenido y persistencia
+real. La emulación móvil y las aserciones del árbol accesible no equivalen a
+una prueba en teléfono físico o a escuchar un lector de pantalla real; esa
+validación manual sigue pendiente. Evidencia:
+[`evidence/LEX-6.12.md`](evidence/LEX-6.12.md).

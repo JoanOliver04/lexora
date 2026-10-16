@@ -19,6 +19,7 @@ import { submitStudyReview } from "./review-request";
 import type { ReviewFormState } from "./review-state";
 import { changeStudySessionAction, type SessionChangeState } from "./session-actions";
 import { SessionControls, type SessionControlInfo } from "./session-controls";
+import { useStudyShortcuts } from "./use-study-shortcuts";
 
 async function changeWithRecovery(
   previous: SessionChangeState,
@@ -86,6 +87,7 @@ export function StudyCardView({
         tabIndex={-1}
         role="status"
         aria-live="polite"
+        aria-atomic="true"
         data-testid="review-save-status"
         className="text-sm text-(--color-ink-muted)"
       >
@@ -156,6 +158,8 @@ function StudyCardControls({
   const errorRef = useRef<HTMLDivElement>(null);
   const reviewErrorRef = useRef<HTMLDivElement>(null);
   const submitLock = useRef(false);
+  const revealLock = useRef(false);
+  const shortcutRef = useStudyShortcuts();
   const online = useSyncExternalStore(
     subscribeConnection,
     () => navigator.onLine,
@@ -169,6 +173,9 @@ function StudyCardControls({
     promptHeading.current?.focus();
   }, []);
   useEffect(() => {
+    revealLock.current = pending;
+  }, [pending, state]);
+  useEffect(() => {
     submitLock.current = reviewPending || confirmed;
     if (reviewError && !reviewPending) reviewErrorRef.current?.focus();
   }, [reviewPending, reviewError, reviewState, confirmed]);
@@ -179,6 +186,7 @@ function StudyCardControls({
   const content = state.content ?? card.prompt;
   return (
     <section
+      ref={shortcutRef}
       aria-labelledby="study-card-heading"
       data-testid="study-card"
       className="flex min-w-0 flex-col gap-4 rounded-(--radius-surface) border border-(--color-border) bg-(--color-surface) p-5"
@@ -188,14 +196,22 @@ function StudyCardControls({
           ref={promptHeading}
           tabIndex={-1}
           id="study-card-heading"
+          aria-describedby="study-prompt-text study-recall-instruction study-shortcuts"
           className="text-xl font-semibold"
         >
           {t("heading")}
         </h2>
         <p className="text-sm font-medium text-(--color-ink-muted)">{t(`modes.${content.mode}`)}</p>
       </header>
-      <p className="text-sm leading-relaxed text-(--color-ink-muted)">{t("recallInstruction")}</p>
-      <PracticeItemPrompt content={content} hintLabel={t("hintLabel")} />
+      <p id="study-recall-instruction" className="text-sm leading-relaxed text-(--color-ink-muted)">
+        {t("recallInstruction")}
+      </p>
+      <div id="study-prompt-text">
+        <PracticeItemPrompt content={content} hintLabel={t("hintLabel")} />
+      </div>
+      <p id="study-shortcuts" className="text-sm text-(--color-ink-muted)">
+        {t("shortcuts")}
+      </p>
       {!online && (
         <p role="status" className="text-sm">
           {t("offlineHint")}
@@ -214,11 +230,19 @@ function StudyCardControls({
         </div>
       )}
       {!state.content && (
-        <form action={action}>
+        <form
+          action={action}
+          onSubmit={(event) => {
+            if (revealLock.current || !online) event.preventDefault();
+            else revealLock.current = true;
+          }}
+        >
           <input type="hidden" name="locale" value={locale} />
           <input type="hidden" name="sessionId" value={sessionId} />
           <input type="hidden" name="practiceItemId" value={card.practiceItemId} />
           <Button
+            data-study-shortcut="Space"
+            aria-keyshortcuts="Space"
             type="submit"
             disabled={pending || !online}
             aria-describedby="study-recall-hint"
@@ -233,10 +257,20 @@ function StudyCardControls({
       </p>
       {state.content && (
         <div className="flex min-w-0 flex-col gap-3 border-t border-(--color-border) pt-4">
-          <h3 ref={answerHeading} tabIndex={-1} className="text-lg font-semibold">
+          <h3
+            ref={answerHeading}
+            tabIndex={-1}
+            aria-describedby="study-answer-text study-shortcuts"
+            className="text-lg font-semibold"
+          >
             {t("answerHeading")}
           </h3>
-          <PracticeItemAnswer content={state.content} clozeAnswersLabel={t("clozeAnswersLabel")} />
+          <div id="study-answer-text">
+            <PracticeItemAnswer
+              content={state.content}
+              clozeAnswersLabel={t("clozeAnswersLabel")}
+            />
+          </div>
           {state.content.exampleText && (
             <div>
               <h4 className="font-medium">{t("exampleLabel")}</h4>
@@ -330,11 +364,13 @@ function StudyCardControls({
         >
           <legend className="mb-3 font-medium">{t("ratingHeading")}</legend>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {REVIEW_RATINGS.map((value) => {
+            {REVIEW_RATINGS.map((value, index) => {
               const interval = state.preview?.intervals.find((entry) => entry.rating === value);
               return (
                 <div key={value} className="min-w-0 space-y-2">
                   <Button
+                    data-study-shortcut={index + 1}
+                    aria-keyshortcuts={String(index + 1)}
                     type="submit"
                     name="rating"
                     value={value}

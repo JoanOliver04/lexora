@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 import type { StudySessionStatus } from "@/modules/study/domain/study-session";
 import { Button, FormError } from "@/shared/presentation/components";
 import type { SessionChangeState } from "./session-actions";
@@ -30,6 +31,10 @@ export function SessionControls({
 }) {
   const t = useTranslations("StudySession");
   const router = useRouter();
+  const errorRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (state.error) errorRef.current?.focus();
+  }, [state]);
   if (session.status === "completed" || session.status === "abandoned") return null;
   return (
     <section
@@ -47,9 +52,11 @@ export function SessionControls({
         </p>
       )}
       {state.error && (
-        <FormError id="session-change-error">
-          <p>{t(`changeErrors.${state.error}`)}</p>
-        </FormError>
+        <div ref={errorRef} tabIndex={-1}>
+          <FormError id="session-change-error">
+            <p>{t(`changeErrors.${state.error}`)}</p>
+          </FormError>
+        </div>
       )}
       {state.error && (
         <Button variant="secondary" onClick={() => router.refresh()} disabled={pending || blocked}>

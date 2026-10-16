@@ -115,6 +115,7 @@ describe("study reveal and rating controls", () => {
     await waitFor(() =>
       expect(screen.getByText(en.StudySession.changeErrors.generic)).toBeVisible(),
     );
+    expect(screen.getByRole("alert").parentElement).toHaveFocus();
     expect(screen.getByRole("button", { name: "Complete this session" })).toBeEnabled();
     fireEvent.click(screen.getByRole("button", { name: "Check session status" }));
     expect(refresh).toHaveBeenCalledTimes(1);
@@ -437,5 +438,138 @@ describe("study reveal and rating controls", () => {
     );
     expect(screen.getByRole("button", { name: "Bien" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Recargar sesión" })).toBeEnabled();
+  });
+  it.each([
+    ["1", "again"],
+    ["2", "hard"],
+    ["3", "good"],
+    ["4", "easy"],
+  ])("reveals with Space and saves rating %s through the same form", async (key, rating) => {
+    mount();
+    const heading = screen.getByRole("heading", { name: es.PracticeCard.heading });
+    expect(heading).toHaveFocus();
+    expect(heading).toHaveAccessibleDescription(/We ___ to work/);
+    expect(heading).not.toHaveAccessibleDescription(/We walk to work/);
+    fireEvent.keyDown(heading, { key });
+    expect(save).not.toHaveBeenCalled();
+    fireEvent.keyDown(heading, { key: " " });
+    const answer = await screen.findByRole("heading", { name: "Respuesta" });
+    await waitFor(() => expect(answer).toHaveFocus());
+    expect(answer).toHaveAccessibleDescription(/We walk to work/);
+    expect(screen.getByRole("button", { name: "Bien" })).toHaveAttribute("aria-keyshortcuts", "3");
+    fireEvent.keyDown(answer, { key });
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+    expect((save.mock.calls[0]![1] as FormData).get("rating")).toBe(rating);
+    fireEvent.keyDown(answer, { key });
+    expect(save).toHaveBeenCalledTimes(1);
+  });
+  it.each([
+    { repeat: true },
+    { isComposing: true },
+    { altKey: true },
+    { ctrlKey: true },
+    { metaKey: true },
+    { shiftKey: true },
+  ])("ignores repeated, composing or modified shortcut events: %j", (options) => {
+    mount();
+    fireEvent.keyDown(screen.getByRole("heading", { name: es.PracticeCard.heading }), {
+      key: " ",
+      ...options,
+    });
+    expect(reveal).not.toHaveBeenCalled();
+  });
+  it("does not intercept native controls, editable fields or keys outside the card", async () => {
+    mount();
+    fireEvent.keyDown(document.body, { key: " " });
+    fireEvent.keyDown(screen.getByRole("button", { name: "Revelar respuesta" }), { key: " " });
+    for (const tag of ["input", "textarea", "select", "button", "a"]) {
+      const control = document.createElement(tag);
+      screen.getByTestId("study-card").append(control);
+      fireEvent.keyDown(control, { key: " " });
+      control.remove();
+    }
+    const editable = document.createElement("div");
+    editable.setAttribute("contenteditable", "true");
+    screen.getByTestId("study-card").append(editable);
+    fireEvent.keyDown(editable, { key: " " });
+    editable.remove();
+    expect(reveal).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Revelar respuesta" }));
+    const checkbox = await screen.findByRole("checkbox");
+    fireEvent.keyDown(checkbox, { key: "3" });
+    fireEvent.keyDown(checkbox, { key: " " });
+    expect(save).not.toHaveBeenCalled();
+  });
+  it("blocks keyboard activation offline and while a lifecycle change disables the card", async () => {
+    const connection = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    let finish!: (state: SessionChangeState) => void;
+    change.mockImplementation(
+      () => new Promise<SessionChangeState>((resolve) => (finish = resolve)),
+    );
+    mount("es", "item", { status: "active", canComplete: false });
+    const heading = screen.getByRole("heading", { name: es.PracticeCard.heading });
+    fireEvent.keyDown(heading, { key: " " });
+    expect(reveal).not.toHaveBeenCalled();
+    connection.mockReturnValue(true);
+    act(() => window.dispatchEvent(new Event("online")));
+    fireEvent.click(screen.getByRole("button", { name: "Pausar sesión" }));
+    fireEvent.keyDown(heading, { key: " " });
+    expect(reveal).not.toHaveBeenCalled();
+    await act(async () => finish({}));
+  });
+  it("respects an already cancelled event and removes the listener when the card unmounts", () => {
+    const view = mount();
+    const heading = screen.getByRole("heading", { name: es.PracticeCard.heading });
+    const cancelled = new KeyboardEvent("keydown", { key: " ", bubbles: true, cancelable: true });
+    cancelled.preventDefault();
+    fireEvent(heading, cancelled);
+    expect(reveal).not.toHaveBeenCalled();
+    view.unmount();
+    fireEvent.keyDown(heading, { key: " " });
+    expect(reveal).not.toHaveBeenCalled();
+  });
+  it("blocks repeated Space events during reveal and permits an explicit retry after failure", async () => {
+    let finish!: (state: { error: "generic" }) => void;
+    reveal.mockImplementation(() => new Promise((resolve) => (finish = resolve)));
+    mount();
+    const heading = screen.getByRole("heading", { name: es.PracticeCard.heading });
+    act(() => {
+      fireEvent.keyDown(heading, { key: " " });
+      fireEvent.keyDown(heading, { key: " " });
+    });
+    await waitFor(() => expect(reveal).toHaveBeenCalledTimes(1));
+    await act(async () => finish({ error: "generic" }));
+    const error = screen.getByRole("alert").parentElement!;
+    expect(error).toHaveFocus();
+    reveal.mockResolvedValueOnce(revealed);
+    fireEvent.keyDown(error, { key: " " });
+    await screen.findByRole("heading", { name: "Respuesta" });
+    expect(reveal).toHaveBeenCalledTimes(2);
+  });
+  it("retains the exact rating on a keyboard retry and blocks double key submissions", async () => {
+    let finish!: (state: ReviewFormState) => void;
+    save.mockImplementation(() => new Promise<ReviewFormState>((resolve) => (finish = resolve)));
+    mount();
+    fireEvent.keyDown(screen.getByRole("heading", { name: es.PracticeCard.heading }), { key: " " });
+    const answer = await screen.findByRole("heading", { name: "Respuesta" });
+    act(() => {
+      fireEvent.keyDown(answer, { key: "3" });
+      fireEvent.keyDown(answer, { key: "3" });
+      fireEvent.keyDown(answer, { key: "4" });
+    });
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+    await act(async () => finish({ error: "timeout", requestId: reviewKey }));
+    const error = screen.getByRole("alert").parentElement!;
+    expect(error).toHaveFocus();
+    fireEvent.keyDown(error, { key: "4" });
+    expect(save).toHaveBeenCalledTimes(1);
+    fireEvent.keyDown(error, { key: "3" });
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(2));
+    expect(Object.fromEntries(save.mock.calls[0]![1] as FormData)).toEqual(
+      Object.fromEntries(save.mock.calls[1]![1] as FormData),
+    );
+    await act(async () => finish({ error: "revision-conflict", requestId: reviewKey }));
+    fireEvent.keyDown(error, { key: "3" });
+    expect(save).toHaveBeenCalledTimes(2);
   });
 });

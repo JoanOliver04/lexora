@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useRef, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { SessionSummary } from "@/modules/study/application/session-summary";
@@ -12,13 +12,17 @@ export function SessionSummaryView({ summary }: { summary: SessionSummary | null
   const tCard = useTranslations("PracticeCard");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    heading.current?.focus();
+  }, []);
   return (
     <section
       data-testid="session-summary"
       aria-labelledby="session-summary-title"
       className="flex min-w-0 flex-col gap-4 rounded-(--radius-surface) border border-(--color-border) bg-(--color-surface) p-5"
     >
-      <h2 id="session-summary-title" className="text-xl font-semibold">
+      <h2 ref={heading} tabIndex={-1} id="session-summary-title" className="text-xl font-semibold">
         {t("title")}
       </h2>
       {summary === null ? (
@@ -95,8 +99,11 @@ export function SessionSummaryView({ summary }: { summary: SessionSummary | null
       )}
       <Button
         variant="secondary"
-        disabled={pending}
-        onClick={() => startTransition(() => router.refresh())}
+        aria-disabled={pending}
+        className="aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+        onClick={() => {
+          if (!pending) startTransition(() => router.refresh());
+        }}
       >
         {t(pending ? "refreshing" : "refresh")}
       </Button>

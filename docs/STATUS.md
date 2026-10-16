@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
 **Última actualización:** 2026-10-16
-**Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (11/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (12/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M6 — Alfa personal multidispositivo — `EN PROCESO`. M5 y M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
-**Tarea activa:** ninguna; LEX-6.11 `HECHO` localmente. Siguiente LEX-6.12, sin iniciar.
-**Estado de la tarea:** resumen de sesiones pausadas/cerradas con logs confirmados, ítems nuevos distintos, ratings y duración registrada; pendientes actuales separados. Gate general 723 PASS + 1 omitida; pgTAP 18/489 PASS; E2E 120 PASS + 4 omitidas sin reintentos. Lectura real de 1.001 logs y RLS B/anon verificadas; revisión independiente sin hallazgos pendientes. Sin migración, dependencia o cambio de ADR. Producción anterior intacta; guarda de LEX-6.10 aún pendiente allí. Q-005/Q-006/Q-008 sin cambios. Físico y lector de pantalla permanecen en sus gates específicos.
-**Rama / base:** `feat/lex-6-11-session-summary` / `308e400`. LEX-6.10 conservada en ese commit local. Resumen de registros confirmados y pendientes actuales; sin push, CI remota ni cambios en producción.
+**Tarea activa:** ninguna; LEX-6.12 `HECHO` localmente. Siguiente LEX-6.13, sin iniciar.
+**Estado de la tarea:** atajos de tarjeta con foco, controles nativos preservados y semántica accesible sin revelar respuestas antes de tiempo. Foco de resumen/error y refresco sin perderlo. Gate general 738 PASS + 1 omitida; pgTAP 18/489 PASS; E2E 124 PASS + 4 omitidas sin reintentos. Revisión independiente sin hallazgos pendientes. Sin migración, dependencia o cambio de ADR. Producción anterior intacta; guarda de LEX-6.10 aún pendiente allí. Q-005/Q-006/Q-008 sin cambios. Teléfono físico y lector de pantalla real no probados; el árbol accesible no sustituye esa aceptación manual.
+**Rama / base:** `feat/lex-6-12-study-accessibility` / `6c5c106`. LEX-6.11 conservada en ese commit local. Teclado y accesibilidad del flujo existente; sin push, CI remota ni cambios en producción.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,35 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-6.12 — Teclado y accesibilidad del estudio — `HECHO` (local)
+
+Espacio y 1–4 activan los controles existentes solo dentro de la tarjeta con
+foco, sin interceptar botones, inputs, casillas o escritura; repetición, IME y
+modificadores ignorados. Ayuda ES/EN y `aria-keyshortcuts`. Respeta disabled,
+guardado pendiente, offline y reintento de la misma intención; no crea otro
+camino de escritura. Foco del frente/respuesta descrito, sin respuesta en DOM
+ni árbol accesible inicial; anuncios breves y completos de guardado.
+
+```text
+LEXORA_DB_TESTS=1 pnpm check             exit 0; 738 passed + 1 skipped, build
+pnpm db:test                           18 files / 489 assertions, PASS
+CI=1 pnpm e2e --workers=2 --retries=0   124 passed + 4 skipped, exit 0
+```
+
+Quince tests unitarios nuevos y cuatro variantes E2E ES/EN en escritorio/móvil
+emulado. Recorrido con Tab/Mayús+Tab/Intro/Espacio, bloqueo durante transporte
+retenido y offline, persistencia real Good/Easy, pausa/refresco/reanudación/cierre.
+Foco visible, targets y reduced motion comprobados. El navegador detectó pérdida
+de foco en refresco por disabled; corregido con `aria-disabled` y guarda de
+activación, manteniendo la aserción. Revisión independiente final sin hallazgos.
+Capturas de frente, respuesta y resumen inspeccionadas.
+
+Sin migración, dependencia, cambio de ADR, seed, reset, push o producción. Quedan
+prueba física y lector de pantalla real: la evidencia automatizada no certifica
+esas experiencias ni conformidad WCAG completa. La migración anterior sigue
+pendiente de producción. Evidencia y checklist manual en
+[`evidence/LEX-6.12.md`](evidence/LEX-6.12.md). LEX-6.13 no iniciada.
 
 ### LEX-6.11 — Resumen de sesión — `HECHO` (local)
 
@@ -41,7 +70,7 @@ Sin migración, dependencia, ADR nuevo o modificado, seed, reset, push o producc
 La migración anterior de LEX-6.10 sigue pendiente allí. No requiere acción manual
 para este cierre local; físico y lector de pantalla siguen en sus gates.
 Evidencia: [`evidence/LEX-6.11.md`](evidence/LEX-6.11.md).
-LEX-6.12 no iniciada.
+LEX-6.12 completada después, según el apartado anterior.
 
 ### LEX-6.10 — Ciclo de vida de sesión — `HECHO` (local)
 
@@ -2364,9 +2393,11 @@ contenido real exista, más cara la corrección.
 
 ## Siguiente acción exacta
 
-LEX-6.11 cumple los gates locales, documentada en `evidence/LEX-6.11.md`.
-Entrega conservada en un commit local sobre el checkpoint LEX-6.10 `308e400`.
-Al retomar, revisar esta rama y su historial; siguiente tarea LEX-6.12 según el
+LEX-6.12 cumple los gates automatizados locales y revisión independiente,
+documentada en `evidence/LEX-6.12.md`. Entrega conservada en un commit local
+sobre el checkpoint LEX-6.11 `6c5c106`. Pendiente aceptación física y con lector
+de pantalla real; no se presenta el árbol accesible como prueba de voz.
+Al retomar, revisar esta rama y su historial; siguiente tarea LEX-6.13 según el
 roadmap privado. No se inicia en este cierre. Publicación, CI remota y despliegue
 de esta rama no ejecutados. No seed local, reset remoto ni cambios en producción.
 La nueva migración de guarda de sesión sigue pendiente de producción; aplicar
@@ -2384,7 +2415,7 @@ para esos pasos. No activar sincronización automática de futuras migraciones.
 Ningún reset remoto ni seed local. Ver
 [`LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
 No confundir CI, Ready y aceptación de producción.
-La siguiente tarea del roadmap es **LEX-6.12**, sin comenzar.
+La siguiente tarea del roadmap es **LEX-6.13**, sin comenzar.
 
 ---
 

@@ -30,6 +30,7 @@ describe("session summary view", () => {
   it("separates stored events, distinct new items, partial recorded time and current limits", () => {
     mount(summary);
     expect(screen.getByTestId("summary-reviews")).toHaveTextContent("4");
+    expect(screen.getByRole("heading", { name: es.SessionSummary.title })).toHaveFocus();
     expect(screen.getByTestId("summary-new-items")).toHaveTextContent("2");
     for (const rating of ["again", "hard", "good", "easy"])
       expect(screen.getByTestId(`summary-rating-${rating}`)).toHaveTextContent("1");
