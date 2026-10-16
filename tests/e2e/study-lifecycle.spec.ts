@@ -88,6 +88,11 @@ test("pause and fresh resume preserve saved reviews, while terminal sessions sta
     await page.getByRole("button", { name: "Pausar sesión" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Sesión pausada" })).toBeVisible();
     await expect(page.getByTestId("study-card")).toHaveCount(0);
+    const summary = page.getByTestId("session-summary");
+    await expect(summary.getByTestId("summary-reviews")).toHaveText("1");
+    await expect(summary.getByTestId("summary-new-items")).toHaveText("1");
+    await expect(summary.getByTestId("summary-rating-good")).toHaveText("1");
+    await expect(summary.getByTestId("summary-duration")).toHaveText("No registrado");
     expect(
       await checked(
         client.from("study_sessions").select("status, ended_at").eq("id", sessionId).single(),
@@ -114,6 +119,8 @@ test("pause and fresh resume preserve saved reviews, while terminal sessions sta
     const open = page.getByTestId("open-sessions");
     await open.getByRole("link", { name: /Sesión pausada/ }).click();
     await expect(page).toHaveURL(new RegExp(`${sessionPath}$`));
+    await expect(summary.getByTestId("summary-available")).toHaveText("0");
+    await expect(summary.getByTestId("summary-hidden-new")).toHaveText("1");
     // A second device edits the pending content while this session is paused.
     await checked(client.from("practice_items").update({ enabled: false }).eq("id", second));
     await checked(
@@ -125,8 +132,13 @@ test("pause and fresh resume preserve saved reviews, while terminal sessions sta
         .update({ daily_new_limit: 5, maximum_reviews_per_day: null })
         .eq("course_id", courseId),
     );
+    await summary.getByRole("button", { name: "Actualizar resumen" }).click();
+    await expect(summary.getByTestId("summary-available")).toHaveText("1");
+    await expect(summary.getByTestId("summary-reviews")).toHaveText("1");
+    await expect(page.getByTestId("study-card")).toHaveCount(0);
     await page.getByRole("button", { name: "Reanudar sesión" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Sesión activa" })).toBeVisible();
+    await expect(summary).toHaveCount(0);
     await expect(page.getByText("Current replacement front", { exact: true })).toBeVisible();
     await expect(page.getByText("Old pending front", { exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Bien", exact: true })).toBeDisabled();
@@ -141,6 +153,11 @@ test("pause and fresh resume preserve saved reviews, while terminal sessions sta
     await expect(page.getByRole("button", { name: "Completar esta sesión" })).toBeEnabled();
     await page.getByRole("button", { name: "Completar esta sesión" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Sesión completada" })).toBeVisible();
+    await expect(summary.getByTestId("summary-reviews")).toHaveText("2");
+    await expect(summary.getByTestId("summary-new-items")).toHaveText("2");
+    await expect(summary.getByTestId("summary-rating-good")).toHaveText("2");
+    await expect(summary.getByTestId("summary-duration")).toHaveText("No registrado");
+    await expect(summary.getByText(/También hay ítems programados/)).toBeVisible();
     await expect(page.getByTestId("session-controls")).toHaveCount(0);
     await expect(page.getByText(/Puede haber repasos futuros u ocultos/)).toBeVisible();
     await page.screenshot({
@@ -171,6 +188,11 @@ test("pause and fresh resume preserve saved reviews, while terminal sessions sta
     await expect(page.getByRole("button", { name: "Reanudar sesión" })).toBeEnabled();
     await page.getByRole("button", { name: "Abandonar sesión" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Sesión abandonada" })).toBeVisible();
+    await expect(summary.getByTestId("summary-reviews")).toHaveText("0");
+    await expect(summary.getByTestId("summary-new-items")).toHaveText("0");
+    await expect(
+      summary.getByText("Esta sesión todavía no tiene repasos confirmados."),
+    ).toBeVisible();
     await expect(page.getByTestId("study-card")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Reanudar sesión" })).toHaveCount(0);
     expect(

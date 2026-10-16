@@ -7,7 +7,7 @@ Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa est
 > config v1, esquema, RLS, alta, cola, cálculo, commit, idempotencia,
 > concurrencia, reloj, snapshots y auditoría con ítems importados.
 > `ts-fsrs@5.4.2`. La UI de FASE 6 reutiliza estos contratos sin recalcular FSRS
-> en el navegador; guardado, recuperación, pasos cortos y ciclo de sesión integrados hasta LEX-6.10.
+> en el navegador; guardado, recuperación, pasos cortos, ciclo y resumen de sesión integrados hasta LEX-6.11.
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -215,6 +215,14 @@ sobre la sesión propia y exige `active`, antes de bloquear la memoria. Una paus
 que ganó impide la escritura; si ganó el repaso, la pausa espera a su commit.
 Sin sesión asociada se conserva el camino existente. La firma, permisos,
 snapshots y razones del payload no cambian. No se recalcula FSRS en SQL.
+
+LEX-6.11 lee los logs ligados a una sesión pausada/cerrada para contar repasos,
+ítems introducidos desde New y las cuatro valoraciones. No llama al scheduler,
+no calcula un porcentaje de dominio ni presenta recuperabilidad predicha como
+recuerdo observado. La duración es solo la suma de `duration_ms` válidos, con
+cobertura explícita si faltan registros; nunca usa la estimación de Hoy ni el
+tiempo entre inicio y cierre. Los pendientes proceden de la cola actual del
+alcance guardado, no de restar los repasos a un total inicial persistido.
 
 Dos garantías que se prueban explícitamente:
 

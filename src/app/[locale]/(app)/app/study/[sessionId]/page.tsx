@@ -8,6 +8,13 @@ import { getStudySessionCard } from "@/modules/study/application/study-card";
 import { StudyCardView } from "../study-card-view";
 import { StudyStepWait } from "../study-step-wait";
 import { FormError } from "@/shared/presentation/components";
+import {
+  getStudySessionSummary,
+  type SessionSummary,
+} from "@/modules/study/application/session-summary";
+import { StudyError } from "@/modules/study/application/study-error";
+import { SessionSummaryView } from "../session-summary-view";
+import { isIanaTimeZone } from "@/modules/study/domain/study-day";
 
 export default async function StudySessionPage({
   params,
@@ -27,6 +34,27 @@ export default async function StudySessionPage({
     timeZone: context.timeZone,
   });
   if (!result.ok && result.reason === "not-found") notFound();
+  let summary: SessionSummary | null = null;
+  const showSummary = result.ok && result.session.status !== "active";
+  if (showSummary) {
+    try {
+      const loaded = await getStudySessionSummary(
+        context.sessions,
+        context.sessionHistory,
+        context.dailyQueue,
+        {
+          ownerId: context.ownerId,
+          sessionId,
+          now,
+          timeZone: context.timeZone,
+        },
+      );
+      if (loaded.ok) summary = loaded.summary;
+    } catch (error) {
+      if (!(error instanceof StudyError)) throw error;
+      console.error("Study session summary failed", error.kind);
+    }
+  }
   const t = await getTranslations("StudySession");
   const tToday = await getTranslations("Today");
   const tCard = await getTranslations("PracticeCard");
@@ -50,11 +78,13 @@ export default async function StudySessionPage({
           <p role="status">{t("saved")}</p>
           <p className="text-sm text-(--color-ink-muted)">
             {t("startedAt", {
-              date: new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "es-ES", {
-                timeZone: context.timeZone,
-                dateStyle: "medium",
-                timeStyle: "short",
-              }).format(result.session.startedAt),
+              date: isIanaTimeZone(context.timeZone)
+                ? new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "es-ES", {
+                    timeZone: context.timeZone,
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }).format(result.session.startedAt)
+                : result.session.startedAt.toISOString(),
             })}
           </p>
           <p className="font-medium">
@@ -101,6 +131,7 @@ export default async function StudySessionPage({
       {result.ok && result.queue?.entries.length === 0 && result.queue.nextLearningDueAt && (
         <StudyStepWait remainingMs={result.queue.nextLearningDueAt.getTime() - now.getTime()} />
       )}
+      {showSummary && <SessionSummaryView summary={summary} />}
       {result.ok && result.queue && result.queue.entries.length > 0 && !result.card && (
         <div className="flex flex-col gap-3">
           <p role="status">{tCard("unavailable")}</p>

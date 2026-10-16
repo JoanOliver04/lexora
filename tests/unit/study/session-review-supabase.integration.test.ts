@@ -23,6 +23,8 @@ import {
 } from "@/modules/study/application/study-session";
 import type { StoredLearningState } from "@/modules/study/application/learning-state";
 import { holdLocalSessionRow } from "./local-session-lock";
+import { getStudySessionSummary } from "@/modules/study/application/session-summary";
+import { createSupabaseSessionHistoryRepository } from "@/modules/study/infrastructure/supabase-session-history-repository";
 
 type Client = SupabaseClient<Database>;
 const enabled = process.env["LEXORA_DB_TESTS"] === "1";
@@ -35,6 +37,7 @@ async function checked<T>(query: PromiseLike<{ data: T; error: { message: string
 }
 function ports(client: Client) {
   return {
+    history: createSupabaseSessionHistoryRepository(client),
     sessions: createSupabaseStudySessionRepository(client),
     queue: createSupabaseDailyQueueRepository(client),
     cards: createSupabaseStudyCardRepository(client),
@@ -378,6 +381,31 @@ describe.skipIf(!enabled)("Session reviews against local Supabase", () => {
       ok: true,
       session: { status: "paused", endedAt: null },
     });
+    const metadataBeforeSummary = await checked(
+      clientA.from("study_sessions").select("*").eq("id", id).single(),
+    );
+    expect(
+      await getStudySessionSummary(f.sessions, f.history, f.queue, {
+        ownerId,
+        sessionId: id,
+        now,
+        timeZone: "Europe/Madrid",
+      }),
+    ).toMatchObject({
+      ok: true,
+      summary: {
+        reviewCount: 1,
+        newItemCount: 1,
+        ratings: { good: 1, again: 0, hard: 0, easy: 0 },
+        recordedDurationMs: null,
+        timedReviewCount: 0,
+        remaining: { availableCount: 1, hasFutureReviews: true },
+      },
+    });
+    expect(await checked(clientA.from("study_sessions").select("*").eq("id", id).single())).toEqual(
+      metadataBeforeSummary,
+    );
+    expect(await f.memory.getByItem({ ownerId, practiceItemId: fresh[0]! })).toEqual(saved);
     expect(
       await getStudySession(f.sessions, f.queue, {
         ownerId,
@@ -435,6 +463,21 @@ describe.skipIf(!enabled)("Session reviews against local Supabase", () => {
     expect(resumed.ok && resumed.card).toBeNull();
     const done = await transition("complete", "active");
     expect(done).toMatchObject({ ok: true, session: { status: "completed", endedAt: now } });
+    expect(
+      await getStudySessionSummary(f.sessions, f.history, f.queue, {
+        ownerId,
+        sessionId: id,
+        now,
+        timeZone: "Europe/Madrid",
+      }),
+    ).toMatchObject({
+      ok: true,
+      summary: {
+        reviewCount: 1,
+        newItemCount: 1,
+        remaining: { availableCount: 0, hasFutureReviews: true },
+      },
+    });
     expect(await transition("complete", "active", later)).toEqual(done);
     expect(await transition("resume", "completed")).toEqual({
       ok: false,
@@ -706,4 +749,135 @@ describe.skipIf(!enabled)("Session reviews against local Supabase", () => {
       expect((await f.memory.getByItem({ ownerId, practiceItemId: stepItem }))?.revision).toBe(3);
     },
   );
+  it("reads over 1000 session logs with real pagination, partial durations and RLS without writes", async () => {
+    const f = ports(clientA);
+    const id = randomUUID();
+    await f.sessions.create({
+      ownerId,
+      sessionId: id,
+      courseId,
+      scope: { deckIds: [deckId] },
+      startedAt: now,
+    });
+    await f.sessions.transition({
+      ownerId,
+      sessionId: id,
+      expectedStatus: "active",
+      status: "paused",
+      endedAt: null,
+    });
+    const ratings = ["again", "hard", "good", "easy"] as const;
+    const row = (index: number) => ({
+      id: randomUUID(),
+      owner_id: ownerId,
+      study_session_id: id,
+      practice_item_id: itemIds[0]!,
+      idempotency_key: randomUUID(),
+      rating: ratings[index % 4]!,
+      reviewed_at: now.toISOString(),
+      duration_ms: index < 1000 ? 1000 : null,
+      state_before:
+        index === 0 ? { phase: "new" } : index === 1000 ? { legacy: true } : { phase: "learning" },
+      state_after: { phase: "learning" },
+      due_before: now.toISOString(),
+      due_after: later.toISOString(),
+      scheduler_version: "5.4.2",
+      config_version: "v1",
+    });
+    const rows = Array.from({ length: 1001 }, (_, index) => row(index));
+    for (let from = 0; from < rows.length; from += 250)
+      await checked(clientA.from("review_logs").insert(rows.slice(from, from + 250)));
+    await checked(
+      clientA.from("review_logs").insert([
+        { ...row(0), reviewed_at: new Date(now.getTime() + 60_000).toISOString() },
+        { ...row(0), study_session_id: otherSessionId },
+      ]),
+    );
+    const before = {
+      memory: await checked(
+        clientA.from("learning_states").select("*").eq("owner_id", ownerId).order("id"),
+      ),
+      session: await checked(clientA.from("study_sessions").select("*").eq("id", id).single()),
+    };
+    const result = await getStudySessionSummary(f.sessions, f.history, f.queue, {
+      ownerId,
+      sessionId: id,
+      now,
+      timeZone: "Europe/Madrid",
+    });
+    expect(result).toMatchObject({
+      ok: true,
+      summary: {
+        reviewCount: 1001,
+        newItemCount: 1,
+        unclassifiedCount: 1,
+        recordedDurationMs: 1_000_000,
+        timedReviewCount: 1000,
+        ratings: { again: 251, hard: 250, good: 250, easy: 250 },
+      },
+    });
+    const records = await f.history.listReviews({ ownerId, sessionId: id, now });
+    expect(records).toHaveLength(1001);
+    expect(Object.keys(records[0]!).sort()).toEqual([
+      "durationMs",
+      "id",
+      "phaseBefore",
+      "practiceItemId",
+      "rating",
+    ]);
+    for (const client of [clientB, anonymous]) {
+      const alien = ports(client);
+      expect(await alien.history.listReviews({ ownerId, sessionId: id, now })).toEqual([]);
+      expect(
+        await getStudySessionSummary(alien.sessions, alien.history, alien.queue, {
+          ownerId,
+          sessionId: id,
+          now,
+          timeZone: "Europe/Madrid",
+        }),
+      ).toEqual({ ok: false, reason: "not-found" });
+    }
+    expect(
+      await checked(
+        clientA.from("learning_states").select("*").eq("owner_id", ownerId).order("id"),
+      ),
+    ).toEqual(before.memory);
+    expect(await checked(clientA.from("study_sessions").select("*").eq("id", id).single())).toEqual(
+      before.session,
+    );
+    const count = await clientA
+      .from("review_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("study_session_id", id);
+    expect(count.error).toBeNull();
+    expect(count.count).toBe(1002);
+    // Archiving current content changes eligibility, not the session's historical events.
+    await checked(
+      clientA.from("decks").update({ archived_at: now.toISOString() }).eq("id", deckId),
+    );
+    try {
+      expect(
+        await getStudySessionSummary(f.sessions, f.history, f.queue, {
+          ownerId,
+          sessionId: id,
+          now,
+          timeZone: "Europe/Madrid",
+        }),
+      ).toMatchObject({
+        ok: true,
+        summary: {
+          reviewCount: 1001,
+          newItemCount: 1,
+          remaining: {
+            availableCount: 0,
+            hiddenDueReviews: 0,
+            hiddenNew: 0,
+            hasFutureReviews: false,
+          },
+        },
+      });
+    } finally {
+      await checked(clientA.from("decks").update({ archived_at: null }).eq("id", deckId));
+    }
+  });
 });

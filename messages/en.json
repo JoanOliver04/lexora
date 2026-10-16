@@ -139,6 +139,30 @@
       "cloze": "Fill in the blanks"
     }
   },
+  "SessionSummary": {
+    "title": "This session's summary",
+    "confirmedHint": "Only confirmed reviews from this session are counted. Ratings are the ones you recorded, not an FSRS prediction.",
+    "empty": "This session has no confirmed reviews yet.",
+    "reviews": "Saved reviews",
+    "newItems": "New items introduced",
+    "unclassified": "{count, plural, one {# review has no recognised previous state} other {# reviews have no recognised previous state}}; the new-item count may be incomplete.",
+    "ratings": "Saved ratings",
+    "duration": "Recorded time",
+    "durationMissing": "Not recorded",
+    "durationSeconds": "{seconds, number} s",
+    "durationCoverage": "Duration available for {measured, number} of {total, number} reviews.",
+    "durationHint": "Only sums durations present in the records, rounded to the nearest second. It does not use time between start and finish, include pauses or estimate minutes studied.",
+    "remainingTitle": "Current pending items for this selection",
+    "available": "Available now",
+    "hiddenReviews": "Due reviews outside the daily limit",
+    "hiddenNew": "New items outside the daily allowance",
+    "future": "Some items are also scheduled for later; they are not available yet.",
+    "remainingHint": "These pending items are recalculated when checked. They are not a snapshot of the finish or the initial total minus reviews done.",
+    "remainingUnavailable": "Current pending items for this course cannot be loaded. Confirmed history is still preserved.",
+    "unavailable": "The summary could not be loaded. Your confirmed reviews are still saved; check again.",
+    "refresh": "Refresh summary",
+    "refreshing": "Refreshing summary…"
+  },
   "StudySession": {
     "setupTitle": "Prepare your session",
     "setupIntro": "Review all your decks or choose a few. Your session will respect your daily limits.",

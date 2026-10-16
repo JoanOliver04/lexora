@@ -142,6 +142,30 @@
       "cloze": "Completar huecos"
     }
   },
+  "SessionSummary": {
+    "title": "Resumen de esta sesión",
+    "confirmedHint": "Solo cuenta repasos confirmados de esta sesión. Las valoraciones son las que registraste, no una predicción de FSRS.",
+    "empty": "Esta sesión todavía no tiene repasos confirmados.",
+    "reviews": "Repasos guardados",
+    "newItems": "Ítems nuevos introducidos",
+    "unclassified": "{count, plural, one {# repaso no tiene un estado previo reconocido} other {# repasos no tienen un estado previo reconocido}}; el recuento de nuevos puede estar incompleto.",
+    "ratings": "Valoraciones guardadas",
+    "duration": "Tiempo registrado",
+    "durationMissing": "No registrado",
+    "durationSeconds": "{seconds, number} s",
+    "durationCoverage": "Duración disponible en {measured, number} de {total, number} repasos.",
+    "durationHint": "Solo suma duraciones presentes en los registros, redondeadas al segundo. No usa el tiempo entre inicio y cierre, no incluye pausas ni estima minutos estudiados.",
+    "remainingTitle": "Pendientes actuales de esta selección",
+    "available": "Disponibles ahora",
+    "hiddenReviews": "Repasos vencidos fuera del límite diario",
+    "hiddenNew": "Nuevos fuera del cupo diario",
+    "future": "También hay ítems programados para otro momento; no están disponibles todavía.",
+    "remainingHint": "Estos pendientes se recalculan al consultar. No son una instantánea del cierre ni el total inicial menos los repasos realizados.",
+    "remainingUnavailable": "No se pueden consultar los pendientes actuales de este curso. El historial confirmado sigue conservado.",
+    "unavailable": "No se ha podido cargar el resumen. Tus repasos confirmados siguen guardados; vuelve a comprobarlo.",
+    "refresh": "Actualizar resumen",
+    "refreshing": "Actualizando resumen…"
+  },
   "StudySession": {
     "setupTitle": "Prepara tu sesión",
     "setupIntro": "Repasa todos tus mazos o elige algunos. La sesión respetará tus límites diarios.",

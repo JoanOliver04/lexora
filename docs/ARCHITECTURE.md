@@ -33,6 +33,9 @@ están en [ADR-001](adrs/ADR-001-monolito-modular-clean-architecture.md) y
 > Pausar/reanudar no altera repasos ni alcance; el retorno reconstruye la cola.
 > El commit bloquea la sesión antes de la memoria para serializarse con el cierre,
 > conservando el replay de recibos aunque la sesión ya no esté activa.
+> LEX-6.11 muestra un resumen de sesiones pausadas/cerradas con un puerto de
+> historial de solo lectura. Agrega logs confirmados y separa los pendientes
+> actuales de las valoraciones guardadas; no inventa duración ni porcentajes.
 > Las secciones
 > marcadas como *pendiente* se completan cuando la fase correspondiente las
 > implemente.

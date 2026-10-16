@@ -455,3 +455,48 @@ Rollback: deshabilitar los controles y restaurar la función de
 no borrar sesiones, estados ni logs. Se mantienen las políticas de dueño y sus
 límites documentados en ADR-006. Evidencia en
 [`evidence/LEX-6.10.md`](evidence/LEX-6.10.md).
+
+## Resumen de sesión — LEX-6.11
+
+Una sesión pausada, completada o abandonada muestra `SessionSummaryView`.
+`getStudySessionSummary` verifica identidad y sesión antes de leer su historial;
+no consulta ni muestra un resumen durante una sesión activa. El puerto nuevo
+`SessionHistoryRepository` devuelve solo ID de log, ítem, rating, fase previa y
+duración. El adaptador filtra dueño, sesión y `reviewed_at <= Clock.now()`, con
+orden por ID y páginas de 500 mediante el lector existente. La proyección JSON
+extrae únicamente la fase de `state_before`; no carga contenido de tarjetas ni
+envía snapshots de memoria al navegador.
+
+`summarizeSessionReviews` distingue eventos confirmados de ítems nuevos únicos:
+un mismo ítem puede repasarse varias veces, pero se introduce una vez. La fase
+New del snapshot previo identifica la introducción. Un snapshot legado sin fase
+reconocida no se clasifica como New y la UI avisa del recuento incompleto.
+Los IDs repetidos no duplican eventos, ratings ni duración. La distribución de
+las cuatro valoraciones suma exactamente el número de repasos contados.
+
+La duración registrada suma solo enteros de 0 a 3.600.000 ms presentes en logs.
+Cero registrado no equivale a dato ausente. Si no hay duraciones, muestra «No
+registrado»; si solo hay algunas, indica cuántos repasos cubren. Los segundos se
+redondean solo para presentar la suma. No se resta `started_at` de `ended_at`,
+no se cuentan pausas y no se usa el fallback de estimación de Hoy. El transporte
+actual de valoraciones sigue enviando duración nula; esta tarea no introduce un
+cronómetro ni inventa tiempos para registros anteriores.
+
+El segundo bloque reconsulta la cola para el curso y alcance guardados y muestra
+disponibles ahora, vencidos ocultos por límite, nuevos fuera de cupo y si hay
+vencimientos futuros. Son pendientes actuales, no una instantánea del cierre ni
+un porcentaje de aprendizaje. Editar/archivar contenido puede cambiarlos sin
+alterar el resumen histórico. Si el curso/configuración o zona no permiten
+consultarlos, se preserva el historial con un aviso, nunca con ceros inventados.
+Con una zona inválida la fecha de inicio se presenta en ISO UTC explícito.
+
+Un fallo de infraestructura muestra un error y permite actualizar manualmente;
+una lectura fallida no se presenta como sesión sin repasos. El refresco vuelve al
+servidor sin escrituras, sondeo automático, nueva sesión, reanudación o cambios
+de lifecycle. El estado de sesión, memoria y logs quedan intactos. No se usan
+los contadores opcionales de la fila de sesión ni una caché compartida.
+
+Mensajes ES/EN y pruebas de dominio, aplicación, ruta, presentación y Supabase
+real cubren duración parcial, datos legados, más de 1.000 eventos, RLS B/anon y
+persistencia tras pausa/cierre. Evidencia:
+[`evidence/LEX-6.11.md`](evidence/LEX-6.11.md).

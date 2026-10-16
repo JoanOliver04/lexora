@@ -6,6 +6,7 @@ import type { TodayOverviewRepository } from "@/modules/study/application/today-
 import type { TodayDashboardRepository } from "@/modules/study/application/today-dashboard";
 import type { StudySessionRepository } from "@/modules/study/application/study-session";
 import type { StudyCardRepository } from "@/modules/study/application/study-card";
+import type { SessionHistoryRepository } from "@/modules/study/application/session-summary";
 import { DEFAULT_STUDY_TIMEZONE } from "@/modules/study/domain/study-day";
 import { createSupabaseDailyQueueRepository } from "@/modules/study/infrastructure/supabase-daily-queue-repository";
 import { createSupabaseLearningStateRepository } from "@/modules/study/infrastructure/supabase-learning-state-repository";
@@ -15,6 +16,7 @@ import { createSupabaseTodayOverviewRepository } from "@/modules/study/infrastru
 import { createSupabaseTodayDashboardRepository } from "@/modules/study/infrastructure/supabase-today-dashboard-repository";
 import { createSupabaseStudySessionRepository } from "@/modules/study/infrastructure/supabase-study-session-repository";
 import { createSupabaseStudyCardRepository } from "@/modules/study/infrastructure/supabase-study-card-repository";
+import { createSupabaseSessionHistoryRepository } from "@/modules/study/infrastructure/supabase-session-history-repository";
 import type { Clock } from "@/shared/application/clock";
 import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/server-client";
 import { createSystemClock } from "@/shared/infrastructure/system-clock";
@@ -53,6 +55,7 @@ export interface StudyContext {
   cards: StudyCardRepository;
   scheduler: SpacedRepetitionScheduler;
   reviewCommitter: ReviewCommitter;
+  sessionHistory: SessionHistoryRepository;
 }
 
 export async function getStudyContextForCurrentUser(): Promise<StudyContext | null> {
@@ -79,5 +82,6 @@ export async function getStudyContextForCurrentUser(): Promise<StudyContext | nu
     cards: createSupabaseStudyCardRepository(client),
     scheduler: createTsFsrsScheduler(),
     reviewCommitter: createSupabaseReviewCommitter(client),
+    sessionHistory: createSupabaseSessionHistoryRepository(client),
   };
 }
