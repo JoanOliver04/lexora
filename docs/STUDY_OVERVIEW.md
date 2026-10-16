@@ -538,3 +538,10 @@ real. La emulación móvil y las aserciones del árbol accesible no equivalen a
 una prueba en teléfono físico o a escuchar un lector de pantalla real; esa
 validación manual sigue pendiente. Evidencia:
 [`evidence/LEX-6.12.md`](evidence/LEX-6.12.md).
+
+LEX-6.13 amplía las comprobaciones a viewport estrecho y texto CSS al 200 %.
+Las listas del resumen reservan ancho automático a las cifras, con texto
+restante divisible, para evitar solapamientos sin cambiar datos ni semántica.
+La matriz de pruebas incluye colisión de texto, no solo overflow de página.
+La aceptación física sigue pendiente; evidencia y guía local en
+[`evidence/LEX-6.13.md`](evidence/LEX-6.13.md).

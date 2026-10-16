@@ -33,7 +33,7 @@ export function SessionSummaryView({ summary }: { summary: SessionSummary | null
         <>
           <p className="text-sm">{t("confirmedHint")}</p>
           {summary.reviewCount === 0 && <p>{t("empty")}</p>}
-          <dl className="grid grid-cols-2 gap-3">
+          <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 [overflow-wrap:anywhere]">
             <dt>{t("reviews")}</dt>
             <dd data-testid="summary-reviews" className="text-right font-semibold">
               {summary.reviewCount}
@@ -47,7 +47,7 @@ export function SessionSummaryView({ summary }: { summary: SessionSummary | null
             <p className="text-sm">{t("unclassified", { count: summary.unclassifiedCount })}</p>
           )}
           <h3 className="font-semibold">{t("ratings")}</h3>
-          <dl className="grid grid-cols-2 gap-3">
+          <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 [overflow-wrap:anywhere]">
             {REVIEW_RATINGS.map((rating) => (
               <div key={rating} className="contents">
                 <dt>{tCard(`ratings.${rating}.label`)}</dt>
@@ -77,7 +77,7 @@ export function SessionSummaryView({ summary }: { summary: SessionSummary | null
             <p>{t("remainingUnavailable")}</p>
           ) : (
             <>
-              <dl className="grid grid-cols-2 gap-3">
+              <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 [overflow-wrap:anywhere]">
                 <dt>{t("available")}</dt>
                 <dd data-testid="summary-available" className="text-right">
                   {summary.remaining.availableCount}

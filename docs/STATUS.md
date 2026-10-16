@@ -3,9 +3,9 @@
 **Última actualización:** 2026-10-16
 **Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (12/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M6 — Alfa personal multidispositivo — `EN PROCESO`. M5 y M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
-**Tarea activa:** ninguna; LEX-6.12 `HECHO` localmente. Siguiente LEX-6.13, sin iniciar.
-**Estado de la tarea:** atajos de tarjeta con foco, controles nativos preservados y semántica accesible sin revelar respuestas antes de tiempo. Foco de resumen/error y refresco sin perderlo. Gate general 738 PASS + 1 omitida; pgTAP 18/489 PASS; E2E 124 PASS + 4 omitidas sin reintentos. Revisión independiente sin hallazgos pendientes. Sin migración, dependencia o cambio de ADR. Producción anterior intacta; guarda de LEX-6.10 aún pendiente allí. Q-005/Q-006/Q-008 sin cambios. Teléfono físico y lector de pantalla real no probados; el árbol accesible no sustituye esa aceptación manual.
-**Rama / base:** `feat/lex-6-12-study-accessibility` / `6c5c106`. LEX-6.11 conservada en ese commit local. Teclado y accesibilidad del flujo existente; sin push, CI remota ni cambios en producción.
+**Tarea activa:** LEX-6.13 `EN PROCESO`, continuación autorizada el 2026-10-16; aceptación física pendiente.
+**Estado de la tarea:** matriz responsive de 80 combinaciones y corrección del solapamiento de etiquetas/cifras del resumen a 320 px con texto al 200 %. Gate general 738 PASS + 1 omitida; E2E dirigido 12 PASS y completo 124 PASS + 4 omitidas, sin reintentos de Playwright. Revisión independiente sin hallazgos. Build local en loopback para aceptación. Q-009 abierta: falta informe en Windows/Poco F5 físico y lector real; escalado CSS no sustituye zoom nativo. Sin migración, dependencia o cambio de ADR; sin seed/reset/publicación. Guarda de LEX-6.10 pendiente de producción.
+**Rama / base:** `test/lex-6-13-responsive-validation` / `f6cbdc5`. LEX-6.12 conservada en ese commit local. Validación responsive y preparación de aceptación local; sin push, CI remota ni cambios en producción.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,24 @@
 ---
 
 ## Terminado en esta sesión
+
+### Checkpoint LEX-6.13 — `EN PROCESO`
+
+Helper responsive en el E2E existente, ES/EN y ambos perfiles: selector, frente,
+respuesta, pausa y cierre; viewport habitual/320 px, texto 100/200 %, temas claro
+y oscuro. Mide overflow, colisión de términos con cifras y targets de botones/
+enlaces de al menos 44 × 44 px. Reproduce y corrige «Disponibles ahora» sobre
+la cifra 0; solo cambia la cuadrícula de las tres listas del resumen.
+
+Gate general 738 PASS + 1 omitida y build; E2E dirigido 12 PASS y completo
+124 PASS + 4 omitidas sin reintentos de Playwright. Revisión independiente sin
+hallazgos. Build local listo en loopback; no se requiere SQL ni se cambia el
+modelo de datos. Incidencia Auth local preexistente recuperada por el helper
+de preparación, sin añadir reintentos; documentada en evidencia.
+Q-009 exige informe del propietario: esta tarea no está terminada. Guía local,
+reenvío USB y plantilla sin secretos en
+[`evidence/LEX-6.13.md`](evidence/LEX-6.13.md). Producción no incluye esta rama;
+no usarla para aceptar los cambios locales. LEX-6.14 no iniciada.
 
 ### LEX-6.12 — Teclado y accesibilidad del estudio — `HECHO` (local)
 
@@ -42,7 +60,8 @@ Sin migración, dependencia, cambio de ADR, seed, reset, push o producción. Que
 prueba física y lector de pantalla real: la evidencia automatizada no certifica
 esas experiencias ni conformidad WCAG completa. La migración anterior sigue
 pendiente de producción. Evidencia y checklist manual en
-[`evidence/LEX-6.12.md`](evidence/LEX-6.12.md). LEX-6.13 no iniciada.
+[`evidence/LEX-6.12.md`](evidence/LEX-6.12.md). LEX-6.13 iniciada después,
+según el checkpoint anterior.
 
 ### LEX-6.11 — Resumen de sesión — `HECHO` (local)
 
@@ -2393,15 +2412,16 @@ contenido real exista, más cara la corrección.
 
 ## Siguiente acción exacta
 
-LEX-6.12 cumple los gates automatizados locales y revisión independiente,
-documentada en `evidence/LEX-6.12.md`. Entrega conservada en un commit local
-sobre el checkpoint LEX-6.11 `6c5c106`. Pendiente aceptación física y con lector
-de pantalla real; no se presenta el árbol accesible como prueba de voz.
-Al retomar, revisar esta rama y su historial; siguiente tarea LEX-6.13 según el
-roadmap privado. No se inicia en este cierre. Publicación, CI remota y despliegue
-de esta rama no ejecutados. No seed local, reset remoto ni cambios en producción.
-La nueva migración de guarda de sesión sigue pendiente de producción; aplicar
-antes de habilitar estos controles cuando se autorice un despliegue.
+Continuar LEX-6.13 en esta rama, base `f6cbdc5`. Verificaciones automáticas
+completas y checkpoint local conservado. Build iniciado en loopback 3000;
+si ya no está activo, la evidencia contiene el comando para iniciarlo de nuevo.
+El propietario debe realizar el recorrido de `evidence/LEX-6.13.md` en Windows
+y Poco F5 físico y aportar PASS/FAIL/no realizada con versiones y problemas.
+Q-009 abierta: no marcar HECHO ni iniciar LEX-6.14 sin informe. No se presenta
+emulación, escalado CSS o árbol accesible como prueba física/zoom nativo/voz.
+Publicación, CI remota y despliegue no ejecutados; sin seed/reset. Producción
+permanece anterior y la guarda de LEX-6.10 sigue pendiente allí. No ampliar
+permisos de red ni habilitar Preview con datos de producción para esta prueba.
 
 ### Despliegue anterior verificado
 
@@ -2415,7 +2435,7 @@ para esos pasos. No activar sincronización automática de futuras migraciones.
 Ningún reset remoto ni seed local. Ver
 [`LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
 No confundir CI, Ready y aceptación de producción.
-La siguiente tarea del roadmap es **LEX-6.13**, sin comenzar.
+La tarea actual es **LEX-6.13**, `EN PROCESO` por Q-009; LEX-6.14 no iniciada.
 
 ---
 

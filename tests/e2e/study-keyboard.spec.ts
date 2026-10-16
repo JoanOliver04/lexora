@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import type { Database } from "../../src/shared/infrastructure/supabase/database.types";
 import { completeOnboarding, PASSWORD, signUp } from "./helpers";
+import { assertStudyLayout } from "./study-layout";
 
 async function checked<T>(query: PromiseLike<{ data: T; error: { message: string } | null }>) {
   const { data, error } = await query;
@@ -107,6 +108,8 @@ for (const locale of ["es", "en"] as const) {
         ),
       );
       await page.goto(`/${locale}/app/study?deck=${deckId}`);
+      await expect(page.getByRole("button", { name: labels.create, exact: true })).toBeEnabled();
+      await assertStudyLayout(page, testInfo, `${locale}-setup`);
       await tabTo(page, page.getByRole("button", { name: labels.create, exact: true }));
       await page.keyboard.press("Enter");
       const card = page.getByTestId("study-card");
@@ -114,6 +117,7 @@ for (const locale of ["es", "en"] as const) {
       const front = card.locator("#study-card-heading");
       await expect(front).toBeFocused();
       await expect(front).toHaveAccessibleDescription(/Keyboard front 1/);
+      await assertStudyLayout(page, testInfo, `${locale}-front`);
       expect(await card.ariaSnapshot()).not.toContain("KEYBOARD_ANSWER");
       expect(await page.content()).not.toContain("KEYBOARD_ANSWER");
       for (const key of ["1", "2", "3", "4", "Control+Space"]) await page.keyboard.press(key);
@@ -126,6 +130,7 @@ for (const locale of ["es", "en"] as const) {
       const answer = card.getByRole("heading", { name: labels.answer, exact: true });
       await expect(answer).toBeFocused();
       await expect(answer).toHaveAccessibleDescription(/KEYBOARD_ANSWER_1/);
+      await assertStudyLayout(page, testInfo, `${locale}-answer`);
       const revealButtons = card.getByRole("button");
       for (const button of await revealButtons.all()) {
         const bounds = await button.boundingBox();
@@ -173,6 +178,7 @@ for (const locale of ["es", "en"] as const) {
       await page.keyboard.press("Enter");
       const summaryHeading = page.getByRole("heading", { name: labels.summary, exact: true });
       await expect(summaryHeading).toBeFocused();
+      await assertStudyLayout(page, testInfo, `${locale}-paused`);
       await page.keyboard.press("4");
       await page.keyboard.press("Tab");
       const refresh = page.getByRole("button", { name: labels.refresh, exact: true });
@@ -216,6 +222,7 @@ for (const locale of ["es", "en"] as const) {
       await page.keyboard.press("Enter");
       await expect(summaryHeading).toBeFocused();
       await expect(page.getByTestId("summary-reviews")).toHaveText("2");
+      await assertStudyLayout(page, testInfo, `${locale}-completed`);
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
       ).toBe(true);
