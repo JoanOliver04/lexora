@@ -7,7 +7,7 @@ Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa est
 > config v1, esquema, RLS, alta, cola, cálculo, commit, idempotencia,
 > concurrencia, reloj, snapshots y auditoría con ítems importados.
 > `ts-fsrs@5.4.2`. La UI de FASE 6 reutiliza estos contratos sin recalcular FSRS
-> en el navegador; guardado, recuperación y pasos cortos integrados hasta LEX-6.9.
+> en el navegador; guardado, recuperación, pasos cortos y ciclo de sesión integrados hasta LEX-6.10.
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -198,14 +198,23 @@ Desde LEX-6.7, `saveSessionReview` aplica ese contrato a la UI de estudio:
 reautoriza la sesión activa y el primer pendiente, crea memoria inicial solo
 cuando corresponde y delega en `confirmReview`. El log queda ligado a la sesión.
 Un replay debe coincidir en ítem, sesión y rating; funciona aunque el ítem ya
-no esté en la cola. La confirmación visible no devuelve snapshots al cliente
-ni realiza un avance optimista. Ver [STUDY_OVERVIEW.md](STUDY_OVERVIEW.md).
+no esté en la cola. Desde LEX-6.10 también funciona si la sesión se ha pausado
+o cerrado después de confirmar el repaso. La confirmación visible no devuelve
+snapshots al cliente ni realiza un avance optimista. Ver
+[STUDY_OVERVIEW.md](STUDY_OVERVIEW.md).
 
 LEX-6.8 conserva esa escritura al añadir un timeout HTTP y recuperación en la
 UI. Abortar la espera no implica rollback del servidor: el resultado es
 desconocido hasta reintentar la misma clave y recibir confirmación. No se cambia
 rating, revisión ni configuración del intento durante ese reintento; no se
 calcula FSRS offline. Un conflicto requiere recargar la cola desde servidor.
+
+LEX-6.10 serializa los commits nuevos de una sesión con sus cambios de estado:
+tras el candado de idempotencia y la lectura de recibo, la RPC toma `FOR UPDATE`
+sobre la sesión propia y exige `active`, antes de bloquear la memoria. Una pausa
+que ganó impide la escritura; si ganó el repaso, la pausa espera a su commit.
+Sin sesión asociada se conserva el camino existente. La firma, permisos,
+snapshots y razones del payload no cambian. No se recalcula FSRS en SQL.
 
 Dos garantías que se prueban explícitamente:
 

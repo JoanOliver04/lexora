@@ -7,6 +7,8 @@ import {
   createStudySession,
   getStudySession,
   getStudySetup,
+  changeStudySession,
+  listOpenStudySessions,
   type StudySession,
   type StudySessionRepository,
 } from "./study-session";
@@ -38,6 +40,14 @@ function stored(scope: StudySession["scope"] = { deckIds: null }): StudySession 
 function repositories() {
   const records = new Map<string, StudySession>();
   const sessions: StudySessionRepository = {
+    listOpen: vi.fn().mockResolvedValue([]),
+    transition: vi.fn(async ({ ownerId, sessionId, expectedStatus, status, endedAt }) => {
+      const row = records.get(sessionId);
+      if (!row || row.ownerId !== ownerId || row.status !== expectedStatus) return null;
+      const changed = { ...row, status, endedAt };
+      records.set(sessionId, changed);
+      return changed;
+    }),
     get: vi.fn().mockImplementation(async ({ ownerId, sessionId }) => {
       const row = records.get(sessionId);
       return row?.ownerId === ownerId ? row : null;
@@ -321,5 +331,157 @@ describe("session reads and setup", () => {
     await expect(getStudySession(sessions, queue, { ...input, ownerId: " " })).rejects.toThrow(
       /sin identificador/,
     );
+  });
+});
+
+describe("changeStudySession", () => {
+  const command = { ...input, action: "pause", expectedStatus: "active" };
+  it("pauses, retries without writing, resumes the same scope with current data, and abandons permanently", async () => {
+    const f = repositories();
+    f.records.set(SESSION, stored({ deckIds: [DECK] }));
+    const paused = await changeStudySession(f.sessions, f.queue, command);
+    expect(paused.ok && paused.session).toMatchObject({
+      status: "paused",
+      endedAt: null,
+      scope: { deckIds: [DECK] },
+    });
+    expect(await changeStudySession(f.sessions, f.queue, command)).toEqual(paused);
+    expect(f.sessions.transition).toHaveBeenCalledTimes(1);
+    expect(await getStudySession(f.sessions, f.queue, input)).toMatchObject({ queue: null });
+    vi.mocked(f.queue.listEligibleItems).mockResolvedValue([]);
+    expect(
+      await changeStudySession(f.sessions, f.queue, {
+        ...command,
+        action: "resume",
+        expectedStatus: "paused",
+      }),
+    ).toMatchObject({
+      ok: true,
+      session: { status: "active", scope: { deckIds: [DECK] }, endedAt: null },
+    });
+    expect(await getStudySession(f.sessions, f.queue, input)).toMatchObject({
+      queue: { entries: [] },
+    });
+    const end = new Date(NOW.getTime() + 60_000);
+    const abandoned = await changeStudySession(f.sessions, f.queue, {
+      ...command,
+      action: "abandon",
+      now: end,
+    });
+    expect(abandoned).toMatchObject({ ok: true, session: { status: "abandoned", endedAt: end } });
+    expect(
+      await changeStudySession(f.sessions, f.queue, {
+        ...command,
+        action: "abandon",
+        now: new Date(end.getTime() + 60_000),
+      }),
+    ).toEqual(abandoned);
+    expect(
+      await changeStudySession(f.sessions, f.queue, {
+        ...command,
+        action: "resume",
+        expectedStatus: "abandoned",
+      }),
+    ).toEqual({ ok: false, reason: "invalid-transition" });
+    expect(f.sessions.create).not.toHaveBeenCalled();
+  });
+  it("completes only after rechecking an empty current queue, preserving a terminal timestamp on retry", async () => {
+    const f = repositories();
+    f.records.set(SESSION, stored());
+    expect(
+      await changeStudySession(f.sessions, f.queue, { ...command, action: "complete" }),
+    ).toEqual({ ok: false, reason: "items-available" });
+    expect(f.sessions.transition).not.toHaveBeenCalled();
+    vi.mocked(f.queue.listEligibleItems).mockResolvedValue([]);
+    const result = await changeStudySession(f.sessions, f.queue, {
+      ...command,
+      action: "complete",
+    });
+    expect(result).toMatchObject({ ok: true, session: { status: "completed", endedAt: NOW } });
+    expect(
+      await changeStudySession(f.sessions, f.queue, {
+        ...command,
+        action: "complete",
+        now: new Date(NOW.getTime() + 1000),
+      }),
+    ).toEqual(result);
+    expect(
+      await changeStudySession(f.sessions, f.queue, {
+        ...command,
+        action: "resume",
+        expectedStatus: "completed",
+      }),
+    ).toEqual({ ok: false, reason: "invalid-transition" });
+  });
+  it("detects a stale observation and a concurrent compare-and-set loser", async () => {
+    const f = repositories();
+    f.records.set(SESSION, { ...stored(), status: "paused" });
+    expect(
+      await changeStudySession(f.sessions, f.queue, { ...command, action: "abandon" }),
+    ).toEqual({ ok: false, reason: "session-changed" });
+    f.records.set(SESSION, stored());
+    vi.mocked(f.sessions.transition).mockResolvedValue(null);
+    expect(await changeStudySession(f.sessions, f.queue, command)).toEqual({
+      ok: false,
+      reason: "session-changed",
+    });
+  });
+  it.each([{ sessionId: "bad" }, { action: "delete" }, { expectedStatus: "fake" }])(
+    "rejects malformed intent %j",
+    async (change) => {
+      const f = repositories();
+      expect(await changeStudySession(f.sessions, f.queue, { ...command, ...change })).toEqual({
+        ok: false,
+        reason: "invalid-input",
+      });
+      expect(f.sessions.get).not.toHaveBeenCalled();
+      expect(f.sessions.transition).not.toHaveBeenCalled();
+    },
+  );
+  it("rejects unknown and foreign sessions without writes", async () => {
+    const f = repositories();
+    expect(await changeStudySession(f.sessions, f.queue, command)).toEqual({
+      ok: false,
+      reason: "not-found",
+    });
+    f.records.set(SESSION, { ...stored(), ownerId: "another" });
+    expect(await changeStudySession(f.sessions, f.queue, command)).toEqual({
+      ok: false,
+      reason: "not-found",
+    });
+    expect(f.sessions.transition).not.toHaveBeenCalled();
+  });
+  it("requires an identity for transitions and open-session discovery", async () => {
+    const f = repositories();
+    await expect(
+      changeStudySession(f.sessions, f.queue, { ...command, ownerId: " " }),
+    ).rejects.toThrow(/sin identificador/);
+    await expect(listOpenStudySessions(f.sessions, { ...input, ownerId: " " })).rejects.toThrow(
+      /sin identificador/,
+    );
+    await listOpenStudySessions(f.sessions, input);
+    expect(f.sessions.listOpen).toHaveBeenCalledWith(input);
+  });
+  it("surfaces storage failures and rejects inaccessible courses when resuming", async () => {
+    const f = repositories();
+    f.records.set(SESSION, { ...stored(), status: "paused" });
+    vi.mocked(f.queue.getCourseLimits).mockResolvedValue(null);
+    expect(
+      await changeStudySession(f.sessions, f.queue, {
+        ...command,
+        expectedStatus: "paused",
+        action: "resume",
+      }),
+    ).toEqual({ ok: false, reason: "not-found" });
+    vi.mocked(f.sessions.transition).mockRejectedValue(
+      new StudyError("unavailable", "synthetic failure"),
+    );
+    await expect(
+      changeStudySession(f.sessions, f.queue, {
+        ...command,
+        action: "abandon",
+        expectedStatus: "paused",
+      }),
+    ).rejects.toMatchObject({ kind: "unavailable" });
   });
 });

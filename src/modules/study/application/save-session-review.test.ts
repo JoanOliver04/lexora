@@ -50,6 +50,8 @@ function fixture() {
   let stored: StoredLearningState | null = null;
   const logs = new Map<string, ReplayLookup>();
   const sessions: StudySessionRepository = {
+    listOpen: vi.fn(),
+    transition: vi.fn(),
     get: vi.fn().mockResolvedValue(session),
     create: vi.fn(),
   };
@@ -216,6 +218,22 @@ describe("saveSessionReview", () => {
       expect(await saveSessionReview(f, input)).toEqual({ ok: false, reason: "inactive-session" });
       expect(f.queue.listEligibleItems).not.toHaveBeenCalled();
       expect(f.memory.create).not.toHaveBeenCalled();
+    },
+  );
+  it.each(["paused", "completed", "abandoned"] as const)(
+    "replays a committed receipt after the session becomes %s without another write",
+    async (status) => {
+      const f = fixture();
+      expect(await saveSessionReview(f, input)).toMatchObject({ ok: true, replayed: false });
+      const before = f.getStored();
+      vi.mocked(f.sessions.get).mockResolvedValue({ ...session, status });
+      expect(await saveSessionReview(f, input)).toEqual({
+        ok: true,
+        replayed: true,
+        rating: "good",
+      });
+      expect(f.committer.commit).toHaveBeenCalledTimes(1);
+      expect(f.getStored()).toEqual(before);
     },
   );
   it.each([

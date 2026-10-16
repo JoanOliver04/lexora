@@ -7,14 +7,18 @@ import en from "../../../../../../messages/en.json";
 import type { StudyCardContent } from "@/modules/study/application/study-card";
 import { StudyCardView } from "./study-card-view";
 import type { ReviewFormState } from "./review-state";
+import type { SessionChangeState } from "./session-actions";
+import type { SessionControlInfo } from "./session-controls";
 
-const { reveal, refresh, save } = vi.hoisted(() => ({
+const { reveal, refresh, save, change } = vi.hoisted(() => ({
   reveal: vi.fn(),
   refresh: vi.fn(),
   save: vi.fn(),
+  change: vi.fn(),
 }));
 vi.mock("./reveal-actions", () => ({ revealStudyCardAction: reveal }));
 vi.mock("./review-request", () => ({ submitStudyReview: save }));
+vi.mock("./session-actions", () => ({ changeStudySessionAction: change }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 const content: StudyCardContent = {
   mode: "cloze",
@@ -27,12 +31,13 @@ const content: StudyCardContent = {
 };
 const reviewKey = "60000000-0000-4000-8000-000000000001";
 const revealed = { content, preview: { revision: null, intervals: [] }, reviewKey };
-function mount(locale: "es" | "en" = "es", itemId = "item") {
+function mount(locale: "es" | "en" = "es", itemId = "item", session?: SessionControlInfo) {
   return render(
     <NextIntlClientProvider locale={locale} messages={locale === "es" ? es : en}>
       <StudyCardView
         locale={locale}
         sessionId="session"
+        {...(session ? { session } : {})}
         card={{
           practiceItemId: itemId,
           revision: null,
@@ -55,6 +60,92 @@ describe("study reveal and rating controls", () => {
       requestId: data.get("idempotencyKey"),
     }));
     refresh.mockClear();
+    change.mockReset().mockResolvedValue({});
+  });
+  it("blocks card controls while pausing and sends only the observed session intent", async () => {
+    let finish!: (state: SessionChangeState) => void;
+    change.mockImplementation(
+      () =>
+        new Promise<SessionChangeState>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    mount("es", "item", { status: "active", canComplete: false });
+    expect(screen.queryByRole("button", { name: "Completar esta sesión" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Pausar sesión" }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Actualizando sesión…" })).toBeDisabled(),
+    );
+    expect(screen.getByRole("button", { name: "Revelar respuesta" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Abandonar sesión" })).toBeDisabled();
+    expect(Object.fromEntries(change.mock.calls[0]![1] as FormData)).toEqual({
+      locale: "es",
+      sessionId: "session",
+      expectedStatus: "active",
+      action: "pause",
+    });
+    await act(async () => finish({}));
+    expect(screen.getByRole("button", { name: "Pausar sesión" })).toBeEnabled();
+  });
+  it("blocks lifecycle changes while a review is pending or its outcome is unknown", async () => {
+    let finish!: (state: ReviewFormState) => void;
+    save.mockImplementation(
+      () =>
+        new Promise<ReviewFormState>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    mount("es", "item", { status: "active", canComplete: false });
+    fireEvent.click(screen.getByRole("button", { name: "Revelar respuesta" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Bien" })).toBeEnabled());
+    fireEvent.click(screen.getByRole("button", { name: "Bien" }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Pausar sesión" })).toBeDisabled(),
+    );
+    await act(async () => finish({ error: "timeout", requestId: reviewKey }));
+    expect(screen.getByRole("button", { name: "Pausar sesión" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Abandonar sesión" })).toBeDisabled();
+    expect(screen.getByText(es.StudySession.resolveReviewFirst)).toBeVisible();
+    expect(change).not.toHaveBeenCalled();
+  });
+  it("recovers a lifecycle transport rejection without announcing success", async () => {
+    change.mockRejectedValue(new Error("connection lost"));
+    mount("en", "item", { status: "active", canComplete: true });
+    fireEvent.click(screen.getByRole("button", { name: "Complete this session" }));
+    await waitFor(() =>
+      expect(screen.getByText(en.StudySession.changeErrors.generic)).toBeVisible(),
+    );
+    expect(screen.getByRole("button", { name: "Complete this session" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Check session status" }));
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+  it("does not allow a lifecycle-error reload to discard an unknown review intent", async () => {
+    change.mockRejectedValue(new Error("lost lifecycle response"));
+    save.mockResolvedValue({ error: "timeout", requestId: reviewKey });
+    mount("es", "item", { status: "active", canComplete: false });
+    fireEvent.click(screen.getByRole("button", { name: "Pausar sesión" }));
+    await waitFor(() =>
+      expect(screen.getByText(es.StudySession.changeErrors.generic)).toBeVisible(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Revelar respuesta" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Bien" })).toBeEnabled());
+    fireEvent.click(screen.getByRole("button", { name: "Bien" }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Comprobar estado de la sesión" })).toBeDisabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Comprobar estado de la sesión" }));
+    expect(refresh).not.toHaveBeenCalled();
+  });
+  it("offers resume for a paused session, but no controls for terminal sessions", () => {
+    const { unmount } = mount("en", "item", { status: "paused", canComplete: false });
+    expect(screen.getByRole("button", { name: "Resume session" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Pause session" })).not.toBeInTheDocument();
+    unmount();
+    const completed = mount("en", "item", { status: "completed", canComplete: false });
+    expect(screen.queryByTestId("session-controls")).not.toBeInTheDocument();
+    completed.unmount();
+    mount("en", "item", { status: "abandoned", canComplete: false });
+    expect(screen.queryByTestId("session-controls")).not.toBeInTheDocument();
   });
   it("asks for recall and prevents ratings before reveal, with no answer or context in the DOM", () => {
     const { container } = mount();

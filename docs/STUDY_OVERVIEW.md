@@ -414,3 +414,44 @@ se añade aquí ciclo de vida, resumen, temporizador, cola offline ni Realtime.
 Pruebas de dominio, aplicación, Supabase real y navegador cubren ambas fases,
 límites, reloj del navegador adelantado y reaparición del mismo ítem.
 Evidencia en [`evidence/LEX-6.9.md`](evidence/LEX-6.9.md).
+
+## Ciclo de vida de sesión — LEX-6.10
+
+`changeStudySession` autoriza la sesión por propietario y valida la intención.
+El dominio permite active → paused/completed/abandoned y paused → active/abandoned.
+Repetir el estado objetivo es idempotente, sin renovar `ended_at`; completed y
+abandoned nunca se reabren. Leer una sesión, salir o cerrar la pestaña no cambia
+su estado. Una interrupción conserva lo que el servidor ya confirmó.
+
+El repositorio actualiza con condición por propietario, ID y estado observado.
+Si otro dispositivo cambió ese estado, no sobrescribe y pide comprobar la sesión.
+Pausar y reanudar conservan `ended_at = null`; los estados terminales reciben
+el instante del servidor, nunca anterior a `started_at`. El alcance y los logs
+no cambian. Reanudar verifica acceso al curso y reconstruye los pendientes
+vigentes; no reproduce el orden visual, reveal ni intención antiguos.
+
+Completar exige volver a consultar una cola sin tarjetas disponibles. No
+significa que no haya pasos futuros o repasos ocultos por límites; el mensaje
+de cierre lo aclara. Para detenerse antes se puede pausar o abandonar. No se
+incluyen resúmenes o contadores finales en este cambio.
+
+Hoy enlaza siempre a la preparación, incluso sin trabajo disponible. Allí se
+listan como máximo las diez sesiones activas/pausadas más recientes del curso
+actual. Una sesión anterior sigue accesible por su URL autorizada. Las sesiones
+terminales no aparecen en esa lista. No hay Realtime ni reanudación automática.
+
+La UI bloquea las transiciones mientras hay un repaso pendiente o con resultado
+desconocido, incluida la recarga de estado que podría descartar su intención.
+Mientras cambia la sesión se bloquean los controles de tarjeta. El servidor
+sigue siendo la barrera frente a otros dispositivos: la migración
+`20261016120000_session_commit_guard.sql` bloquea la fila de sesión antes de
+memoria/log, después del replay. Una pausa/cierre que ganó rechaza commits
+nuevos; un repaso que ganó se confirma antes de cambiar el estado. Se conserva
+la RPC `SECURITY INVOKER`, RLS, firma y vocabulario anteriores.
+
+Despliegue futuro: aplicar la migración antes de habilitar estos controles.
+Rollback: deshabilitar los controles y restaurar la función de
+`20260911190000_commit_review_idempotency.sql` si se necesita retirar la guarda;
+no borrar sesiones, estados ni logs. Se mantienen las políticas de dueño y sus
+límites documentados en ADR-006. Evidencia en
+[`evidence/LEX-6.10.md`](evidence/LEX-6.10.md).

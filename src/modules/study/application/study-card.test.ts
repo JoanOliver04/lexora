@@ -22,6 +22,8 @@ const session: StudySession = {
 const input = { ownerId: "owner", sessionId: session.id, now, timeZone: "Europe/Madrid" };
 function repositories() {
   const sessions: StudySessionRepository = {
+    listOpen: vi.fn(),
+    transition: vi.fn(),
     get: vi.fn().mockResolvedValue(session),
     create: vi.fn(),
   };

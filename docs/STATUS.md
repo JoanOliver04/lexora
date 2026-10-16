@@ -1,11 +1,11 @@
 # Lexora — Estado actual
 
-**Última actualización:** 2026-10-15
-**Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (9/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+**Última actualización:** 2026-10-16
+**Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (10/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M6 — Alfa personal multidispositivo — `EN PROCESO`. M5 y M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
-**Tarea activa:** ninguna; LEX-6.9 `HECHO` localmente, LEX-6.10 sin iniciar.
-**Estado de la tarea:** pasos Learning/Relearning integrados sin adelantar vencimientos. Cola vacía muestra minutos aproximados del servidor y permite comprobar o volver a Hoy, sin espera obligatoria ni cuenta atrás. Gate general 650 PASS + 1 omitida; pgTAP 17/477 PASS; E2E 118 PASS + 4 omitidas sin reintentos. Revisión independiente sin hallazgos pendientes. Sin migración/dependencia/ADR nuevo. Producción anterior intacta. Q-005/Q-006/Q-008 sin cambios. Físico y lector de pantalla permanecen en sus gates específicos.
-**Rama / base:** `feat/lex-6-9-short-learning-steps` / `3ca6c71`. LEX-6.8 conservada en ese checkpoint; entrega LEX-6.9 en commit local de esta rama. Sin push, CI remota ni cambios en producción.
+**Tarea activa:** ninguna; LEX-6.10 `HECHO` localmente, LEX-6.11 sin iniciar.
+**Estado de la tarea:** pausa, reanudación con cola actual, abandono y cierre explícitos. Repasos conservados y commits serializados con los cambios de sesión. Gate general 692 PASS + 1 omitida; pgTAP 18/489 PASS; E2E 120 PASS + 4 omitidas sin reintentos. Revisión independiente sin hallazgos pendientes. Una migración aplicada solo en local y probada desde cero sin seed; tipos sin diff, sin dependencias o ADR nuevo, aclaración en ADR-006. Producción anterior intacta. Q-005/Q-006/Q-008 sin cambios. Físico y lector de pantalla permanecen en sus gates específicos.
+**Rama / base:** `feat/lex-6-10-session-lifecycle` / `46628d8`. LEX-6.9 conservada en ese checkpoint; entrega LEX-6.10 en commit local de esta rama. Sin push, CI remota ni cambios en producción.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +14,37 @@
 ---
 
 ## Terminado en esta sesión
+
+### LEX-6.10 — Ciclo de vida de sesión — `HECHO` (local)
+
+Pausar y reanudar conservan alcance y repasos; al volver se consulta la cola
+actual, sin reproducir un orden visual antiguo. Completar y abandonar son
+terminales. La escritura compara el estado observado, con `ended_at` del servidor
+y reintentos sin renovar el cierre. Hoy permite encontrar sesiones abiertas
+incluso con cupos agotados. Completar exige cola disponible vacía y no afirma
+que no queden repasos futuros o limitados. Sin resumen ni contadores finales.
+
+```text
+LEXORA_DB_TESTS=1 pnpm check             exit 0; 692 passed + 1 skipped, build
+pnpm db:test                           18 files / 489 assertions, PASS
+pnpm db:test:catalogue                 15 migrations / 15 assertions, sin seed
+CI=1 pnpm e2e --workers=2 --retries=0   120 passed + 4 skipped, exit 0
+```
+
+La migración `20261016120000_session_commit_guard.sql` conserva firma/permisos
+de la RPC y bloquea la sesión antes de memoria, después del replay. Dos carreras
+reales prueban pausa primero y repaso primero, sin perder/duplicar logs. RLS
+B/anon, reanudación con contenido modificado y cierre irreversible probados.
+UI bloqueada mientras hay un repaso incierto; capturas desktop/móvil emulado
+inspeccionadas. Revisión independiente final sin hallazgos pendientes.
+
+Migración aplicada solo al stack local; allí también estaba pendiente el
+catálogo anterior. Desde cero se verificaron todas las migraciones en una base
+desechable, luego eliminada. Sin seed ni reset; tipos regenerados sin cambios.
+ADR-006 aclarada sin cambiar su decisión, sin dependencias ni ADR nuevo.
+Producción no modificada: la migración nueva queda pendiente allí. No requiere
+acción manual para este cierre local. Evidencia:
+[`evidence/LEX-6.10.md`](evidence/LEX-6.10.md). LEX-6.11 no iniciada.
 
 ### LEX-6.9 — Pasos cortos de aprendizaje — `HECHO` (local)
 
@@ -36,7 +67,8 @@ exige nuevo reveal y guarda una nueva revisión. Capturas desktop/móvil emulado
 inspeccionadas; revisión independiente sin hallazgos. Sin seed, reset, SQL,
 dependencias, ADR ni publicación. No requiere acciones manuales para este cierre
 local; físico y lector de pantalla siguen en sus gates. Evidencia en
-[`evidence/LEX-6.9.md`](evidence/LEX-6.9.md). LEX-6.10 no iniciada.
+[`evidence/LEX-6.9.md`](evidence/LEX-6.9.md). LEX-6.10 completada después,
+según el apartado anterior.
 
 ### LEX-6.8 — Recuperación del guardado — `HECHO` (local)
 
@@ -2303,11 +2335,13 @@ contenido real exista, más cara la corrección.
 
 ## Siguiente acción exacta
 
-LEX-6.9 cumple los gates locales, documentada en `evidence/LEX-6.9.md`.
-Entrega conservada en un commit local sobre el checkpoint LEX-6.8 `3ca6c71`.
-Al retomar, revisar esta rama y su historial; siguiente tarea LEX-6.10 según el
+LEX-6.10 cumple los gates locales, documentada en `evidence/LEX-6.10.md`.
+Entrega conservada en un commit local sobre el checkpoint LEX-6.9 `46628d8`.
+Al retomar, revisar esta rama y su historial; siguiente tarea LEX-6.11 según el
 roadmap privado. No se inicia en este cierre. Publicación, CI remota y despliegue
 de esta rama no ejecutados. No seed local, reset remoto ni cambios en producción.
+La nueva migración de guarda de sesión sigue pendiente de producción; aplicar
+antes de habilitar estos controles cuando se autorice un despliegue.
 
 ### Despliegue anterior verificado
 
@@ -2321,7 +2355,7 @@ para esos pasos. No activar sincronización automática de futuras migraciones.
 Ningún reset remoto ni seed local. Ver
 [`LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
 No confundir CI, Ready y aceptación de producción.
-La siguiente tarea del roadmap es **LEX-6.10**, sin comenzar.
+La siguiente tarea del roadmap es **LEX-6.11**, sin comenzar.
 
 ---
 

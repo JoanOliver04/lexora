@@ -29,6 +29,10 @@ están en [ADR-001](adrs/ADR-001-monolito-modular-clean-architecture.md) y
 > LEX-6.9 distingue el próximo paso Learning/Relearning en la cola y muestra
 > una espera informativa cuando no hay trabajo disponible. La comprobación
 > manual vuelve al servidor; el reloj del navegador nunca admite una tarjeta.
+> LEX-6.10 añade transiciones explícitas de sesión mediante compare-and-set.
+> Pausar/reanudar no altera repasos ni alcance; el retorno reconstruye la cola.
+> El commit bloquea la sesión antes de la memoria para serializarse con el cierre,
+> conservando el replay de recibos aunque la sesión ya no esté activa.
 > Las secciones
 > marcadas como *pendiente* se completan cuando la fase correspondiente las
 > implemente.

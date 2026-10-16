@@ -42,6 +42,15 @@ contrato HTTP para controlar timeout y reintento. La identidad, el caso de uso
 y el adaptador de servidor siguen siendo los mismos. No cambia la decisión de
 esta ADR ni los permisos de la RPC; abortar el transporte no revierte un commit.
 
+**Aclaración LEX-6.10 (2026-10-16):** para un commit nuevo asociado a sesión,
+la RPC bloquea la fila de sesión propia y exige estado `active`, antes de
+bloquear la memoria. El compare-and-set de pausa/cierre adquiere el mismo
+candado de fila. Si ganó la pausa no se escribe el repaso; si ganó el repaso
+la pausa espera su commit. La consulta de recibo sigue antes de esta guarda,
+también en el caso de uso: un resultado ya confirmado puede recuperarse tras
+el cierre. Firma, permisos y vocabulario de payload se mantienen; no cambia
+la decisión INVOKER ni el límite de escrituras directas del dueño por RLS.
+
 - `auth.uid()` es el dueño. Sin sesión → `28000`.
 - Si `(owner_id, idempotency_key)` ya existe, devuelve el resultado
   anterior (`replayed`).

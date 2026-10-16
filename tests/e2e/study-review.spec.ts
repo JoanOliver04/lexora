@@ -104,6 +104,8 @@ test("ratings save once before advancing and survive closing the confirmed tab",
     await expect(page.getByText("Review answer 0", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Bien", exact: true }).click();
     await expect(page.getByTestId("review-save-status")).toHaveText("Guardando repaso…");
+    await expect(page.getByRole("button", { name: "Pausar sesión" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Abandonar sesión" })).toBeDisabled();
     for (const name of ["Otra vez", "Difícil", "Bien", "Fácil"])
       await expect(page.getByRole("button", { name, exact: true })).toBeDisabled();
     await expect(page.getByText("Review front 0", { exact: true })).toBeVisible();

@@ -27,6 +27,31 @@ export function createSupabaseStudySessionRepository(
   client: SupabaseClient<Database>,
 ): StudySessionRepository {
   return {
+    async listOpen({ ownerId, courseId }) {
+      const { data, error } = await client
+        .from("study_sessions")
+        .select("*")
+        .eq("owner_id", ownerId)
+        .eq("course_id", courseId)
+        .in("status", ["active", "paused"])
+        .order("started_at", { ascending: false })
+        .order("id", { ascending: false })
+        .limit(10);
+      if (error) throw studyErrorFrom(error, "no se pudieron leer las sesiones abiertas");
+      return data.map(fromRow);
+    },
+    async transition({ ownerId, sessionId, expectedStatus, status, endedAt }) {
+      const { data, error } = await client
+        .from("study_sessions")
+        .update({ status, ended_at: endedAt?.toISOString() ?? null })
+        .eq("owner_id", ownerId)
+        .eq("id", sessionId)
+        .eq("status", expectedStatus)
+        .select("*")
+        .maybeSingle();
+      if (error) throw studyErrorFrom(error, "no se pudo cambiar la sesión");
+      return data ? fromRow(data) : null;
+    },
     async get({ ownerId, sessionId }) {
       const { data, error } = await client
         .from("study_sessions")

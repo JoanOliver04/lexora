@@ -16,6 +16,13 @@ import { createSupabaseStudyCardRepository } from "@/modules/study/infrastructur
 import { createSupabaseStudySessionRepository } from "@/modules/study/infrastructure/supabase-study-session-repository";
 import { createTsFsrsScheduler } from "@/modules/study/infrastructure/ts-fsrs-scheduler";
 import type { Database } from "@/shared/infrastructure/supabase/database.types";
+import {
+  changeStudySession,
+  getStudySession,
+  listOpenStudySessions,
+} from "@/modules/study/application/study-session";
+import type { StoredLearningState } from "@/modules/study/application/learning-state";
+import { holdLocalSessionRow } from "./local-session-lock";
 
 type Client = SupabaseClient<Database>;
 const enabled = process.env["LEXORA_DB_TESTS"] === "1";
@@ -320,6 +327,225 @@ describe.skipIf(!enabled)("Session reviews against local Supabase", () => {
       (await f.memory.getByItem({ ownerId, practiceItemId: front.card.practiceItemId }))?.revision,
     ).toBe(3);
   });
+  it("preserves confirmed reviews across pause, fresh resume, completion and abandonment with RLS", async () => {
+    const f = ports(clientA);
+    const id = randomUUID();
+    const fresh = [randomUUID(), randomUUID()].sort();
+    await checked(
+      clientA
+        .from("course_settings")
+        .update({ daily_new_limit: 100, maximum_reviews_per_day: null })
+        .eq("course_id", courseId),
+    );
+    await checked(
+      clientA.from("practice_items").insert(
+        fresh.map((item) => ({
+          id: item,
+          owner_id: ownerId,
+          concept_id: conceptId,
+          mode: "basic_recall" as const,
+          prompt_text: "Lifecycle front",
+          answer_text: "Lifecycle answer",
+          config: { mode: "basic_recall" },
+        })),
+      ),
+    );
+    await f.sessions.create({
+      ownerId,
+      sessionId: id,
+      courseId,
+      scope: { deckIds: [deckId] },
+      startedAt: now,
+    });
+    const command = {
+      ...request(),
+      sessionId: id,
+      practiceItemId: fresh[0]!,
+      idempotencyKey: randomUUID(),
+    };
+    expect(await saveSessionReview(f, command)).toMatchObject({ ok: true });
+    const saved = await f.memory.getByItem({ ownerId, practiceItemId: fresh[0]! });
+    const transition = (action: string, expectedStatus: string, at = now) =>
+      changeStudySession(f.sessions, f.queue, {
+        ownerId,
+        sessionId: id,
+        action,
+        expectedStatus,
+        now: at,
+        timeZone: "Europe/Madrid",
+      });
+    expect(await transition("pause", "active")).toMatchObject({
+      ok: true,
+      session: { status: "paused", endedAt: null },
+    });
+    expect(
+      await getStudySession(f.sessions, f.queue, {
+        ownerId,
+        sessionId: id,
+        now,
+        timeZone: "Europe/Madrid",
+      }),
+    ).toMatchObject({ queue: null });
+    expect(await saveSessionReview(f, command)).toEqual({
+      ok: true,
+      replayed: true,
+      rating: "good",
+    });
+    expect(await f.memory.getByItem({ ownerId, practiceItemId: fresh[0]! })).toEqual(saved);
+    for (const client of [clientB, anonymous]) {
+      const alien = ports(client);
+      expect(
+        await changeStudySession(alien.sessions, alien.queue, {
+          ownerId,
+          sessionId: id,
+          action: "resume",
+          expectedStatus: "paused",
+          now,
+          timeZone: "Europe/Madrid",
+        }),
+      ).toEqual({ ok: false, reason: "not-found" });
+      expect(
+        await alien.sessions.transition({
+          ownerId,
+          sessionId: id,
+          expectedStatus: "paused",
+          status: "active",
+          endedAt: null,
+        }),
+      ).toBeNull();
+      expect(await listOpenStudySessions(alien.sessions, { ownerId, courseId })).toEqual([]);
+    }
+    expect(
+      (await listOpenStudySessions(f.sessions, { ownerId, courseId })).some(
+        (session) => session.id === id,
+      ),
+    ).toBe(true);
+    // Disable the previously pending card: resuming cannot replay an old visual order.
+    await checked(clientA.from("practice_items").update({ enabled: false }).eq("id", fresh[1]!));
+    expect(await transition("resume", "paused")).toMatchObject({
+      ok: true,
+      session: { status: "active", scope: { deckIds: [deckId] } },
+    });
+    const resumed = await getStudySessionCard(f.sessions, f.queue, f.cards, {
+      ownerId,
+      sessionId: id,
+      now,
+      timeZone: "Europe/Madrid",
+    });
+    expect(resumed.ok && resumed.card).toBeNull();
+    const done = await transition("complete", "active");
+    expect(done).toMatchObject({ ok: true, session: { status: "completed", endedAt: now } });
+    expect(await transition("complete", "active", later)).toEqual(done);
+    expect(await transition("resume", "completed")).toEqual({
+      ok: false,
+      reason: "invalid-transition",
+    });
+    expect(await saveSessionReview(f, command)).toMatchObject({ ok: true, replayed: true });
+    expect(
+      await checked(clientA.from("review_logs").select("id").eq("study_session_id", id)),
+    ).toHaveLength(1);
+    const abandoned = randomUUID();
+    await f.sessions.create({
+      ownerId,
+      sessionId: abandoned,
+      courseId,
+      scope: { deckIds: [deckId] },
+      startedAt: now,
+    });
+    expect(
+      await changeStudySession(f.sessions, f.queue, {
+        ownerId,
+        sessionId: abandoned,
+        action: "abandon",
+        expectedStatus: "active",
+        now: later,
+        timeZone: "Europe/Madrid",
+      }),
+    ).toMatchObject({ ok: true, session: { status: "abandoned", endedAt: later } });
+    const open = await listOpenStudySessions(f.sessions, { ownerId, courseId });
+    expect(open.some((session) => new Set<string>([id, abandoned]).has(session.id))).toBe(false);
+  });
+  it.each(["pause-first", "review-first"] as const)(
+    "serializes real database transactions: %s",
+    async (order) => {
+      const f = ports(clientA);
+      const id = randomUUID();
+      await f.sessions.create({
+        ownerId,
+        sessionId: id,
+        courseId,
+        scope: { deckIds: [deckId] },
+        startedAt: now,
+      });
+      const stored = (await f.memory.getByItem({
+        ownerId,
+        practiceItemId: itemIds[0]!,
+      })) as StoredLearningState;
+      const at = new Date("2026-10-12T12:00:00Z");
+      const key = randomUUID();
+      const command = {
+        ownerId,
+        practiceItemId: stored.practiceItemId,
+        expectedRevision: stored.revision,
+        idempotencyKey: key,
+        rating: "good" as const,
+        reviewedAt: at,
+        previous: stored.state,
+        next: f.scheduler.review(stored.state, "good", at, V1_SCHEDULER_CONFIG).state,
+        schedulerVersion: "5.4.2",
+        configVersion: "v1",
+        studySessionId: id,
+        durationMs: null,
+      };
+      const held = await holdLocalSessionRow(
+        ownerId,
+        order === "pause-first"
+          ? `update public.study_sessions set status = 'paused' where id = '${id}'`
+          : `select 1 from public.learning_states where id = '${stored.id}' for update`,
+      );
+      let commit: ReturnType<typeof f.committer.commit> | undefined;
+      let pause: ReturnType<typeof f.sessions.transition> | undefined;
+      try {
+        commit = f.committer.commit(command);
+        await held.waitForBlocked(1);
+        if (order === "review-first") {
+          pause = f.sessions.transition({
+            ownerId,
+            sessionId: id,
+            expectedStatus: "active",
+            status: "paused",
+            endedAt: null,
+          });
+          await held.waitForBlocked(2);
+        }
+      } finally {
+        await held.release();
+      }
+      expect(await commit).toEqual(
+        order === "pause-first"
+          ? { ok: false, reason: "not-found" }
+          : { ok: true, replayed: false },
+      );
+      if (pause) expect(await pause).toMatchObject({ status: "paused", endedAt: null });
+      const memory = await f.memory.getByItem({ ownerId, practiceItemId: stored.practiceItemId });
+      expect(memory?.revision).toBe(stored.revision + (order === "review-first" ? 1 : 0));
+      expect(
+        await checked(clientA.from("review_logs").select("id").eq("study_session_id", id)),
+      ).toHaveLength(order === "review-first" ? 1 : 0);
+      if (order === "pause-first") expect(memory).toEqual(stored);
+      else
+        expect(
+          await saveSessionReview(f, {
+            ...request(),
+            sessionId: id,
+            practiceItemId: stored.practiceItemId,
+            expectedRevision: stored.revision,
+            idempotencyKey: key,
+          }),
+        ).toEqual({ ok: true, rating: "good", replayed: true });
+    },
+    20_000,
+  );
   it.each(["learning", "relearning"] as const)(
     "reintroduces a real FSRS %s step only at its deadline, independently of both daily caps",
     async (phase) => {

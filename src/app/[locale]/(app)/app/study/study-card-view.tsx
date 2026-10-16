@@ -17,6 +17,19 @@ import { Button, FormError } from "@/shared/presentation/components";
 import { revealStudyCardAction, type RevealFormState } from "./reveal-actions";
 import { submitStudyReview } from "./review-request";
 import type { ReviewFormState } from "./review-state";
+import { changeStudySessionAction, type SessionChangeState } from "./session-actions";
+import { SessionControls, type SessionControlInfo } from "./session-controls";
+
+async function changeWithRecovery(
+  previous: SessionChangeState,
+  data: FormData,
+): Promise<SessionChangeState> {
+  try {
+    return await changeStudySessionAction(previous, data);
+  } catch {
+    return { error: "generic" };
+  }
+}
 
 function subscribeConnection(notify: () => void) {
   window.addEventListener("online", notify);
@@ -42,10 +55,12 @@ export function StudyCardView({
   locale,
   sessionId,
   card,
+  session,
 }: {
   locale: string;
   sessionId: string;
   card: StudyCard | null;
+  session?: SessionControlInfo;
 }) {
   const t = useTranslations("PracticeCard");
   const { refresh } = useRouter();
@@ -55,6 +70,9 @@ export function StudyCardView({
     {},
   );
   const saveStatus = useRef<HTMLParagraphElement>(null);
+  const [sessionState, sessionAction, sessionPending] = useActionState(changeWithRecovery, {});
+  const unresolvedReview =
+    !!reviewState.error && ["generic", "timeout", "offline"].includes(reviewState.error);
   useEffect(() => {
     if (reviewState.receipt) refresh();
   }, [reviewState.receipt, refresh]);
@@ -78,18 +96,31 @@ export function StudyCardView({
             : ""}
       </p>
       {card && (
-        <StudyCardControls
-          key={`${sessionId}:${card.practiceItemId}:${card.revision}:${JSON.stringify(card.prompt)}:${reloadVersion}`}
+        <fieldset disabled={sessionPending} className="min-w-0 border-0 p-0">
+          <StudyCardControls
+            key={`${sessionId}:${card.practiceItemId}:${card.revision}:${JSON.stringify(card.prompt)}:${reloadVersion}`}
+            locale={locale}
+            sessionId={sessionId}
+            card={card}
+            reviewState={reviewState}
+            reviewAction={reviewAction}
+            reviewPending={reviewPending}
+            onReload={() => {
+              setReloadVersion((value) => value + 1);
+              refresh();
+            }}
+          />
+        </fieldset>
+      )}
+      {session && (
+        <SessionControls
           locale={locale}
           sessionId={sessionId}
-          card={card}
-          reviewState={reviewState}
-          reviewAction={reviewAction}
-          reviewPending={reviewPending}
-          onReload={() => {
-            setReloadVersion((value) => value + 1);
-            refresh();
-          }}
+          session={session}
+          action={sessionAction}
+          pending={sessionPending}
+          blocked={reviewPending || unresolvedReview}
+          state={sessionState}
         />
       )}
     </div>

@@ -142,6 +142,9 @@ export function DashboardView({
                 {t("emptyAction")}
               </Link>
             )}
+            <Link href="/app/study" prefetch={false} className={textLink}>
+              {t("openSessions")}
+            </Link>
           </div>
         </section>
 

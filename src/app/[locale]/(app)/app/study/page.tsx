@@ -10,7 +10,7 @@ import {
   type StudyContext,
 } from "@/composition/study";
 import { Link } from "@/i18n/navigation";
-import { getStudySetup } from "@/modules/study/application/study-session";
+import { getStudySetup, listOpenStudySessions } from "@/modules/study/application/study-session";
 import { FormError } from "@/shared/presentation/components";
 
 import { ScopeForm } from "./scope-form";
@@ -51,6 +51,7 @@ export default async function StudySetupPage({
           </p>
         }
       >
+        <OpenSessions context={context} courseId={course.id} locale={locale} />
         <ScopeSelector context={context} courseId={course.id} locale={locale} deckQuery={deck} />
       </Suspense>
       <Link
@@ -60,6 +61,52 @@ export default async function StudySetupPage({
         {t("manageDecks")}
       </Link>
     </main>
+  );
+}
+
+async function OpenSessions({
+  context,
+  courseId,
+  locale,
+}: {
+  context: StudyContext;
+  courseId: string;
+  locale: string;
+}) {
+  const sessions = await listOpenStudySessions(context.sessions, {
+    ownerId: context.ownerId,
+    courseId,
+  });
+  if (sessions.length === 0) return null;
+  const t = await getTranslations("StudySession");
+  return (
+    <section
+      data-testid="open-sessions"
+      className="space-y-3 rounded-(--radius-surface) border border-(--color-border) p-5"
+    >
+      <h2 className="text-lg font-semibold">{t("openSessions")}</h2>
+      <p className="text-sm">{t("openSessionsHint")}</p>
+      <ul className="space-y-2">
+        {sessions.map((session) => (
+          <li key={session.id}>
+            <Link
+              href={`/app/study/${session.id}`}
+              prefetch={false}
+              className="inline-flex min-h-11 items-center text-(--color-accent) underline underline-offset-4"
+            >
+              {t("openSession", {
+                status: t(`sessionStatuses.${session.status}`),
+                date: new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "es-ES", {
+                  timeZone: context.timeZone,
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }).format(session.startedAt),
+              })}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

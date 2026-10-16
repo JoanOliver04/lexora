@@ -38,7 +38,9 @@ export default async function StudySessionPage({
       >
         {t("backToToday")}
       </Link>
-      <h1 className="text-2xl font-semibold tracking-tight">{t("sessionTitle")}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        {result.ok ? t(`sessionStatuses.${result.session.status}`) : t("sessionTitle")}
+      </h1>
       {!result.ok ? (
         <FormError id="study-session-error">
           <p>{t(`errors.${result.reason}`)}</p>
@@ -78,12 +80,23 @@ export default async function StudySessionPage({
               )}
             </>
           ) : (
-            <p className="text-sm">{t("inactive")}</p>
+            <p className="text-sm">
+              {t(result.session.status === "paused" ? "pausedHint" : "closedHint")}
+            </p>
           )}
         </section>
       )}
       {result.ok && (
-        <StudyCardView key={sessionId} locale={locale} sessionId={sessionId} card={result.card} />
+        <StudyCardView
+          key={`${sessionId}:${result.session.status}`}
+          locale={locale}
+          sessionId={sessionId}
+          card={result.card}
+          session={{
+            status: result.session.status,
+            canComplete: result.queue?.entries.length === 0,
+          }}
+        />
       )}
       {result.ok && result.queue?.entries.length === 0 && result.queue.nextLearningDueAt && (
         <StudyStepWait remainingMs={result.queue.nextLearningDueAt.getTime() - now.getTime()} />

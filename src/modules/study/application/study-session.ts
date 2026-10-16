@@ -7,6 +7,7 @@ import {
   type StudyScope,
 } from "@/modules/study/domain/study-scope";
 import type { StudySession } from "@/modules/study/domain/study-session";
+import { SESSION_ACTIONS, nextSessionStatus } from "@/modules/study/domain/study-session";
 import { getDailyQueue, type DailyQueueRepository, type DailyQueue } from "./daily-queue";
 import { StudyError } from "./study-error";
 import type { DashboardDeck, TodayDashboardRepository } from "./today-dashboard";
@@ -21,6 +22,86 @@ export interface StudySessionRepository {
     scope: StudyScope;
     startedAt: Date;
   }): Promise<StudySession>;
+  listOpen(input: { ownerId: string; courseId: string }): Promise<StudySession[]>;
+  transition(input: {
+    ownerId: string;
+    sessionId: string;
+    expectedStatus: StudySession["status"];
+    status: StudySession["status"];
+    endedAt: Date | null;
+  }): Promise<StudySession | null>;
+}
+
+export type ChangeSessionReason =
+  | "invalid-input"
+  | "not-found"
+  | "invalid-transition"
+  | "session-changed"
+  | "items-available"
+  | "invalid-timezone";
+export type ChangeSessionResult =
+  { ok: true; session: StudySession } | { ok: false; reason: ChangeSessionReason };
+
+/** Compare-and-set, with no writes to memory, logs or the saved scope. */
+export async function changeStudySession(
+  sessions: StudySessionRepository,
+  queue: DailyQueueRepository,
+  input: {
+    ownerId: string;
+    sessionId: unknown;
+    action: unknown;
+    expectedStatus: unknown;
+    now: Date;
+    timeZone: string;
+  },
+): Promise<ChangeSessionResult> {
+  assertOwner(input.ownerId);
+  const sessionId = parseStudySessionId(input.sessionId);
+  const action = z.enum(SESSION_ACTIONS).safeParse(input.action);
+  if (
+    !sessionId ||
+    !action.success ||
+    !["active", "paused", "completed", "abandoned"].includes(String(input.expectedStatus))
+  )
+    return { ok: false, reason: "invalid-input" };
+  const session = await sessions.get({ ownerId: input.ownerId, sessionId });
+  if (!session || session.ownerId !== input.ownerId) return { ok: false, reason: "not-found" };
+  const status = nextSessionStatus(session.status, action.data);
+  if (!status) return { ok: false, reason: "invalid-transition" };
+  // A lost response may be retried, but never resurrect a terminal session.
+  if (status === session.status) return { ok: true, session };
+  if (session.status !== input.expectedStatus) return { ok: false, reason: "session-changed" };
+  if (action.data === "complete" || action.data === "resume") {
+    const current = await getDailyQueue(queue, {
+      ownerId: input.ownerId,
+      courseId: session.courseId,
+      deckIds: session.scope.deckIds,
+      now: input.now,
+      timeZone: input.timeZone,
+    });
+    if (!current.ok) return current;
+    if (action.data === "complete" && current.queue.entries.length > 0)
+      return { ok: false, reason: "items-available" };
+  }
+  const changed = await sessions.transition({
+    ownerId: input.ownerId,
+    sessionId,
+    expectedStatus: session.status,
+    status,
+    endedAt:
+      status === "completed" || status === "abandoned"
+        ? new Date(Math.max(input.now.getTime(), session.startedAt.getTime()))
+        : null,
+  });
+  return changed ? { ok: true, session: changed } : { ok: false, reason: "session-changed" };
+}
+
+export async function listOpenStudySessions(
+  sessions: StudySessionRepository,
+  input: { ownerId: string; courseId: string },
+): Promise<StudySession[]> {
+  assertOwner(input.ownerId);
+  return sessions.listOpen(input);
 }
 
 interface StudyInput {

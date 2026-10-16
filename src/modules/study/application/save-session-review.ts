@@ -70,7 +70,6 @@ export async function saveSessionReview(
     sessionId: intent.sessionId,
   });
   if (!session || session.ownerId !== input.ownerId) return { ok: false, reason: "not-found" };
-  if (session.status !== "active") return { ok: false, reason: "inactive-session" };
 
   const readReceipt = () =>
     ports.committer.findByIdempotencyKey({
@@ -93,6 +92,7 @@ export async function saveSessionReview(
   // A committed retry must work after its card has left the live queue.
   const existing = await readReceipt();
   if (existing) return receiptResult(existing);
+  if (session.status !== "active") return { ok: false, reason: "inactive-session" };
   const available = await getDailyQueue(ports.queue, {
     ownerId: input.ownerId,
     courseId: session.courseId,
