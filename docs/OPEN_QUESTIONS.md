@@ -4,7 +4,7 @@
 > Cada entrada tiene un ID estable `Q-nnn` que nunca se reutiliza.
 > Protocolo: `ROADMAP.md` §3.5 (documento privado y local).
 
-**Última actualización:** 2026-10-16
+**Última actualización:** 2026-10-18
 
 ## Índice de estado
 
@@ -409,6 +409,10 @@ Hasta recibir ese informe, no marcar la tarea `HECHO` ni cerrar el hito.
 ### Resolución
 
 Pendiente de informe manual del propietario. No se presume aprobación ni éxito.
+Preparación 2026-10-18: cuenta local existente y curso/mazo con cuatro tarjetas
+sintéticas disponibles, sin repasos consumidos; Hoy abre en `/es/app` o `/en/app`.
+Se verifica código local de LEX-6.13 y se corrige la URL de la guía. El propietario
+confirma que aún no ha realizado las comprobaciones físicas; Q-009 sigue ABIERTA.
 
 ---
 

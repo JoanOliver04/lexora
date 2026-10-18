@@ -2,6 +2,8 @@
 
 **Fecha:** 2026-10-16
 
+**Última preparación local:** 2026-10-18; no constituye aceptación física.
+
 **Rama / base:** `test/lex-6-13-responsive-validation` / `f6cbdc5`
 
 **Estado:** `EN PROCESO`. Q-009 abierta: falta informe manual del propietario.
@@ -83,12 +85,43 @@ Checkpoint conservado en un commit local, sin marcar la tarea HECHO.
 
 ## Cómo probar la versión correcta
 
+### Preparación comprobada el 2026-10-18
+
+HEAD de producto `b140047`, árbol de código limpio. Hay dos procesos locales
+existentes en 3000: servidor optimizado en IPv4 loopback y desarrollo en IPv6.
+La pestaña de Chrome en `localhost` usa el de desarrollo. Ambos devuelven HTTP
+200 y sirven la regla CSS corregida de LEX-6.13. Las configuraciones de desarrollo
+y producción local apuntan a Supabase loopback en 54321 y sitio localhost 3000;
+verificación sin imprimir claves. No se detiene ni se reconfigura ningún proceso.
+
+La cuenta autenticada de la pestaña local existía, pero no había completado el
+onboarding ni tenía curso/contenido. Por autorización del propietario se completó
+el curso de prueba con A1 inicial y cupo de 5 nuevos al día, y se crearon mediante
+los formularios normales un mazo «Prueba local LEX-6.13», dos conceptos sintéticos
+y cuatro tarjetas: reconocimiento, recuperación, completar huecos y una segunda
+de reconocimiento con texto largo/pista. Los dos conceptos están ligados al mazo.
+No se crea otra cuenta, no se accede a contraseñas y no se usa un cliente privilegiado.
+
+La sesión real del navegador confirma Hoy con 4 nuevas disponibles, 0 repasos
+realizados y el enlace «Empezar sesión» habilitado. No hay una sesión de estudio
+anterior; no se ha creado ninguna ni valorado tarjetas durante esta preparación.
+Se deja la pestaña en `http://localhost:3000/es/app`.
+
+`/es` y `/en` son la portada pública, aunque indiquen «Cerrar sesión»; no son Hoy.
+Rutas exactas: **`http://localhost:3000/es/app`** y **`http://localhost:3000/en/app`**.
+Health del servidor usado por Chrome: HTTP 200, `status: ok`.
+
+Solo se prepara contenido sintético de la cuenta local actual. Sin seed, reset,
+SQL ad hoc, migración, cambio de plan o acceso a producción. Las comprobaciones
+físicas y de lector real siguen sin realizarse: Q-009 abierta y tarea EN PROCESO.
+
 ### Windows
 
-Build local iniciado en segundo plano, escuchando únicamente en `127.0.0.1:3000`;
-no en toda la red. Logs ignorados en `test-results/manual-lex-6-13-server*.log`.
-Abrir `http://localhost:3000/es` y `/en` con el build local de esta rama.
-Si el servidor ya no está activo, desde la raíz del repositorio:
+El servidor optimizado preparado el 16 sigue en `127.0.0.1:3000`, con logs
+ignorados en `test-results/manual-lex-6-13-server*.log`; el 18 se detecta además
+el servidor de desarrollo descrito arriba. Ambos usan el código local correcto.
+Abrir `http://localhost:3000/es/app` y `/en/app` con la cuenta local de prueba.
+Solo si no queda ningún servidor activo en 3000, desde la raíz del repositorio:
 
 ```powershell
 pnpm build
@@ -111,7 +144,7 @@ la conexión no depende de exponerlo a Internet. Preparación basada en la
    y comprobar que aparece el teléfono. Abrir **Port forwarding**.
 3. Activar el reenvío y añadir dos pares: `3000` → `127.0.0.1:3000` y
    `54321` → `127.0.0.1:54321`. El segundo permite el Auth local del navegador.
-4. En Chrome del teléfono abrir `http://localhost:3000/es` y luego `/en`.
+4. En Chrome del teléfono abrir `http://localhost:3000/es/app` y luego `/en/app`.
    Mantener PC, servicios y cable conectados. Si no carga, detener esta prueba;
    no sustituir la URL por la de producción ni cambiar claves.
 5. Al acabar, desactivar reenvío y depuración USB. No enviar capturas con

@@ -1,11 +1,21 @@
 # Lexora — Estado actual
 
-**Última actualización:** 2026-10-16
+**Última actualización:** 2026-10-18
 **Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (12/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M6 — Alfa personal multidispositivo — `EN PROCESO`. M5 y M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
 **Tarea activa:** LEX-6.13 `EN PROCESO`, continuación autorizada el 2026-10-16; aceptación física pendiente.
 **Estado de la tarea:** matriz responsive de 80 combinaciones y corrección del solapamiento de etiquetas/cifras del resumen a 320 px con texto al 200 %. Gate general 738 PASS + 1 omitida; E2E dirigido 12 PASS y completo 124 PASS + 4 omitidas, sin reintentos de Playwright. Revisión independiente sin hallazgos. Build local en loopback para aceptación. Q-009 abierta: falta informe en Windows/Poco F5 físico y lector real; escalado CSS no sustituye zoom nativo. Sin migración, dependencia o cambio de ADR; sin seed/reset/publicación. Guarda de LEX-6.10 pendiente de producción.
 **Rama / base:** `test/lex-6-13-responsive-validation` / `f6cbdc5`. LEX-6.12 conservada en ese commit local. Validación responsive y preparación de aceptación local; sin push, CI remota ni cambios en producción.
+
+**Preparación 2026-10-18:** producto local `b140047` verificado, incluido el CSS
+corregido. Chrome usa desarrollo por IPv6; también existe servidor optimizado
+IPv4 con el mismo cambio. Ambos entornos locales apuntan a Supabase local.
+Cuenta actual autenticada, onboarding de prueba completado, un mazo/dos conceptos/
+cuatro tarjetas sintéticas listos mediante formularios normales. Hoy confirma
+4 nuevas disponibles y 0 repasos, sin sesión iniciada. URL exacta:
+`http://localhost:3000/es/app` (EN: `/en/app`), no `/es`. Health 200. Sin seed,
+reset, migración, credenciales expuestas o producción. Q-009 permanece abierta;
+el propietario todavía no ha realizado la prueba física.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
