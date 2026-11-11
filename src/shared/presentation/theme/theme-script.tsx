@@ -15,7 +15,7 @@ import { THEME_STORAGE_KEY } from "./theme";
  * restrictivo. Si falla, se queda el tema claro, que es el valor por defecto del
  * CSS: la pagina se ve bien igualmente.
  */
-export function ThemeScript() {
+export function ThemeScript({ nonce }: { nonce?: string | undefined } = {}) {
   const script = `
 (function () {
   try {
@@ -29,5 +29,5 @@ export function ThemeScript() {
 })();
 `.trim();
 
-  return <script dangerouslySetInnerHTML={{ __html: script }} />;
+  return <script nonce={nonce} dangerouslySetInnerHTML={{ __html: script }} />;
 }

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createSupabaseDatabaseProbe } from "./supabase-database-probe";
+vi.mock("@/env/deployment", () => ({ privateBackendEnabled: () => true }));
 
 vi.mock("@/env/client", () => ({
   clientEnv: {

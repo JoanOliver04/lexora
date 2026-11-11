@@ -1,15 +1,17 @@
-# Seguridad de entradas no confiables
+# Seguridad de Lexora
 
-Cómo trata Lexora un archivo que alguien sube. Complementa
+Autenticación, RLS y cambios de datos se documentan en los ADR y sus evidencias.
+El [contrato de despliegue](DEPLOYMENT_SECURITY.md) cubre CSP/cookies, Preview,
+CI y secretos; [ciclo de datos](DATA_LIFECYCLE.md) cubre exportación/borrado y
+conservación. Esta sección describe cómo se trata un archivo importado. Complementa
 [`IMPORT_FORMAT.md`](IMPORT_FORMAT.md) (forma del archivo) y
 [`DATA_MODEL.md`](DATA_MODEL.md) (dónde se registra el trabajo). Las reglas de
 producto viven en `MASTER_SPEC.md` §16; este documento registra **cómo** se
 aplican en el código, sin copiar esa especificación.
 
-> **Alcance actual (LEX-4.5, cierre M4 en LEX-4.11):** validación y
-> saneamiento de la importación TXT/CSV. Autenticación, RLS y secretos se
-> cubren en los ADR y en las evidencias de FASE 1–3. Rate limiting / cuotas
-> de importación queda para FASE 8 (gate 12.6).
+> El saneamiento de importación no sustituye Auth/RLS ni límites de ejecución.
+> Las cuotas de importación y su rendimiento máximo requieren su verificación
+> específica; el export propio ya tiene cooldown persistido y tamaño acotado.
 
 ## Por qué hay más de una barrera
 
@@ -52,10 +54,9 @@ seguro, es **dejar de tener HTML**.
 
 ## Fórmulas CSV
 
-Neutralizar `=`, `+`, `-`, `@` al **exportar** (para que una hoja de cálculo
-no interprete una celda como fórmula) no aplica aquí: esta tarea no escribe
-CSV. Queda para la exportación (FASE 8). Un valor que empiece por `=` se
-guarda como texto.
+Al importar, un valor que empieza por `=` se guarda como texto. Al exportar se
+neutralizan fórmulas incluidas las que llevan controles/caracteres invisibles
+delante. Contrato y prueba real de hoja de cálculo en [DATA_EXPORT](DATA_EXPORT.md).
 
 ## Duplicados
 
@@ -70,6 +71,5 @@ elección.
 ## Qué no cubre esto
 
 - Cuotas o cooldowns de importación por cuenta (gate 12.6 / FASE 8).
-- Neutralizar `=`/`+`/`-`/`@` al **exportar** CSV (FASE 8).
 - Timeout de Server Action en hosting para un lote de ~110 s (anotado en
   LEX-4.10; el tope local de 1.016 filas cabe).

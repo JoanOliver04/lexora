@@ -4,8 +4,10 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 import { clientEnv } from "@/env/client";
+import { privateBackendEnabled, PreviewAccessError } from "@/env/deployment";
 
 import type { Database } from "./database.types";
+import { supabaseCookieOptions } from "./cookie-options";
 
 /**
  * Cliente para Server Components, Server Actions y Route Handlers.
@@ -21,12 +23,14 @@ import type { Database } from "./database.types";
  * descuido en una consulta expondría datos de otros usuarios.
  */
 export async function createSupabaseServerClient() {
+  if (!privateBackendEnabled()) throw new PreviewAccessError();
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
     clientEnv.NEXT_PUBLIC_SUPABASE_URL,
     clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     {
+      cookieOptions: supabaseCookieOptions(clientEnv.NEXT_PUBLIC_SITE_URL),
       cookies: {
         getAll() {
           return cookieStore.getAll();

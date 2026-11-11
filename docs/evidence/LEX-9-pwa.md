@@ -53,3 +53,9 @@ La instalación del E2E usa un evento simulado para comprobar el contrato de la
 interfaz; no acredita instalación del sistema operativo. Q-009 física, lector
 real y zoom nativo permanecen pendientes. No se declara estudio offline.
 Contrato: [PWA](../PWA.md).
+
+Publicación autorizada: PR #106, CI43076434974 con tres SUCCESS; merge
+`257765f7ece53e2eb33da16536f1ebc5f3c595f7`, deployment7718366494 SUCCESS.
+Health canónico200 con app/database true después del despliegue. Sin migración,
+dependencia nueva o apertura del registro. La comprobación HTTP no acredita
+instalación en el sistema operativo.

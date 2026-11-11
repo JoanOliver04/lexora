@@ -5,9 +5,11 @@ on:
     branches: [main]
   pull_request:
 
-# Un push nuevo sobre la misma rama cancela la ejecucion anterior: revisar el
-# resultado de un commit que ya ha sido reemplazado no sirve de nada, y gasta
-# minutos.
+# The build/test pipeline needs no repository write token.
+permissions:
+  contents: read
+
+# Cancel superseded work for the same branch.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -19,18 +21,36 @@ env:
   # valor de secreto.
   NEXT_PUBLIC_SITE_URL: http://localhost:3000
   NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
+  # Deliberately public disposable-local key; revisit if endpoint changes (2027-Q1).
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH # gitleaks:allow
 
 jobs:
   calidad:
     name: Calidad
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
 
-      - uses: pnpm/action-setup@v6
+      - name: Secretos del historial
+        # Official binary, pinned version and SHA256; no network validation of
+        # credentials. Redaction applies to output and a finding fails the job.
+        run: |
+          scanner_dir="$(mktemp -d)"
+          curl --fail --silent --show-error --location --retry 3 \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz \
+            --output "$scanner_dir/scanner.tar.gz"
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $scanner_dir/scanner.tar.gz" | sha256sum --check --strict
+          tar -xzf "$scanner_dir/scanner.tar.gz" -C "$scanner_dir" gitleaks
+          test "$("$scanner_dir/gitleaks" version)" = "8.30.1"
+          "$scanner_dir/gitleaks" git --no-banner --redact --timeout 120 --log-opts="--all" .
 
-      - uses: actions/setup-node@v7
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           # Desde `.nvmrc`, para que no haya dos sitios que definan la version.
           node-version-file: .nvmrc
@@ -41,6 +61,9 @@ jobs:
         # `package.json`. Sin el, la CI instalaria versiones distintas de las
         # que se probaron en local y aprobaria un arbol que nadie ha ejecutado.
         run: pnpm install --frozen-lockfile
+
+      - name: Vulnerabilidades de dependencias
+        run: pnpm audit
 
       - name: Formato
         run: pnpm format:check
@@ -66,12 +89,15 @@ jobs:
   base-de-datos:
     name: Base de datos
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -134,12 +160,15 @@ jobs:
   e2e:
     name: Extremo a extremo
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -189,9 +218,12 @@ jobs:
           LEXORA_TEST_PERSONAL_ACCESS: "1"
         run: pnpm exec playwright test --config playwright.personal.config.ts --retries=0
 
+      - name: Preview sin acceso al backend personal
+        run: pnpm exec playwright test --config playwright.preview.config.ts --retries=0
+
       - name: Guardar el informe si algo falla
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: playwright-report
           path: playwright-report/

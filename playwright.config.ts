@@ -23,7 +23,7 @@ const pocoF5 = {
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testIgnore: "**/personal-access.spec.ts",
+  testIgnore: ["**/personal-access.spec.ts", "**/preview-access.spec.ts"],
 
   // En la CI, un `test.only` olvidado haria pasar la suite ejecutando un solo
   // test. Aqui falla en su lugar.

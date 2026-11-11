@@ -13,7 +13,8 @@ propio estado de memoria.
 > permite pausar y reanudar y recupera errores sin duplicar repasos. Historial y
 > estadísticas y ajustes ES/EN publicados. La entrega actual es de uso personal,
 > con registro público cerrado, exportación JSON/CSV verificada y borrado propio
-> con reautenticación. PWA y hardening final en desarrollo.
+> con reautenticación. PWA con fallback neutral publicada; refuerzo de despliegue,
+> rendimiento y recuperación en curso.
 > Todavía no es una V1 terminada.
 > Ver [`docs/STATUS.md`](docs/STATUS.md) para evidencia y límites actuales.
 
@@ -28,7 +29,7 @@ propio estado de memoria.
 
 Saber reconocer *achievement* no marca automáticamente como dominada su producción.
 
-## Stack previsto
+## Stack
 
 - **Aplicación:** Next.js (App Router), React, TypeScript estricto, pnpm
 - **Datos e identidad:** Supabase — PostgreSQL, Auth con sesión SSR, Row Level Security
@@ -85,6 +86,10 @@ El detalle de ramas, commits, versiones fijadas, migraciones y entornos está en
 | [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) | Entidades, relaciones y convenciones del esquema. |
 | [`docs/FSRS.md`](docs/FSRS.md) | Integración de la repetición espaciada: puerto, transacción y tiempo. |
 | [`docs/STATISTICS.md`](docs/STATISTICS.md) | Historial, métricas, denominadores y límites de la previsión. |
+| [`docs/SECURITY.md`](docs/SECURITY.md) | Entradas no confiables y enlaces a los contratos de protección. |
+| [`docs/DEPLOYMENT_SECURITY.md`](docs/DEPLOYMENT_SECURITY.md) | CSP, cookies, Preview, CI y revisión de secretos. |
+| [`docs/DATA_LIFECYCLE.md`](docs/DATA_LIFECYCLE.md) | Conservación, exportación y borrado propio con reautenticación. |
+| [`docs/PWA.md`](docs/PWA.md) | Instalación explícita, actualizaciones y límite del fallback offline. |
 | [`docs/GLOSSARY.md`](docs/GLOSSARY.md) | Términos del dominio y convenciones de nombres. |
 | [`docs/CONTENT_POLICY.md`](docs/CONTENT_POLICY.md) | Qué contenido puede vivir en un repositorio público. |
 | [`docs/WORKFLOW.md`](docs/WORKFLOW.md) | Ramas, commits, versiones fijadas, migraciones y entornos. |

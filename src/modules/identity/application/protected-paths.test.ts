@@ -3,6 +3,11 @@ import { describe, expect, it } from "vitest";
 import { isProtectedPath } from "./protected-paths";
 
 describe("isProtectedPath", () => {
+  it("covers the sibling library and import routes, including encoded names and dots", () => {
+    for (const path of ["/es/decks", "/en/concepts/word.with.dot", "/es/import", "/en/%64ecks/a"])
+      expect(isProtectedPath(path)).toBe(true);
+    expect(isProtectedPath("/en/imported")).toBe(false);
+  });
   it("reconoce el área autenticada en cada idioma", () => {
     expect(isProtectedPath("/es/app")).toBe(true);
     expect(isProtectedPath("/en/app")).toBe(true);

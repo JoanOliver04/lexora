@@ -1,6 +1,7 @@
 import type { DatabaseProbe } from "@/shared/application/health/check-health";
 
 import { clientEnv } from "@/env/client";
+import { privateBackendEnabled } from "@/env/deployment";
 
 /**
  * Database access probe through the Supabase Data API.
@@ -18,6 +19,7 @@ import { clientEnv } from "@/env/client";
 export function createSupabaseDatabaseProbe(timeoutMs = 3000): DatabaseProbe {
   return {
     async isReachable() {
+      if (!privateBackendEnabled()) return false;
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
 

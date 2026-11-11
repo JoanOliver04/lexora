@@ -122,7 +122,7 @@ describe("Public-only service worker cache boundary", () => {
     w.buckets.set("unrelated-cache", new Map());
     w.buckets.set("lexora-public-old", new Map());
     await w.lifecycle("activate");
-    expect([...w.buckets.keys()]).toEqual(["lexora-public-v1", "unrelated-cache"]);
+    expect([...w.buckets.keys()]).toEqual(["lexora-public-v2", "unrelated-cache"]);
     expect(w.claim).toHaveBeenCalledOnce();
     w.fetch.mockRejectedValue(new Error("Offline"));
     expect(await (await w.request("/es/app?private=ignored", "navigate"))!.text()).toBe(

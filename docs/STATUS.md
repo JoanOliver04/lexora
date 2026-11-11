@@ -1,5 +1,20 @@
 # Lexora — Estado actual
 
+> **Publicación 2026-11-11 — PWA:** PR #106 integrado como `257765f`, CI
+> 43076434974 con los tres trabajos SUCCESS y deployment 7718366494 SUCCESS.
+> Health 200 app/database true. Manifest, instalación explícita, fallback neutral
+> y caché de cuatro recursos públicos publicados; ninguna migración nueva.
+> Verificación: 861 PASS + 1 omitida, E2E154 PASS + 4 omisiones condicionales,
+> build cerrado4 PASS. Instalación física, zoom nativo y lector real pendientes.
+> Trabajo actual `feat/v1-security-hardening`: CSP por respuesta, cookies HTTPS,
+> bloqueo de backend en Preview, CI fijada y depuración de errores de biblioteca.
+> Gates locales completos: 881 PASS + 1 omitida y build; navegador completo
+> 160 PASS + 4 omisiones, cerrado 4 PASS, Preview 4 PASS. SW v2 actualiza
+> cabeceras cacheadas desde el worker publicado: 12 dirigidas PASS y 8 finales
+> PASS tras aislar ediciones de cookies de prefetches. Tres revisiones cerradas.
+> Dependencias sin vulnerabilidades conocidas; Gitleaks árbol/historial/bundle
+> sin hallazgos no autorizados. Preparación de PR y controles protegidos.
+
 > **Publicación 2026-11-11 — ciclo de datos personal:** PR #105 integrado como
 > `0a98f32`, CI 43066684124 tres SUCCESS; deployment 7716863603 SUCCESS. Migración
 > 20261111163306 aplicada, 21 en producción y dry-run limpio. Health 200

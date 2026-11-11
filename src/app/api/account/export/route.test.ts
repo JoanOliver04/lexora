@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+vi.mock("@/composition/deployment", () => ({ isPrivateAccessEnabled: () => true }));
 import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 const { ownData } = vi.hoisted(() => ({ ownData: vi.fn() }));

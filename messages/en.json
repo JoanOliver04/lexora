@@ -645,6 +645,7 @@
       "summary_tooLong": "The summary is too long.",
       "explanation_tooLong": "The explanation is too long.",
       "example_tooLong": "The example is too long.",
+      "sourceReference_tooLong": "The source reference cannot exceed 500 characters.",
       "cefrLevel_invalid": "That level isn't valid."
     },
     "tags": {
@@ -726,7 +727,12 @@
       "weak-password": "That password is too weak. Try a longer one.",
       "missing-recovery-session": "This recovery link has expired. Request a new one.",
       "registration-closed": "New account registration is closed.",
+      "preview-disabled": "Personal access is disabled in this preview.",
       "auth-unavailable": "We couldn't complete that. Please try again in a moment."
+    },
+    "preview": {
+      "title": "Lexora preview",
+      "description": "Personal access is only available in your usual app. This preview does not connect to your data."
     },
     "login": {
       "title": "Sign in to Lexora",

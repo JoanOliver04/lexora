@@ -1,0 +1,3 @@
+# Historical disposable-local Supabase publishable key, deliberately public.
+# Only this exact finding is excluded; recheck if CI endpoint changes (2027-Q1).
+8f677bab8959b6b0afeae68bb0895cc04b42ec20:.github/workflows/ci.yml:generic-api-key:22

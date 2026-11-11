@@ -178,7 +178,7 @@ export async function createConceptAction(
     }
   } catch (error) {
     if (error instanceof LibraryError) {
-      console.error("createConceptAction", error);
+      console.error("createConceptAction", error.kind);
       return { error: "generic", values: fieldValuesFromForm(formData) };
     }
     throw error;
@@ -211,7 +211,7 @@ export async function updateConceptAction(
     }
   } catch (error) {
     if (error instanceof LibraryError) {
-      console.error("updateConceptAction", error);
+      console.error("updateConceptAction", error.kind);
       return { error: "generic" };
     }
     throw error;
@@ -282,7 +282,7 @@ export async function attachTagAction(
     await tagConcept(scope.context.tags, scope.context.ownerId, { conceptId, tagId });
   } catch (error) {
     if (error instanceof LibraryError) {
-      console.error("attachTagAction", error);
+      console.error("attachTagAction", error.kind);
       return { error: "generic" };
     }
     throw error;
@@ -330,7 +330,7 @@ export async function createPracticeItemAction(
     }
   } catch (error) {
     if (error instanceof LibraryError) {
-      console.error("createPracticeItemAction", error);
+      console.error("createPracticeItemAction", error.kind);
       return { error: "generic" };
     }
     throw error;
@@ -364,7 +364,7 @@ export async function updatePracticeItemAction(
     }
   } catch (error) {
     if (error instanceof LibraryError) {
-      console.error("updatePracticeItemAction", error);
+      console.error("updatePracticeItemAction", error.kind);
       return { error: "generic" };
     }
     throw error;
@@ -421,7 +421,7 @@ export async function reversePracticeItemAction(formData: FormData): Promise<voi
       await createReversePracticeItem(scope.context.practiceItems, scope.context.ownerId, item);
     } catch (error) {
       if (error instanceof LibraryError) {
-        console.error("reversePracticeItemAction", error);
+        console.error("reversePracticeItemAction", error.kind);
       } else {
         throw error;
       }

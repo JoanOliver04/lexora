@@ -87,7 +87,7 @@ export async function createDeckAction(
     }
   } catch (error) {
     if (error instanceof LibraryError) {
-      console.error("createDeckAction", error);
+      console.error("createDeckAction", error.kind);
       return { error: "generic" };
     }
     throw error;
@@ -120,7 +120,7 @@ export async function updateDeckAction(
     }
   } catch (error) {
     if (error instanceof LibraryError) {
-      console.error("updateDeckAction", error);
+      console.error("updateDeckAction", error.kind);
       return { error: "generic" };
     }
     throw error;

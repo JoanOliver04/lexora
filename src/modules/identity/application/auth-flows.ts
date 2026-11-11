@@ -24,6 +24,7 @@ export type AuthErrorCode =
   | "weak-password"
   | "missing-recovery-session"
   | "registration-closed"
+  | "preview-disabled"
   | "auth-unavailable";
 
 export type AuthResult<T = Record<never, never>> =

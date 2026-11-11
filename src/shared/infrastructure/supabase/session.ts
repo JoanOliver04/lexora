@@ -2,8 +2,10 @@ import { createServerClient } from "@supabase/ssr";
 import type { NextRequest, NextResponse } from "next/server";
 
 import { clientEnv } from "@/env/client";
+import { privateBackendEnabled } from "@/env/deployment";
 
 import type { Database } from "./database.types";
+import { supabaseCookieOptions } from "./cookie-options";
 
 /**
  * Renueva la sesión y propaga las cookies resultantes.
@@ -31,10 +33,12 @@ export async function refreshSupabaseSession(
   request: NextRequest,
   response: NextResponse,
 ): Promise<{ response: NextResponse; userId: string | null; entryLocale: "es" | "en" | null }> {
+  if (!privateBackendEnabled()) return { response, userId: null, entryLocale: null };
   const supabase = createServerClient<Database>(
     clientEnv.NEXT_PUBLIC_SUPABASE_URL,
     clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     {
+      cookieOptions: supabaseCookieOptions(clientEnv.NEXT_PUBLIC_SITE_URL),
       cookies: {
         getAll() {
           return request.cookies.getAll();
