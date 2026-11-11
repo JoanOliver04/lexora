@@ -925,6 +925,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      attach_library_tag: {
+        Args: {
+          p_concept_id: string
+          p_course_id: string
+          p_display_name: string
+          p_normalized_name: string
+          p_owner_id: string
+        }
+        Returns: string
+      }
       begin_import_job: {
         Args: {
           p_course_id: string
@@ -982,6 +992,10 @@ export type Database = {
         }
         Returns: string
       }
+      count_library_deck_concepts: {
+        Args: { p_deck_ids: string[]; p_owner_id: string }
+        Returns: Json
+      }
       delete_own_account: {
         Args: { p_confirmation: string; p_email: string }
         Returns: boolean
@@ -989,6 +1003,19 @@ export type Database = {
       export_account_data: { Args: never; Returns: Json }
       preview_import_duplicates: {
         Args: { p_course_id: string; p_rows: Json }
+        Returns: Json
+      }
+      read_library_deck_detail: {
+        Args: {
+          p_available_offset?: number
+          p_available_search?: string
+          p_course_id: string
+          p_deck_id: string
+          p_limit?: number
+          p_member_offset?: number
+          p_member_search?: string
+          p_owner_id: string
+        }
         Returns: Json
       }
       save_preferences: {

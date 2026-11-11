@@ -5,9 +5,8 @@ import { getActiveCourseForCurrentUser } from "@/composition/courses";
 import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
-import { listConcepts } from "@/modules/library/application/concept";
-import { listDeckConcepts, listDecks } from "@/modules/library/application/deck";
-import { Button } from "@/shared/presentation/components";
+import { parseDeckDetailQuery, readDeckDetail } from "@/modules/library/application/deck-detail";
+import { Button, Input, Label } from "@/shared/presentation/components";
 
 import {
   linkConceptToDeckAction,
@@ -15,26 +14,26 @@ import {
   unlinkConceptFromDeckAction,
 } from "../actions";
 import { EditDeckForm } from "../edit-deck-form";
+import { DeckDetailNavigation } from "../deck-detail-navigation";
+import { deckDetailParams } from "../deck-detail-query";
 
 /**
  * Detalle y edición de un mazo (LEX-3.5).
  *
- * `DeckRepository` no tiene un `get` por id (LEX-3.4): se lee la lista completa
- * —incluidos los archivados, para poder editar y restaurar uno archivado— y se
- * busca. Con los pocos mazos de un curso en la V1 es asumible; un `get`
- * dedicado se añadiría si LEX-3.9 lo pide.
+ * One owner-bound read returns the deck, exact counts and bounded pages.
+ * Archived decks remain readable for editing/restoration.
  *
  * Misma puerta de onboarding por página que la lista (deuda anotada).
  *
- * **Vincular conceptos a este mazo vive aquí** (LEX-3.6), no en el detalle de
- * concepto: esta página ya lee `listDeckConcepts` de un mazo concreto barato;
- * hacerlo al revés («mazos que contienen este concepto») exigiría un método
- * nuevo en `DeckRepository` sin caso de uso que lo pida todavía.
+ * Vincular y quitar conceptos sigue usando los casos de uso de biblioteca;
+ * buscar o paginar solo consulta y no modifica las relaciones.
  */
 export default async function DeckDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; deckId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, deckId } = await params;
   setRequestLocale(locale);
@@ -53,23 +52,28 @@ export default async function DeckDetailPage({
     redirect(`/${locale}/login`);
   }
 
-  const decks = await listDecks(context.decks, context.ownerId, activeCourse.id, {
-    includeArchived: true,
-  });
-  const deck = decks.find((candidate) => candidate.id === deckId);
-  if (!deck) {
+  const query = parseDeckDetailQuery(await searchParams);
+  const detail = await readDeckDetail(
+    context.deckDetails,
+    context.ownerId,
+    activeCourse.id,
+    deckId,
+    query,
+  );
+  if (!detail) {
     notFound();
   }
 
-  const linked = await listDeckConcepts(context.decks, context.ownerId, deck.id);
-  const linkedIds = new Set(linked.map((item) => item.concept.id));
-  const courseConcepts = await listConcepts(context.concepts, context.ownerId, activeCourse.id);
-  const available = courseConcepts.filter((concept) => !linkedIds.has(concept.id));
+  const { deck, members: linked, available } = detail;
+  const memberPage = Math.floor(linked.offset / detail.pageSize) + 1;
+  const availablePage = Math.floor(available.offset / detail.pageSize) + 1;
+  const linkQuery = deckDetailParams(query, memberPage, availablePage);
+  const returnQuery = new URLSearchParams(linkQuery).toString();
 
   const t = await getTranslations("Library");
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-8 px-6 py-12">
+    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-8 px-6 py-12 [overflow-wrap:anywhere]">
       <header className="flex flex-col gap-2">
         <Link
           href="/decks"
@@ -88,20 +92,45 @@ export default async function DeckDetailPage({
       <section className="flex flex-col gap-3 border-t border-(--color-border) pt-8">
         <h2 className="text-lg font-medium">{t("conceptsHeading")}</h2>
         <p className="text-sm text-(--color-ink-muted)">
-          {t("conceptCount", { count: linked.length })}
+          {t("conceptCount", { count: detail.memberCount })}
         </p>
 
-        {linked.length === 0 ? (
-          <p className="text-sm text-(--color-ink-muted)">{t("emptyDeckConcepts")}</p>
+        <form
+          method="get"
+          aria-label={t("memberSearchLabel")}
+          className="flex flex-wrap items-end gap-3"
+        >
+          <input type="hidden" name="available" value={query.availableSearch} />
+          <input type="hidden" name="availablePage" value={String(availablePage)} />
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <Label htmlFor="deck-member-search">{t("memberSearchLabel")}</Label>
+            <Input
+              id="deck-member-search"
+              name="members"
+              type="search"
+              maxLength={200}
+              defaultValue={query.memberSearch}
+            />
+          </div>
+          <Button type="submit" variant="secondary">
+            {t("detailSearchSubmit")}
+          </Button>
+        </form>
+
+        {linked.items.length === 0 ? (
+          <p className="text-sm text-(--color-ink-muted)">
+            {t(query.memberSearch ? "memberSearchEmpty" : "emptyDeckConcepts")}
+          </p>
         ) : (
           <ul className="flex flex-col gap-2">
-            {linked.map(({ concept }) => (
+            {linked.items.map((concept) => (
               <li
                 key={concept.id}
                 className="flex items-center justify-between gap-3 rounded-(--radius-control) border border-(--color-border) px-3 py-2"
               >
                 <span className="text-sm">{concept.title}</span>
-                <form action={unlinkConceptFromDeckAction}>
+                <form action={unlinkConceptFromDeckAction} className="shrink-0">
+                  <input type="hidden" name="returnQuery" value={returnQuery} />
                   <input type="hidden" name="locale" value={locale} />
                   <input type="hidden" name="deckId" value={deck.id} />
                   <input type="hidden" name="conceptId" value={concept.id} />
@@ -113,12 +142,44 @@ export default async function DeckDetailPage({
             ))}
           </ul>
         )}
+        <DeckDetailNavigation
+          deckId={deck.id}
+          result={linked}
+          pageSize={detail.pageSize}
+          pageKey="memberPage"
+          query={linkQuery}
+          label={t("membersPaginationLabel")}
+        />
 
-        {available.length > 0 ? (
+        <h3 className="pt-3 font-medium">{t("availableHeading")}</h3>
+        <form
+          method="get"
+          aria-label={t("availableSearchLabel")}
+          className="flex flex-wrap items-end gap-3"
+        >
+          <input type="hidden" name="members" value={query.memberSearch} />
+          <input type="hidden" name="memberPage" value={String(memberPage)} />
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <Label htmlFor="deck-available-search">{t("availableSearchLabel")}</Label>
+            <Input
+              id="deck-available-search"
+              name="available"
+              type="search"
+              maxLength={200}
+              defaultValue={query.availableSearch}
+            />
+          </div>
+          <Button type="submit" variant="secondary">
+            {t("detailSearchSubmit")}
+          </Button>
+        </form>
+
+        {available.items.length > 0 ? (
           <form action={linkConceptToDeckAction} className="flex flex-wrap items-end gap-3 pt-2">
+            <input type="hidden" name="returnQuery" value={returnQuery} />
             <input type="hidden" name="locale" value={locale} />
             <input type="hidden" name="deckId" value={deck.id} />
-            <div className="flex flex-col gap-2">
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
               <label
                 htmlFor="link-concept"
                 className="text-sm font-medium text-(--color-ink-muted)"
@@ -129,9 +190,9 @@ export default async function DeckDetailPage({
                 id="link-concept"
                 name="conceptId"
                 required
-                className="w-full min-h-11 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-ink)"
+                className="w-full min-w-0 max-w-full min-h-11 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-ink)"
               >
-                {available.map((concept) => (
+                {available.items.map((concept) => (
                   <option key={concept.id} value={concept.id}>
                     {concept.title}
                   </option>
@@ -143,8 +204,18 @@ export default async function DeckDetailPage({
             </Button>
           </form>
         ) : (
-          <p className="text-sm text-(--color-ink-subtle)">{t("linkConceptEmpty")}</p>
+          <p className="text-sm text-(--color-ink-subtle)">
+            {t(query.availableSearch ? "availableSearchEmpty" : "linkConceptEmpty")}
+          </p>
         )}
+        <DeckDetailNavigation
+          deckId={deck.id}
+          result={available}
+          pageSize={detail.pageSize}
+          pageKey="availablePage"
+          query={linkQuery}
+          label={t("availablePaginationLabel")}
+        />
       </section>
 
       <form action={setDeckArchivedAction} className="border-t border-(--color-border) pt-8">

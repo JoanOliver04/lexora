@@ -525,6 +525,14 @@
     }
   },
   "Library": {
+    "memberSearchLabel": "Search within this deck",
+    "availableSearchLabel": "Search concepts to add",
+    "detailSearchSubmit": "Search",
+    "memberSearchEmpty": "No concepts in this deck match your search.",
+    "availableSearchEmpty": "No available concepts match your search.",
+    "membersPaginationLabel": "Deck concept pages",
+    "availablePaginationLabel": "Available concept pages",
+    "availableHeading": "Add concepts",
     "decksTitle": "Decks",
     "decksIntro": "Group the course's concepts to decide what to study. A deck doesn't hold your progress, only the selection.",
     "backToApp": "Back to home",

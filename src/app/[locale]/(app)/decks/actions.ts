@@ -18,6 +18,7 @@ import {
 } from "@/modules/library/application/deck";
 import { LibraryError } from "@/modules/library/application/library-error";
 import type { DeckIssue } from "@/modules/library/domain/deck";
+import { deckDetailReturnPath } from "./deck-detail-query";
 
 /**
  * Server Actions de mazos. Delgadas (ADR-001): leen el formulario, resuelven la
@@ -166,7 +167,7 @@ export async function linkConceptToDeckAction(formData: FormData): Promise<void>
 
   revalidatePath(`/${locale}/decks`);
   revalidatePath(`/${locale}/decks/${deckId}`);
-  redirect(`/${locale}/decks/${deckId}`);
+  redirect(deckDetailReturnPath(locale, deckId, formData.get("returnQuery")));
 }
 
 export async function unlinkConceptFromDeckAction(formData: FormData): Promise<void> {
@@ -182,7 +183,7 @@ export async function unlinkConceptFromDeckAction(formData: FormData): Promise<v
 
   revalidatePath(`/${locale}/decks`);
   revalidatePath(`/${locale}/decks/${deckId}`);
-  redirect(`/${locale}/decks/${deckId}`);
+  redirect(deckDetailReturnPath(locale, deckId, formData.get("returnQuery")));
 }
 
 export async function moveDeckAction(formData: FormData): Promise<void> {

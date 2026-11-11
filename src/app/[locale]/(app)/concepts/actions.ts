@@ -22,10 +22,10 @@ import {
   restorePracticeItem,
   updatePracticeItem,
 } from "@/modules/library/application/practice-item";
-import { createTag, listTags, tagConcept, untagConcept } from "@/modules/library/application/tag";
+import { attachTagByName, untagConcept } from "@/modules/library/application/tag";
 import type { ConceptIssue } from "@/modules/library/domain/concept";
 import type { PracticeItemIssue } from "@/modules/library/domain/practice-item";
-import { normalizeTagName, type TagIssue } from "@/modules/library/domain/tag";
+import type { TagIssue } from "@/modules/library/domain/tag";
 
 import type { ConceptFieldDefaults } from "./concept-fields";
 
@@ -258,28 +258,15 @@ export async function attachTagAction(
     return { error: "generic" };
   }
 
-  const existingTags = await listTags(scope.context.tags, scope.context.ownerId, scope.course.id);
-  const wanted = typeof rawName === "string" ? normalizeTagName(rawName) : "";
-  const existing = existingTags.find((tag) => tag.normalizedName === wanted);
-
-  let tagId: string;
-  if (existing) {
-    tagId = existing.id;
-  } else {
-    const outcome = await createTag(
+  try {
+    const outcome = await attachTagByName(
       scope.context.tags,
       scope.context.ownerId,
       scope.course.id,
+      conceptId,
       rawName,
     );
-    if (!outcome.ok) {
-      return { issues: outcome.issues };
-    }
-    tagId = outcome.tag.id;
-  }
-
-  try {
-    await tagConcept(scope.context.tags, scope.context.ownerId, { conceptId, tagId });
+    if (!outcome.ok) return { issues: outcome.issues };
   } catch (error) {
     if (error instanceof LibraryError) {
       console.error("attachTagAction", error.kind);

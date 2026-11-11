@@ -1,5 +1,21 @@
 # Lexora — Estado actual
 
+> **Publicación 2026-11-11 — importación:** PR #108, CI43101502071 tres SUCCESS;
+> 176 E2E PASS+4 omisiones, cerrado4 y Preview4. Merge `dfb98e9`, deployment
+> 7721568934 SUCCESS. M22 aplicada desde f0974e6 exacto,22 migraciones remotas y
+> dry-run limpio. Health5/5 app/database true; API anónima401/no-store y CSP
+> conservados. Funciones cdg1 junto a DB; mediana de cinco health589→234ms,
+> observación acotada, no benchmark de toda la app ni métrica de campo.
+> Trabajo actual `feat/v1-library-scale`, base `dfb98e9`: M23 solo local,
+> recuentos completos, detalle/selector paginados y asociación atómica de etiquetas.
+> Gate general: 911 PASS+1 omisión, formato/lint/tipos/contraste/build PASS;
+> pgTAP583 PASS, 23 migraciones desde base desechable/15 aserciones PASS.
+> Integración real5 PASS y navegador final16 PASS; tres revisiones cerradas.
+> Preparar PR y comprobar los tres checks antes de aplicar M23 a producción.
+> [Contrato](LIBRARY_PAGINATION.md), [evidencia](evidence/LEX-9-library-scale.md).
+
+Los checkpoints inferiores son históricos; prevalece el estado más reciente.
+
 > **Trabajo actual 2026-11-11 — importación por lotes:** rama
 > `feat/v1-import-performance`, base `e9042ed`. Migración 22 exclusivamente local;
 > producción sigue en 21. Preparación local de archivo ≤5 MiB/10.000 filas,
