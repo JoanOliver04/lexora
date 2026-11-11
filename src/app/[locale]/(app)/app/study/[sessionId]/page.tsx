@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { getStudyContextForCurrentUser } from "@/composition/study";
+import { getIntervalPreviewForCurrentUser } from "@/composition/preferences";
 import { Link } from "@/i18n/navigation";
 import { getStudySessionCard } from "@/modules/study/application/study-card";
 import { StudyCardView } from "../study-card-view";
@@ -58,6 +59,9 @@ export default async function StudySessionPage({
   const t = await getTranslations("StudySession");
   const tToday = await getTranslations("Today");
   const tCard = await getTranslations("PracticeCard");
+  const initialShowIntervals = result.ok
+    ? await getIntervalPreviewForCurrentUser(result.session.courseId)
+    : true;
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-12">
       <Link
@@ -122,6 +126,7 @@ export default async function StudySessionPage({
           locale={locale}
           sessionId={sessionId}
           card={result.card}
+          initialShowIntervals={initialShowIntervals}
           session={{
             status: result.session.status,
             canComplete: result.queue?.entries.length === 0,

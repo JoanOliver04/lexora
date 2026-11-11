@@ -18,7 +18,8 @@
     "conceptsLink": "Mis conceptos",
     "importLink": "Importar",
     "historyLink": "Historial",
-    "statisticsLink": "Estadísticas"
+    "statisticsLink": "Estadísticas",
+    "settingsLink": "Ajustes"
   },
   "Statistics": {
     "breakdowns": "Práctica por tipo y nivel",
@@ -108,7 +109,12 @@
     "error": "No hemos podido cargar el historial. Tus repasos guardados se conservan. Puedes volver a intentarlo.",
     "retry": "Reintentar",
     "loading": "Cargando los repasos guardados…",
-    "ratings": { "again": "Otra vez", "hard": "Difícil", "good": "Bien", "easy": "Fácil" },
+    "ratings": {
+      "again": "Otra vez",
+      "hard": "Difícil",
+      "good": "Bien",
+      "easy": "Fácil"
+    },
     "phases": {
       "new": "Nueva",
       "learning": "Aprendizaje",
@@ -228,7 +234,10 @@
         "label": "Bien",
         "description": "La recordaste correctamente con un esfuerzo normal."
       },
-      "easy": { "label": "Fácil", "description": "La recordaste de inmediato y con seguridad." }
+      "easy": {
+        "label": "Fácil",
+        "description": "La recordaste de inmediato y con seguridad."
+      }
     },
     "revealErrors": {
       "not-found": "La sesión ya no está disponible. Vuelve a Hoy para continuar.",
@@ -768,5 +777,35 @@
     "light": "Claro",
     "dark": "Oscuro",
     "system": "Sistema"
+  },
+  "Settings": {
+    "title": "Ajustes",
+    "back": "Volver a Hoy",
+    "intro": "Adapta Lexora a tu ritmo. Tus preferencias se guardan en tu cuenta y se recuperan al entrar desde otro dispositivo.",
+    "preferences": "Tu experiencia",
+    "language": "Idioma de la interfaz",
+    "timeZone": "Zona horaria",
+    "timeZoneNote": "Usa un nombre IANA, como Europe/Madrid. Los cupos diarios se reinician a medianoche en esta zona; cambiarla puede modificar lo que está disponible hoy.",
+    "dailyNewLimit": "Tarjetas nuevas al día",
+    "maximumReviews": "Máximo de repasos al día",
+    "maximumReviewsNote": "Deja el campo vacío para no limitar repasos. Entre 0 y 2.000; 0 pausa los repasos de Review.",
+    "limitsNote": "Entre 0 y 100 tarjetas nuevas. Los pasos de aprendizaje pendientes siguen disponibles aunque se alcance un cupo; bajar un límite no deshace repasos guardados.",
+    "showIntervals": "Mostrar una estimación del próximo intervalo al revelar la respuesta. Puedes cambiar su visibilidad durante la sesión.",
+    "course": "Curso activo",
+    "courseNote": "Cambiar de curso conserva su contenido y sus propios límites. Guarda primero cualquier cambio pendiente en tus preferencias.",
+    "switchCourse": "Cambiar de curso",
+    "save": "Guardar preferencias",
+    "saving": "Guardando…",
+    "saved": "Preferencias guardadas.",
+    "reload": "Cargar ajustes actuales",
+    "loading": "Cargando tus ajustes…",
+    "loadError": "No se han podido cargar los ajustes.",
+    "retry": "Reintentar",
+    "errors": {
+      "invalid": "Revisa los campos señalados. Elige un idioma y tema válidos, una zona IANA y límites enteros dentro del rango indicado.",
+      "conflict": "Los ajustes han cambiado en otra pestaña o dispositivo. Carga la versión actual antes de guardar de nuevo.",
+      "unavailable": "Este curso o sus ajustes ya no están disponibles. Carga la versión actual.",
+      "generic": "No se han podido guardar los ajustes. Tus cambios no se han confirmado; vuelve a intentarlo."
+    }
   }
 }

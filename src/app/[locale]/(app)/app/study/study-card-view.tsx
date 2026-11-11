@@ -64,11 +64,13 @@ export function StudyCardView({
   sessionId,
   card,
   session,
+  initialShowIntervals = true,
 }: {
   locale: string;
   sessionId: string;
   card: StudyCard | null;
   session?: SessionControlInfo;
+  initialShowIntervals?: boolean;
 }) {
   const t = useTranslations("PracticeCard");
   const { refresh } = useRouter();
@@ -111,6 +113,7 @@ export function StudyCardView({
             locale={locale}
             sessionId={sessionId}
             card={card}
+            initialShowIntervals={initialShowIntervals}
             reviewState={reviewState}
             reviewAction={reviewAction}
             reviewPending={reviewPending}
@@ -137,6 +140,7 @@ export function StudyCardView({
 }
 
 function StudyCardControls({
+  initialShowIntervals,
   locale,
   sessionId,
   card,
@@ -145,6 +149,7 @@ function StudyCardControls({
   reviewPending,
   onReload,
 }: {
+  initialShowIntervals: boolean;
   locale: string;
   sessionId: string;
   card: StudyCard;
@@ -159,7 +164,7 @@ function StudyCardControls({
     {},
   );
   const [rating, setRating] = useState<ReviewRating | null>(null);
-  const [showIntervals, setShowIntervals] = useState(true);
+  const [showIntervals, setShowIntervals] = useState(initialShowIntervals);
   const answerHeading = useRef<HTMLHeadingElement>(null);
   const promptHeading = useRef<HTMLHeadingElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);

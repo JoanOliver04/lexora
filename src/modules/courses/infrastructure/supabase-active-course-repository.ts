@@ -46,6 +46,7 @@ export function createSupabaseActiveCourseRepository(
         .from("courses")
         .select("id, title, target_locale, declared_level, start_level")
         .eq("owner_id", userId)
+        .eq("active", true)
         // Mismo orden que `complete_onboarding` al elegir «el más antiguo»
         // (`created_at asc, id asc`): con `created_at` empatado —dos cursos en
         // la misma transacción— el desempate por `id` evita que el shell

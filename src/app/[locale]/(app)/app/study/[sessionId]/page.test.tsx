@@ -12,6 +12,9 @@ const { context, card, summary, onboarding } = vi.hoisted(() => ({
   onboarding: vi.fn(),
 }));
 vi.mock("@/composition/study", () => ({ getStudyContextForCurrentUser: context }));
+vi.mock("@/composition/preferences", () => ({
+  getIntervalPreviewForCurrentUser: async () => true,
+}));
 vi.mock("@/composition/onboarding", () => ({ hasCompletedOnboardingForCurrentUser: onboarding }));
 vi.mock("@/modules/study/application/study-card", () => ({ getStudySessionCard: card }));
 vi.mock("@/modules/study/application/session-summary", () => ({ getStudySessionSummary: summary }));

@@ -1,5 +1,17 @@
 # Lexora — Estado actual
 
+> **Checkpoint 2026-11-11 — alcance personal y preferencias:** Joan confirma
+> uso exclusivamente personal, sin correo de contacto ni servicios de correo
+> nuevos (ADR-008, Q-010 resuelta). Se conserva el acceso existente; registro
+> público pendiente de cierre en aplicación y Auth. La entrega pública comercial
+> queda diferida. Preferencias en `feat/v1-persistent-preferences`: guardado
+> atómico/CAS, tema, IANA, idioma, curso, límites por curso y preview. Gate local:
+> 792 PASS + 1 omitida, tipos/lint/contraste/build PASS; pgTAP 506 PASS;
+> 19 migraciones desde cero sin seed. E2E dirigido 4 PASS; completo 134 PASS +
+> 4 omitidas condicionales existentes, sin reintentos. Audit: cero avisos.
+> PR #101 aún sin integrar: calidad/base PASS, navegador reejecutándose tras
+> fallo DNS de Ubuntu en instalación (sin ejecutar E2E en ese primer intento).
+
 > **Checkpoint vigente, dominio público verificado — 2026-11-11:**
 > `https://lexora-one-alpha.vercel.app/en` HTTP 200; `/api/health` HTTP 200 con
 > `status: ok`, `app: true`, `database: true`. El PR #100 ya está publicado.

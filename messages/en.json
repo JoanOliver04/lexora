@@ -18,7 +18,8 @@
     "conceptsLink": "My concepts",
     "importLink": "Import",
     "historyLink": "History",
-    "statisticsLink": "Statistics"
+    "statisticsLink": "Statistics",
+    "settingsLink": "Settings"
   },
   "Statistics": {
     "breakdowns": "Practice by type and level",
@@ -108,7 +109,12 @@
     "error": "We could not load your history. Your saved reviews are safe. You can try again.",
     "retry": "Try again",
     "loading": "Loading saved reviews…",
-    "ratings": { "again": "Again", "hard": "Hard", "good": "Good", "easy": "Easy" },
+    "ratings": {
+      "again": "Again",
+      "hard": "Hard",
+      "good": "Good",
+      "easy": "Easy"
+    },
     "phases": {
       "new": "New",
       "learning": "Learning",
@@ -224,8 +230,14 @@
         "label": "Hard",
         "description": "You recalled it, but with considerable doubt or effort."
       },
-      "good": { "label": "Good", "description": "You recalled it correctly with normal effort." },
-      "easy": { "label": "Easy", "description": "You recalled it immediately and confidently." }
+      "good": {
+        "label": "Good",
+        "description": "You recalled it correctly with normal effort."
+      },
+      "easy": {
+        "label": "Easy",
+        "description": "You recalled it immediately and confidently."
+      }
     },
     "revealErrors": {
       "not-found": "This session is no longer available. Return to Today to continue.",
@@ -765,5 +777,35 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System"
+  },
+  "Settings": {
+    "title": "Settings",
+    "back": "Back to Today",
+    "intro": "Make Lexora fit your rhythm. Your preferences are saved to your account and restored when you enter from another device.",
+    "preferences": "Your experience",
+    "language": "Interface language",
+    "timeZone": "Time zone",
+    "timeZoneNote": "Use an IANA name, such as Europe/Madrid. Daily allowances reset at midnight in this zone; changing it may change what is available today.",
+    "dailyNewLimit": "New cards per day",
+    "maximumReviews": "Maximum reviews per day",
+    "maximumReviewsNote": "Leave empty for unlimited reviews. From 0 to 2,000; 0 pauses cards in Review.",
+    "limitsNote": "From 0 to 100 new cards. Due learning steps remain available when an allowance is reached; lowering a limit does not undo saved reviews.",
+    "showIntervals": "Show an estimate of the next interval after revealing the answer. You can toggle its visibility during the session.",
+    "course": "Active course",
+    "courseNote": "Switching course preserves its content and its own limits. Save any pending preference changes first.",
+    "switchCourse": "Switch course",
+    "save": "Save preferences",
+    "saving": "Saving…",
+    "saved": "Preferences saved.",
+    "reload": "Load current settings",
+    "loading": "Loading your settings…",
+    "loadError": "Settings could not be loaded.",
+    "retry": "Try again",
+    "errors": {
+      "invalid": "Check the highlighted fields. Choose a supported language and theme, an IANA time zone and whole-number limits within the stated range.",
+      "conflict": "Settings changed in another tab or device. Load the current version before saving again.",
+      "unavailable": "This course or its settings are no longer available. Load the current version.",
+      "generic": "Settings could not be saved. Your changes have not been confirmed; please try again."
+    }
   }
 }

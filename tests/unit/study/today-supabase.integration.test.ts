@@ -361,6 +361,7 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
     expect(
       await createSupabaseDailyQueueRepository(clientA).countTodayActivity({
         ownerId: ownerA,
+        courseId: mainCourse,
         dayStart: new Date("2026-10-05T22:00:00.000Z"),
         dayEnd: new Date("2026-10-06T22:00:00.000Z"),
       }),
@@ -495,6 +496,7 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
     );
     const beforeLogs = await queue.countTodayActivity({
       ownerId: ownerA,
+      courseId: mainCourse,
       dayStart: new Date("2026-10-05T22:00:00Z"),
       dayEnd: new Date("2026-10-06T22:00:00Z"),
     });
@@ -547,6 +549,7 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
     expect(
       await queue.countTodayActivity({
         ownerId: ownerA,
+        courseId: mainCourse,
         dayStart: new Date("2026-10-05T22:00:00Z"),
         dayEnd: new Date("2026-10-06T22:00:00Z"),
       }),

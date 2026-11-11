@@ -46,6 +46,7 @@ export interface DailyQueueRepository {
   }): Promise<QueueCandidate[]>;
   countTodayActivity(input: {
     ownerId: string;
+    courseId: string;
     dayStart: Date;
     dayEnd: Date;
   }): Promise<TodayStudyActivity>;
@@ -110,6 +111,7 @@ export async function loadDailyQueue(
     }),
     repository.countTodayActivity({
       ownerId: input.ownerId,
+      courseId: input.courseId,
       dayStart,
       dayEnd,
     }),

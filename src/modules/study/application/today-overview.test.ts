@@ -180,6 +180,7 @@ describe("getTodayOverview", () => {
     await getTodayOverview(queue, history, { ...input, now: new Date(now) });
     expect(queue.countTodayActivity).toHaveBeenCalledWith({
       ownerId: "owner-a",
+      courseId: "course-a",
       dayStart: new Date(start),
       dayEnd: new Date(end),
     });

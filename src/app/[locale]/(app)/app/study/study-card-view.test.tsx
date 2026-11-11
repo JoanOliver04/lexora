@@ -31,12 +31,18 @@ const content: StudyCardContent = {
 };
 const reviewKey = "60000000-0000-4000-8000-000000000001";
 const revealed = { content, preview: { revision: null, intervals: [] }, reviewKey };
-function mount(locale: "es" | "en" = "es", itemId = "item", session?: SessionControlInfo) {
+function mount(
+  locale: "es" | "en" = "es",
+  itemId = "item",
+  session?: SessionControlInfo,
+  initialShowIntervals = true,
+) {
   return render(
     <NextIntlClientProvider locale={locale} messages={locale === "es" ? es : en}>
       <StudyCardView
         locale={locale}
         sessionId="session"
+        initialShowIntervals={initialShowIntervals}
         {...(session ? { session } : {})}
         card={{
           practiceItemId: itemId,
@@ -52,6 +58,14 @@ function mount(locale: "es" | "en" = "es", itemId = "item", session?: SessionCon
   );
 }
 describe("study reveal and rating controls", () => {
+  it("starts with the saved interval preference and allows a session-only toggle", async () => {
+    mount("en", "item", undefined, false);
+    fireEvent.click(screen.getByRole("button", { name: "Reveal answer" }));
+    const toggle = await screen.findByRole("checkbox");
+    expect(toggle).not.toBeChecked();
+    fireEvent.click(toggle);
+    expect(toggle).toBeChecked();
+  });
   afterEach(() => vi.restoreAllMocks());
   beforeEach(() => {
     reveal.mockReset().mockResolvedValue(revealed);
