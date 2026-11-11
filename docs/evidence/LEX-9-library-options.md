@@ -60,4 +60,10 @@ el código de estudio ni se oculta la comprobación de ausencia de escrituras.
 
 Snapshot de 646 archivos publicables (3,14 MB): Gitleaks 8.30.1 sin hallazgos,
 exit 0. No incluye archivos ignorados. Diff revisado y sin errores de whitespace.
-Pendientes commit/CI y aplicación del snapshot exacto. Producción permanece en M23.
+Publicación verificada: PR #110, head `f2ca8c4`, CI43113580150 con los tres
+trabajos SUCCESS. Navegador184 PASS+4 omisiones, cerrado4 y Preview4. Merge
+`3d795f77f79ce00c149dcdead3ae1aae63b51ead`, deployment7723171106 Production SUCCESS.
+La migración M24 se aplicó desde ese snapshot exacto; dry-run posterior limpio.
+Metadata remota: veinticuatro migraciones, tres funciones nuevas INVOKER y
+EXECUTE anónimo denegado. Health200 app/database true; login200, CSP distinto
+por respuesta y no-store/DENY conservados. Ningún reset ni seed remoto.
