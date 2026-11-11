@@ -22,7 +22,10 @@ export function ResetPasswordForm({ locale }: { locale: string }) {
       <FormStatus>
         <h2 className="text-lg font-medium">{t("reset.doneTitle")}</h2>
         <p className="text-sm text-(--color-ink-muted)">{t("reset.doneBody")}</p>
-        <Link href="/login" className="text-sm text-(--color-accent) underline underline-offset-4">
+        <Link
+          href="/login"
+          className="inline-flex min-h-11 min-w-11 items-center text-sm text-(--color-accent) underline underline-offset-4"
+        >
           {t("reset.toLogin")}
         </Link>
       </FormStatus>

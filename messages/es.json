@@ -808,6 +808,19 @@
       "integrity": "La descarga no ha superado la comprobación de integridad. No se ha guardado ningún archivo; vuelve a intentarlo."
     }
   },
+  "Pwa": {
+    "title": "Lexora, más a mano",
+    "description": "Abre tu práctica personal desde el icono de una app. Necesitas conexión para estudiar y guardar cambios.",
+    "install": "Instalar Lexora",
+    "manual": "Si tu navegador permite instalar, utiliza su menú para instalar este sitio o añadirlo a la pantalla de inicio. No necesitas una tienda de apps.",
+    "unavailable": "No se ha podido preparar la instalación aquí. Puedes seguir usando Lexora en este navegador o probar su opción de instalar o añadir a pantalla de inicio, si está disponible.",
+    "pending": "Esperando a tu navegador…",
+    "accepted": "Instalación solicitada. Tu navegador terminará el proceso.",
+    "dismissed": "Has descartado la instalación. Puedes seguir utilizando Lexora en el navegador.",
+    "installed": "Tu navegador indica que Lexora está instalada en este dispositivo.",
+    "error": "No se ha podido completar la solicitud. Puedes probar la opción de instalación del menú de tu navegador.",
+    "offline": "Tu dispositivo está sin conexión. Para estudiar y guardar cambios necesitas conectarte. Una acción se guarda solo cuando el servidor la confirma."
+  },
   "DataInformation": {
     "title": "Tus datos en Lexora",
     "back": "Volver a ajustes",

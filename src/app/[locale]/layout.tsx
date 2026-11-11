@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 
 import { routing } from "@/i18n/routing";
 import { ThemeScript } from "@/shared/presentation/theme/theme-script";
+import { PwaRuntime } from "@/shared/presentation/pwa/pwa-runtime";
 
 import "../globals.css";
 
@@ -18,6 +19,13 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#2457b3",
+};
 
 /**
  * Prerenderiza una variante por idioma en lugar de resolverlos en cada petición.
@@ -37,6 +45,15 @@ export async function generateMetadata({
   return {
     title: t("title"),
     description: t("description"),
+    applicationName: "Lexora",
+    appleWebApp: { capable: true, title: "Lexora", statusBarStyle: "default" },
+    icons: {
+      icon: [
+        { url: "/icons/lexora.svg", type: "image/svg+xml" },
+        { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      ],
+      apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    },
   };
 }
 
@@ -70,7 +87,10 @@ export default async function LocaleLayout({
         <ThemeScript />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <PwaRuntime />
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

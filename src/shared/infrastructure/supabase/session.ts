@@ -30,7 +30,7 @@ import type { Database } from "./database.types";
 export async function refreshSupabaseSession(
   request: NextRequest,
   response: NextResponse,
-): Promise<{ response: NextResponse; userId: string | null }> {
+): Promise<{ response: NextResponse; userId: string | null; entryLocale: "es" | "en" | null }> {
   const supabase = createServerClient<Database>(
     clientEnv.NEXT_PUBLIC_SUPABASE_URL,
     clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
@@ -60,7 +60,19 @@ export async function refreshSupabaseSession(
   //
   // `getClaims()` verifica la firma del token contra las claves públicas del
   // proyecto. Es la diferencia entre leer un carné y comprobarlo.
-  const { data } = await supabase.auth.getClaims();
+  const { data, error } = await supabase.auth.getClaims();
+  const userId = error ? null : (data?.claims.sub ?? null);
+  let entryLocale: "es" | "en" | null = null;
+  // An unprefixed personal entry (including the PWA icon) follows the account's
+  // preference. Explicit locale URLs keep their existing authoritative meaning.
+  if (userId && request.nextUrl.pathname === "/app") {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("ui_locale")
+      .eq("id", userId)
+      .maybeSingle();
+    if (profile?.ui_locale === "es" || profile?.ui_locale === "en") entryLocale = profile.ui_locale;
+  }
 
-  return { response, userId: data?.claims.sub ?? null };
+  return { response, userId, entryLocale };
 }

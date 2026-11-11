@@ -1,0 +1,92 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  background: #fcfcfd;
+  color: #202329;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  padding: max(1.5rem, env(safe-area-inset-top)) max(1.5rem, env(safe-area-inset-right))
+    max(1.5rem, env(safe-area-inset-bottom)) max(1.5rem, env(safe-area-inset-left));
+}
+main {
+  max-width: 40rem;
+  margin: clamp(1rem, 10vh, 7rem) auto;
+  overflow-wrap: anywhere;
+}
+img {
+  border-radius: 1rem;
+}
+.brand {
+  font-size: 1.25rem;
+  font-weight: 650;
+  margin: 1rem 0 2.5rem;
+}
+h1 {
+  font-size: clamp(1.75rem, 7vw, 3rem);
+  line-height: 1.13;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+p {
+  line-height: 1.65;
+  max-width: 65ch;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+button,
+a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #164eaa;
+  font: inherit;
+  text-underline-offset: 0.25em;
+}
+button {
+  border: 0;
+  border-radius: 0.6rem;
+  background: #2457b3;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  white-space: normal;
+  max-width: 100%;
+}
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  border-top: 1px solid #c8ced8;
+  padding-top: 1rem;
+  margin-top: 3rem;
+}
+:focus-visible {
+  outline: 3px solid #2457b3;
+  outline-offset: 4px;
+}
+[hidden] {
+  display: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    background: #202329;
+    color: #f4f6fa;
+  }
+  a {
+    color: #a9c9ff;
+  }
+  :focus-visible {
+    outline-color: #a9c9ff;
+  }
+  nav {
+    border-color: #626b79;
+  }
+}

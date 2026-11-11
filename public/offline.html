@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#2457b3" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>Lexora · Sin conexión / Offline</title>
+    <link rel="stylesheet" href="/offline.css" />
+    <link rel="icon" href="/icons/lexora.svg" type="image/svg+xml" />
+    <script src="/offline.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <img src="/icons/lexora.svg" width="64" height="64" alt="" />
+      <p class="brand">Lexora</p>
+      <section lang="es" data-language="es">
+        <h1>Conecta para seguir.</h1>
+        <p>
+          Necesitas conexión para abrir tus datos y guardar repasos. Esta pantalla no contiene
+          tarjetas ni información de tu cuenta.
+        </p>
+        <p>
+          Los cambios que el servidor ya confirmó siguen guardados. Si una acción quedó sin
+          confirmar, comprueba su resultado al reconectar antes de repetirla.
+        </p>
+        <div class="actions">
+          <button type="button" data-reload>Volver a intentar</button><a href="/es/app">Ir a Hoy</a>
+        </div>
+      </section>
+      <section lang="en" data-language="en" hidden>
+        <h1>Connect to carry on.</h1>
+        <p>
+          You need a connection to open your data and save reviews. This screen contains no cards or
+          account information.
+        </p>
+        <p>
+          Changes already confirmed by the server remain saved. If an action was not confirmed,
+          check its result when you reconnect before repeating it.
+        </p>
+        <div class="actions">
+          <button type="button" data-reload>Try again</button><a href="/en/app">Go to Today</a>
+        </div>
+      </section>
+      <nav aria-label="Idioma / Language">
+        <a href="/es/app" lang="es">Español</a><a href="/en/app" lang="en">English</a>
+      </nav>
+    </main>
+  </body>
+</html>

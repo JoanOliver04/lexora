@@ -2,7 +2,10 @@
 
 Fecha: 2026-11-11. Rama `feat/v1-account-lifecycle`, base de exportación publicada
 en PR #104. Migración nueva `20261111163306_self_account_deletion.sql`, aplicada
-exclusivamente local durante esta verificación.
+en producción tras CI. PR #105, commit `4fdde24`, CI 43066684124 con tres SUCCESS,
+merge `0a98f32`, deployment 7716863603 SUCCESS. Migración desde snapshot exacto;
+dry-run posterior limpio, 21 migraciones. Health 200 app/database true; endpoint
+de borrado sin sesión devuelve 401. No se invocó el borrado de una cuenta real.
 
 ## Comportamiento
 
@@ -45,7 +48,7 @@ Sin clave administrativa. Tokens antiguos no pueden recrear el perfil.
   contraseña incorrecta, borrado, pestaña antigua y login posterior rechazado.
 - E2E completo: 142 PASS + 4 omisiones condicionales existentes para material
   privado, cero reintentos, un worker. Build de registro cerrado: 4 PASS.
-  CI pendiente de publicar el commit.
+  Los tres checks de CI 43066684124 terminaron SUCCESS antes del merge.
 - Preflight de producción de solo metadatos: la función migrada existente es de
   `postgres`; ese rol tiene SELECT/DELETE sobre Auth users, lectura de sesiones y
   factores y BYPASSRLS. No se leyeron filas de cuentas ni se invocó el borrado.

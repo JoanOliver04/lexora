@@ -57,10 +57,7 @@ test.describe("landing", () => {
     // habría un destello claro y este aserto pasaría igualmente, así que se
     // comprueba además que la preferencia quedó marcada.
     await expect(html).toHaveAttribute("data-theme", "dark");
-    await expect(page.getByRole("radio", { name: "Oscuro" })).toHaveAttribute(
-      "aria-checked",
-      "true",
-    );
+    await expect(page.getByRole("radio", { name: "Oscuro" })).toBeChecked();
   });
 
   test("expone la comprobación de salud sin filtrar detalles internos", async ({ request }) => {

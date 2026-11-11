@@ -12,8 +12,8 @@ import { refreshSupabaseSession } from "./shared/infrastructure/supabase/session
  * En Next.js 16 este archivo se llama `proxy.ts`; antes era `middleware.ts`.
  *
  * **1. Idioma.** `next-intl` decide a qué locale corresponde la petición y puede
- * devolver una redirección. Va primero porque, si redirige, no tiene sentido
- * renovar la sesión sobre una respuesta que se va a descartar.
+ * devolver una redirección. La entrada sin prefijo `/app` puede sustituir ese
+ * idioma inicial por la preferencia de la cuenta verificada.
  *
  * **2. Sesión.** Se renueva el token sobre la respuesta del paso anterior y se
  * obtiene el `userId` ya verificado.
@@ -28,9 +28,14 @@ export default async function proxy(request: NextRequest): Promise<NextResponse>
   const intlMiddleware = createMiddleware(routing);
   const intlResponse = intlMiddleware(request);
 
-  const { response, userId } = await refreshSupabaseSession(request, intlResponse);
+  const { response, userId, entryLocale } = await refreshSupabaseSession(request, intlResponse);
 
   const pathname = request.nextUrl.pathname;
+  if (pathname === "/app" && entryLocale) {
+    const entry = new URL(`/${entryLocale}/app`, request.url);
+    entry.search = request.nextUrl.search;
+    return privateRedirect(response, entry);
+  }
   if (!isProtectedPath(pathname)) {
     return response;
   }
@@ -41,18 +46,22 @@ export default async function proxy(request: NextRequest): Promise<NextResponse>
     const loginUrl = new URL(`/${locale}/login`, request.url);
     loginUrl.searchParams.set("next", next);
 
-    const redirectResponse = NextResponse.redirect(loginUrl);
-    // Conservar las cookies de sesión renovadas: crear una respuesta nueva las
-    // perdería y el usuario quedaría desconectado al volver del login.
-    for (const cookie of response.cookies.getAll()) {
-      redirectResponse.cookies.set(cookie);
-    }
-    redirectResponse.headers.set("Cache-Control", "private, no-store");
-    return redirectResponse;
+    return privateRedirect(response, loginUrl);
   }
 
   response.headers.set("Cache-Control", "private, no-store");
   return response;
+}
+
+function privateRedirect(response: NextResponse, url: URL): NextResponse {
+  const redirectResponse = NextResponse.redirect(url);
+  // Conservar las cookies de sesión renovadas: crear una respuesta nueva las
+  // perdería y el usuario quedaría desconectado al volver del login.
+  for (const cookie of response.cookies.getAll()) {
+    redirectResponse.cookies.set(cookie);
+  }
+  redirectResponse.headers.set("Cache-Control", "private, no-store");
+  return redirectResponse;
 }
 
 function localeFromPath(pathname: string): string {

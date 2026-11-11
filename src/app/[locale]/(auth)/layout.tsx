@@ -11,12 +11,12 @@ import { LocaleSwitcher } from "../locale-switcher";
  */
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="relative min-h-screen">
-      <div className="absolute top-4 right-4 flex items-start gap-4">
+    <div className="flex min-h-screen flex-col">
+      <header className="mx-auto flex w-full max-w-5xl flex-wrap items-end justify-end gap-4 px-4 py-4 sm:px-6">
         <LocaleSwitcher />
         <ThemeToggle />
-      </div>
-      {children}
+      </header>
+      <div className="flex flex-1 flex-col">{children}</div>
     </div>
   );
 }

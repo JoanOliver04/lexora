@@ -19,7 +19,10 @@ export async function SessionControls({ locale }: { locale: string }) {
 
   if (!userId) {
     return (
-      <Link href="/login" className="text-sm text-(--color-accent) underline underline-offset-4">
+      <Link
+        href="/login"
+        className="inline-flex min-h-11 min-w-11 items-center text-sm text-(--color-accent) underline underline-offset-4"
+      >
         {t("login.submit")}
       </Link>
     );

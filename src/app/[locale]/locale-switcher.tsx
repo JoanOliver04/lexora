@@ -20,10 +20,10 @@ export function LocaleSwitcher() {
   const [isPending, startTransition] = useTransition();
 
   return (
-    <label className="flex flex-col gap-1 text-xs">
-      <span className="opacity-60">{t("label")}</span>
+    <label className="flex min-w-0 flex-col gap-1 text-sm">
+      <span className="text-(--color-ink-muted)">{t("label")}</span>
       <select
-        className="rounded border border-current/20 bg-transparent px-2 py-1 text-sm"
+        className="min-h-11 w-full min-w-0 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-sm text-(--color-ink)"
         value={locale}
         disabled={isPending}
         onChange={(event) => {

@@ -11,6 +11,8 @@ import { THEME_STORAGE_KEY, themePreferences, type ThemePreference } from "./the
  */
 
 const listeners = new Set<() => void>();
+let lastPreference: ThemePreference = "system";
+let volatilePreference: ThemePreference | null = null;
 
 function notify() {
   for (const listener of listeners) listener();
@@ -22,7 +24,14 @@ export function subscribe(listener: () => void): () => void {
   // El evento `storage` solo se dispara en las **otras** pestanas. Cambiar el
   // tema en una y volver a esta deberia encontrarlo ya aplicado.
   const onStorage = (event: StorageEvent) => {
-    if (event.key === THEME_STORAGE_KEY) notify();
+    if (event.key === THEME_STORAGE_KEY || event.key === null) {
+      volatilePreference = null;
+      lastPreference = themePreferences.includes(event.newValue as ThemePreference)
+        ? (event.newValue as ThemePreference)
+        : "system";
+      document.documentElement.dataset["theme"] = resolveTheme(getSnapshot());
+      notify();
+    }
   };
   window.addEventListener("storage", onStorage);
 
@@ -33,15 +42,17 @@ export function subscribe(listener: () => void): () => void {
 }
 
 export function getSnapshot(): ThemePreference {
+  if (volatilePreference !== null) return volatilePreference;
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    return themePreferences.includes(stored as ThemePreference)
+    lastPreference = themePreferences.includes(stored as ThemePreference)
       ? (stored as ThemePreference)
       : "system";
+    return lastPreference;
   } catch {
     // `localStorage` lanza excepcion con las cookies bloqueadas o en modo
-    // privado restrictivo. Sin almacenamiento, seguir al sistema.
-    return "system";
+    // privado restrictivo. Conserva la ultima eleccion de esta pestana.
+    return lastPreference;
   }
 }
 
@@ -60,11 +71,14 @@ export function resolveTheme(preference: ThemePreference): "light" | "dark" {
 }
 
 export function setPreference(preference: ThemePreference): void {
+  lastPreference = preference;
   try {
     localStorage.setItem(THEME_STORAGE_KEY, preference);
+    volatilePreference = null;
   } catch {
     // Sin almacenamiento, el tema dura lo que la pestana. Es preferible a no
-    // dejar cambiarlo.
+    // dejar cambiarlo. Lecturas que aun funcionen no deben recuperar un valor viejo.
+    volatilePreference = preference;
   }
   document.documentElement.dataset["theme"] = resolveTheme(preference);
   notify();

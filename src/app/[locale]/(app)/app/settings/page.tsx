@@ -7,6 +7,7 @@ import { PreferencesForm } from "./preferences-form";
 import { ExportControls } from "./export-controls";
 import { DeleteAccountForm } from "./delete-account-form";
 import { getCurrentDeletionFactors } from "@/composition/account-deletion";
+import { InstallControls } from "@/shared/presentation/pwa/install-controls";
 
 export default async function SettingsPage({
   params,
@@ -68,6 +69,7 @@ export default async function SettingsPage({
         />
       </section>
       <ExportControls />
+      <InstallControls />
       <Link
         href="/app/settings/data"
         className="inline-flex min-h-11 items-center self-start text-(--color-accent) underline underline-offset-4"
