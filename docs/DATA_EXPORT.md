@@ -13,7 +13,8 @@ temporal en la base de datos.
 desde el cliente. Incluye perfil, cursos/ajustes, catálogo de idiomas referenciado,
 biblioteca/relaciones/etiquetas, estados, review logs, sesiones e importaciones con
 sus errores. Incluye contenido archivado. No consulta Auth ni exporta contraseñas,
-tokens, claves, otras cuentas o el ledger técnico de cooldown.
+tokens, claves, otras cuentas, cuotas técnicas o recibos de transporte de lotes.
+Los nuevos cursores/contadores del trabajo sí forman parte de `import_jobs`.
 
 Una única SELECT forma la lectura coherente de las quince entidades. Una CTE
 acotada comprueba 50.000 registros y 16 MiB de datos antes de agregar el resultado.

@@ -29,6 +29,7 @@ import { createSupabaseDatabaseProbe } from "@/shared/infrastructure/health/supa
 import { POST as exportRequest } from "@/app/api/account/export/route";
 import { POST as deleteRequest } from "@/app/api/account/delete/route";
 import { POST as reviewRequest } from "@/app/api/study/reviews/route";
+import { POST as importRequest } from "@/app/api/import/jobs/route";
 import {
   completeAuthCallback,
   ensureProfileForCurrentUser,
@@ -55,7 +56,7 @@ describe("Deployment boundary before any private backend access", () => {
     expect(mocks.client).not.toHaveBeenCalled();
   });
   it("denies every private HTTP mutation before reading a body or creating a backend client", async () => {
-    for (const handler of [exportRequest, deleteRequest, reviewRequest]) {
+    for (const handler of [exportRequest, deleteRequest, reviewRequest, importRequest]) {
       const result = await handler(
         new Request("https://preview.example/api/private", { method: "POST", body: "untrusted" }),
       );
@@ -108,5 +109,27 @@ describe("Deployment boundary before any private backend access", () => {
     expect(privateBackendEnabled()).toBe(true);
     mocks.env["VERCEL_ENV"] = "development";
     expect(privateBackendEnabled()).toBe(true);
+  });
+  it("propagates cancellation to the SDK fetch while preserving an individual request signal", async () => {
+    mocks.env["VERCEL_ENV"] = "production";
+    mocks.cookies.mockResolvedValue({ getAll: () => [], set: vi.fn() });
+    mocks.fetch.mockResolvedValue(new Response("synthetic"));
+    const budget = new AbortController(),
+      individual = new AbortController();
+    await createSupabaseServerClient(budget.signal);
+    const options = mocks.client.mock.calls[0]?.[2] as { global?: { fetch: typeof fetch } };
+    if (!options.global) throw new Error("Scoped transport missing");
+    await options.global.fetch("https://project.supabase.co/rest/v1/profiles", {
+      signal: individual.signal,
+    });
+    const init = mocks.fetch.mock.calls[0]?.[1] as RequestInit;
+    expect(init.signal?.aborted).toBe(false);
+    individual.abort();
+    expect(init.signal?.aborted).toBe(true);
+    const request = new Request("https://project.supabase.co/auth/v1/user");
+    await options.global.fetch(request);
+    const authInit = mocks.fetch.mock.calls[1]?.[1] as RequestInit;
+    budget.abort();
+    expect(authInit.signal?.aborted).toBe(true);
   });
 });

@@ -632,6 +632,15 @@ Migración `20260905180000_import_jobs` (LEX-4.3), estructura + RLS en una sola
   `alter type import_error_code add value` para `front_too_long`,
   `back_too_long`, `tags_too_long`.
 
+La importación por lotes añade `request_fingerprint`, `processed_rows` y
+`last_source_row` a los trabajos y protege sus contadores. Los trabajos históricos
+sin fingerprint conservan su contrato. `import_job_batches` mantiene recibos
+inmutables por trabajo/posición, sin payload; `import_rate_limits`, cuotas
+derivadas del reloj del servidor. Ambas tienen RLS y FK de propietario. El trigger
+privado de progreso actualiza solo metadatos del trabajo propio; el contenido y
+los ítems se escriben como el usuario bajo RLS. Véase
+[ADR-010](adrs/010-bounded-import-transactions.md).
+
 ### Tablas futuras
 
 `media_assets`, `exercise_variants`, `user_responses`, `ai_feedback` y

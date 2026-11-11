@@ -139,10 +139,10 @@ jobs:
       - name: Catálogo de idiomas sin seed
         run: pnpm db:test:catalogue
 
-      - name: Hoy y guardado de repasos contra Supabase local
+      - name: Integración de módulos contra Supabase local
         env:
           LEXORA_DB_TESTS: "1"
-        run: pnpm test tests/unit/study/today-supabase.integration.test.ts tests/unit/study/session-review-supabase.integration.test.ts tests/unit/study/history-supabase.integration.test.ts tests/unit/preferences/preferences-supabase.integration.test.ts tests/unit/data-management/data-export-supabase.integration.test.ts tests/unit/data-management/account-deletion-supabase.integration.test.ts
+        run: pnpm test tests/unit/study/today-supabase.integration.test.ts tests/unit/study/session-review-supabase.integration.test.ts tests/unit/study/history-supabase.integration.test.ts tests/unit/preferences/preferences-supabase.integration.test.ts tests/unit/data-management/data-export-supabase.integration.test.ts tests/unit/data-management/account-deletion-supabase.integration.test.ts tests/unit/importing/import-transfer-supabase.integration.test.ts
 
       - name: Comprobar que los tipos generados estan al dia
         # El esquema es la fuente de verdad; `database.types.ts` es su reflejo.

@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { listDecks } from "@/modules/library/application/deck";
 
 import { ImportPreviewForm } from "./import-preview-form";
+import { pendingImportForCurrentUser } from "@/composition/import-transfer";
 
 /**
  * Wizard de importación (LEX-4.8) sobre preview, duplicados y lote
@@ -17,7 +18,13 @@ import { ImportPreviewForm } from "./import-preview-form";
  * anotada desde LEX-2.9). Un import sin curso al que importar no tiene
  * sentido, así que se redirige igual que las pantallas de biblioteca.
  */
-export default async function ImportPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function ImportPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ job?: string | string[] }>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -31,6 +38,11 @@ export default async function ImportPage({ params }: { params: Promise<{ locale:
   }
 
   const t = await getTranslations("Import");
+  const query = await searchParams;
+  const pending = await pendingImportForCurrentUser(
+    activeCourse.id,
+    typeof query.job === "string" ? query.job : undefined,
+  );
   const library = await getLibraryContextForCurrentUser();
   const decks = library
     ? (await listDecks(library.decks, library.ownerId, activeCourse.id)).map((deck) => ({
@@ -40,7 +52,7 @@ export default async function ImportPage({ params }: { params: Promise<{ locale:
     : [];
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-6 py-12">
+    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-6 py-12 [overflow-wrap:anywhere]">
       <header className="flex flex-col gap-2">
         <Link href="/app" className="text-sm text-(--color-ink-muted) underline underline-offset-4">
           {t("backToApp")}
@@ -49,7 +61,12 @@ export default async function ImportPage({ params }: { params: Promise<{ locale:
         <p className="text-sm text-(--color-ink-muted)">{t("intro")}</p>
       </header>
 
-      <ImportPreviewForm locale={locale} decks={decks} />
+      <ImportPreviewForm
+        locale={locale}
+        decks={decks}
+        courseId={activeCourse.id}
+        pending={pending}
+      />
     </main>
   );
 }

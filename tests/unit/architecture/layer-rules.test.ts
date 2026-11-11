@@ -1,5 +1,5 @@
 import { ESLint } from "eslint";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 /**
  * Regresión de la regla de dependencia entre capas (ADR-001, LEX-1.3).
@@ -19,6 +19,11 @@ import { describe, expect, it } from "vitest";
  */
 
 const eslint = new ESLint();
+// Cold ESLint/plugin loading took 17.4 s on Windows. Treat it as setup;
+// each actual rule assertion keeps the suite's ordinary test timeout.
+beforeAll(async () => {
+  await eslint.calculateConfigForFile("src/modules/example/domain/thing.ts");
+});
 
 async function lint(filePath: string, code: string) {
   const [result] = await eslint.lintText(code, { filePath });

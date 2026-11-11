@@ -9,6 +9,7 @@
  */
 
 import { MAX_FILENAME_LENGTH } from "./limits";
+import { truncateImportText } from "./sanitize";
 
 /** Nombre de reserva si, tras sanear, no queda nada usable. */
 export const FALLBACK_FILENAME = "import.txt";
@@ -41,5 +42,5 @@ export function sanitizeFilename(raw: unknown): string {
     return FALLBACK_FILENAME;
   }
 
-  return cleaned.slice(0, MAX_FILENAME_LENGTH);
+  return truncateImportText(cleaned, MAX_FILENAME_LENGTH);
 }

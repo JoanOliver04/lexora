@@ -359,6 +359,26 @@
     "backToApp": "Volver al inicio",
     "title": "Importar",
     "intro": "Sube un TXT o CSV preparado para Anki. Eliges mazo, revisas duplicados y confirmas. Las filas duplicadas se omiten o se copian, nunca se fusionan.",
+    "transfer": {
+      "heading": "Estado de la importación",
+      "progressLabel": "Filas confirmadas",
+      "progress": "{done} de {total} filas confirmadas",
+      "resumeHint": "Puedes pausar y continuar. Si recargas o cambias de dispositivo, selecciona el mismo archivo y conserva el mapeo y las opciones. El archivo original no se almacena.",
+      "pause": "Pausar importación",
+      "resume": "Comprobar y continuar",
+      "stop": "Finalizar este intento",
+      "stopping": "Finalizando…",
+      "stopped": "Este intento ha finalizado. Las filas confirmadas siguen guardadas; puedes empezar otro archivo.",
+      "errors": {
+        "paused": "Importación pausada. El último lote podría haberse guardado. Al continuar comprobaremos el progreso antes de enviar más filas.",
+        "unauthenticated": "Tu acceso ha caducado. Inicia sesión de nuevo; las filas confirmadas siguen guardadas.",
+        "not-found": "No se puede acceder a este intento o a su destino. Comprueba tu curso.",
+        "invalid-input": "No se ha enviado este lote. Revisa el archivo y las opciones.",
+        "conflict": "El intento cambió o el archivo y sus opciones no coinciden. Usa el archivo original o finaliza este intento antes de empezar otro.",
+        "cooldown": "Espera unos segundos antes de crear otro intento. Hay un límite diario de importaciones; las filas guardadas se conservan.",
+        "unavailable": "No se ha podido confirmar la respuesta. Puede haberse guardado el último lote. Comprueba y continúa para recuperar el progreso sin repetirlo."
+      }
+    },
     "wizard": {
       "navLabel": "Pasos de la importación",
       "step": {
@@ -386,7 +406,7 @@
       "another": "Importar otro archivo"
     },
     "fileLabel": "Archivo",
-    "fileHint": "Hasta 5 MB y 10.000 filas. El HTML se convierte en texto plano.",
+    "fileHint": "Hasta 5 MB, 10.000 filas y 200 columnas. El HTML se convierte en texto plano.",
     "submit": "Previsualizar",
     "resubmit": "Actualizar vista previa",
     "submitting": "Leyendo…",
@@ -445,6 +465,7 @@
       "read-failed": "No hemos podido leer el archivo.",
       "too-large": "El archivo supera los 5 MB.",
       "too-many-rows": "El archivo tiene más de 10.000 filas.",
+      "too-many-columns": "El archivo tiene más de 200 columnas. Conserva solo las columnas que necesitas.",
       "unavailable": "No hemos podido leer tu curso. Recarga e inténtalo de nuevo.",
       "no-deck": "Elige un mazo de destino. Si no tienes ninguno, créalo antes.",
       "empty": "No hay filas para importar con este mapeo."

@@ -356,6 +356,26 @@
     }
   },
   "Import": {
+    "transfer": {
+      "heading": "Import progress",
+      "progressLabel": "Confirmed rows",
+      "progress": "{done} of {total} rows confirmed",
+      "resumeHint": "You can pause and continue. After reloading or changing devices, select the same file and keep its mapping and options. The original file is not stored.",
+      "pause": "Pause import",
+      "resume": "Check and continue",
+      "stop": "Finish this attempt",
+      "stopping": "Finishing…",
+      "stopped": "This attempt has ended. Confirmed rows remain saved; you can start another file.",
+      "errors": {
+        "paused": "Import paused. The last batch may have been saved. Continuing checks progress before sending more rows.",
+        "unauthenticated": "Your access has expired. Sign in again; confirmed rows remain saved.",
+        "not-found": "This attempt or its destination is unavailable. Check your course.",
+        "invalid-input": "This batch was not sent. Check your file and options.",
+        "conflict": "The attempt changed, or the file and options do not match. Use the original file or finish this attempt before starting another.",
+        "cooldown": "Wait a few seconds before starting another attempt. Daily import limits apply; saved rows remain available.",
+        "unavailable": "The response could not be confirmed. The last batch may have been saved. Check and continue to recover progress without repeating it."
+      }
+    },
     "backToApp": "Back to home",
     "title": "Import",
     "intro": "Upload a TXT or CSV prepared for Anki. Pick a deck, review duplicates, and confirm. Duplicate rows are skipped or copied, never merged.",
@@ -386,7 +406,7 @@
       "another": "Import another file"
     },
     "fileLabel": "File",
-    "fileHint": "Up to 5 MB and 10,000 rows. HTML is turned into plain text.",
+    "fileHint": "Up to 5 MB, 10,000 rows and 200 columns. HTML is turned into plain text.",
     "submit": "Preview",
     "resubmit": "Refresh preview",
     "submitting": "Reading…",
@@ -445,6 +465,7 @@
       "read-failed": "We couldn't read the file.",
       "too-large": "The file is larger than 5 MB.",
       "too-many-rows": "The file has more than 10,000 rows.",
+      "too-many-columns": "The file has more than 200 columns. Keep only the columns you need.",
       "unavailable": "We couldn't read your course. Reload and try again.",
       "no-deck": "Choose a destination deck. If you don't have one, create it first.",
       "empty": "There are no rows to import with this mapping."

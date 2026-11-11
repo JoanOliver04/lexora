@@ -65,7 +65,13 @@ escrito en el test; se corrigió al texto real Sign in to Lexora y la pasada
 posterior de seis pruebas fue verde. No se cambió el producto ni se relajó el
 bloqueo de scripts para resolverlo.
 
-CI protegida y publicación de producción pendientes; gates locales completos.
+PR #107 integrado como `e9042ed53babd9dc173c068136633936ed1edc8e`.
+CI43085775495 con los tres trabajos SUCCESS, incluidos scanner Linux/audit,
+DB y navegador con builds cerrado/Preview. Deployment7719696781 SUCCESS.
+Health canónico200 app/database true, nonces distintos, HTML no-store,
+DENY/nosniff, SWv2 y CSP estática del fallback comprobados. Smoke HTTPS con
+navegador anónimo nuevo: tema oscuro, scripts con nonce y cero errores o
+violaciones CSP. Ninguna cuenta real utilizada para pruebas destructivas.
 
 ## Límites
 

@@ -57,9 +57,16 @@ function decodeBasicEntities(input: string): string {
  * Nunca incluye una consulta, un secreto ni la fila entera si es larga.
  */
 export function sanitizeRowSample(raw: string): string {
-  const withoutControls = raw.replace(CONTROL_CHARS, "");
+  const withoutControls = raw.toWellFormed().replace(CONTROL_CHARS, "");
   if (withoutControls.length <= MAX_ROW_SAMPLE_LENGTH) {
     return withoutControls;
   }
-  return withoutControls.slice(0, MAX_ROW_SAMPLE_LENGTH);
+  return truncateImportText(withoutControls, MAX_ROW_SAMPLE_LENGTH);
+}
+
+/** UTF-16 limits must not leave a lone surrogate that PostgreSQL JSON rejects. */
+export function truncateImportText(value: string, limit: number): string {
+  const result = value.toWellFormed().slice(0, limit);
+  const last = result.charCodeAt(result.length - 1);
+  return last >= 0xd800 && last <= 0xdbff ? result.slice(0, -1) : result;
 }

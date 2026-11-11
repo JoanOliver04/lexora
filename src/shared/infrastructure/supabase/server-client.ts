@@ -22,15 +22,27 @@ import { supabaseCookieOptions } from "./cookie-options";
  * cliente con clave privilegiada saltaría RLS por completo, y entonces cualquier
  * descuido en una consulta expondría datos de otros usuarios.
  */
-export async function createSupabaseServerClient() {
+export async function createSupabaseServerClient(signal?: AbortSignal) {
   if (!privateBackendEnabled()) throw new PreviewAccessError();
   const cookieStore = await cookies();
+  const scopedFetch: typeof fetch | undefined = signal
+    ? (input, init) =>
+        fetch(input, {
+          ...init,
+          signal: AbortSignal.any([
+            signal,
+            ...(init?.signal ? [init.signal] : []),
+            ...(input instanceof Request ? [input.signal] : []),
+          ]),
+        })
+    : undefined;
 
   return createServerClient<Database>(
     clientEnv.NEXT_PUBLIC_SUPABASE_URL,
     clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     {
       cookieOptions: supabaseCookieOptions(clientEnv.NEXT_PUBLIC_SITE_URL),
+      ...(scopedFetch ? { global: { fetch: scopedFetch } } : {}),
       cookies: {
         getAll() {
           return cookieStore.getAll();

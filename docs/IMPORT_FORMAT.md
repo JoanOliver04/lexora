@@ -79,7 +79,8 @@ separador es tab. Fixture `quotes-in-tab.txt`.
 ## Fuera de alcance de esta caracterización
 
 - El algoritmo exacto de detección de separador/cabecera → LEX-4.2.
-- Validación y saneamiento (5 MB / 10.000 filas antes de parsear, longitud
+- Validación y saneamiento (5 MiB antes de leer; 10.000 filas de datos y hasta
+  200 columnas tras tokenizar de forma acotada; longitud
   de campo, nombre de archivo, HTML a texto plano, `row_sample` ≤ 200) →
   LEX-4.5, [`SECURITY.md`](SECURITY.md). Neutralizar fórmulas al **exportar**
   CSV no es de esta fase.
@@ -89,14 +90,19 @@ separador es tab. Fixture `quotes-in-tab.txt`.
   a la misma clave que un concepto vivo del curso, o que otra fila anterior
   del archivo. Estrategias en la vista previa: omitir o crear copia. No se
   actualiza un concepto existente (no hay criterio seguro de «es el mismo»).
-  Ejecutar: LEX-4.7. Cada confirmación es un trabajo nuevo; `skip` no
+  Ejecutar: LEX-4.7 y [ADR-010](adrs/010-bounded-import-transactions.md). Cada
+  nuevo intento confirmado crea un trabajo; continuar recupera el mismo. `skip` no
   duplica la biblioteca, `copy` crea conceptos independientes. Un frente
   más largo que el título de concepto (200) o un reverso más largo que el
   ítem (500) se registra como fallo de esa fila y el lote sigue. El mazo
   de destino tiene que existir ya en el curso. Tras ejecutar (LEX-4.9) el
   resumen muestra creadas/omitidas/duplicadas/fallidas/total, que cuadran
   con el trabajo, y lista las filas fallidas (descargables en texto plano).
-  Reintentar es otro trabajo: no se reutiliza un job `completed`.
+  Ante una respuesta perdida se consulta el progreso del mismo trabajo y solo
+  se envían los lotes pendientes, también con `copy`. Al recargar se selecciona
+  otra vez el archivo original, conservando mapeo y opciones. «Importar otro
+  archivo» inicia un intento nuevo; recuperar uno completado solo devuelve su
+  resultado, sin volver a crear contenido.
 
 ## Fixtures
 

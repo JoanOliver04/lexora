@@ -43,3 +43,13 @@ export interface DelimitedFileParser {
    */
   parse(content: string): ParseFileResult;
 }
+
+export type TokenizedImport = Pick<
+  ParseFileResult,
+  "separator" | "separatorFromDirective" | "columnCount" | "rawRows"
+>;
+
+export interface TokenizingFileParser extends DelimitedFileParser {
+  /** Browser preparation classifies in bounded slices after tokenization. */
+  tokenize(content: string): TokenizedImport;
+}

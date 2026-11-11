@@ -117,6 +117,9 @@ test.describe("importación — vista previa", () => {
     await expect(firstRow).toContainText("hello");
     await expect(firstRow).not.toContainText("<b>");
     await expect(page.getByText("Fila 2: el frente es demasiado largo")).toBeVisible();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
   });
 
   test("un concepto existente con el mismo frente se lista como posible duplicado", async ({
@@ -212,7 +215,23 @@ test.describe("importación — vista previa", () => {
     await page.getByRole("button", { name: "Previsualizar" }).click();
     await expect(page.getByText("2 posibles duplicadas")).toBeVisible();
     await walkToConfirm(page);
-    await page.getByRole("button", { name: "Importar al curso" }).click();
+    const [attempt] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.url().endsWith("/api/import/jobs") &&
+          response.request().postDataJSON()?.action === "begin",
+      ),
+      page.getByRole("button", { name: "Importar al curso" }).click(),
+    ]);
+    if (attempt.status() === 429) {
+      expect(await attempt.json()).toEqual({ ok: false, error: "cooldown" });
+      await expect(
+        page.getByText("Espera unos segundos antes de crear otro intento.", { exact: false }),
+      ).toBeVisible();
+      // This wait exercises the server's explicit Retry-After contract, not a render delay.
+      await page.waitForTimeout(Number(attempt.headers()["retry-after"]) * 1000);
+      await page.getByRole("button", { name: "Importar al curso" }).click();
+    }
     await expect(page.getByText("Creadas: 0")).toBeVisible();
     await expect(page.getByText("Omitidas: 2")).toBeVisible();
   });
