@@ -6,6 +6,7 @@ import { resolveSafeRedirect } from "@/modules/identity/application/safe-redirec
 
 import { AuthShell } from "../_components/auth-shell";
 import { LoginForm } from "./login-form";
+import { isRegistrationOpen } from "@/composition/identity";
 
 // El callback redirige aquí con `?error=` cuando un enlace de correo falla.
 const SHOWN_ERRORS = new Set<AuthErrorCode>(["auth-unavailable", "missing-recovery-session"]);
@@ -32,12 +33,16 @@ export default async function LoginPage({
     <AuthShell
       title={t("login.title")}
       footer={
-        <>
-          {t("login.signupPrompt")}{" "}
-          <Link href="/signup" className="text-(--color-accent) underline underline-offset-4">
-            {t("login.signupLink")}
-          </Link>
-        </>
+        isRegistrationOpen() ? (
+          <>
+            {t("login.signupPrompt")}{" "}
+            <Link href="/signup" className="text-(--color-accent) underline underline-offset-4">
+              {t("login.signupLink")}
+            </Link>
+          </>
+        ) : (
+          <p>{t("private.description")}</p>
+        )
       }
     >
       <LoginForm locale={locale} next={safeNext} initialError={initialError} />

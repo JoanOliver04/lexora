@@ -13,6 +13,12 @@ import {
 import { createSupabaseAuthGateway } from "@/modules/identity/infrastructure/supabase-auth-gateway";
 import { createSupabaseProfileRepository } from "@/modules/identity/infrastructure/supabase-profile-repository";
 import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/server-client";
+import { serverEnv } from "@/env/server";
+import { registrationAllowed } from "@/modules/identity/domain/registration-policy";
+
+export function isRegistrationOpen(): boolean {
+  return registrationAllowed(serverEnv.NODE_ENV, serverEnv.LEXORA_ALLOW_REGISTRATION);
+}
 
 /**
  * Raíz de composición del módulo `identity`.
@@ -66,6 +72,7 @@ export async function registerVisitor(
   input: { email: unknown; password: unknown },
   emailRedirectTo: string,
 ): Promise<AuthResult<{ result: "confirmation-required" | "signed-in" }>> {
+  if (!isRegistrationOpen()) return { ok: false, error: "registration-closed" };
   const client = await createSupabaseServerClient();
   const outcome = await registerUser(createSupabaseAuthGateway(client), input, emailRedirectTo);
 

@@ -1,5 +1,20 @@
 # Lexora — Estado actual
 
+> **Publicación verificada 2026-11-11 — estadísticas completas:** PR #101
+> integrado como `3ce064b`, CI 43044098220 con tres SUCCESS. Migración
+> `20261111134401_statistics_breakdowns.sql` aplicada en producción; dry-run
+> limpio. Deployment 7713684562 SUCCESS y health 200 con app/database true.
+> LEX-7.10 completada en su alcance automatizable; Q-009 física sigue abierta.
+
+> **Checkpoint 2026-11-11 — registro backend cerrado:** Supabase Auth ya no
+> permite nuevas altas. Diff revisado de un único campo, doce propiedades
+> conservadas, diff posterior sin updates; cuentas existentes intactas. La rama
+> `feat/v1-personal-access` añade la barrera de app y sus pruebas: 799 PASS +
+> 1 omitida y build; 4 E2E de build cerrado PASS; E2E general 134 PASS + 4
+> omisiones condicionales existentes, sin reintentos. PR #101
+> ya ejecuta navegador tras resolver la descarga redundante de apt en el runner.
+> PR #102 contiene preferencias; ambos conservan los checks antes de integrar.
+
 > **Checkpoint 2026-11-11 — alcance personal y preferencias:** Joan confirma
 > uso exclusivamente personal, sin correo de contacto ni servicios de correo
 > nuevos (ADR-008, Q-010 resuelta). Se conserva el acceso existente; registro

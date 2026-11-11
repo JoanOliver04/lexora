@@ -180,6 +180,11 @@ jobs:
       - name: Tests E2E
         run: pnpm e2e
 
+      - name: Acceso personal sin registro
+        env:
+          LEXORA_TEST_PERSONAL_ACCESS: "1"
+        run: pnpm exec playwright test --config playwright.personal.config.ts --retries=0
+
       - name: Guardar el informe si algo falla
         if: failure()
         uses: actions/upload-artifact@v7

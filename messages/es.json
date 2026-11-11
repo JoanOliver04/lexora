@@ -9,7 +9,7 @@
     "problem": "Reconocer una palabra al verla no es lo mismo que recuperarla cuando quieres hablar o escribir. Son capacidades distintas y se olvidan a ritmos distintos.",
     "approach": "Lexora separa cada concepto en las competencias que lo componen y programa cada una por separado, con repetición espaciada. Saber reconocer una palabra no marca como dominada su producción.",
     "statusTitle": "Estado",
-    "status": "En desarrollo temprano. Todavía no hay cuentas ni contenido: esta página es la fundación técnica del proyecto.",
+    "status": "Aplicación de aprendizaje personal en desarrollo. Entra con tu cuenta para estudiar.",
     "repository": "Ver el código en GitHub"
   },
   "App": {
@@ -713,6 +713,10 @@
     }
   },
   "Auth": {
+    "private": {
+      "title": "Acceso personal",
+      "description": "Lexora es de uso personal por ahora. El registro de nuevas cuentas está cerrado."
+    },
     "errors": {
       "email-required": "Escribe tu correo.",
       "email-invalid": "Ese correo no parece válido.",
@@ -721,6 +725,7 @@
       "invalid-credentials": "El correo o la contraseña no son correctos.",
       "weak-password": "Esa contraseña es demasiado débil. Prueba con una más larga.",
       "missing-recovery-session": "Este enlace de recuperación ha caducado. Pide uno nuevo.",
+      "registration-closed": "El registro de nuevas cuentas está cerrado.",
       "auth-unavailable": "No hemos podido completar la operación. Inténtalo de nuevo en un momento."
     },
     "login": {
@@ -765,6 +770,7 @@
       "doneBody": "Ya puedes entrar con la contraseña nueva.",
       "toLogin": "Ir a entrar"
     },
+    "openApp": "Abrir mi espacio",
     "logout": "Cerrar sesión"
   },
   "LocaleSwitcher": {

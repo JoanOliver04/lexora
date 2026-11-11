@@ -26,11 +26,19 @@ export async function SessionControls({ locale }: { locale: string }) {
   }
 
   return (
-    <form action={logoutAction}>
-      <input type="hidden" name="locale" value={locale} />
-      <Button type="submit" variant="secondary">
-        {t("logout")}
-      </Button>
-    </form>
+    <>
+      <Link
+        href="/app"
+        className="inline-flex min-h-11 items-center text-sm text-(--color-accent) underline underline-offset-4"
+      >
+        {t("openApp")}
+      </Link>
+      <form action={logoutAction}>
+        <input type="hidden" name="locale" value={locale} />
+        <Button type="submit" variant="secondary">
+          {t("logout")}
+        </Button>
+      </form>
+    </>
   );
 }

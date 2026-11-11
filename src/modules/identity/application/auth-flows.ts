@@ -23,6 +23,7 @@ export type AuthErrorCode =
   | "invalid-credentials"
   | "weak-password"
   | "missing-recovery-session"
+  | "registration-closed"
   | "auth-unavailable";
 
 export type AuthResult<T = Record<never, never>> =

@@ -23,6 +23,7 @@ const pocoF5 = {
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  testIgnore: "**/personal-access.spec.ts",
 
   // En la CI, un `test.only` olvidado haria pasar la suite ejecutando un solo
   // test. Aqui falla en su lugar.
@@ -62,7 +63,10 @@ export default defineConfig({
     command: `pnpm build && pnpm exec next start --hostname localhost --port ${port}`,
     url: baseURL,
     reuseExistingServer: false,
-    env: { NEXT_PUBLIC_SITE_URL: baseURL },
+    env: {
+      NEXT_PUBLIC_SITE_URL: baseURL,
+      LEXORA_ALLOW_REGISTRATION: process.env["LEXORA_ALLOW_REGISTRATION"] ?? "true",
+    },
     timeout: 180_000,
   },
 });
