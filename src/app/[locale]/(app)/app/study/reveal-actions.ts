@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 
-import { getStudyContextForCurrentUser } from "@/composition/study";
+import { createReviewIdempotencyKey, getStudyContextForCurrentUser } from "@/composition/study";
 import { routing } from "@/i18n/routing";
 import {
   revealStudySessionCard,
@@ -18,6 +18,7 @@ import { V1_SCHEDULER_CONFIG } from "@/modules/study/domain/scheduler-config";
 export interface RevealFormState {
   content?: StudyCardContent;
   preview?: RatingIntervalPreview;
+  reviewKey?: string;
   previewUnavailable?: boolean;
   error?: "not-found" | "invalid-timezone" | "card-changed" | "generic";
 }
@@ -56,7 +57,11 @@ export async function revealStudyCardAction(
       config: V1_SCHEDULER_CONFIG,
     });
     return preview.ok
-      ? { content: result.content, preview: preview.preview }
+      ? {
+          content: result.content,
+          preview: preview.preview,
+          reviewKey: createReviewIdempotencyKey(),
+        }
       : { content: result.content, previewUnavailable: true };
   } catch (error) {
     if (!(error instanceof StudyError)) throw error;

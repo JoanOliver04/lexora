@@ -234,7 +234,7 @@ test.describe("Today dashboard", () => {
       });
       await page.getByRole("button", { name: "Crear sesión" }).click();
       await expect(page).toHaveURL(`/es/app/study/${selectedSessionId}`);
-      await expect(page.getByRole("heading", { name: "Sesión preparada" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Sesión activa" })).toBeVisible();
       await expect(
         page.getByTestId("study-card").getByText("Synthetic prompt", { exact: true }),
       ).toBeVisible();

@@ -59,6 +59,7 @@ export default async function ConceptDetailPage({
     includeArchived: true,
   });
   const t = await getTranslations("Concepts");
+  const tHistory = await getTranslations("History");
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-8 px-6 py-12">
@@ -157,6 +158,12 @@ export default async function ConceptDetailPage({
         <CreatePracticeItemForm locale={locale} conceptId={concept.id} />
       </section>
 
+      <Link
+        href={{ pathname: "/app/history", query: { concept: concept.id } }}
+        className="inline-flex min-h-11 items-center text-(--color-accent) underline underline-offset-4"
+      >
+        {tHistory("conceptTimeline")}
+      </Link>
       <form action={setConceptArchivedAction} className="border-t border-(--color-border) pt-8">
         <input type="hidden" name="locale" value={locale} />
         <input type="hidden" name="conceptId" value={concept.id} />

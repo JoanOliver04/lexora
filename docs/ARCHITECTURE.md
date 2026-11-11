@@ -17,10 +17,28 @@ están en [ADR-001](adrs/ADR-001-monolito-modular-clean-architecture.md) y
 > `StudyCardRepository`. La proyección de sesión excluye respuestas y
 > soluciones antes del revelado. LEX-6.5 obtiene la respuesta mediante una
 > Server Action de lectura que reautoriza sesión, cola e ítem. El cliente
-> habilita las cuatro valoraciones tras el éxito y conserva la elección solo
-> localmente. LEX-6.6 añade intervalos aproximados tras revelar, mediante el
+> habilita las cuatro valoraciones tras el éxito. LEX-6.6 añade intervalos
+> aproximados tras revelar, mediante el
 > scheduler/config/Clock del servidor; el estado inicial es hipotético si aún
-> no hay memoria. Todavía no guarda repasos ni avanza desde la UI.
+> no hay memoria. LEX-6.7 conecta la intención a `saveSessionReview`, que
+> reautoriza sesión/primer pendiente y reutiliza el commit atómico existente.
+> La UI bloquea el envío y solo cambia de frente tras confirmación del servidor.
+> LEX-6.8 usa un contrato HTTP de guardado con timeout, reintento idempotente
+> manual y validación de origen. El cliente refresca la ruta solo tras recibir
+> confirmación, sin cola offline ni cancelación implícita del commit del servidor.
+> LEX-6.9 distingue el próximo paso Learning/Relearning en la cola y muestra
+> una espera informativa cuando no hay trabajo disponible. La comprobación
+> manual vuelve al servidor; el reloj del navegador nunca admite una tarjeta.
+> LEX-6.10 añade transiciones explícitas de sesión mediante compare-and-set.
+> Pausar/reanudar no altera repasos ni alcance; el retorno reconstruye la cola.
+> El commit bloquea la sesión antes de la memoria para serializarse con el cierre,
+> conservando el replay de recibos aunque la sesión ya no esté activa.
+> LEX-6.11 muestra un resumen de sesiones pausadas/cerradas con un puerto de
+> historial de solo lectura. Agrega logs confirmados y separa los pendientes
+> actuales de las valoraciones guardadas; no inventa duración ni porcentajes.
+> LEX-6.12 mantiene los atajos en la presentación y solo dentro de la tarjeta
+> con foco. Activan los mismos botones/formularios, sin otro camino de escritura
+> ni listeners globales; la navegación nativa de controles se conserva.
 > Las secciones
 > marcadas como *pendiente* se completan cuando la fase correspondiente las
 > implemente.

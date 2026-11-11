@@ -6,7 +6,8 @@ Cómo se integra FSRS en Lexora. La decisión sobre qué entidad se programa est
 > **Estado (LEX-5.14, 2026-09-11):** **M5 cerrado.** Spike, adaptador,
 > config v1, esquema, RLS, alta, cola, cálculo, commit, idempotencia,
 > concurrencia, reloj, snapshots y auditoría con ítems importados.
-> `ts-fsrs@5.4.2`. Sin UI (FASE 6).
+> `ts-fsrs@5.4.2`. La UI de FASE 6 reutiliza estos contratos sin recalcular FSRS
+> en el navegador; guardado, recuperación, pasos cortos, ciclo y resumen de sesión integrados hasta LEX-6.11.
 
 Fuentes oficiales leídas: README de
 [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs),
@@ -156,7 +157,12 @@ La cola **no** crea estados. Un New sin fila llega con
 
 Los pasos cortos forman parte de la cola. Si un elemento vuelve a
 vencer durante la sesión, reaparece. `nextDueAt` es el próximo
-vencimiento futuro cuando no queda trabajo vencido.
+vencimiento futuro entre todos los candidatos. Desde LEX-6.9 la cola expone
+también `nextLearningDueAt`, solo para Learning/Relearning futuros, sin
+confundirlo con un Review sujeto al cupo diario. Si no hay trabajo disponible,
+la sesión muestra minutos aproximados calculados desde el mismo instante del
+servidor que formó la cola. El usuario puede comprobar de nuevo o volver a Hoy:
+no hay espera obligatoria, sondeo continuo ni cuenta atrás que habilite ítems.
 
 ## Transacción de repaso
 
@@ -187,6 +193,36 @@ Cada valoración pasa por un único caso de uso:
 **El cliente solo envía intención:** qué elemento, qué valoración, qué versión
 esperaba y una clave de idempotencia. Nunca envía valores de vencimiento,
 estabilidad o dificultad.
+
+Desde LEX-6.7, `saveSessionReview` aplica ese contrato a la UI de estudio:
+reautoriza la sesión activa y el primer pendiente, crea memoria inicial solo
+cuando corresponde y delega en `confirmReview`. El log queda ligado a la sesión.
+Un replay debe coincidir en ítem, sesión y rating; funciona aunque el ítem ya
+no esté en la cola. Desde LEX-6.10 también funciona si la sesión se ha pausado
+o cerrado después de confirmar el repaso. La confirmación visible no devuelve
+snapshots al cliente ni realiza un avance optimista. Ver
+[STUDY_OVERVIEW.md](STUDY_OVERVIEW.md).
+
+LEX-6.8 conserva esa escritura al añadir un timeout HTTP y recuperación en la
+UI. Abortar la espera no implica rollback del servidor: el resultado es
+desconocido hasta reintentar la misma clave y recibir confirmación. No se cambia
+rating, revisión ni configuración del intento durante ese reintento; no se
+calcula FSRS offline. Un conflicto requiere recargar la cola desde servidor.
+
+LEX-6.10 serializa los commits nuevos de una sesión con sus cambios de estado:
+tras el candado de idempotencia y la lectura de recibo, la RPC toma `FOR UPDATE`
+sobre la sesión propia y exige `active`, antes de bloquear la memoria. Una pausa
+que ganó impide la escritura; si ganó el repaso, la pausa espera a su commit.
+Sin sesión asociada se conserva el camino existente. La firma, permisos,
+snapshots y razones del payload no cambian. No se recalcula FSRS en SQL.
+
+LEX-6.11 lee los logs ligados a una sesión pausada/cerrada para contar repasos,
+ítems introducidos desde New y las cuatro valoraciones. No llama al scheduler,
+no calcula un porcentaje de dominio ni presenta recuperabilidad predicha como
+recuerdo observado. La duración es solo la suma de `duration_ms` válidos, con
+cobertura explícita si faltan registros; nunca usa la estimación de Hoy ni el
+tiempo entre inicio y cierre. Los pendientes proceden de la cola actual del
+alcance guardado, no de restar los repasos a un total inicial persistido.
 
 Dos garantías que se prueban explícitamente:
 

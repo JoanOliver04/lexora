@@ -4,7 +4,7 @@
 > Cada entrada tiene un ID estable `Q-nnn` que nunca se reutiliza.
 > Protocolo: `ROADMAP.md` §3.5 (documento privado y local).
 
-**Última actualización:** 2026-10-11
+**Última actualización:** 2026-10-23
 
 ## Índice de estado
 
@@ -18,6 +18,7 @@
 | Q-006 | Archivar un concepto, ¿en cascada sobre sus ítems de práctica? | `ABIERTA` | LEX-3.8 |
 | Q-007 | Identificar y conectar el entorno de producción | `RESUELTA` | Publicación solicitada |
 | Q-008 | Preview sin backend aislado | `RESUELTA` | Publicación solicitada |
+| Q-009 | Aceptación manual en dispositivo físico | `ABIERTA` | LEX-6.13; aceptación manual pendiente de LEX-6.12 |
 
 > Este archivo es público. Se aplican las mismas exclusiones que en
 > [`STATUS.md`](STATUS.md): sin credenciales, sin datos personales, sin contenido
@@ -370,6 +371,57 @@ Las ramas de PR siguen pasando los tres checks, pero no generan una web Preview
 automática. Rehabilitarla exige un entorno de pruebas separado y revisar
 `vercel.json`; nunca copiar credenciales ni usar la base de producción en Preview.
 No hay cambio de plan, dependencia o ADR nuevo. LEX-6.7 no iniciada.
+
+---
+
+## Q-009 — Aceptación manual en dispositivo físico
+
+**Estado:** `ABIERTA`
+**Fecha:** 2026-10-16
+**Bloquea:** cierre de LEX-6.13; no bloquea las verificaciones locales automáticas.
+
+### Contexto
+
+Los cambios de estudio recientes están en commits locales, no en producción.
+La matriz de navegador, el árbol accesible y las capturas no demuestran uso
+con una mano, zoom nativo ni comportamiento de lector de pantalla real.
+El agente no tiene acceso al teléfono físico del propietario ni puede emitir
+su aceptación. No se despliega una rama ni se conecta Preview a datos reales
+para facilitar esta prueba; Q-008 permanece vigente.
+
+### Opciones
+
+1. Probar el build local con datos de prueba: Windows en el propio equipo y
+   Android por redirección USB de puertos, sin exposición pública ni cambios
+   de proveedor. Registrar dispositivo/navegador, ES/EN, zoom/texto ampliado,
+   recorrido de estudio y resultado de ergonomía/lector.
+2. Aplazar la aceptación física: conservar LEX-6.13 `EN PROCESO` con evidencia
+   automatizada, sin iniciar el siguiente ID.
+
+### Recomendación e impacto
+
+Usar la opción 1 cuando el propietario pueda realizar el recorrido. Preparación
+y plantilla en [`evidence/LEX-6.13.md`](evidence/LEX-6.13.md). No enviar claves,
+contraseñas, códigos de acceso ni contenido privado; basta el resultado y los
+fallos observados. No sustituir el build local por la web de producción anterior.
+Hasta recibir ese informe, no marcar la tarea `HECHO` ni cerrar el hito.
+
+### Resolución
+
+Recibido informe parcial de Windows; el resto de la aceptación sigue pendiente.
+Preparación 2026-10-18: cuenta local existente y curso/mazo con cuatro tarjetas
+sintéticas disponibles, sin repasos consumidos; Hoy abre en `/es/app` o `/en/app`.
+Se verifica código local de LEX-6.13 y se corrige la URL de la guía. El propietario
+confirma que aún no ha realizado las comprobaciones físicas; Q-009 sigue ABIERTA.
+
+Informe del propietario registrado el 2026-10-23: `/es/app` cargó Hoy, inició
+una sesión de prueba en español, reveló correctamente la respuesta con el
+teclado y el foco visible pasó a «Respuesta». Solo esos pasos están confirmados;
+no se acredita valoración elegida, guardado ni avance. Rama comprobada antes
+del registro: `test/lex-6-13-responsive-validation`, HEAD `98732f8` (no acredita
+el commit servido durante la prueba). Poco F5 físico y lector de pantalla real:
+no realizadas. Q-009 permanece `ABIERTA` y LEX-6.13 `EN PROCESO`, sin iniciar
+LEX-6.14 ni cambios en producción.
 
 ---
 

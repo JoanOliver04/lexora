@@ -9,9 +9,10 @@ cada concepto se descompone en competencias distintas, y cada competencia tiene 
 propio estado de memoria.
 
 > ⚠️ **Estado: en desarrollo.** Cuenta, onboarding, biblioteca, importación y
-> núcleo FSRS implementados. Hoy permite preparar sesiones, revelar el primer
-> ítem y elegir una valoración con intervalos aproximados. La valoración aún
-> no se guarda desde la UI ni avanza la tarjeta; no es una V1 terminada.
+> núcleo FSRS implementados. El estudio guarda cada valoración antes de avanzar,
+> permite pausar y reanudar y recupera errores sin duplicar repasos. Historial y
+> estadísticas ES/EN disponibles en el trabajo local; ajustes, ciclo de datos y
+> PWA pendientes. Todavía no es una V1 terminada.
 > Ver [`docs/STATUS.md`](docs/STATUS.md) para evidencia y límites actuales.
 
 ## Modelo conceptual
@@ -81,6 +82,7 @@ El detalle de ramas, commits, versiones fijadas, migraciones y entornos está en
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Capas, regla de dependencia, módulos y puertos. |
 | [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) | Entidades, relaciones y convenciones del esquema. |
 | [`docs/FSRS.md`](docs/FSRS.md) | Integración de la repetición espaciada: puerto, transacción y tiempo. |
+| [`docs/STATISTICS.md`](docs/STATISTICS.md) | Historial, métricas, denominadores y límites de la previsión. |
 | [`docs/GLOSSARY.md`](docs/GLOSSARY.md) | Términos del dominio y convenciones de nombres. |
 | [`docs/CONTENT_POLICY.md`](docs/CONTENT_POLICY.md) | Qué contenido puede vivir en un repositorio público. |
 | [`docs/WORKFLOW.md`](docs/WORKFLOW.md) | Ramas, commits, versiones fijadas, migraciones y entornos. |

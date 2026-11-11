@@ -835,6 +835,16 @@ export type Database = {
         }
         Returns: string
       }
+      study_statistics: {
+        Args: {
+          p_course_id: string
+          p_days: number
+          p_deck_id?: string
+          p_now: string
+          p_timezone: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       cefr_level: "A1" | "A2" | "B1" | "B2"

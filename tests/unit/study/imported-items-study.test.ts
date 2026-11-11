@@ -225,6 +225,7 @@ function createWorld(ownerId: string, dailyNewLimit = 5, bags: SharedBags = empt
       if (!row) return null;
       return {
         practiceItemId: row.practiceItemId,
+        studySessionId: null,
         rating: row.rating,
         reviewedAt: row.reviewedAt,
       };

@@ -1,11 +1,61 @@
 # Lexora — Estado actual
 
-**Última actualización:** 2026-10-11
-**Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (6/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
+> **Autorización vigente de publicación — 2026-11-11:** Joan autoriza commits y
+> despliegues a producción durante la continuación autónoma de la V1. Se
+> conservan PR, checks y protecciones de rama; migraciones revisadas y
+> compatibles antes del código que las necesita. No autoriza nuevos costes,
+> cambios de plan ni borrados de datos reales. Preparación de publicación en
+> curso; el checkpoint inferior describe el código verificado, no un despliegue.
+
+> **Checkpoint vigente — 2026-11-11:** continuación autónoma de la V1 solicitada
+> por Joan, que confirma buen funcionamiento general en móvil y ordenador.
+> Rama `feat/v1-history-and-progress`, base `98732f8`. Historial y estadísticas
+> implementados y verificados localmente. `pnpm check`: 761 PASS + 1 omitida y
+> build; pgTAP: 19 archivos / 497 aserciones PASS; 17 migraciones desde cero
+> verificadas sin seed; E2E completo: 130 PASS + 4 omitidas, sin reintentos.
+> `pnpm audit`: cero avisos de cualquier severidad, incluidas herramientas.
+> Next.js 16.4.6 y Zod 4.6.7. Corrección de desbordamiento del título inglés
+> a 320 px/texto 200 % reproducida y probada; capturas inspeccionadas.
+> Dos migraciones aditivas locales (índices y RPC de lectura con SECURITY INVOKER).
+> No hay publicación ni cambios de producción. La aceptación específica de Q-009
+> sigue sin acreditarse; no bloquea el avance de implementación autorizado ahora.
+> Se conservan los cambios documentales previos de LEX-6.13. El estado anterior
+> que sigue se mantiene como referencia y queda subordinado a este checkpoint.
+>
+> **Continuación exacta:** LEX-7.1…7.4 HECHO local; LEX-7.5 EN PROCESO.
+> Completar desgloses por categoría/nivel y su auditoría antes de cerrar F7.
+> Ajustes, exportación, borrado, PWA y preparación pública siguen pendientes.
+> F6 conserva su aceptación humana pendiente; no se declara la V1 acabada.
+> [Evidencia del bloque](evidence/LEX-7-history-statistics.md),
+> [fórmulas y límites](STATISTICS.md) y ADR-007. Cambios sin commit/push.
+
+**Última actualización:** 2026-10-23
+**Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (12/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M6 — Alfa personal multidispositivo — `EN PROCESO`. M5 y M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
-**Tarea activa:** cierre del despliegue de LEX-6.6 verificado; LEX-6.7 sin comenzar.
-**Estado de la tarea:** LEX-6.1…LEX-6.6 `HECHO`. PR #98 fusionada sin bypass, merge `144ca9f`; revisión final `298fb23`, CI `38146136173` verde en los tres trabajos. CI del merge `38146529702` verde en los tres trabajos. Las 14 migraciones se han aplicado con autorización expresa; historial coincidente y dry-run posterior sin cambios. Catálogo público completo, 15 tablas con RLS y RPC privadas. Protección de `main` completa y verificada. Production Ready del nuevo código, health público 3/3 HTTP 200 con app/database true y no-store; páginas ES/EN y login 200, ruta privada redirige sin sesión. Preview desactivada temporalmente según Q-008, conservando Production y CI. El propietario confirma alta/onboarding y dashboard Hoy en producción; Q-007 resuelta. Físico/revisión independiente pendientes en sus gates específicos. Q-005/Q-006 sin cambios.
-**Entrega / documentación de cierre:** código integrado en `main` / `144ca9f`, PR #98. Rama de evidencia `docs/lex-6-6-production-evidence`, sin cambios de producto.
+**Tarea activa:** LEX-6.13 `EN PROCESO`, continuación autorizada el 2026-10-16; aceptación física pendiente.
+**Estado de la tarea:** matriz responsive de 80 combinaciones y corrección del solapamiento de etiquetas/cifras del resumen a 320 px con texto al 200 %. Gate general 738 PASS + 1 omitida; E2E dirigido 12 PASS y completo 124 PASS + 4 omitidas, sin reintentos de Playwright. Revisión independiente sin hallazgos. Build local en loopback para aceptación. Q-009 abierta: prueba rápida parcial de Windows recibida; aceptación restante pendiente. Poco F5 físico y lector real: no realizadas; escalado CSS no sustituye zoom nativo. Sin migración, dependencia o cambio de ADR; sin seed/reset/publicación. Guarda de LEX-6.10 pendiente de producción.
+**Rama / base:** `test/lex-6-13-responsive-validation` / `f6cbdc5`. LEX-6.12 conservada en ese commit local. Validación responsive y preparación de aceptación local; sin push, CI remota ni cambios en producción.
+
+**Informe parcial 2026-10-23:** el propietario confirma en Windows que `/es/app`
+cargó Hoy, inició una sesión de prueba en español, reveló la respuesta con el
+teclado y el foco visible pasó a «Respuesta». No acredita valoración elegida,
+guardado ni avance. Rama comprobada antes del registro:
+`test/lex-6-13-responsive-validation`, HEAD `98732f8`; no acredita el commit
+servido durante la prueba. Evidencia detallada en
+[`evidence/LEX-6.13.md`](evidence/LEX-6.13.md). LEX-6.13 sigue `EN PROCESO`,
+Q-009 `ABIERTA`; Poco F5 físico y lector real: no realizadas. Sin iniciar
+LEX-6.14 ni tocar producción. Actualización solo documental, sin repetir gates.
+
+**Preparación 2026-10-18:** producto local `b140047` verificado, incluido el CSS
+corregido. Chrome usa desarrollo por IPv6; también existe servidor optimizado
+IPv4 con el mismo cambio. Ambos entornos locales apuntan a Supabase local.
+Cuenta actual autenticada, onboarding de prueba completado, un mazo/dos conceptos/
+cuatro tarjetas sintéticas listos mediante formularios normales. Hoy confirma
+4 nuevas disponibles y 0 repasos, sin sesión iniciada en esa preparación;
+no describe el estado posterior a la prueba del propietario. URL exacta:
+`http://localhost:3000/es/app` (EN: `/en/app`), no `/es`. Health 200. Sin seed,
+reset, migración, credenciales expuestas o producción. Q-009 permanece abierta;
+el propietario todavía no ha realizado la prueba física.
 
 > El roadmap detallado y la especificación maestra son documentos privados y
 > locales; no forman parte de este repositorio público. Ver
@@ -14,6 +64,188 @@
 ---
 
 ## Terminado en esta sesión
+
+### Checkpoint LEX-6.13 — `EN PROCESO`
+
+Helper responsive en el E2E existente, ES/EN y ambos perfiles: selector, frente,
+respuesta, pausa y cierre; viewport habitual/320 px, texto 100/200 %, temas claro
+y oscuro. Mide overflow, colisión de términos con cifras y targets de botones/
+enlaces de al menos 44 × 44 px. Reproduce y corrige «Disponibles ahora» sobre
+la cifra 0; solo cambia la cuadrícula de las tres listas del resumen.
+
+Gate general 738 PASS + 1 omitida y build; E2E dirigido 12 PASS y completo
+124 PASS + 4 omitidas sin reintentos de Playwright. Revisión independiente sin
+hallazgos. Build local listo en loopback; no se requiere SQL ni se cambia el
+modelo de datos. Incidencia Auth local preexistente recuperada por el helper
+de preparación, sin añadir reintentos; documentada en evidencia.
+Q-009 exige informe del propietario: esta tarea no está terminada. Guía local,
+reenvío USB y plantilla sin secretos en
+[`evidence/LEX-6.13.md`](evidence/LEX-6.13.md). Producción no incluye esta rama;
+no usarla para aceptar los cambios locales. LEX-6.14 no iniciada.
+
+### LEX-6.12 — Teclado y accesibilidad del estudio — `HECHO` (local)
+
+Espacio y 1–4 activan los controles existentes solo dentro de la tarjeta con
+foco, sin interceptar botones, inputs, casillas o escritura; repetición, IME y
+modificadores ignorados. Ayuda ES/EN y `aria-keyshortcuts`. Respeta disabled,
+guardado pendiente, offline y reintento de la misma intención; no crea otro
+camino de escritura. Foco del frente/respuesta descrito, sin respuesta en DOM
+ni árbol accesible inicial; anuncios breves y completos de guardado.
+
+```text
+LEXORA_DB_TESTS=1 pnpm check             exit 0; 738 passed + 1 skipped, build
+pnpm db:test                           18 files / 489 assertions, PASS
+CI=1 pnpm e2e --workers=2 --retries=0   124 passed + 4 skipped, exit 0
+```
+
+Quince tests unitarios nuevos y cuatro variantes E2E ES/EN en escritorio/móvil
+emulado. Recorrido con Tab/Mayús+Tab/Intro/Espacio, bloqueo durante transporte
+retenido y offline, persistencia real Good/Easy, pausa/refresco/reanudación/cierre.
+Foco visible, targets y reduced motion comprobados. El navegador detectó pérdida
+de foco en refresco por disabled; corregido con `aria-disabled` y guarda de
+activación, manteniendo la aserción. Revisión independiente final sin hallazgos.
+Capturas de frente, respuesta y resumen inspeccionadas.
+
+Sin migración, dependencia, cambio de ADR, seed, reset, push o producción. Quedan
+prueba física y lector de pantalla real: la evidencia automatizada no certifica
+esas experiencias ni conformidad WCAG completa. La migración anterior sigue
+pendiente de producción. Evidencia y checklist manual en
+[`evidence/LEX-6.12.md`](evidence/LEX-6.12.md). LEX-6.13 iniciada después,
+según el checkpoint anterior.
+
+### LEX-6.11 — Resumen de sesión — `HECHO` (local)
+
+Sesiones pausadas, completadas y abandonadas muestran eventos confirmados, ítems
+nuevos distintos y cuatro valoraciones. Duración solo si figura en los logs,
+con cobertura explícita; nunca se estima tiempo estudiado. Los pendientes son
+actuales y se recalculan para el alcance guardado, sin confundirlos con historial
+o predicción de recuerdo. Refresco manual de solo lectura; errores sin ceros
+inventados y zona incompatible sin ocultar el historial.
+
+```text
+LEXORA_DB_TESTS=1 pnpm check             exit 0; 723 passed + 1 skipped, build
+pnpm db:test                           18 files / 489 assertions, PASS
+CI=1 pnpm e2e --workers=2 --retries=0   120 passed + 4 skipped, exit 0
+```
+
+Proyección mínima de cinco campos, lectura paginada real de 1.001 logs, exclusión
+de otra sesión/log futuro y aislamiento B/anon. Memoria, logs y sesión intactos
+al consultar. Regresiones de duración parcial/ausente, snapshots legados, pausa,
+refresco y cierre; 31 tests nuevos. Capturas de cierre inspeccionadas en escritorio
+y móvil emulado. Revisión independiente sin hallazgos tras corregir el fallback
+UTC de la fecha con zona inválida.
+
+Sin migración, dependencia, ADR nuevo o modificado, seed, reset, push o producción.
+La migración anterior de LEX-6.10 sigue pendiente allí. No requiere acción manual
+para este cierre local; físico y lector de pantalla siguen en sus gates.
+Evidencia: [`evidence/LEX-6.11.md`](evidence/LEX-6.11.md).
+LEX-6.12 completada después, según el apartado anterior.
+
+### LEX-6.10 — Ciclo de vida de sesión — `HECHO` (local)
+
+Pausar y reanudar conservan alcance y repasos; al volver se consulta la cola
+actual, sin reproducir un orden visual antiguo. Completar y abandonar son
+terminales. La escritura compara el estado observado, con `ended_at` del servidor
+y reintentos sin renovar el cierre. Hoy permite encontrar sesiones abiertas
+incluso con cupos agotados. Completar exige cola disponible vacía y no afirma
+que no queden repasos futuros o limitados. Sin resumen ni contadores finales.
+
+```text
+LEXORA_DB_TESTS=1 pnpm check             exit 0; 692 passed + 1 skipped, build
+pnpm db:test                           18 files / 489 assertions, PASS
+pnpm db:test:catalogue                 15 migrations / 15 assertions, sin seed
+CI=1 pnpm e2e --workers=2 --retries=0   120 passed + 4 skipped, exit 0
+```
+
+La migración `20261016120000_session_commit_guard.sql` conserva firma/permisos
+de la RPC y bloquea la sesión antes de memoria, después del replay. Dos carreras
+reales prueban pausa primero y repaso primero, sin perder/duplicar logs. RLS
+B/anon, reanudación con contenido modificado y cierre irreversible probados.
+UI bloqueada mientras hay un repaso incierto; capturas desktop/móvil emulado
+inspeccionadas. Revisión independiente final sin hallazgos pendientes.
+
+Migración aplicada solo al stack local; allí también estaba pendiente el
+catálogo anterior. Desde cero se verificaron todas las migraciones en una base
+desechable, luego eliminada. Sin seed ni reset; tipos regenerados sin cambios.
+ADR-006 aclarada sin cambiar su decisión, sin dependencias ni ADR nuevo.
+Producción no modificada: la migración nueva queda pendiente allí. No requiere
+acción manual para este cierre local. Evidencia:
+[`evidence/LEX-6.10.md`](evidence/LEX-6.10.md). LEX-6.11 completada después,
+según el apartado anterior.
+
+### LEX-6.9 — Pasos cortos de aprendizaje — `HECHO` (local)
+
+La cola distingue el próximo Learning/Relearning futuro de Review. La sesión
+usa un único instante del servidor para elegibilidad y duración aproximada.
+Con otro trabajo disponible se sigue estudiando; sin él se puede comprobar
+pendientes o volver a Hoy sin perder lo confirmado. Sin temporizador, sondeo
+automático, adelanto por reloj del navegador ni cambio del ciclo de vida.
+
+```text
+LEXORA_DB_TESTS=1 pnpm check             exit 0; 650 passed + 1 skipped, build
+pnpm db:test                           17 files / 477 assertions, PASS
+CI=1 pnpm e2e --workers=2 --retries=0   118 passed + 4 skipped, exit 0
+```
+
+Integración local real de ambas fases: rechazo justo antes del vencimiento,
+admisión exacta con ambos cupos agotados, RLS B/anon y replay sin otro log.
+Navegador con reloj adelantado no admite pasos tempranos. Al reaparecer el ítem
+exige nuevo reveal y guarda una nueva revisión. Capturas desktop/móvil emulado
+inspeccionadas; revisión independiente sin hallazgos. Sin seed, reset, SQL,
+dependencias, ADR ni publicación. No requiere acciones manuales para este cierre
+local; físico y lector de pantalla siguen en sus gates. Evidencia en
+[`evidence/LEX-6.9.md`](evidence/LEX-6.9.md). LEX-6.10 completada después,
+según el apartado anterior.
+
+### LEX-6.8 — Recuperación del guardado — `HECHO` (local)
+
+Contrato HTTP autenticado, de origen configurado y cuerpo acotado, sobre el
+mismo caso de uso/RPC. Timeout aborta la espera, no revierte el servidor.
+Reintento manual de la misma clave/rating/revisión; tarjeta y respuesta
+conservadas ante incertidumbre. Conflicto exige recargar y no sobrescribe al
+otro dispositivo. Offline bloquea controles sin cola ni envío al reconectar.
+Solo un recibo validado anuncia éxito y refresca la ruta; reveal recupera un
+rechazo de transporte. Mensajes ES/EN y foco conservados.
+
+```text
+LEXORA_DB_TESTS=1 pnpm check             exit 0; 637 passed + 1 skipped, build
+pnpm db:test                           17 files / 477 assertions, PASS
+CI=1 pnpm e2e --workers=2 --retries=0   114 passed + 4 skipped, exit 0
+```
+
+El navegador prueba commit real con confirmación perdida, timeout y replay sin
+otro log; otro dispositivo confirma el siguiente ítem y el conflicto recarga
+el frente vigente. También verifica offline, 401, origen ajeno y cuerpo excesivo.
+Capturas desktop/móvil emulado inspeccionadas. Revisión independiente sin
+hallazgos. Sin seed, reset, SQL, dependencias ni publicación. ADR-006 aclarada
+sin cambiar su decisión. Evidencia en [`evidence/LEX-6.8.md`](evidence/LEX-6.8.md).
+No se requieren acciones manuales para este cierre local. Pruebas físicas y
+lector de pantalla siguen en sus gates específicos. LEX-6.9 completada después,
+según el apartado anterior.
+
+### LEX-6.7 — Guardado inmediato de valoraciones — `HECHO` (local)
+
+Caso de uso autorizado de sesión, acción delgada y UI ES/EN. Reutiliza la
+persistencia atómica existente, vincula el log a la sesión y comprueba que un
+replay corresponda al mismo ítem, sesión y rating. Botones bloqueados durante
+pending; no avanza ni anuncia guardado antes de confirmación. El siguiente
+frente y el dashboard proceden de revalidación del servidor. Foco y estado de
+guardado conservados al avanzar o agotar los pendientes.
+
+```text
+LEXORA_DB_TESTS=1 pnpm check             exit 0; 608 passed + 1 skipped, build
+pnpm db:test                           17 files / 477 assertions, PASS
+CI=1 pnpm e2e --workers=2 --retries=0   110 passed + 4 skipped, exit 0
+```
+
+Integración real local con RLS A/B/anon, cuatro ratings, conflicto de revisión
+y envíos concurrentes. E2E verifica replay HTTP, controles pending, siguiente
+frente y persistencia al cerrar la pestaña confirmada. Capturas de escritorio y
+móvil emulado inspeccionadas. Revisión independiente final sin hallazgos.
+Sin seed, reset, migración, dependencia ni publicación. Pruebas físicas y CI
+remota no realizadas en esa entrega; LEX-6.8 completada después, según el
+apartado anterior. Evidencia completa:
+[`evidence/LEX-6.7.md`](evidence/LEX-6.7.md).
 
 ### LEX-6.6 — Preview de intervalos — `HECHO` (local)
 
@@ -42,7 +274,8 @@ El preflight de producción del 2026-10-11 está en
 Destino y acceso verificados; 14 migraciones aplicadas por autorización posterior.
 Production Ready del nuevo código, health público 3/3 HTTP 200 y CI del merge verde.
 Alta/onboarding y dashboard Hoy confirmados por el propietario; Q-007 resuelta.
-Físico/revisión independiente pendientes. LEX-6.7 no iniciada.
+Físico/revisión independiente pendientes en sus gates. LEX-6.7 se completó después,
+según el apartado anterior.
 
 ### LEX-6.5 — Revelado y cuatro valoraciones — `HECHO` (local)
 
@@ -1813,10 +2046,11 @@ protocolo del agente, workflow, glosario y política de contenido. Auditoría en
 
 ## Trabajo todavía abierto
 
-LEX-6.1…LEX-6.6 terminadas con evidencia local. FASE 6 en 6/14; M5 cerrado.
-Siguiente LEX-6.7, sin iniciar. Sesión con reveal, valoración local e intervalos
-aproximados, sin guardado ni avance. Publicación del conjunto en curso;
-producción requiere resolver Q-007. No se han tocado datos reales.
+LEX-6.1…LEX-6.8 terminadas con evidencia local. FASE 6 en 8/14; M5 cerrado.
+Siguiente LEX-6.9, sin iniciar. La sesión guarda valoraciones y avanza después
+de confirmar, con reintento seguro ante un resultado incierto. Esta rama no
+está publicada; producción conserva la entrega anterior aceptada y Q-007 está
+resuelta. No se han tocado datos reales en estas tareas.
 
 Q-005 y Q-006 siguen abiertas. Las etiquetas de hito pendientes requieren
 autorización del propietario. LEX-3.13 y la revisión independiente de M5
@@ -2228,6 +2462,19 @@ contenido real exista, más cara la corrección.
 
 ## Siguiente acción exacta
 
+Continuar LEX-6.13 en esta rama, base `f6cbdc5`. Verificaciones automáticas
+completas y checkpoint local conservado. Build iniciado en loopback 3000;
+si ya no está activo, la evidencia contiene el comando para iniciarlo de nuevo.
+El propietario debe realizar el recorrido de `evidence/LEX-6.13.md` en Windows
+y Poco F5 físico y aportar PASS/FAIL/no realizada con versiones y problemas.
+Q-009 abierta: no marcar HECHO ni iniciar LEX-6.14 sin informe. No se presenta
+emulación, escalado CSS o árbol accesible como prueba física/zoom nativo/voz.
+Publicación, CI remota y despliegue no ejecutados; sin seed/reset. Producción
+permanece anterior y la guarda de LEX-6.10 sigue pendiente allí. No ampliar
+permisos de red ni habilitar Preview con datos de producción para esta prueba.
+
+### Despliegue anterior verificado
+
 El cierre del despliegue de código `144ca9f` está verificado. Toda publicación
 de evidencia conserva PR protegido, tres checks verdes y verificación en `main`;
 no cambia producto ni SQL. El propietario confirma alta, onboarding y
@@ -2238,7 +2485,7 @@ para esos pasos. No activar sincronización automática de futuras migraciones.
 Ningún reset remoto ni seed local. Ver
 [`LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
 No confundir CI, Ready y aceptación de producción.
-La siguiente tarea del roadmap es **LEX-6.7**, sin comenzar.
+La tarea actual es **LEX-6.13**, `EN PROCESO` por Q-009; LEX-6.14 no iniciada.
 
 ---
 

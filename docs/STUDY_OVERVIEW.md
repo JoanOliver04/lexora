@@ -277,17 +277,17 @@ ocultas o anuncios antes del éxito. No se interpreta HTML de ningún campo.
 
 La elección `again/hard/good/easy` conserva los valores del dominio. Cada
 botón tiene una explicación visible y referenciada por `aria-describedby`,
-y `aria-pressed` señala la elección sin depender solo del color. Se informa
-explícitamente de que la valoración no está guardada y se pierde al recargar.
-Cambiar de tarjeta o recargar reinicia reveal y elección. No hay atajos globales
-ni presentación de intervalos en esta entrega.
+y `aria-pressed` señala la elección sin depender solo del color.
+La elección era local en LEX-6.5; desde LEX-6.7 se envía para guardar según el
+contrato descrito abajo. Cambiar de tarjeta o recargar reinicia reveal y elección,
+no el repaso ya confirmado. No hay atajos globales. LEX-6.6 añade los intervalos.
 
-Reveal es una lectura: no crea memoria, calcula FSRS, escribe logs o contadores,
-ni avanza la cola. Desde LEX-6.6 calcula únicamente el preview del scheduler
-descrito abajo. Elegir un rating solo cambia estado local de React. No existe
-todavía una acción de guardar que pueda invocarse antes de revelar. La UI no
-afirma que el repaso esté confirmado. La recuperación activa se solicita al
-usuario; no es una comprobación automática de si realmente recordó la respuesta.
+Reveal es una lectura: no crea memoria, escribe logs o contadores ni avanza la
+cola. Desde LEX-6.6 calcula únicamente el preview del scheduler
+descrito abajo. Desde LEX-6.7 elegir un rating invoca una acción de guardado,
+habilitada solo tras revelar y obtener un preview compatible. La recuperación
+activa se solicita al usuario; no es una comprobación automática de si realmente
+recordó la respuesta.
 
 Pruebas de aplicación, acción y UI cubren autorizaciones, primer pendiente,
 límites cambiados, sesión inactiva, pending/retry, selección local y foco. La
@@ -313,7 +313,7 @@ guardar puede variar por otro instante, estado actualizado o fuzz.
 El control «Mostrar intervalos aproximados» permite ocultarlos sin cambiar el
 rating, solicitar otra lectura ni tocar configuración FSRS. Es un ajuste local
 de esta tarjeta, reiniciado al recargar; no se simula una preferencia de cuenta
-persistida. Solo aparece tras revelar. No hay todavía guardado ni avance.
+persistida. Solo aparece tras revelar. El guardado y avance se añaden en LEX-6.7.
 
 El contrato real de `ts-fsrs@5.4.2` compara preview con `review` usando el mismo
 estado, instante y configuración v1 con fuzz habilitado, en New, Learning,
@@ -321,3 +321,227 @@ Review y Relearning. Prueba también alta hipotética sin escrituras, versiones
 incompatibles y estado original intacto. UI y E2E verifican traducción, ocultar/
 mostrar y ausencia de intervalos en el frente. Evidencia en
 [`evidence/LEX-6.6.md`](evidence/LEX-6.6.md).
+
+## Guardado inmediato — LEX-6.7
+
+El límite de servidor obtiene dueño, zona, reloj y configuración del servidor
+(`saveStudyReviewRequest` desde LEX-6.8).
+Solo acepta la intención: sesión, ítem, rating, revisión observada y clave UUID
+creada tras revelar. `saveSessionReview` exige sesión propia activa y el primer
+pendiente de la cola vigente; el contenido debe seguir siendo estudiable.
+Para memoria nueva, la revisión esperada es 1, nunca una revisión posterior
+encontrada durante una carrera. El cálculo usa los puertos existentes y
+`confirmReview` persiste memoria y log mediante la RPC atómica.
+
+La clave se consulta antes de reconstruir la cola y después de detectar carreras.
+Solo se reconoce un recibo del mismo ítem, sesión y rating. Así un reintento de
+un repaso confirmado no crea otro log, aunque la tarjeta ya haya salido de la
+cola. Un conflicto no sobrescribe memoria; la UI ofrece recargar desde servidor.
+
+El formulario bloquea envíos repetidos tanto síncronamente como durante pending.
+Mantiene tarjeta y respuesta mientras guarda; solo anuncia éxito después de la
+confirmación. La revalidación actualiza el dashboard y la cola, sin avance
+optimista. El recibo permanece visible al mostrar el siguiente frente o quedar
+sin ítems disponibles. El foco pasa al nuevo frente o al estado de guardado.
+Un error de infraestructura conserva la intención para reintentar el mismo
+rating y clave, sin fingir guardado. No hay cola offline.
+
+Pruebas de aplicación, acción, UI y Supabase local cubren autenticación, RLS,
+revisiones, replay y carreras. El navegador comprueba pending, las cuatro
+valoraciones, replay HTTP y persistencia al cerrar la pestaña confirmada.
+Evidencia en [`evidence/LEX-6.7.md`](evidence/LEX-6.7.md).
+
+## Recuperación de guardado — LEX-6.8
+
+El guardado usa `POST /api/study/reviews` y un adaptador `review-request.ts` con
+timeout de 15 segundos mediante `AbortController`. Se eligió un contrato HTTP
+explícito para controlar la cancelación de la espera y el refresco; no se intenta
+cancelar ni revertir una transacción que el servidor ya pueda haber confirmado.
+El caso de uso, los filtros RLS y la RPC no cambian. El reveal continúa siendo
+una Server Action de lectura, con recuperación de fallos de transporte.
+
+El endpoint exige el Origin configurado en `NEXT_PUBLIC_SITE_URL`, no uno
+derivado de Host o cabeceras reenviadas. Limita el cuerpo a 2048 bytes reales,
+solo acepta el formato del formulario, rechaza campos obligatorios duplicados
+y no reenvía metadatos adicionales. Verifica identidad en cada petición y
+devuelve 401 si caducó. Todas sus respuestas llevan `private, no-store`.
+
+El recibo se valida antes de usarlo: estructura, clave y rating deben coincidir.
+Un timeout, desconexión o respuesta rota significa resultado desconocido, no
+«repaso no guardado». Se conserva la tarjeta revelada y la misma intención
+(clave, rating, revisión) mientras viva la pestaña. El botón de reintento usa
+esos valores; no permite sustituir el rating ni afirma éxito. Solo un recibo
+válido habilita `router.refresh()`. Mientras llega el frente actualizado, la
+tarjeta confirmada sigue bloqueada y permite recargar si falla ese refresco.
+
+La detección de conexión usa eventos del navegador como indicio, no como prueba
+de acceso al servidor. Sin conexión se bloquean reveal y valoraciones. Perderla
+durante el envío aborta la espera; reconectar solo habilita el reintento manual,
+sin enviar nada automáticamente. Un conflicto confirmado exige recargar desde
+servidor y descarta el reveal anterior, no sobrescribe progreso del otro
+dispositivo. No hay localStorage, IndexedDB, service worker ni cola de repasos.
+
+El intento pendiente no sobrevive a cerrar/recargar la pestaña. La UI lo advierte;
+el progreso que el servidor ya confirmó sí permanece. No se implementa estudio
+offline ni sincronización en segundo plano. Evidencia en
+[`evidence/LEX-6.8.md`](evidence/LEX-6.8.md).
+
+## Pasos cortos en la sesión — LEX-6.9
+
+`DailyQueue.nextLearningDueAt` indica el próximo vencimiento futuro de
+Learning/Relearning dentro del alcance ya autorizado. Se calcula con los mismos
+candidatos filtrados, sin consultas adicionales. No sustituye `nextDueAt` ni
+cambia el contrato de `TodayOverview`: un Review futuro puede vencer antes,
+pero estar sujeto a otro cupo, y no debe presentarse como un paso corto.
+
+La sesión captura un solo `Clock.now()` para construir su cola y calcular el
+tiempo restante que recibe `StudyStepWait`. El aviso solo aparece con sesión
+activa, cola vacía y algún paso corto futuro. Los minutos se redondean hacia
+arriba para presentar una aproximación de la última comprobación; no se usa el
+reloj del dispositivo ni se actualiza una cuenta atrás. Mientras haya otras
+tarjetas disponibles, se sigue trabajando sin mostrar una espera.
+
+«Comprobar pendientes» hace `router.refresh()` dentro de una transición, sin
+crear sesión, escribir memoria o valorar nada. Reautoriza y reconstruye la cola.
+Antes del vencimiento el ítem no se puede revelar ni valorar; en el instante
+exacto entra con prioridad de aprendizaje, incluso con cupos New/Review agotados.
+Al reaparecer se monta un frente sin respuesta y se requiere un reveal nuevo,
+con la revisión vigente y una clave nueva para el siguiente repaso.
+
+El enlace a Hoy permanece utilizable: no hay que quedarse esperando para
+conservar lo guardado. Salir no marca la sesión como completada o pausada; no
+se añade aquí ciclo de vida, resumen, temporizador, cola offline ni Realtime.
+Pruebas de dominio, aplicación, Supabase real y navegador cubren ambas fases,
+límites, reloj del navegador adelantado y reaparición del mismo ítem.
+Evidencia en [`evidence/LEX-6.9.md`](evidence/LEX-6.9.md).
+
+## Ciclo de vida de sesión — LEX-6.10
+
+`changeStudySession` autoriza la sesión por propietario y valida la intención.
+El dominio permite active → paused/completed/abandoned y paused → active/abandoned.
+Repetir el estado objetivo es idempotente, sin renovar `ended_at`; completed y
+abandoned nunca se reabren. Leer una sesión, salir o cerrar la pestaña no cambia
+su estado. Una interrupción conserva lo que el servidor ya confirmó.
+
+El repositorio actualiza con condición por propietario, ID y estado observado.
+Si otro dispositivo cambió ese estado, no sobrescribe y pide comprobar la sesión.
+Pausar y reanudar conservan `ended_at = null`; los estados terminales reciben
+el instante del servidor, nunca anterior a `started_at`. El alcance y los logs
+no cambian. Reanudar verifica acceso al curso y reconstruye los pendientes
+vigentes; no reproduce el orden visual, reveal ni intención antiguos.
+
+Completar exige volver a consultar una cola sin tarjetas disponibles. No
+significa que no haya pasos futuros o repasos ocultos por límites; el mensaje
+de cierre lo aclara. Para detenerse antes se puede pausar o abandonar. No se
+incluyen resúmenes o contadores finales en este cambio.
+
+Hoy enlaza siempre a la preparación, incluso sin trabajo disponible. Allí se
+listan como máximo las diez sesiones activas/pausadas más recientes del curso
+actual. Una sesión anterior sigue accesible por su URL autorizada. Las sesiones
+terminales no aparecen en esa lista. No hay Realtime ni reanudación automática.
+
+La UI bloquea las transiciones mientras hay un repaso pendiente o con resultado
+desconocido, incluida la recarga de estado que podría descartar su intención.
+Mientras cambia la sesión se bloquean los controles de tarjeta. El servidor
+sigue siendo la barrera frente a otros dispositivos: la migración
+`20261016120000_session_commit_guard.sql` bloquea la fila de sesión antes de
+memoria/log, después del replay. Una pausa/cierre que ganó rechaza commits
+nuevos; un repaso que ganó se confirma antes de cambiar el estado. Se conserva
+la RPC `SECURITY INVOKER`, RLS, firma y vocabulario anteriores.
+
+Despliegue futuro: aplicar la migración antes de habilitar estos controles.
+Rollback: deshabilitar los controles y restaurar la función de
+`20260911190000_commit_review_idempotency.sql` si se necesita retirar la guarda;
+no borrar sesiones, estados ni logs. Se mantienen las políticas de dueño y sus
+límites documentados en ADR-006. Evidencia en
+[`evidence/LEX-6.10.md`](evidence/LEX-6.10.md).
+
+## Resumen de sesión — LEX-6.11
+
+Una sesión pausada, completada o abandonada muestra `SessionSummaryView`.
+`getStudySessionSummary` verifica identidad y sesión antes de leer su historial;
+no consulta ni muestra un resumen durante una sesión activa. El puerto nuevo
+`SessionHistoryRepository` devuelve solo ID de log, ítem, rating, fase previa y
+duración. El adaptador filtra dueño, sesión y `reviewed_at <= Clock.now()`, con
+orden por ID y páginas de 500 mediante el lector existente. La proyección JSON
+extrae únicamente la fase de `state_before`; no carga contenido de tarjetas ni
+envía snapshots de memoria al navegador.
+
+`summarizeSessionReviews` distingue eventos confirmados de ítems nuevos únicos:
+un mismo ítem puede repasarse varias veces, pero se introduce una vez. La fase
+New del snapshot previo identifica la introducción. Un snapshot legado sin fase
+reconocida no se clasifica como New y la UI avisa del recuento incompleto.
+Los IDs repetidos no duplican eventos, ratings ni duración. La distribución de
+las cuatro valoraciones suma exactamente el número de repasos contados.
+
+La duración registrada suma solo enteros de 0 a 3.600.000 ms presentes en logs.
+Cero registrado no equivale a dato ausente. Si no hay duraciones, muestra «No
+registrado»; si solo hay algunas, indica cuántos repasos cubren. Los segundos se
+redondean solo para presentar la suma. No se resta `started_at` de `ended_at`,
+no se cuentan pausas y no se usa el fallback de estimación de Hoy. El transporte
+actual de valoraciones sigue enviando duración nula; esta tarea no introduce un
+cronómetro ni inventa tiempos para registros anteriores.
+
+El segundo bloque reconsulta la cola para el curso y alcance guardados y muestra
+disponibles ahora, vencidos ocultos por límite, nuevos fuera de cupo y si hay
+vencimientos futuros. Son pendientes actuales, no una instantánea del cierre ni
+un porcentaje de aprendizaje. Editar/archivar contenido puede cambiarlos sin
+alterar el resumen histórico. Si el curso/configuración o zona no permiten
+consultarlos, se preserva el historial con un aviso, nunca con ceros inventados.
+Con una zona inválida la fecha de inicio se presenta en ISO UTC explícito.
+
+Un fallo de infraestructura muestra un error y permite actualizar manualmente;
+una lectura fallida no se presenta como sesión sin repasos. El refresco vuelve al
+servidor sin escrituras, sondeo automático, nueva sesión, reanudación o cambios
+de lifecycle. El estado de sesión, memoria y logs quedan intactos. No se usan
+los contadores opcionales de la fila de sesión ni una caché compartida.
+
+Mensajes ES/EN y pruebas de dominio, aplicación, ruta, presentación y Supabase
+real cubren duración parcial, datos legados, más de 1.000 eventos, RLS B/anon y
+persistencia tras pausa/cierre. Evidencia:
+[`evidence/LEX-6.11.md`](evidence/LEX-6.11.md).
+
+## Teclado y semántica accesible — LEX-6.12
+
+La tarjeta explica en ES/EN los atajos disponibles: Espacio revela y 1–4
+corresponden a Otra vez/Difícil/Bien/Fácil. `useStudyShortcuts` escucha solo su
+elemento raíz, no el documento. Al salir de la tarjeta dejan de actuar; tampoco
+interceptan botones, enlaces, inputs, casillas, otros controles o contenido
+editable. Ignoran repetición de una tecla mantenida, composición IME, eventos
+cancelados y modificadores. No hay atajo de edición ni nuevos ajustes globales.
+
+Cada atajo activa el botón nativo correspondiente, con `aria-keyshortcuts` y
+comprobación de `:disabled`, incluidos fieldsets ancestros. Mantiene formularios,
+rating, recibo, revisión e idempotencia existentes. Antes de revelar o sin preview
+compatible no guarda; durante guardado, cambio de sesión u offline permanece
+bloqueado. Un reintento incierto solo admite la misma valoración, no crea una
+intención distinta. No calcula memoria ni acumula operaciones offline.
+
+Tab, Mayús+Tab, Intro y Espacio conservan su comportamiento nativo en los
+controles. Frente y respuesta reciben foco programático, sin añadir pasos de
+tabulación: sus headings describen respectivamente el prompt/instrucción y la
+respuesta autorizada. El contenido de respuesta no está presente en DOM, payload
+inicial ni árbol accesible antes del reveal. No se convierte toda la tarjeta en
+una región live: el estado de guardado anuncia solo mensajes breves y completos.
+
+El siguiente frente toma el foco tras confirmación; si no queda tarjeta, lo toma
+el estado de guardado. Pausa/cierre enfocan el heading del resumen, y un error de
+cambio de sesión enfoca el bloque de recuperación. Actualizar el resumen no roba
+el foco: su botón usa `aria-disabled` y guarda de activación durante pending, en
+vez de perder foco por `disabled`. Una consulta manual no reanuda ni guarda.
+
+Se reutilizan los targets de al menos 44 px del sistema de controles, el foco
+visible y el CSS global de `prefers-reduced-motion`; no se añade animación.
+Los tests de navegador comprueban tamaños y duración reducida efectiva, recorrido
+con teclado ES/EN, árbol accesible, desconexión, guardado retenido y persistencia
+real. La emulación móvil y las aserciones del árbol accesible no equivalen a
+una prueba en teléfono físico o a escuchar un lector de pantalla real; esa
+validación manual sigue pendiente. Evidencia:
+[`evidence/LEX-6.12.md`](evidence/LEX-6.12.md).
+
+LEX-6.13 amplía las comprobaciones a viewport estrecho y texto CSS al 200 %.
+Las listas del resumen reservan ancho automático a las cifras, con texto
+restante divisible, para evitar solapamientos sin cambiar datos ni semántica.
+La matriz de pruebas incluye colisión de texto, no solo overflow de página.
+La aceptación física sigue pendiente; evidencia y guía local en
+[`evidence/LEX-6.13.md`](evidence/LEX-6.13.md).

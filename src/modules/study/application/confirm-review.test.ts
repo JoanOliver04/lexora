@@ -272,6 +272,7 @@ describe("confirmReview", () => {
     const committer = fakeCommitter({
       findByIdempotencyKey: vi.fn().mockResolvedValue({
         practiceItemId: "item-1",
+        studySessionId: null,
         rating: "good" as const,
         reviewedAt: NOW,
       }),

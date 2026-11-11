@@ -1,0 +1,14 @@
+begin;
+select plan(8);
+select has_index('public', 'review_logs', 'review_logs_owner_reviewed_id_idx', 'History owner/time index exists');
+select has_index('public', 'review_logs', 'review_logs_owner_item_reviewed_id_idx', 'Item timeline index exists');
+select is((select prosecdef from pg_proc where oid = 'public.study_statistics(uuid,integer,timestamptz,text,uuid)'::regprocedure), false, 'Statistics is SECURITY INVOKER');
+select ok(not has_function_privilege('anon', 'public.study_statistics(uuid,integer,timestamptz,text,uuid)', 'execute'), 'Anon cannot call aggregate');
+select ok(has_function_privilege('authenticated', 'public.study_statistics(uuid,integer,timestamptz,text,uuid)', 'execute'), 'Authenticated can call aggregate under RLS');
+set local role authenticated;
+select throws_ok($$select public.study_statistics('00000000-0000-4000-8000-000000000000', 7, now(), 'Europe/Madrid')$$, '42501', 'Authentication required', 'Role without a subject is rejected');
+set local request.jwt.claims to '{"sub":"a11ce000-0000-4000-8000-000000000001","role":"authenticated"}';
+select throws_ok($$select public.study_statistics('00000000-0000-4000-8000-000000000000', 1000000, now(), 'Europe/Madrid')$$, '22023', 'Invalid statistics period', 'Unbounded periods rejected');
+select throws_ok($$select public.study_statistics('00000000-0000-4000-8000-000000000000', 7, now(), 'Europe/Madrid')$$, '42501', 'Course or deck unavailable', 'Foreign/missing course rejected');
+select * from finish();
+rollback;
