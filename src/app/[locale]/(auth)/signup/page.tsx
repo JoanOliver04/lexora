@@ -25,7 +25,7 @@ export default async function SignupPage({
         footer={
           <Link
             href="/login"
-            className="inline-flex min-h-11 items-center text-(--color-accent) underline underline-offset-4"
+            className="inline-flex min-h-11 min-w-11 items-center text-(--color-accent) underline underline-offset-4"
           >
             {t("login.submit")}
           </Link>
@@ -44,7 +44,10 @@ export default async function SignupPage({
       footer={
         <>
           {t("signup.loginPrompt")}{" "}
-          <Link href="/login" className="text-(--color-accent) underline underline-offset-4">
+          <Link
+            href="/login"
+            className="inline-flex min-h-11 min-w-11 items-center text-(--color-accent) underline underline-offset-4"
+          >
             {t("signup.loginLink")}
           </Link>
         </>

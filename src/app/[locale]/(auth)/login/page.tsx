@@ -38,7 +38,10 @@ export default async function LoginPage({
         isRegistrationOpen() ? (
           <>
             {t("login.signupPrompt")}{" "}
-            <Link href="/signup" className="text-(--color-accent) underline underline-offset-4">
+            <Link
+              href="/signup"
+              className="inline-flex min-h-11 items-center text-(--color-accent) underline underline-offset-4"
+            >
               {t("login.signupLink")}
             </Link>
           </>
@@ -55,7 +58,7 @@ export default async function LoginPage({
       <LoginForm locale={locale} next={safeNext} initialError={initialError} />
       <Link
         href="/forgot-password"
-        className="text-sm text-(--color-ink-muted) underline underline-offset-4"
+        className="inline-flex min-h-11 items-center text-sm text-(--color-ink-muted) underline underline-offset-4"
       >
         {t("login.forgotLink")}
       </Link>

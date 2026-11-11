@@ -43,7 +43,7 @@ export default function Home({ params }: { params: Promise<{ locale: string }> }
         </h2>
         <p className="text-sm text-(--color-ink-muted)">{t("status")}</p>
         <a
-          className="w-fit text-sm text-(--color-accent) underline underline-offset-4"
+          className="inline-flex min-h-11 w-fit items-center text-sm text-(--color-accent) underline underline-offset-4"
           href="https://github.com/JoanOliver04/lexora"
           rel="noreferrer"
         >

@@ -808,6 +808,19 @@
       "integrity": "The download did not pass its integrity check. No file has been saved; please try again."
     }
   },
+  "Pwa": {
+    "title": "Lexora, close at hand",
+    "description": "Open your personal practice from an app icon. An internet connection is required to study and save changes.",
+    "install": "Install Lexora",
+    "manual": "If your browser offers installation, use its menu to install this site or add it to your home screen. No app store is needed.",
+    "unavailable": "Installation could not be prepared here. You can continue using Lexora in this browser or try its install / add to home screen option if available.",
+    "pending": "Waiting for your browser…",
+    "accepted": "Installation requested. Your browser will finish the process.",
+    "dismissed": "Installation dismissed. You can keep using Lexora in your browser.",
+    "installed": "Your browser reports Lexora as installed on this device.",
+    "error": "The install request could not be completed. You can try the browser’s installation menu.",
+    "offline": "Your device is offline. Studying and saving changes require a connection. An action is saved only after the server confirms it."
+  },
   "DataInformation": {
     "title": "Your data in Lexora",
     "back": "Back to settings",

@@ -1,5 +1,15 @@
 # Lexora — Estado actual
 
+> **Publicación 2026-11-11 — ciclo de datos personal:** PR #105 integrado como
+> `0a98f32`, CI 43066684124 tres SUCCESS; deployment 7716863603 SUCCESS. Migración
+> 20261111163306 aplicada, 21 en producción y dry-run limpio. Health 200
+> app/database true; API de borrado sin sesión 401. Ninguna cuenta real borrada.
+> Trabajo en `feat/v1-pwa`: manifest/iconos propios, caché pública acotada,
+> fallback neutral y controles de instalación. Gate final 861 PASS + 1 omitida,
+> tipos/lint/contraste/build PASS; E2E 154 PASS + 4 omisiones privadas existentes,
+> cero reintentos; build cerrado 4 PASS. Revisión de tres lentes y correcciones
+> de tema con storage bloqueado y arranque con idioma propio cerradas. Preparando PR.
+
 > **Publicación 2026-11-11 — exportación:** PR #104, CI 43058851154 con tres
 > SUCCESS; merge `27cb2d9`, deployment 7715757243 SUCCESS, health 200 app/database
 > true. Migración de exportación aplicada desde su snapshot exacto; 20 migraciones

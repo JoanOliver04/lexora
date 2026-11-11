@@ -12,8 +12,8 @@ propio estado de memoria.
 > núcleo FSRS implementados. El estudio guarda cada valoración antes de avanzar,
 > permite pausar y reanudar y recupera errores sin duplicar repasos. Historial y
 > estadísticas y ajustes ES/EN publicados. La entrega actual es de uso personal,
-> con registro público cerrado y exportación JSON/CSV verificada. Borrado y PWA
-> en desarrollo.
+> con registro público cerrado, exportación JSON/CSV verificada y borrado propio
+> con reautenticación. PWA y hardening final en desarrollo.
 > Todavía no es una V1 terminada.
 > Ver [`docs/STATUS.md`](docs/STATUS.md) para evidencia y límites actuales.
 
