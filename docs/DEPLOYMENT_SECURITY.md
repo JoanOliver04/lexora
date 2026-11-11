@@ -41,6 +41,13 @@ de las redirecciones del proxy o del layout.
 
 ## Preview y claves
 
+Las funciones se configuran en una única región, París (`cdg1`), próxima a la
+base de datos eu-west-3. Se mantiene una sola región, admitida en Hobby según la
+[documentación de regiones](https://vercel.com/docs/functions/configuring-functions/region).
+No se añade failover de pago ni un cambio de plan. La CDN y el middleware tienen
+su propio enrutamiento; la ubicación efectiva de las funciones se comprueba
+después del despliegue y no se deduce de la región del edge por sí sola.
+
 `vercel.json` solo habilita despliegues Git de main. Una Preview manual no puede
 usar el backend personal: VERCEL_ENV=preview bloquea sesión, Auth, health de DB y
 APIs privadas antes de I/O. VERCEL=1 sin entorno conocido también deniega acceso.

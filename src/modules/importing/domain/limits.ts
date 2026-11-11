@@ -18,6 +18,8 @@ export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
 /** Nº máximo de filas de datos. El guardián previo cuenta saltos de línea. */
 export const MAX_ROWS = 10_000;
+/** Bound the mapping controls even for a file containing thousands of delimiters. */
+export const MAX_IMPORT_COLUMNS = 200;
 
 /** Longitud máxima de frente y de reverso, en caracteres. */
 export const MAX_FIELD_LENGTH = 4000;

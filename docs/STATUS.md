@@ -1,5 +1,37 @@
 # Lexora — Estado actual
 
+> **Trabajo actual 2026-11-11 — importación por lotes:** rama
+> `feat/v1-import-performance`, base `e9042ed`. Migración 22 exclusivamente local;
+> producción sigue en 21. Preparación local de archivo ≤5 MiB/10.000 filas,
+> API acotada, lotes atómicos INVOKER, recibos idempotentes, progreso protegido,
+> pausa/reanudación y errores paginados. ADR-010 documenta el trigger privado.
+> Medición local: 1.010 filas pasan de 5.056 HTTP/62–74 s a 11 HTTP/1,495 s;
+> 10.000 filas, 81 HTTP/10,011 s y 20.000 ítems. No son tiempos de producción.
+> Integración real5 PASS; pgTAP565 PASS; 22 migraciones limpias/15 aserciones.
+> Gate general final898 PASS+1 omisión/build, exit0.
+> La suite completa dio173 PASS/4 omisiones/3 fallos; los fallos de selector tras
+> reset y fixture offline están corregidos y el pase dirigido final40 PASS,
+> sin retries. Cerrado4 PASS y Preview4 PASS, incluida la nueva API bloqueada.
+> Tres revisiones estáticas cerradas; snapshot público622 archivos sin secretos.
+> Reflow con muestra larga2 PASS. Región única París preparada, pendiente comprobar despliegue. Siguiente acción:
+> commit/PR con tres checks,
+> aplicar solo la migración revisada y verificar producción. Detalle en
+> [evidencia de importación](evidence/LEX-9-import-performance.md).
+>
+> **Aceptación recibida:** Joan confirma instalación y cierre/reapertura en
+> móvil, zoom/texto ampliado y lector real sin problemas. Se conserva como
+> evidencia humana de esos usos; no equivale a una matriz física exhaustiva.
+
+> **Publicación 2026-11-11 — seguridad:** PR #107 integrado como `e9042ed`, CI
+> 43085775495 con los tres trabajos SUCCESS; deployment 7719696781 SUCCESS.
+> Health 200 app/database true; CSP con nonces distintos, no-store, DENY/nosniff
+> y SW v2 comprobados en el origen canónico. Smoke de navegador HTTPS: tema
+> oscuro funciona, todos los scripts tienen nonce, cero errores/violaciones CSP.
+> Trabajo actual `feat/v1-import-performance`: mediciones reales locales de
+> 1.010 filas requieren 5.056 HTTP y 62–74 segundos; reproducción confirma que
+> el listado limitado a 1.000 pierde duplicados posteriores. Fixtures sintéticas
+> eliminadas al terminar; sin reset ni modificación de cuentas reales.
+
 > **Publicación 2026-11-11 — PWA:** PR #106 integrado como `257765f`, CI
 > 43076434974 con los tres trabajos SUCCESS y deployment 7718366494 SUCCESS.
 > Health 200 app/database true. Manifest, instalación explícita, fallback neutral

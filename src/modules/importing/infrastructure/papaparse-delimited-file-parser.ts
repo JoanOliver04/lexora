@@ -1,7 +1,7 @@
 import Papa from "papaparse";
 
 import type {
-  DelimitedFileParser,
+  TokenizingFileParser,
   ParseFileResult,
 } from "@/modules/importing/application/delimited-file-parser";
 import {
@@ -16,6 +16,7 @@ import {
   isImportRowIssue,
 } from "@/modules/importing/domain/row";
 import { detectSeparator, separatorChar } from "@/modules/importing/domain/separator";
+import { MAX_ROWS } from "../domain/limits";
 
 /**
  * Implementación de `DelimitedFileParser` sobre Papa Parse (LEX-4.2).
@@ -32,67 +33,81 @@ import { detectSeparator, separatorChar } from "@/modules/importing/domain/separ
 
 const BOM = "﻿";
 
-export function createPapaParseDelimitedFileParser(): DelimitedFileParser {
+export function createPapaParseDelimitedFileParser(): TokenizingFileParser {
   return {
     parse(rawContent: string): ParseFileResult {
-      const content = rawContent.startsWith(BOM) ? rawContent.slice(BOM.length) : rawContent;
-
-      const { directiveLines, rest, dataStartLine } = splitLeadingDirectiveLines(content);
-      const directives = parseDirectiveLines(directiveLines);
-
-      const firstDataLine = rest.split(/\r\n|\n/, 1)[0] ?? "";
-      const separator = directives.separator ?? detectSeparator(firstDataLine);
-
-      // `skipEmptyLines: false` a propósito: así el índice de cada fila que
-      // devuelve Papa Parse se alinea 1:1 con la línea del archivo, y el
-      // número de fila reportado (`dataStartLine + index`) es el que se ve.
-      // Una línea en blanco se tokeniza como `[""]` y `classifyRow` la marca
-      // `too_few_columns` en vez de tragársela en silencio.
-      const parsed = Papa.parse<string[]>(rest, {
-        delimiter: separatorChar(separator),
-        skipEmptyLines: false,
-        newline: "\n",
-        // TSV de Anki («Notes in Plain Text») mete `"` literales en el
-        // campo y no las escapa RFC 4180. Con el quoteChar por defecto,
-        // Papa fusiona filas y aparecen `too_few_columns` fantasma
-        // (LEX-4.10, dataset real). El CSV sí va entrecomillado.
-        quoteChar: separator === "tab" ? "\0" : '"',
-      });
-
-      const rows: ParsedImportRow[] = [];
-      const issues: ImportRowIssue[] = [];
-      const rawRows: RawImportRow[] = [];
-      let columnCount = 0;
-
-      parsed.data.forEach((columns, index) => {
-        // Papa Parse añade una fila vacía final si el archivo termina en salto
-        // de línea; se ignora (no es una fila real del archivo).
-        const isTrailingEmptyRow =
-          index === parsed.data.length - 1 && columns.length === 1 && columns[0] === "";
-        if (isTrailingEmptyRow) {
-          return;
-        }
-        const rowNumber = dataStartLine + index;
-        rawRows.push({ rowNumber, columns });
-        if (columns.length > columnCount) {
-          columnCount = columns.length;
-        }
-        const classified = classifyRow(columns, rowNumber, directives.tagsColumn);
-        if (isImportRowIssue(classified)) {
-          issues.push(classified);
-        } else {
-          rows.push(classified);
-        }
-      });
-
-      return {
-        separator,
-        separatorFromDirective: directives.separator !== null,
-        columnCount,
-        rows,
-        issues,
-        rawRows,
-      };
+      return parseContent(rawContent, true);
     },
+    tokenize(rawContent: string) {
+      const { separator, separatorFromDirective, columnCount, rawRows } = parseContent(
+        rawContent,
+        false,
+      );
+      return { separator, separatorFromDirective, columnCount, rawRows };
+    },
+  };
+}
+
+function parseContent(rawContent: string, classify: boolean): ParseFileResult {
+  const content = rawContent.startsWith(BOM) ? rawContent.slice(BOM.length) : rawContent;
+
+  const { directiveLines, rest, dataStartLine } = splitLeadingDirectiveLines(content);
+  const directives = parseDirectiveLines(directiveLines);
+
+  const firstDataLine = rest.split(/\r\n|\n/, 1)[0] ?? "";
+  const separator = directives.separator ?? detectSeparator(firstDataLine);
+
+  // `skipEmptyLines: false` a propósito: así el índice de cada fila que
+  // devuelve Papa Parse se alinea 1:1 con la línea del archivo, y el
+  // número de fila reportado (`dataStartLine + index`) es el que se ve.
+  // Una línea en blanco se tokeniza como `[""]` y `classifyRow` la marca
+  // `too_few_columns` en vez de tragársela en silencio.
+  const parsed = Papa.parse<string[]>(rest, {
+    delimiter: separatorChar(separator),
+    skipEmptyLines: false,
+    newline: "\n",
+    // TSV de Anki («Notes in Plain Text») mete `"` literales en el
+    // campo y no las escapa RFC 4180. Con el quoteChar por defecto,
+    // Papa fusiona filas y aparecen `too_few_columns` fantasma
+    // (LEX-4.10, dataset real). El CSV sí va entrecomillado.
+    quoteChar: separator === "tab" ? "\0" : '"',
+    // Keep at most one excess data row plus a possible trailing empty row.
+    preview: classify ? 0 : MAX_ROWS + 2,
+  });
+
+  const rows: ParsedImportRow[] = [];
+  const issues: ImportRowIssue[] = [];
+  const rawRows: RawImportRow[] = [];
+  let columnCount = 0;
+
+  parsed.data.forEach((columns, index) => {
+    // Papa Parse añade una fila vacía final si el archivo termina en salto
+    // de línea; se ignora (no es una fila real del archivo).
+    const isTrailingEmptyRow =
+      index === parsed.data.length - 1 && columns.length === 1 && columns[0] === "";
+    if (isTrailingEmptyRow) {
+      return;
+    }
+    const rowNumber = dataStartLine + index;
+    rawRows.push({ rowNumber, columns });
+    if (columns.length > columnCount) {
+      columnCount = columns.length;
+    }
+    if (!classify) return;
+    const classified = classifyRow(columns, rowNumber, directives.tagsColumn);
+    if (isImportRowIssue(classified)) {
+      issues.push(classified);
+    } else {
+      rows.push(classified);
+    }
+  });
+
+  return {
+    separator,
+    separatorFromDirective: directives.separator !== null,
+    columnCount,
+    rows,
+    issues,
+    rawRows,
   };
 }

@@ -100,15 +100,25 @@ test("an existing v1 worker upgrades at the same URL and replaces cached respons
     expect(upgraded.csp).toContain("script-src 'self'");
     expect(upgraded.frame).toBe("DENY");
     expect(upgraded.type).toBe("nosniff");
-    await context.setOffline(true);
-    const response = await page.goto(origin + "/en/app");
-    expect(response!.headers()["content-security-policy"]).toContain("script-src 'self'");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Connect to carry on.");
-  } finally {
-    await context.setOffline(false);
+    // Close the real loopback origin too: a newly activated worker must not
+    // race browser offline emulation and receive this fixture's network 404.
     server.closeAllConnections();
     await new Promise<void>((resolve, reject) =>
       server.close((error) => (error ? reject(error) : resolve())),
     );
+    await context.setOffline(true);
+    const response = await page.goto(origin + "/en/app");
+    expect(response?.status()).toBe(200);
+    expect((await response!.allHeaders())["content-security-policy"]).toContain(
+      "script-src 'self'",
+    );
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Connect to carry on.");
+  } finally {
+    await context.setOffline(false);
+    server.closeAllConnections();
+    if (server.listening)
+      await new Promise<void>((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
   }
 });

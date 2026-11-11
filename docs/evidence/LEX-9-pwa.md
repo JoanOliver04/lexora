@@ -54,6 +54,14 @@ interfaz; no acredita instalación del sistema operativo. Q-009 física, lector
 real y zoom nativo permanecen pendientes. No se declara estudio offline.
 Contrato: [PWA](../PWA.md).
 
+Informe físico del propietario recibido el 2026-11-11: confirma que instaló
+Lexora en el móvil, la cerró y volvió a abrirse correctamente. Confirma también
+que zoom/texto ampliado y lector de pantalla real funcionaron sin problemas.
+Son comprobaciones humanas comunicadas por Joan; no se atribuye modelo,
+navegador, idioma, tecnología de asistencia o commit servido no especificados.
+La instalación desktop y una matriz exhaustiva de motores siguen siendo pruebas
+distintas de este informe.
+
 Publicación autorizada: PR #106, CI43076434974 con tres SUCCESS; merge
 `257765f7ece53e2eb33da16536f1ebc5f3c595f7`, deployment7718366494 SUCCESS.
 Health canónico200 con app/database true después del despliegue. Sin migración,

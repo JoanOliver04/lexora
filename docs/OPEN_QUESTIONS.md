@@ -390,6 +390,13 @@ No hay cambio de plan, dependencia o ADR nuevo. LEX-6.7 no iniciada.
 **Fecha:** 2026-10-16
 **Bloquea:** cierre de LEX-6.13; no bloquea las verificaciones locales automáticas.
 
+**Actualización del propietario, 2026-11-11:** confirma instalación de Lexora en
+móvil físico, cierre/reapertura correctos y zoom/texto ampliado y lector de
+pantalla real sin problemas. No se atribuyen modelo, navegador, idioma o commit
+no indicados. Esta aceptación cuenta para esos usos y deja de constar como
+«no realizada». La consolidación final separará esta confirmación de una matriz
+exhaustiva o de pasos de estudio no descritos.
+
 ### Contexto
 
 Los cambios de estudio recientes están en commits locales, no en producción.

@@ -355,6 +355,62 @@ export type Database = {
           },
         ]
       }
+      import_job_batches: {
+        Row: {
+          batch_offset: number
+          created_at: string
+          fingerprint: string
+          import_job_id: string
+          kind: string
+          last_source_row: number
+          owner_id: string
+          request_payload: Json | null
+          row_count: number
+          rows_created: number
+          rows_duplicate: number
+          rows_failed: number
+          rows_skipped: number
+        }
+        Insert: {
+          batch_offset: number
+          created_at?: string
+          fingerprint?: string
+          import_job_id: string
+          kind?: string
+          last_source_row?: number
+          owner_id: string
+          request_payload?: Json | null
+          row_count?: number
+          rows_created?: number
+          rows_duplicate?: number
+          rows_failed?: number
+          rows_skipped?: number
+        }
+        Update: {
+          batch_offset?: number
+          created_at?: string
+          fingerprint?: string
+          import_job_id?: string
+          kind?: string
+          last_source_row?: number
+          owner_id?: string
+          request_payload?: Json | null
+          row_count?: number
+          rows_created?: number
+          rows_duplicate?: number
+          rows_failed?: number
+          rows_skipped?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_job_batches_import_job_id_owner_id_fkey"
+            columns: ["import_job_id", "owner_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
       import_job_errors: {
         Row: {
           code: Database["public"]["Enums"]["import_error_code"]
@@ -403,9 +459,12 @@ export type Database = {
           created_at: string
           deck_id: string | null
           id: string
+          last_source_row: number
           mapping_config: Json
           original_filename: string
           owner_id: string
+          processed_rows: number
+          request_fingerprint: string | null
           rows_created: number
           rows_duplicate: number
           rows_failed: number
@@ -420,9 +479,12 @@ export type Database = {
           created_at?: string
           deck_id?: string | null
           id?: string
+          last_source_row?: number
           mapping_config?: Json
           original_filename: string
           owner_id: string
+          processed_rows?: number
+          request_fingerprint?: string | null
           rows_created?: number
           rows_duplicate?: number
           rows_failed?: number
@@ -437,9 +499,12 @@ export type Database = {
           created_at?: string
           deck_id?: string | null
           id?: string
+          last_source_row?: number
           mapping_config?: Json
           original_filename?: string
           owner_id?: string
+          processed_rows?: number
+          request_fingerprint?: string | null
           rows_created?: number
           rows_duplicate?: number
           rows_failed?: number
@@ -462,6 +527,41 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "decks"
             referencedColumns: ["id", "owner_id"]
+          },
+        ]
+      }
+      import_rate_limits: {
+        Row: {
+          attempts: number
+          claimed_rows: number
+          owner_id: string
+          requested_at: string
+          requested_rows: number
+          window_date: string
+        }
+        Insert: {
+          attempts?: number
+          claimed_rows?: number
+          owner_id: string
+          requested_at?: string
+          requested_rows: number
+          window_date?: string
+        }
+        Update: {
+          attempts?: number
+          claimed_rows?: number
+          owner_id?: string
+          requested_at?: string
+          requested_rows?: number
+          window_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_rate_limits_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -825,6 +925,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      begin_import_job: {
+        Args: {
+          p_course_id: string
+          p_deck_id: string
+          p_file_hash: string
+          p_filename: string
+          p_id: string
+          p_mapping: Json
+          p_total_rows: number
+        }
+        Returns: Json
+      }
+      commit_import_batch: {
+        Args: {
+          p_job_id: string
+          p_offset: number
+          p_records: Json
+          p_stop?: boolean
+        }
+        Returns: Json
+      }
       commit_review: {
         Args: {
           p_config_version: string
@@ -866,6 +987,10 @@ export type Database = {
         Returns: boolean
       }
       export_account_data: { Args: never; Returns: Json }
+      preview_import_duplicates: {
+        Args: { p_course_id: string; p_rows: Json }
+        Returns: Json
+      }
       save_preferences: {
         Args: {
           p_course_id: string

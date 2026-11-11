@@ -4,12 +4,18 @@
 
 **Última preparación local:** 2026-10-18; no constituye aceptación física.
 
-**Último informe manual parcial:** 2026-10-23, comunicado por el propietario.
+**Último informe manual:** 2026-11-11, comunicado por el propietario.
 
 **Rama / base:** `test/lex-6-13-responsive-validation` / `f6cbdc5`
 
-**Estado:** `EN PROCESO`. Q-009 abierta: aceptación manual incompleta.
-No se ha probado un Poco F5 físico ni escuchado un lector de pantalla real.
+**Estado:** `EN PROCESO`. La evidencia automática y los informes humanos se
+conservan por alcance; no se presenta la matriz entera como ejecutada físicamente.
+
+**Actualización 2026-11-11:** Joan confirma instalación en móvil físico,
+cierre/reapertura correctos y uso de zoom/texto ampliado y lector real sin
+problemas. No especifica modelo/navegador/idioma/lector ni commit servido.
+Este informe sustituye la ausencia de prueba física/lector del cierre histórico
+inferior, sin atribuirle pasos concretos de valoración/guardado no descritos.
 
 ## Alcance ejecutado
 

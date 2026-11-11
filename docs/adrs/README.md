@@ -17,6 +17,7 @@ explicarse y, si hace falta, revertirse con conocimiento de causa.
 | [ADR-007](ADR-007-graficos-estadisticos-html.md) | Gráficos iniciales con HTML accesible y sin librería de cliente | Aceptado |
 | [ADR-008](008-personal-use.md) | Entrega para uso personal con registro cerrado | Aceptado |
 | [ADR-009](009-self-account-deletion.md) | Eliminación propia de Auth con privilegio acotado | Aceptado |
+| [ADR-010](010-bounded-import-transactions.md) | Importación por lotes con recibos y progreso protegido | Aceptado |
 
 ## Reglas
 

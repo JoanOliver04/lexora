@@ -45,4 +45,11 @@ describe("sanitizeRowSample", () => {
     expect(sample.length).toBeLessThanOrEqual(MAX_ROW_SAMPLE_LENGTH);
     expect(row.startsWith(sample)).toBe(true);
   });
+
+  it("no corta un emoji ni envía surrogates aislados a JSONB", () => {
+    const sample = sanitizeRowSample("a".repeat(199) + "😀");
+    expect(sample).toBe("a".repeat(199));
+    expect(sample.isWellFormed()).toBe(true);
+    expect(sanitizeRowSample("bad\ud83d").isWellFormed()).toBe(true);
+  });
 });
