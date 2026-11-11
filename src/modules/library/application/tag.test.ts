@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { LibraryError } from "./library-error";
 import {
+  attachTagByName,
   createTag,
   deleteTag,
   listConceptTags,
@@ -24,6 +25,7 @@ const persistedTag = {
 
 function fakeRepository(overrides: Partial<TagRepository> = {}): TagRepository {
   return {
+    attachByName: vi.fn().mockResolvedValue(undefined),
     create: vi.fn().mockResolvedValue(persistedTag),
     rename: vi.fn().mockResolvedValue(persistedTag),
     delete: vi.fn().mockResolvedValue(undefined),
@@ -73,6 +75,36 @@ describe("createTag", () => {
   it("rechaza un identificador de usuario vacío", async () => {
     const repository = fakeRepository();
     await expect(createTag(repository, "", "course-1", "Nivel::A1")).rejects.toThrow();
+  });
+});
+
+describe("attachTagByName", () => {
+  it("rejects an invalid hierarchy before any storage access", async () => {
+    const repository = fakeRepository();
+    expect(await attachTagByName(repository, "user-1", "course-1", "concept-1", "bad::")).toEqual({
+      ok: false,
+      issues: ["tag.name.emptySegment"],
+    });
+    expect(repository.attachByName).not.toHaveBeenCalled();
+  });
+  it("passes validated names to the atomic association port", async () => {
+    const repository = fakeRepository();
+    expect(
+      await attachTagByName(
+        repository,
+        "user-1",
+        "course-1",
+        "concept-1",
+        " Gramática :: Tiempos ",
+      ),
+    ).toEqual({ ok: true });
+    expect(repository.attachByName).toHaveBeenCalledWith({
+      ownerId: "user-1",
+      courseId: "course-1",
+      conceptId: "concept-1",
+      draft: { displayName: "Gramática :: Tiempos", normalizedName: "gramática::tiempos" },
+    });
+    expect(repository.list).not.toHaveBeenCalled();
   });
 });
 

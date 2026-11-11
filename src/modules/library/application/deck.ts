@@ -20,7 +20,12 @@ import {
 } from "@/modules/library/domain/deck";
 import type { CefrLevel, DeckCategory } from "@/modules/library/domain/taxonomy";
 
-import { type PageResult, clampLimit, clampOffset } from "@/modules/library/application/pagination";
+import {
+  type PageResult,
+  clampLimit,
+  clampOffset,
+  MAX_PAGE_SIZE,
+} from "@/modules/library/application/pagination";
 
 /** Un concepto dentro de un mazo, con su orden opcional (§13.8). */
 export interface DeckConcept {
@@ -243,5 +248,14 @@ export async function countConceptsPerDeck(
 ): Promise<Record<string, number>> {
   assertUserId(ownerId);
   if (deckIds.length === 0) return {};
-  return repository.countConceptsByDeck({ ownerId, deckIds });
+  const result: Record<string, number> = {};
+  for (let start = 0; start < deckIds.length; start += MAX_PAGE_SIZE)
+    Object.assign(
+      result,
+      await repository.countConceptsByDeck({
+        ownerId,
+        deckIds: deckIds.slice(start, start + MAX_PAGE_SIZE),
+      }),
+    );
+  return result;
 }

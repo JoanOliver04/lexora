@@ -2,6 +2,8 @@ import { type DeckRepository } from "@/modules/library/application/deck";
 import { type ConceptRepository } from "@/modules/library/application/concept";
 import { type PracticeItemRepository } from "@/modules/library/application/practice-item";
 import { type TagRepository } from "@/modules/library/application/tag";
+import type { DeckDetailRepository } from "@/modules/library/application/deck-detail";
+import { createSupabaseDeckDetailRepository } from "@/modules/library/infrastructure/supabase-deck-detail-repository";
 import { createSupabaseConceptRepository } from "@/modules/library/infrastructure/supabase-concept-repository";
 import { createSupabaseDeckRepository } from "@/modules/library/infrastructure/supabase-deck-repository";
 import { createSupabasePracticeItemRepository } from "@/modules/library/infrastructure/supabase-practice-item-repository";
@@ -29,6 +31,7 @@ export interface LibraryContext {
   concepts: ConceptRepository;
   practiceItems: PracticeItemRepository;
   tags: TagRepository;
+  deckDetails: DeckDetailRepository;
 }
 
 /**
@@ -52,5 +55,6 @@ export async function getLibraryContextForCurrentUser(): Promise<LibraryContext 
     concepts: createSupabaseConceptRepository(client),
     practiceItems: createSupabasePracticeItemRepository(client),
     tags: createSupabaseTagRepository(client),
+    deckDetails: createSupabaseDeckDetailRepository(client),
   };
 }

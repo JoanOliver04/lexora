@@ -26,6 +26,13 @@ import {
  * no un string suelto: el adaptador no re-normaliza.
  */
 export interface TagRepository {
+  /** Atomic normalized-name lookup/create/link, preserving the existing display name. */
+  attachByName(input: {
+    ownerId: string;
+    courseId: string;
+    conceptId: string;
+    draft: TagDraft;
+  }): Promise<void>;
   create(input: { ownerId: string; courseId: string; draft: TagDraft }): Promise<Tag>;
   rename(input: { ownerId: string; tagId: string; draft: TagDraft }): Promise<Tag>;
   delete(input: { ownerId: string; tagId: string }): Promise<void>;
@@ -47,6 +54,20 @@ export interface TagRepository {
 }
 
 export type TagOutcome = { ok: true; tag: Tag } | { ok: false; issues: TagIssue[] };
+
+export async function attachTagByName(
+  repository: TagRepository,
+  ownerId: string,
+  courseId: string,
+  conceptId: string,
+  rawName: unknown,
+): Promise<{ ok: true } | { ok: false; issues: TagIssue[] }> {
+  assertUserId(ownerId);
+  const validation = validateTagDraft({ name: rawName });
+  if (!validation.ok) return { ok: false, issues: validation.issues };
+  await repository.attachByName({ ownerId, courseId, conceptId, draft: validation.value });
+  return { ok: true };
+}
 
 function assertUserId(userId: string): void {
   if (userId.trim() === "") {

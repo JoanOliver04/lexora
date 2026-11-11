@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { z } from "zod";
 
 import { type DeckConcept, type DeckRepository } from "@/modules/library/application/deck";
 import { libraryErrorFrom, LibraryError } from "@/modules/library/application/library-error";
@@ -207,23 +208,16 @@ export function createSupabaseDeckRepository(client: SupabaseClient<Database>): 
     },
 
     async countConceptsByDeck({ ownerId, deckIds }) {
-      // Una consulta con los `deckIds` de la página visible, agrupada en
-      // memoria: a los volúmenes de la V1 es más simple y más barato que una
-      // vista o función agregada, y evita una migración para esto (§ evidencia
-      // LEX-3.9). El `!inner` descarta filas cuyo concepto ya no exista y
-      // permite filtrar `archived_at` del concepto embebido.
+      // Aggregate in PostgreSQL so the transport's row cap cannot truncate counts.
       const { data, error } = await client
-        .from("deck_concepts")
-        .select("deck_id, concepts!inner(archived_at)")
-        .eq("owner_id", ownerId)
-        .in("deck_id", deckIds)
-        .is("concepts.archived_at", null);
+        .rpc("count_library_deck_concepts", { p_owner_id: ownerId, p_deck_ids: deckIds })
+        .abortSignal(AbortSignal.timeout(12000));
       if (error) throw libraryErrorFrom(error, "no se pudieron contar los conceptos de los mazos");
-      const counts: Record<string, number> = {};
-      for (const row of data ?? []) {
-        counts[row.deck_id] = (counts[row.deck_id] ?? 0) + 1;
-      }
-      return counts;
+      const counts = z
+        .record(z.uuid(), z.number().int().nonnegative().max(2147483647))
+        .safeParse(data);
+      if (!counts.success) throw new LibraryError("unavailable", "recuento de mazos no valido");
+      return counts.data;
     },
 
     async listConcepts({ ownerId, deckId }): Promise<DeckConcept[]> {

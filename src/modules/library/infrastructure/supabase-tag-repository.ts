@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { z } from "zod";
 
 import { libraryErrorFrom, LibraryError } from "@/modules/library/application/library-error";
 import { type TagRepository } from "@/modules/library/application/tag";
@@ -52,6 +53,20 @@ function toConcept(row: ConceptRow): Concept {
 
 export function createSupabaseTagRepository(client: SupabaseClient<Database>): TagRepository {
   return {
+    async attachByName({ ownerId, courseId, conceptId, draft }) {
+      const { data, error } = await client
+        .rpc("attach_library_tag", {
+          p_owner_id: ownerId,
+          p_course_id: courseId,
+          p_concept_id: conceptId,
+          p_display_name: draft.displayName,
+          p_normalized_name: draft.normalizedName,
+        })
+        .abortSignal(AbortSignal.timeout(12000));
+      if (error) throw libraryErrorFrom(error, "no se pudo aplicar la etiqueta");
+      if (!z.uuid().safeParse(data).success)
+        throw new LibraryError("unavailable", "etiqueta no valida");
+    },
     async create({ ownerId, courseId, draft }) {
       const { data, error } = await client
         .from("tags")
