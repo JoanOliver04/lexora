@@ -16,9 +16,13 @@ import { createSupabaseProfileRepository } from "@/modules/identity/infrastructu
 import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/server-client";
 import { serverEnv } from "@/env/server";
 import { registrationAllowed } from "@/modules/identity/domain/registration-policy";
+import { privateBackendEnabled } from "@/env/deployment";
 
 export function isRegistrationOpen(): boolean {
-  return registrationAllowed(serverEnv.NODE_ENV, serverEnv.LEXORA_ALLOW_REGISTRATION);
+  return (
+    privateBackendEnabled() &&
+    registrationAllowed(serverEnv.NODE_ENV, serverEnv.LEXORA_ALLOW_REGISTRATION)
+  );
 }
 
 /**
@@ -40,6 +44,7 @@ export type { AuthErrorCode, AuthResult };
  * sesión lo decide la protección de rutas (LEX-2.6).
  */
 export async function ensureProfileForCurrentUser(): Promise<EnsureProfileOutcome | null> {
+  if (!privateBackendEnabled()) return null;
   const client = await createSupabaseServerClient();
 
   const { data, error } = await client.auth.getClaims();
@@ -62,6 +67,7 @@ export async function ensureProfileForCurrentUser(): Promise<EnsureProfileOutcom
  * Deriva de `getClaims()` (firma verificada), nunca de `getSession()`.
  */
 export async function getCurrentUserId(): Promise<string | null> {
+  if (!privateBackendEnabled()) return null;
   const client = await createSupabaseServerClient();
   const { data, error } = await client.auth.getClaims();
   if (error) {
@@ -94,6 +100,7 @@ export async function signInVisitor(input: {
   email: unknown;
   password: unknown;
 }): Promise<AuthResult> {
+  if (!privateBackendEnabled()) return { ok: false, error: "preview-disabled" };
   const client = await createSupabaseServerClient();
   const outcome = await signInUser(createSupabaseAuthGateway(client), input);
 
@@ -105,6 +112,7 @@ export async function signInVisitor(input: {
 
 /** Cierre de sesión. */
 export async function signOutVisitor(): Promise<void> {
+  if (!privateBackendEnabled()) return;
   const client = await createSupabaseServerClient();
   await createSupabaseAuthGateway(client).signOut();
 }
@@ -114,12 +122,14 @@ export async function requestPasswordResetFor(
   input: { email: unknown },
   redirectTo: string,
 ): Promise<AuthResult> {
+  if (!privateBackendEnabled()) return { ok: false, error: "preview-disabled" };
   const client = await createSupabaseServerClient();
   return requestPasswordReset(createSupabaseAuthGateway(client), input, redirectTo);
 }
 
 /** Cambio de contraseña del usuario que llega desde el enlace de recuperación. */
 export async function updateCurrentPassword(input: { password: unknown }): Promise<AuthResult> {
+  if (!privateBackendEnabled()) return { ok: false, error: "preview-disabled" };
   const client = await createSupabaseServerClient();
   return updatePassword(createSupabaseAuthGateway(client), input);
 }
@@ -129,6 +139,7 @@ export async function updateCurrentPassword(input: { password: unknown }): Promi
  * código no vale o ha caducado. Tras un canje válido, asegura el perfil.
  */
 export async function completeAuthCallback(code: string): Promise<boolean> {
+  if (!privateBackendEnabled()) return false;
   const client = await createSupabaseServerClient();
   try {
     await createSupabaseAuthGateway(client).exchangeCode(code);

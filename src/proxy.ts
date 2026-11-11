@@ -5,6 +5,12 @@ import { routing } from "./i18n/routing";
 import { isProtectedPath } from "./modules/identity/application/protected-paths";
 import { resolveSafeRedirect } from "./modules/identity/application/safe-redirect";
 import { refreshSupabaseSession } from "./shared/infrastructure/supabase/session";
+import {
+  contentSecurityPolicy,
+  createCspNonce,
+} from "./shared/infrastructure/security/content-security-policy";
+import { clientEnv } from "./env/client";
+import { serverEnv } from "./env/server";
 
 /**
  * Se ejecuta antes que cualquier ruta. Hace tres cosas, y el orden importa.
@@ -25,10 +31,23 @@ import { refreshSupabaseSession } from "./shared/infrastructure/supabase/session
  * que no acaben en una caché compartida.
  */
 export default async function proxy(request: NextRequest): Promise<NextResponse> {
+  const nonce = createCspNonce();
+  const policy = contentSecurityPolicy({
+    nonce,
+    backendUrl: clientEnv.NEXT_PUBLIC_SUPABASE_URL,
+    siteUrl: clientEnv.NEXT_PUBLIC_SITE_URL,
+    development: serverEnv.NODE_ENV === "development",
+  });
+  // Overwrite caller-supplied values. next-intl forwards these request headers
+  // so Next can nonce its own scripts as well as the explicit theme bootstrap.
+  request.headers.set("x-nonce", nonce);
+  request.headers.set("Content-Security-Policy", policy);
   const intlMiddleware = createMiddleware(routing);
   const intlResponse = intlMiddleware(request);
 
   const { response, userId, entryLocale } = await refreshSupabaseSession(request, intlResponse);
+  response.headers.set("Content-Security-Policy", policy);
+  response.headers.set("Cache-Control", "private, no-store");
 
   const pathname = request.nextUrl.pathname;
   if (pathname === "/app" && entryLocale) {
@@ -61,6 +80,8 @@ function privateRedirect(response: NextResponse, url: URL): NextResponse {
     redirectResponse.cookies.set(cookie);
   }
   redirectResponse.headers.set("Cache-Control", "private, no-store");
+  const policy = response.headers.get("Content-Security-Policy");
+  if (policy) redirectResponse.headers.set("Content-Security-Policy", policy);
   return redirectResponse;
 }
 
@@ -72,14 +93,8 @@ function localeFromPath(pathname: string): string {
 }
 
 export const config = {
-  // Se excluyen las rutas de API, los recursos internos de Next.js y cualquier
-  // ruta con un punto (un fichero con extensión: no tiene idioma ni sesión).
-  //
-  // El `\\.` es deliberado: en la cadena JavaScript se convierte en `\.`, que en
-  // la expresión regular es un punto literal. Escrito como `\.` el analizador de
-  // cadenas se come la barra y queda `.` —«cualquier carácter»—, con lo que el
-  // negative lookahead descartaba **toda** ruta con contenido y el proxy solo se
-  // ejecutaba en `/`. La renovación de sesión y esta puerta necesitan que corra
-  // en `/{locale}/...`.
-  matcher: "/((?!api|_next|_vercel|.*\\..*).*)",
+  // Only actual static namespaces bypass HTML handling. A dot in an app URL
+  // must not skip the nonce/session handling (including a dynamic 404).
+  matcher:
+    "/((?!api(?:/|$)|_next(?:/|$)|_vercel(?:/|$)|icons(?:/|$)|sw\\.js$|offline\\.(?:html|css|js)$|manifest\\.webmanifest$|favicon\\.ico$).*)",
 };

@@ -22,18 +22,26 @@ import { formatEnvError, shouldSkipValidation } from "./shared";
 const serverSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   LEXORA_ALLOW_REGISTRATION: z.enum(["true", "false"]).optional(),
+  VERCEL: z.literal("1").optional(),
+  VERCEL_ENV: z.enum(["production", "preview", "development"]).optional(),
 });
 
 type ServerEnv = z.infer<typeof serverSchema>;
 
 function loadServerEnv(): ServerEnv {
   if (shouldSkipValidation) {
-    return serverSchema.parse({ NODE_ENV: process.env["NODE_ENV"] ?? "development" });
+    return serverSchema.parse({
+      NODE_ENV: process.env["NODE_ENV"] ?? "development",
+      VERCEL: process.env["VERCEL"],
+      VERCEL_ENV: process.env["VERCEL_ENV"],
+    });
   }
 
   const parsed = serverSchema.safeParse({
     NODE_ENV: process.env["NODE_ENV"],
     LEXORA_ALLOW_REGISTRATION: process.env["LEXORA_ALLOW_REGISTRATION"],
+    VERCEL: process.env["VERCEL"],
+    VERCEL_ENV: process.env["VERCEL_ENV"],
   });
 
   if (!parsed.success) {

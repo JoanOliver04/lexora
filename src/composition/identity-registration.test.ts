@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+vi.mock("@/env/deployment", () => ({ privateBackendEnabled: () => true }));
 const { createClient } = vi.hoisted(() => ({ createClient: vi.fn() }));
 vi.mock("@/env/server", () => ({
   serverEnv: { NODE_ENV: "production", LEXORA_ALLOW_REGISTRATION: "false" },

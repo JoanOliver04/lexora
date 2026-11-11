@@ -1,4 +1,5 @@
 import { clientEnv } from "@/env/client";
+import { isPrivateAccessEnabled } from "@/composition/deployment";
 import { deleteCurrentAccount } from "@/composition/account-deletion";
 import { readPrivateJson } from "@/shared/presentation/http/read-private-json";
 
@@ -7,6 +8,7 @@ const headers = {
   "X-Content-Type-Options": "nosniff",
 };
 export async function POST(request: Request) {
+  if (!isPrivateAccessEnabled()) return new Response(null, { status: 403, headers });
   const input = await readPrivateJson(request, clientEnv.NEXT_PUBLIC_SITE_URL, 2048);
   if (!input.ok) return new Response(null, { status: input.status, headers });
   const result = await deleteCurrentAccount(input.value);

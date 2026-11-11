@@ -61,6 +61,7 @@ export type ConceptIssue =
   | "concept.summary.tooLong"
   | "concept.explanation.tooLong"
   | "concept.example.tooLong"
+  | "concept.sourceReference.tooLong"
   | "concept.cefrLevel.invalid";
 
 export type ConceptValidation =
@@ -120,6 +121,11 @@ export function validateConceptDraft(raw: unknown): ConceptValidation {
     issues.push("concept.cefrLevel.invalid");
   }
 
+  const sourceReference = readOptionalText(input["sourceReference"]);
+  if (sourceReference !== null && sourceReference.length > SHORT_TEXT_MAX_LENGTH) {
+    issues.push("concept.sourceReference.tooLong");
+  }
+
   if (issues.length > 0) {
     return { ok: false, issues };
   }
@@ -133,7 +139,7 @@ export function validateConceptDraft(raw: unknown): ConceptValidation {
       explanation,
       example,
       cefrLevel: cefrLevel as CefrLevel | null,
-      sourceReference: readOptionalText(input["sourceReference"]),
+      sourceReference,
     },
   };
 }

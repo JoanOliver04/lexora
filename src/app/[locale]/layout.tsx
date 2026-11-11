@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 
 import { routing } from "@/i18n/routing";
 import { ThemeScript } from "@/shared/presentation/theme/theme-script";
@@ -27,12 +28,8 @@ export const viewport: Viewport = {
   themeColor: "#2457b3",
 };
 
-/**
- * Prerenderiza una variante por idioma en lugar de resolverlos en cada petición.
- */
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
+// Nonces are per response: HTML using them must never be prerendered or shared.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -72,8 +69,9 @@ export default async function LocaleLayout({
     notFound();
   }
 
-  // Necesario para que el renderizado estático conozca el idioma.
+  // Fija el idioma de las traducciones para esta petición dinámica.
   setRequestLocale(locale);
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     // `lang` se corresponde con el idioma servido: los lectores de pantalla lo
@@ -84,7 +82,7 @@ export default async function LocaleLayout({
     // diferencia esperada entre servidor y cliente, y esta acotada a este nodo.
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <ThemeScript />
+        <ThemeScript nonce={nonce} />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <NextIntlClientProvider>

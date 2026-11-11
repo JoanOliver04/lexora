@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+vi.mock("@/composition/deployment", () => ({ isPrivateAccessEnabled: () => true }));
 const { remove } = vi.hoisted(() => ({ remove: vi.fn() }));
 vi.mock("@/env/client", () => ({ clientEnv: { NEXT_PUBLIC_SITE_URL: "https://lexora.example" } }));
 vi.mock("@/composition/account-deletion", () => ({ deleteCurrentAccount: remove }));

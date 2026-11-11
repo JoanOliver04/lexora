@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { clientEnv } from "@/env/client";
+import { isPrivateAccessEnabled } from "@/composition/deployment";
 import { exportDataForCurrentUser, formatDataExport } from "@/composition/data-export";
 import { DataExportError } from "@/modules/data-management/application/export-data";
 import type { DataExportFailure } from "@/modules/data-management/domain/data-export";
@@ -27,6 +28,7 @@ function failure(error: DataExportFailure) {
   );
 }
 export async function POST(request: Request) {
+  if (!isPrivateAccessEnabled()) return new Response(null, { status: 403, headers });
   if (request.headers.get("origin") !== new URL(clientEnv.NEXT_PUBLIC_SITE_URL).origin)
     return new Response(null, { status: 403, headers });
   if (request.headers.get("content-type")?.split(";")[0] !== "application/json")

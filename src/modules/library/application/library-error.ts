@@ -32,8 +32,8 @@ export type LibraryErrorKind =
 export class LibraryError extends Error {
   readonly kind: LibraryErrorKind;
 
-  constructor(kind: LibraryErrorKind, message: string, options?: { cause?: unknown }) {
-    super(message, options);
+  constructor(kind: LibraryErrorKind, message: string) {
+    super(message);
     this.name = "LibraryError";
     this.kind = kind;
   }
@@ -53,19 +53,22 @@ export function libraryErrorFrom(
   error: { code?: string | null; message?: string } | null | undefined,
   context: string,
 ): LibraryError {
-  const code = error?.code ?? "";
+  // Postgres details/hint/message can contain the rejected private row. Never
+  // retain the provider object as Error.cause, including on uncaught paths.
+  const suppliedCode = error?.code ?? "";
+  const code = /^[A-Z0-9]{5,10}$/.test(suppliedCode) ? suppliedCode : "";
   const detail = `${context} (código ${code || "desconocido"})`;
 
   switch (code) {
     case "23505":
-      return new LibraryError("duplicate", detail, { cause: error });
+      return new LibraryError("duplicate", detail);
     case "23503":
-      return new LibraryError("parent-missing", detail, { cause: error });
+      return new LibraryError("parent-missing", detail);
     case "42501":
-      return new LibraryError("forbidden", detail, { cause: error });
+      return new LibraryError("forbidden", detail);
     case "PGRST116":
-      return new LibraryError("not-found", detail, { cause: error });
+      return new LibraryError("not-found", detail);
     default:
-      return new LibraryError("unavailable", detail, { cause: error });
+      return new LibraryError("unavailable", detail);
   }
 }

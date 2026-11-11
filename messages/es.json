@@ -645,6 +645,7 @@
       "summary_tooLong": "El resumen es demasiado largo.",
       "explanation_tooLong": "La explicación es demasiado larga.",
       "example_tooLong": "El ejemplo es demasiado largo.",
+      "sourceReference_tooLong": "La referencia no puede superar los 500 caracteres.",
       "cefrLevel_invalid": "Ese nivel no es válido."
     },
     "tags": {
@@ -726,7 +727,12 @@
       "weak-password": "Esa contraseña es demasiado débil. Prueba con una más larga.",
       "missing-recovery-session": "Este enlace de recuperación ha caducado. Pide uno nuevo.",
       "registration-closed": "El registro de nuevas cuentas está cerrado.",
+      "preview-disabled": "El acceso personal está desactivado en esta vista previa.",
       "auth-unavailable": "No hemos podido completar la operación. Inténtalo de nuevo en un momento."
+    },
+    "preview": {
+      "title": "Vista previa de Lexora",
+      "description": "El acceso personal solo está disponible en tu aplicación habitual. Esta vista previa no se conecta a tus datos."
     },
     "login": {
       "title": "Entrar en Lexora",

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
+vi.mock("@/env/deployment", () => ({ privateBackendEnabled: () => true }));
 const mocks = vi.hoisted(() => ({
   claims: vi.fn(),
   from: vi.fn(),
@@ -9,6 +10,7 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("@/env/client", () => ({
   clientEnv: {
+    NEXT_PUBLIC_SITE_URL: "https://lexora.example",
     NEXT_PUBLIC_SUPABASE_URL: "https://test.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "public-test",
   },

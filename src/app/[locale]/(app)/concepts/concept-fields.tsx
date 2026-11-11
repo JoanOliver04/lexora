@@ -16,9 +16,8 @@ import { conceptIssueKey } from "./message-key";
  * tipo no tiene opción vacía: siempre hay un valor por defecto
  * (`CONCEPT_KINDS[0]`, «Vocabulario»).
  *
- * `sourceReference` no tiene un `ConceptIssue` propio (LEX-3.1 no lo valida en
- * el dominio, solo el CHECK de la base, ≤500): el `maxLength` es una ayuda del
- * cliente, no una garantía. Ver deuda en `docs/evidence/LEX-3.6.md`.
+ * `sourceReference` se valida también en el dominio: el maxLength del cliente
+ * es una ayuda, nunca una garantía para una petición manipulada.
  */
 
 const CONTROL_CLASS = [
@@ -57,6 +56,7 @@ export function ConceptFields({
   const explanationInvalid = keys.some((key) => key.startsWith("explanation"));
   const exampleInvalid = keys.some((key) => key.startsWith("example"));
   const levelInvalid = keys.includes("cefrLevel_invalid");
+  const sourceInvalid = keys.includes("sourceReference_tooLong");
 
   return (
     <div className="flex flex-col gap-4">
@@ -163,6 +163,8 @@ export function ConceptFields({
           type="text"
           maxLength={500}
           defaultValue={defaults.sourceReference ?? ""}
+          aria-invalid={sourceInvalid || undefined}
+          aria-describedby={sourceInvalid ? errorId : undefined}
         />
       </div>
     </div>

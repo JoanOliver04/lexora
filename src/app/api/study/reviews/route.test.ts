@@ -78,3 +78,4 @@ describe("review write endpoint", () => {
     expect(response.headers.get("cache-control")).toContain("no-store");
   });
 });
+vi.mock("@/composition/deployment", () => ({ isPrivateAccessEnabled: () => true }));

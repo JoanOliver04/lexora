@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { formatEnvError, shouldSkipValidation } from "./shared";
+import { isPublicSupabaseKey } from "./public-key";
 
 /**
  * Variables de entorno del cliente.
@@ -25,7 +26,13 @@ const clientSchema = z.object({
   // escribir cada usuario es Row Level Security dentro de PostgreSQL. La clave
   // secreta NO esta aqui ni puede estarlo: ver `./server.ts`.
   NEXT_PUBLIC_SUPABASE_URL: z.url(),
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z
+    .string()
+    .min(1)
+    .refine(
+      isPublicSupabaseKey,
+      "Use a publishable or legacy anon key, never a secret or user token",
+    ),
 });
 
 type ClientEnv = z.infer<typeof clientSchema>;

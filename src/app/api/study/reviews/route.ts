@@ -1,4 +1,5 @@
 import { clientEnv } from "@/env/client";
+import { isPrivateAccessEnabled } from "@/composition/deployment";
 import { saveStudyReviewRequest } from "@/app/[locale]/(app)/app/study/review-handler";
 import { REVIEW_FIELDS, type ReviewFormState } from "@/app/[locale]/(app)/app/study/review-state";
 
@@ -12,6 +13,7 @@ function reply(body: ReviewFormState, status: number) {
 
 /** Cookie-authenticated write: unlike Server Actions, HTTP cancellation is explicit. */
 export async function POST(request: Request) {
+  if (!isPrivateAccessEnabled()) return reply({ error: "unauthenticated", requestId: "" }, 403);
   // Never trust a supplied Host/forwarded header to establish the allowed origin.
   if (request.headers.get("origin") !== new URL(clientEnv.NEXT_PUBLIC_SITE_URL).origin)
     return reply({ error: "invalid-input", requestId: "" }, 403);

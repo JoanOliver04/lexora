@@ -24,6 +24,13 @@ describe("canonicalKey", () => {
 });
 
 describe("validateConceptDraft", () => {
+  it("validates source references before the database CHECK can reject a private row", () => {
+    expect(validateConceptDraft({ ...valid, sourceReference: "x".repeat(500) }).ok).toBe(true);
+    expect(validateConceptDraft({ ...valid, sourceReference: "x".repeat(501) })).toEqual({
+      ok: false,
+      issues: ["concept.sourceReference.tooLong"],
+    });
+  });
   it("acepta un borrador válido y normaliza los textos obligatorios", () => {
     const result = validateConceptDraft({ ...valid, title: "  achievement " });
     expect(result.ok).toBe(true);
