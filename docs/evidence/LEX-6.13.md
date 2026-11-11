@@ -4,9 +4,11 @@
 
 **Última preparación local:** 2026-10-18; no constituye aceptación física.
 
+**Último informe manual parcial:** 2026-10-23, comunicado por el propietario.
+
 **Rama / base:** `test/lex-6-13-responsive-validation` / `f6cbdc5`
 
-**Estado:** `EN PROCESO`. Q-009 abierta: falta informe manual del propietario.
+**Estado:** `EN PROCESO`. Q-009 abierta: aceptación manual incompleta.
 No se ha probado un Poco F5 físico ni escuchado un lector de pantalla real.
 
 ## Alcance ejecutado
@@ -156,26 +158,58 @@ detalla la detección y autorizaciones si el dispositivo no aparece.
 
 ## Recorrido manual y plantilla de resultado
 
-Repetir en ES y EN; no hace falta compartir el contenido estudiado:
+### Prueba rápida en Windows comunicada el 2026-10-23
+
+Fuente: informe del propietario; no es una ejecución del agente. El propietario
+confirma que la prueba rápida funcionó. Solo quedan acreditados estos pasos:
+
+- La página local `/es/app` cargó y mostró Hoy.
+- Inició una sesión de prueba en español.
+- La respuesta se reveló correctamente con el teclado.
+- El foco visible pasó a «Respuesta».
+
+Antes de registrar el informe se comprobaron la rama
+`test/lex-6-13-responsive-validation` y HEAD
+`98732f811458b94daadd31fa32d083fa62e31b12`, con árbol limpio.
+Son la rama y el commit del repositorio en el momento del registro; este informe
+no acredita el commit servido durante la prueba ni la versión del navegador.
+No se comunicaron la tecla concreta, la valoración elegida, el resultado del
+guardado ni el avance a otra tarjeta. No se deducen del éxito de revelar.
+
+### Estado de la aceptación manual
+
+Completar el recorrido en ES y EN; no hace falta compartir el contenido estudiado.
+Los PASS siguientes se limitan a lo comunicado en la prueba rápida de Windows:
 
 | Comprobación | Resultado del propietario |
 |---|---|
-| Windows: navegador/versión; zoom nativo 100 % y 200 % | Pendiente |
-| Windows: Tab/Mayús+Tab, revelar, valorar y foco tras avanzar | Pendiente |
-| Poco F5: Android/Chrome, orientación vertical y tamaño de texto normal | Pendiente |
-| Poco F5: texto ampliado y zoom, sin cortes, cifras solapadas o scroll horizontal | Pendiente |
-| Hoy → selección → frente → respuesta → guardado → pausa → reanudar → cerrar | Pendiente |
-| Con una mano: alcanzar controles sin pulsaciones accidentales ni fatiga | Pendiente |
-| Lector real: nombre/versión, frente sin respuesta prematura, reveal y mensajes útiles | Pendiente |
-| Resumen: números legibles y refresco conserva el foco | Pendiente |
+| Windows: `/es/app` carga y muestra Hoy | PASS, informe del propietario |
+| Windows: iniciar una sesión de prueba en español | PASS, informe del propietario |
+| Windows: revelar la respuesta con el teclado | PASS, informe del propietario; tecla no indicada |
+| Windows: foco visible pasa a «Respuesta» | PASS, informe del propietario |
+| Windows: navegador/versión; zoom nativo 100 % y 200 % | No acreditado |
+| Windows: recorrido completo con Tab/Mayús+Tab y foco tras avanzar | No acreditado |
+| Valoración elegida, guardado y avance a otra tarjeta | No acreditado |
+| Pausa → reanudar → cerrar | No acreditado |
+| Recorrido manual en inglés | No acreditado |
+| Poco F5 físico: Android/Chrome, orientación vertical y tamaño de texto normal | No realizada |
+| Poco F5 físico: texto ampliado y zoom, sin cortes, cifras solapadas o scroll horizontal | No realizada |
+| Poco F5 físico, con una mano: alcanzar controles sin pulsaciones accidentales ni fatiga | No realizada |
+| Lector real: nombre/versión, frente sin respuesta prematura, reveal y mensajes útiles | No realizada |
+| Resumen: números legibles y refresco conserva el foco | No acreditado |
 
 Informe suficiente: rama/commit probado, dispositivos y versiones, cada fila
 PASS/FAIL/no realizada y, para cada fallo, pantalla/idioma/ajuste y descripción
 breve. El valor «no realizada» no es un PASS. Contraseñas, tokens, códigos,
 enlaces de confirmación y contenido privado no forman parte del informe.
+«No acreditado» significa que el informe no aporta ese resultado; no implica
+que la comprobación se haya realizado ni que haya fallado.
 
 ## Siguiente acción exacta
 
-Verificaciones automáticas completas y checkpoint conservado. Ahora,
-recibir el informe de esta plantilla, resolver fallos y cerrar Q-009 solo con
-evidencia física real. LEX-6.13 permanece `EN PROCESO` hasta entonces.
+Prueba rápida de Windows registrada con alcance parcial. Recibir las
+comprobaciones restantes de la plantilla, resolver los fallos que se comuniquen
+y cerrar Q-009 solo con evidencia física real. LEX-6.13 permanece `EN PROCESO`;
+Poco F5 físico y lector real: no realizadas. No se inicia LEX-6.14 ni se cambia
+producción. Esta actualización es documental; no vuelve a ejecutar los gates
+automáticos anteriores.

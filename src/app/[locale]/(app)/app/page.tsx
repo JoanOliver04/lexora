@@ -72,6 +72,18 @@ export default async function AppHome({
       </Suspense>
       <nav className="flex flex-wrap gap-x-6 gap-y-2">
         <Link
+          href="/app/statistics"
+          className="inline-flex min-h-11 items-center text-(--color-accent) underline underline-offset-4"
+        >
+          {t("statisticsLink")}
+        </Link>
+        <Link
+          href="/app/history"
+          className="inline-flex min-h-11 items-center text-(--color-accent) underline underline-offset-4"
+        >
+          {t("historyLink")}
+        </Link>
+        <Link
           href="/decks"
           className="inline-flex min-h-11 items-center text-(--color-accent) underline underline-offset-4"
         >

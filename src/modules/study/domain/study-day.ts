@@ -38,6 +38,19 @@ export function studyDayWindow(now: Date, timeZone: string): StudyDayWindow {
   return { start, end };
 }
 
+/** Strict civil-date input, including impossible dates and DST boundaries. */
+export function studyDateWindow(value: string, timeZone: string): StudyDayWindow | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || !isIanaTimeZone(timeZone)) return null;
+  const [year = 0, month = 0, day = 0] = value.split("-").map(Number);
+  if (year < 1900 || year > 9998) return null;
+  const calendar = new Date(Date.UTC(year, month - 1, day));
+  if (calendar.toISOString().slice(0, 10) !== value) return null;
+  const start = zonedWallTimeToUtc(year, month, day, 0, 0, 0, timeZone);
+  const local = localCalendarDate(start, timeZone);
+  if (local.year !== year || local.month !== month || local.day !== day) return null;
+  return studyDayWindow(start, timeZone);
+}
+
 function localCalendarDate(
   instant: Date,
   timeZone: string,

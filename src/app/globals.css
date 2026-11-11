@@ -95,6 +95,29 @@
 }
 
 @layer base {
+  /* Native meters keep an accessible value; style their bars consistently across engines. */
+  meter {
+    appearance: none;
+    background: var(--color-surface-sunken);
+    border-radius: var(--radius-control);
+  }
+
+  meter::-webkit-meter-bar {
+    background: var(--color-surface-sunken);
+    border: 0;
+    border-radius: var(--radius-control);
+  }
+
+  meter::-webkit-meter-optimum-value {
+    background: var(--color-accent);
+    border-radius: var(--radius-control);
+  }
+
+  meter::-moz-meter-bar {
+    background: var(--color-accent);
+    border-radius: var(--radius-control);
+  }
+
   body {
     background-color: var(--color-canvas);
     color: var(--color-ink);

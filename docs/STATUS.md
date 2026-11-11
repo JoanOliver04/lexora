@@ -1,18 +1,58 @@
 # Lexora — Estado actual
 
-**Última actualización:** 2026-10-18
+> **Autorización vigente de publicación — 2026-11-11:** Joan autoriza commits y
+> despliegues a producción durante la continuación autónoma de la V1. Se
+> conservan PR, checks y protecciones de rama; migraciones revisadas y
+> compatibles antes del código que las necesita. No autoriza nuevos costes,
+> cambios de plan ni borrados de datos reales. Preparación de publicación en
+> curso; el checkpoint inferior describe el código verificado, no un despliegue.
+
+> **Checkpoint vigente — 2026-11-11:** continuación autónoma de la V1 solicitada
+> por Joan, que confirma buen funcionamiento general en móvil y ordenador.
+> Rama `feat/v1-history-and-progress`, base `98732f8`. Historial y estadísticas
+> implementados y verificados localmente. `pnpm check`: 761 PASS + 1 omitida y
+> build; pgTAP: 19 archivos / 497 aserciones PASS; 17 migraciones desde cero
+> verificadas sin seed; E2E completo: 130 PASS + 4 omitidas, sin reintentos.
+> `pnpm audit`: cero avisos de cualquier severidad, incluidas herramientas.
+> Next.js 16.4.6 y Zod 4.6.7. Corrección de desbordamiento del título inglés
+> a 320 px/texto 200 % reproducida y probada; capturas inspeccionadas.
+> Dos migraciones aditivas locales (índices y RPC de lectura con SECURITY INVOKER).
+> No hay publicación ni cambios de producción. La aceptación específica de Q-009
+> sigue sin acreditarse; no bloquea el avance de implementación autorizado ahora.
+> Se conservan los cambios documentales previos de LEX-6.13. El estado anterior
+> que sigue se mantiene como referencia y queda subordinado a este checkpoint.
+>
+> **Continuación exacta:** LEX-7.1…7.4 HECHO local; LEX-7.5 EN PROCESO.
+> Completar desgloses por categoría/nivel y su auditoría antes de cerrar F7.
+> Ajustes, exportación, borrado, PWA y preparación pública siguen pendientes.
+> F6 conserva su aceptación humana pendiente; no se declara la V1 acabada.
+> [Evidencia del bloque](evidence/LEX-7-history-statistics.md),
+> [fórmulas y límites](STATISTICS.md) y ADR-007. Cambios sin commit/push.
+
+**Última actualización:** 2026-10-23
 **Fase actual:** **FASE 6 — Dashboard Hoy y sesión de estudio** — `EN PROCESO` (12/14). FASE 5 `HECHO` (14/14). FASE 4 `HECHO` (11/11). FASE 3 `HECHO` (12/13, LEX-3.13 pendiente sin bloquear el hito). FASE 2 `HECHO` (11/11)
 **Hito actual:** M6 — Alfa personal multidispositivo — `EN PROCESO`. M5 y M4 `HECHO`. Etiquetas de hito M3/M4/M5 pendientes de autorización del propietario.
 **Tarea activa:** LEX-6.13 `EN PROCESO`, continuación autorizada el 2026-10-16; aceptación física pendiente.
-**Estado de la tarea:** matriz responsive de 80 combinaciones y corrección del solapamiento de etiquetas/cifras del resumen a 320 px con texto al 200 %. Gate general 738 PASS + 1 omitida; E2E dirigido 12 PASS y completo 124 PASS + 4 omitidas, sin reintentos de Playwright. Revisión independiente sin hallazgos. Build local en loopback para aceptación. Q-009 abierta: falta informe en Windows/Poco F5 físico y lector real; escalado CSS no sustituye zoom nativo. Sin migración, dependencia o cambio de ADR; sin seed/reset/publicación. Guarda de LEX-6.10 pendiente de producción.
+**Estado de la tarea:** matriz responsive de 80 combinaciones y corrección del solapamiento de etiquetas/cifras del resumen a 320 px con texto al 200 %. Gate general 738 PASS + 1 omitida; E2E dirigido 12 PASS y completo 124 PASS + 4 omitidas, sin reintentos de Playwright. Revisión independiente sin hallazgos. Build local en loopback para aceptación. Q-009 abierta: prueba rápida parcial de Windows recibida; aceptación restante pendiente. Poco F5 físico y lector real: no realizadas; escalado CSS no sustituye zoom nativo. Sin migración, dependencia o cambio de ADR; sin seed/reset/publicación. Guarda de LEX-6.10 pendiente de producción.
 **Rama / base:** `test/lex-6-13-responsive-validation` / `f6cbdc5`. LEX-6.12 conservada en ese commit local. Validación responsive y preparación de aceptación local; sin push, CI remota ni cambios en producción.
+
+**Informe parcial 2026-10-23:** el propietario confirma en Windows que `/es/app`
+cargó Hoy, inició una sesión de prueba en español, reveló la respuesta con el
+teclado y el foco visible pasó a «Respuesta». No acredita valoración elegida,
+guardado ni avance. Rama comprobada antes del registro:
+`test/lex-6-13-responsive-validation`, HEAD `98732f8`; no acredita el commit
+servido durante la prueba. Evidencia detallada en
+[`evidence/LEX-6.13.md`](evidence/LEX-6.13.md). LEX-6.13 sigue `EN PROCESO`,
+Q-009 `ABIERTA`; Poco F5 físico y lector real: no realizadas. Sin iniciar
+LEX-6.14 ni tocar producción. Actualización solo documental, sin repetir gates.
 
 **Preparación 2026-10-18:** producto local `b140047` verificado, incluido el CSS
 corregido. Chrome usa desarrollo por IPv6; también existe servidor optimizado
 IPv4 con el mismo cambio. Ambos entornos locales apuntan a Supabase local.
 Cuenta actual autenticada, onboarding de prueba completado, un mazo/dos conceptos/
 cuatro tarjetas sintéticas listos mediante formularios normales. Hoy confirma
-4 nuevas disponibles y 0 repasos, sin sesión iniciada. URL exacta:
+4 nuevas disponibles y 0 repasos, sin sesión iniciada en esa preparación;
+no describe el estado posterior a la prueba del propietario. URL exacta:
 `http://localhost:3000/es/app` (EN: `/en/app`), no `/es`. Health 200. Sin seed,
 reset, migración, credenciales expuestas o producción. Q-009 permanece abierta;
 el propietario todavía no ha realizado la prueba física.
