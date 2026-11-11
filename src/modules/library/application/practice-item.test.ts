@@ -32,6 +32,7 @@ function fakeRepository(overrides: Partial<PracticeItemRepository> = {}): Practi
     setArchived: vi
       .fn()
       .mockResolvedValue({ ...persistedItem, archivedAt: "2026-09-04T01:00:00Z" }),
+    get: vi.fn().mockResolvedValue(persistedItem),
     listByConcept: vi.fn().mockResolvedValue([persistedItem]),
     ...overrides,
   };

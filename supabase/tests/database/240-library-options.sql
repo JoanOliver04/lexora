@@ -1,0 +1,15 @@
+begin;
+select plan(9);
+select is((select prosecdef from pg_proc where oid='public.read_library_concept_options(uuid,uuid,uuid,integer,integer)'::regprocedure),false,'Concept options use caller RLS');
+select is((select prosecdef from pg_proc where oid='public.read_library_tag_previews(uuid,uuid[])'::regprocedure),false,'Tag previews use caller RLS');
+select is((select prosecdef from pg_proc where oid='public.read_library_deck_options(uuid,uuid,text,integer,uuid)'::regprocedure),false,'Deck options use caller RLS');
+select ok(not has_function_privilege('anon','public.read_library_concept_options(uuid,uuid,uuid,integer,integer)','execute'),'Anonymous cannot read concept options');
+select ok(not has_function_privilege('anon','public.read_library_tag_previews(uuid,uuid[])','execute'),'Anonymous cannot read tags');
+select ok(not has_function_privilege('anon','public.read_library_deck_options(uuid,uuid,text,integer,uuid)','execute'),'Anonymous cannot read decks');
+set local role authenticated;
+set local request.jwt.claims='{}';
+select is(public.read_library_concept_options('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001'),null::jsonb,'No identity yields no concept');
+select is(public.read_library_tag_previews('10000000-0000-4000-8000-000000000001','{}'),'[]'::jsonb,'No identity yields no tag previews');
+select is(public.read_library_deck_options('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001'),' {"items":[],"total":0,"offset":0,"selected":null}'::jsonb,'No identity yields an empty picker');
+select * from finish();
+rollback;

@@ -13,6 +13,8 @@ import { formatImportErrorReport } from "@/modules/importing/application/format-
 import { PendingButton } from "../../(auth)/_components/pending-button";
 import type { ImportProgress } from "@/modules/importing/application/import-transfer";
 import { useImportTransfer } from "./use-import-transfer";
+import type { DeckOptions } from "@/modules/library/application/library-options";
+import { ImportDeckPicker } from "./import-deck-picker";
 import {
   IMPORT_WIZARD_STEPS,
   canJumpToWizardStep,
@@ -59,12 +61,12 @@ function stepSectionProps(
  */
 export function ImportPreviewForm({
   locale,
-  decks,
+  deckOptions,
   courseId,
   pending,
 }: {
   locale: string;
-  decks: { id: string; title: string }[];
+  deckOptions: DeckOptions;
   courseId: string;
   pending: ImportProgress | null;
 }) {
@@ -74,7 +76,7 @@ export function ImportPreviewForm({
     <ImportPreviewFormSession
       key={session}
       locale={locale}
-      decks={decks}
+      deckOptions={deckOptions}
       courseId={courseId}
       pending={session === 0 ? pending : null}
       onAgain={() => {
@@ -89,13 +91,13 @@ export function ImportPreviewForm({
 
 function ImportPreviewFormSession({
   locale,
-  decks,
+  deckOptions,
   onAgain,
   courseId,
   pending,
 }: {
   locale: string;
-  decks: { id: string; title: string }[];
+  deckOptions: DeckOptions;
   onAgain: () => void;
   courseId: string;
   pending: ImportProgress | null;
@@ -113,7 +115,9 @@ function ImportPreviewFormSession({
   const [furthest, setFurthest] = useState<ImportWizardStep>("file");
   const [moved, setMoved] = useState(false);
   const [openedForHash, setOpenedForHash] = useState("");
-  const [deckId, setDeckId] = useState(pending?.deckId || decks[0]?.id || "");
+  const [selectedDeck, setSelectedDeck] = useState(
+    deckOptions.selected ?? deckOptions.items[0] ?? null,
+  );
   const [createReverse, setCreateReverse] = useState(pending?.mapping.createReverse === true);
   const [strategy, setStrategy] = useState(pending?.mapping.strategy ?? "skip");
 
@@ -121,7 +125,6 @@ function ImportPreviewFormSession({
 
   const hasPreview = state.previewRows !== undefined;
   const columns = Array.from({ length: Math.max(state.columnCount ?? 0, 1) }, (_, index) => index);
-  const selectedDeck = decks.find((deck) => deck.id === deckId);
   const previewHash = state.carried?.contentHash ?? "";
 
   if (hasPreview && previewHash && previewHash !== openedForHash) {
@@ -468,7 +471,7 @@ function ImportPreviewFormSession({
               </section>
 
               <section {...stepSectionProps(step === "destination", "gap-3")}>
-                {decks.length === 0 ? (
+                {deckOptions.total === 0 ? (
                   <p className="text-sm text-(--color-ink-muted)">
                     {t("execute.noDeck")}{" "}
                     <Link href="/decks" className="underline underline-offset-4">
@@ -476,22 +479,11 @@ function ImportPreviewFormSession({
                     </Link>
                   </p>
                 ) : (
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="import-deck">{t("execute.deck")}</Label>
-                    <select
-                      id="import-deck"
-                      name="deckId"
-                      value={deckId}
-                      onChange={(event) => setDeckId(event.target.value)}
-                      className={SELECT_CLASS}
-                    >
-                      {decks.map((deck) => (
-                        <option key={deck.id} value={deck.id}>
-                          {deck.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <ImportDeckPicker
+                    initial={deckOptions}
+                    selected={selectedDeck}
+                    onSelect={setSelectedDeck}
+                  />
                 )}
                 <label className="flex min-h-11 items-center gap-2 text-sm">
                   <input
@@ -577,7 +569,7 @@ function ImportPreviewFormSession({
                     })}
                   </li>
                   <li>
-                    {decks.length === 0
+                    {deckOptions.total === 0
                       ? t("wizard.recapNoDeck")
                       : t("wizard.recapDeck", { deck: selectedDeck?.title ?? "" })}
                   </li>
@@ -601,7 +593,7 @@ function ImportPreviewFormSession({
                 <p className="text-xs text-(--color-ink-subtle)">{t("resubmitHint")}</p>
               </>
             ) : null}
-            {step === "confirm" && decks.length > 0 ? (
+            {step === "confirm" && selectedDeck ? (
               <ExecuteButton
                 idle={t(job ? "transfer.resume" : "execute.submit")}
                 pending={t("execute.submitting")}

@@ -1,8 +1,22 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readBrowserImportFile, transferBrowserImport } from "./browser-import";
+import { applyColumnMapping } from "../domain/column-mapping";
 
 afterEach(() => vi.unstubAllGlobals());
 describe("browser import file and transport boundaries", () => {
+  it.each([1, 2, 3, 4])(
+    "preserves tags column %s as the initial browser mapping",
+    async (column) => {
+      const cells = ["front", "back", "ignored"];
+      cells.splice(column - 1, 0, "tag");
+      const result = await readBrowserImportFile(
+        new File([`#tags column:${column}\n${cells.join("\t")}`], "synthetic.tsv"),
+      );
+      if (!result.ok) throw Error("file rejected");
+      const mapped = applyColumnMapping(result.carried.rawRows, result.carried.defaultMapping!);
+      expect(mapped.rows).toMatchObject([{ front: "front", back: "back", tags: ["tag"] }]);
+    },
+  );
   it("counts data rows after directives and bounds excessive rows and columns", async () => {
     const content = "#separator:tab\n#html:true\n" + "front\tback\ttag\n".repeat(10000);
     const result = await readBrowserImportFile(new File([content], "synthetic.tsv"));

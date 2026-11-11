@@ -6,6 +6,12 @@ import type { Database } from "@/shared/infrastructure/supabase/database.types";
 import { createSupabaseDeckRepository } from "@/modules/library/infrastructure/supabase-deck-repository";
 import { createSupabaseDeckDetailRepository } from "@/modules/library/infrastructure/supabase-deck-detail-repository";
 import { createSupabaseTagRepository } from "@/modules/library/infrastructure/supabase-tag-repository";
+import { createSupabaseLibraryOptionsRepository } from "@/modules/library/infrastructure/supabase-library-options-repository";
+import { createSupabasePracticeItemRepository } from "@/modules/library/infrastructure/supabase-practice-item-repository";
+import {
+  getPracticeItem,
+  createReversePracticeItem,
+} from "@/modules/library/application/practice-item";
 import { attachTagByName } from "@/modules/library/application/tag";
 import { countConceptsPerDeck } from "@/modules/library/application/deck";
 import {
@@ -264,6 +270,183 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
       ).toBeNull();
       expect((await read())?.deck.archivedAt).not.toBeNull();
     });
+
+    it("paginates tags, items and destination decks beyond 1000 with private bounded previews", async () => {
+      const tagIds = Array.from({ length: 1010 }, () => randomUUID());
+      const deckIds = Array.from({ length: 1010 }, () => randomUUID());
+      for (let start = 0; start < 1010; start += 500) {
+        const batch = tagIds.slice(start, start + 500);
+        expect(
+          (
+            await a.from("tags").insert(
+              batch.map((id, i) => ({
+                id,
+                owner_id: owner,
+                course_id: course,
+                display_name: `Options_${String(start + i).padStart(5, "0")}`,
+                normalized_name: `options_${String(start + i).padStart(5, "0")}`,
+              })),
+            )
+          ).error,
+        ).toBeNull();
+        expect(
+          (
+            await a
+              .from("concept_tags")
+              .insert(batch.map((id) => ({ owner_id: owner, concept_id: ids[3]!, tag_id: id })))
+          ).error,
+        ).toBeNull();
+        expect(
+          (
+            await a.from("practice_items").insert(
+              batch.map((_, i) => ({
+                owner_id: owner,
+                concept_id: ids[3]!,
+                mode: "basic_recognition" as const,
+                prompt_text: `Prompt ${String(start + i).padStart(5, "0")}`,
+                answer_text: "Meaning",
+                config: { mode: "basic_recognition" },
+                created_at: new Date(Date.UTC(2026, 0, 1, 0, 0, start + i)).toISOString(),
+              })),
+            )
+          ).error,
+        ).toBeNull();
+        expect(
+          (
+            await a.from("decks").insert(
+              deckIds.slice(start, start + 500).map((id, i) => ({
+                id,
+                owner_id: owner,
+                course_id: course,
+                title: `Options deck ${String(start + i).padStart(5, "0")}`,
+                position: start + i,
+              })),
+            )
+          ).error,
+        ).toBeNull();
+      }
+      const options = createSupabaseLibraryOptionsRepository(a);
+      const first = await options.concept({
+        ownerId: owner,
+        courseId: course,
+        conceptId: ids[3]!,
+        tagOffset: 0,
+        itemOffset: 0,
+      });
+      expect(first?.tags.total).toBe(1010);
+      expect(first?.items.total).toBe(1010);
+      expect(first?.tags.items).toHaveLength(20);
+      expect(first?.items.items).toHaveLength(20);
+      const last = await options.concept({
+        ownerId: owner,
+        courseId: course,
+        conceptId: ids[3]!,
+        tagOffset: 19999980,
+        itemOffset: 19999980,
+      });
+      expect(last?.tags.offset).toBe(1000);
+      expect(last?.items.offset).toBe(1000);
+      expect(last?.tags.items.at(-1)?.displayName).toBe("Options_01009");
+      expect(last?.items.items.at(-1)?.promptText).toBe("Prompt 01009");
+      const itemId = last!.items.items.at(-1)!.id;
+      const itemRepository = createSupabasePracticeItemRepository(a);
+      const selected = await getPracticeItem(itemRepository, owner, ids[3]!, itemId);
+      expect(selected?.promptText).toBe("Prompt 01009");
+      expect(await getPracticeItem(itemRepository, owner, ids[4]!, itemId)).toBeNull();
+      expect(
+        await getPracticeItem(
+          createSupabasePracticeItemRepository(b),
+          accounts[1]!.id,
+          ids[3]!,
+          itemId,
+        ),
+      ).toBeNull();
+      expect(await createReversePracticeItem(itemRepository, owner, selected!)).toMatchObject({
+        ok: true,
+        item: { mode: "basic_recall", answerText: "Prompt 01009" },
+      });
+      expect(await options.tagPreviews({ ownerId: owner, conceptIds: [ids[3]!, ids[4]!] })).toEqual(
+        [{ conceptId: ids[3], total: 1010, items: first?.tags.items.slice(0, 3) }],
+      );
+      const destination = await options.decks({
+        ownerId: owner,
+        courseId: course,
+        search: "Options deck 01009",
+        offset: 0,
+        selectedId: deckIds[0]!,
+      });
+      expect(destination.items).toEqual([{ id: deckIds[1009], title: "Options deck 01009" }]);
+      expect(destination.selected?.id).toBe(deckIds[0]);
+      expect(
+        (
+          await options.decks({
+            ownerId: owner,
+            courseId: course,
+            search: "Options deck",
+            offset: 1000000,
+          })
+        ).offset,
+      ).toBe(1000);
+      const foreign = createSupabaseLibraryOptionsRepository(b);
+      expect(
+        await foreign.concept({
+          ownerId: accounts[1]!.id,
+          courseId: course,
+          conceptId: ids[3]!,
+          tagOffset: 0,
+          itemOffset: 0,
+        }),
+      ).toBeNull();
+      expect(
+        await foreign.tagPreviews({ ownerId: accounts[1]!.id, conceptIds: [ids[3]!] }),
+      ).toEqual([]);
+      expect(
+        await foreign.decks({
+          ownerId: accounts[1]!.id,
+          courseId: course,
+          search: "",
+          offset: 0,
+          selectedId: deckIds[0]!,
+        }),
+      ).toEqual({ items: [], total: 0, offset: 0, selected: null });
+      expect(
+        (await b.rpc("read_library_tag_previews", { p_owner_id: owner, p_concept_ids: [ids[3]!] }))
+          .data,
+      ).toEqual([]);
+      expect(
+        (
+          await a.rpc("read_library_tag_previews", {
+            p_owner_id: owner,
+            p_concept_ids: Array.from({ length: 21 }, () => ids[3]!),
+          })
+        ).error?.code,
+      ).toBe("22023");
+      expect(
+        (
+          await anonymous.rpc("read_library_tag_previews", {
+            p_owner_id: owner,
+            p_concept_ids: [ids[3]!],
+          })
+        ).error?.code,
+      ).toBe("42501");
+      expect(
+        (
+          await anonymous.rpc("read_library_concept_options", {
+            p_owner_id: owner,
+            p_course_id: course,
+            p_concept_id: ids[3]!,
+          })
+        ).error?.code,
+      ).toBe("42501");
+      expect(
+        (
+          await anonymous.rpc("read_library_deck_options", {
+            p_owner_id: owner,
+            p_course_id: course,
+          })
+        ).error?.code,
+      ).toBe("42501");
+    }, 30000);
 
     it("reuses a tag beyond 1000 and atomically resolves simultaneous normalized-name associations", async () => {
       const tagIds = Array.from({ length: 1005 }, () => randomUUID());

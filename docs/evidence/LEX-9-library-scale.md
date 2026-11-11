@@ -53,7 +53,15 @@ No se afirma integridad global entre cursos para relaciones históricas ni se
 presentan estos resultados como métricas de campo o de toda la aplicación.
 LEX-9.5 sigue en curso para las variantes restantes, bundle y laboratorio.
 
-## Publicación
+## Publicación verificada
 
-Pendientes commit, CI protegida, aplicación del snapshot exacto de M23 y
-verificación del deployment. No se declara publicada la migración local.
+PR #109, commit `fb3b7a4`, CI43109315353 con los tres trabajos SUCCESS.
+Navegador del head: 180 PASS y cuatro omisiones condicionales; acceso cerrado
+cuatro PASS y Preview cuatro PASS. Merge `154a8497305bea8905edfd42416f6518a4595097`,
+deployment7722591334 Production SUCCESS.
+
+M23 se aplicó desde un snapshot exacto de ese head, sin incluir M24, que ya
+existía exclusivamente en local. Dry-run previo de una única migración;
+posterior limpio. Metadata remota confirma veintitrés migraciones y las tres
+funciones INVOKER sin EXECUTE anónimo. Health HTTP200 con app/database true;
+login200, CSP distinto entre respuestas, no-store y DENY conservados.

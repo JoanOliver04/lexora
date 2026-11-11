@@ -60,6 +60,7 @@ export function parsePracticeItemConfig(raw: unknown): PracticeItemConfig | unde
  * historial (`archived_at`). Se archiva y se restaura con `setArchived`.
  */
 export interface PracticeItemRepository {
+  get(input: { ownerId: string; conceptId: string; itemId: string }): Promise<PracticeItem | null>;
   create(input: {
     ownerId: string;
     conceptId: string;
@@ -81,6 +82,18 @@ export interface PracticeItemRepository {
 
 export type PracticeItemOutcome =
   { ok: true; item: PracticeItem } | { ok: false; issues: PracticeItemIssue[] };
+
+export function getPracticeItem(
+  repository: PracticeItemRepository,
+  ownerId: string,
+  conceptId: string,
+  itemId: string,
+): Promise<PracticeItem | null> {
+  assertUserId(ownerId);
+  if (!z.uuid().safeParse(conceptId).success || !z.uuid().safeParse(itemId).success)
+    return Promise.resolve(null);
+  return repository.get({ ownerId, conceptId, itemId });
+}
 
 function assertUserId(userId: string): void {
   if (userId.trim() === "") {

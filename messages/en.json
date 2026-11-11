@@ -356,6 +356,14 @@
     }
   },
   "Import": {
+    "deckSearch": "Search decks",
+    "deckSearchSubmit": "Search",
+    "deckChoose": "Choose a deck",
+    "deckSearchFailed": "We couldn't load the decks. Try the search again.",
+    "deckSearchStatus": "{total} decks · Page {page} of {pages}",
+    "deckPages": "Destination deck pages",
+    "deckPrevious": "Previous",
+    "deckNext": "Next",
     "transfer": {
       "heading": "Import progress",
       "progressLabel": "Confirmed rows",
@@ -605,6 +613,7 @@
     }
   },
   "Concepts": {
+    "optionsSaved": "Your change has been saved.",
     "listTitle": "Concepts",
     "listIntro": "The unit of knowledge: a word, a collocation, a rule, a pronunciation contrast. It can live in several decks without duplicating your progress.",
     "backToApp": "Back to home",
@@ -679,6 +688,8 @@
     },
     "tags": {
       "heading": "Tags",
+      "pages": "Concept tag pages",
+      "more": "+{count} more tags",
       "addLabel": "New tag",
       "addPlaceholder": "e.g. phrasal-verbs",
       "addButton": "Add",
@@ -694,6 +705,7 @@
     },
     "items": {
       "heading": "Practice items",
+      "pages": "Practice item pages",
       "createHeading": "New item",
       "editHeading": "Edit item",
       "backToConcept": "Back to concept",

@@ -1005,6 +1005,16 @@ export type Database = {
         Args: { p_course_id: string; p_rows: Json }
         Returns: Json
       }
+      read_library_concept_options: {
+        Args: {
+          p_concept_id: string
+          p_course_id: string
+          p_item_offset?: number
+          p_owner_id: string
+          p_tag_offset?: number
+        }
+        Returns: Json
+      }
       read_library_deck_detail: {
         Args: {
           p_available_offset?: number
@@ -1016,6 +1026,20 @@ export type Database = {
           p_member_search?: string
           p_owner_id: string
         }
+        Returns: Json
+      }
+      read_library_deck_options: {
+        Args: {
+          p_course_id: string
+          p_offset?: number
+          p_owner_id: string
+          p_search?: string
+          p_selected_id?: string
+        }
+        Returns: Json
+      }
+      read_library_tag_previews: {
+        Args: { p_concept_ids: string[]; p_owner_id: string }
         Returns: Json
       }
       save_preferences: {

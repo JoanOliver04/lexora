@@ -356,6 +356,14 @@
     }
   },
   "Import": {
+    "deckSearch": "Buscar mazos",
+    "deckSearchSubmit": "Buscar",
+    "deckChoose": "Elige un mazo",
+    "deckSearchFailed": "No hemos podido cargar los mazos. Repite la búsqueda.",
+    "deckSearchStatus": "{total} mazos · Página {page} de {pages}",
+    "deckPages": "Páginas de mazos de destino",
+    "deckPrevious": "Anterior",
+    "deckNext": "Siguiente",
     "backToApp": "Volver al inicio",
     "title": "Importar",
     "intro": "Sube un TXT o CSV preparado para Anki. Eliges mazo, revisas duplicados y confirmas. Las filas duplicadas se omiten o se copian, nunca se fusionan.",
@@ -605,6 +613,7 @@
     }
   },
   "Concepts": {
+    "optionsSaved": "El cambio se ha guardado.",
     "listTitle": "Conceptos",
     "listIntro": "La unidad de conocimiento: una palabra, una collocation, una regla, un contraste de pronunciación. Puede estar en varios mazos sin duplicar tu progreso.",
     "backToApp": "Volver al inicio",
@@ -679,6 +688,8 @@
     },
     "tags": {
       "heading": "Etiquetas",
+      "pages": "Páginas de etiquetas del concepto",
+      "more": "+{count} etiquetas más",
       "addLabel": "Nueva etiqueta",
       "addPlaceholder": "p. ej. phrasal-verbs",
       "addButton": "Añadir",
@@ -694,6 +705,7 @@
     },
     "items": {
       "heading": "Ítems de práctica",
+      "pages": "Páginas de ítems de práctica",
       "createHeading": "Nuevo ítem",
       "editHeading": "Editar ítem",
       "backToConcept": "Volver al concepto",

@@ -34,3 +34,28 @@ consulta normalizados y una ruta local construida con UUID. Su presupuesto de
 4.096 caracteres admite ambas búsquedas Unicode codificadas. No acepta destinos
 arbitrarios. Las páginas con formularios GET funcionan sin estado cliente y los
 navegadores conservan sus controles de navegación y búsqueda nativos.
+
+## Opciones de conceptos e importación
+
+La siguiente migración local añade `read_library_concept_options` (veinte
+etiquetas e ítems por página), `read_library_tag_previews` (tres etiquetas y su
+total exacto para hasta veinte conceptos) y `read_library_deck_options` (veinte
+mazos con búsqueda y selección fijada). Mantienen INVOKER, RLS y EXECUTE solo
+para authenticated. Los DTO rechazan páginas incoherentes. Las lecturas tienen
+un plazo de doce segundos y orden estable con ID como desempate.
+
+La lista de conceptos enlaza al detalle para ver las etiquetas restantes. Editar
+o invertir un ítem lo consulta por ID, concepto y dueño; no depende de buscarlo
+en una lista parcial. Las mutaciones conservan ambas páginas y las altas de
+ítems en listas largas llevan a la última página con confirmación. La navegación
+de vuelta se limita al mismo concepto y dos parámetros numéricos normalizados.
+
+El selector de importación conserva el mazo elegido aunque quede fuera de los
+resultados buscados. Sus controles no envían el formulario del wizard ni
+remontan su estado; el archivo sigue en memoria. Las acciones de búsqueda
+resuelven curso y dueño en servidor y devuelven fallos genéricos.
+
+El mapeo inicial usa `#tags column` dentro del ancho real del archivo y toma
+las primeras dos columnas restantes para frente/reverso. Al sustituir el archivo
+se descartan los selectores del archivo anterior; después se respeta el mapeo
+elegido por la persona. Reanudar un trabajo conserva su mapeo persistido.

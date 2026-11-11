@@ -1,5 +1,19 @@
 # Lexora — Estado actual
 
+> **Publicación 2026-11-11 — biblioteca grande:** PR #109/`fb3b7a4`, CI43109315353
+> tres SUCCESS; navegador180 PASS+4 omisiones, cerrado4 y Preview4. Merge
+> `154a849`, deployment7722591334 SUCCESS. M23 aplicada desde ese head exacto,
+> veintitrés migraciones remotas y dry-run limpio. INVOKER/anon denegado verificados;
+> health200 app/database true, CSP/no-store/DENY conservados.
+> Trabajo actual `feat/v1-library-options`, base `154a849`: M24 solo local,
+> etiquetas/ítems paginados, previews de tres etiquetas con total, buscador de
+> mazo sin perder el archivo y directivas de columnas respetadas. Editar/invertir
+> lee el ítem propio por ID y las mutaciones conservan el contexto de páginas.
+> Gate921 PASS+1 omisión/build, integración6 PASS, SQL592 PASS y replay24/15 PASS.
+> Navegador final16 PASS, tres revisiones cerradas y snapshot646 sin secretos.
+> Preparar commit/PR y tres checks. M24 no está en producción.
+> [Evidencia](evidence/LEX-9-library-options.md).
+
 > **Publicación 2026-11-11 — importación:** PR #108, CI43101502071 tres SUCCESS;
 > 176 E2E PASS+4 omisiones, cerrado4 y Preview4. Merge `dfb98e9`, deployment
 > 7721568934 SUCCESS. M22 aplicada desde f0974e6 exacto,22 migraciones remotas y
