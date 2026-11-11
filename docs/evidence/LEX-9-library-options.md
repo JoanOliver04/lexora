@@ -51,6 +51,13 @@ solo authenticated y DTO limitado; los fallos públicos no exponen al proveedor.
 
 ## Publicación
 
+La primera CI43112610621 falló en una prueba existente de Today: comparaba dos
+selecciones sin ORDER BY y truncadas a mil logs de un fixture mayor. El diff
+mostró un ID desplazado del principio al final, no una escritura acreditada.
+Se corrigió la prueba para comparar todos los IDs, ordenados y paginados de
+quinientos en quinientos, con aserción explícita de más de mil. No se modifica
+el código de estudio ni se oculta la comprobación de ausencia de escrituras.
+
 Snapshot de 646 archivos publicables (3,14 MB): Gitleaks 8.30.1 sin hallazgos,
 exit 0. No incluye archivos ignorados. Diff revisado y sin errores de whitespace.
 Pendientes commit/CI y aplicación del snapshot exacto. Producción permanece en M23.

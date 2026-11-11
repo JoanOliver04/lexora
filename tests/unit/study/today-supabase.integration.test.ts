@@ -620,9 +620,24 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
         .eq("owner_id", ownerA)
         .in("practice_item_id", eligibleIds),
     );
-    const beforeLogs = await checked(
-      clientA.from("review_logs").select("id").eq("owner_id", ownerA),
-    );
+    // Compare the full immutable log, not an unordered transport-capped subset.
+    const reviewLogIds = async () => {
+      const ids: string[] = [];
+      for (let offset = 0; ; offset += 500) {
+        const rows = await checked(
+          clientA
+            .from("review_logs")
+            .select("id")
+            .eq("owner_id", ownerA)
+            .order("id")
+            .range(offset, offset + 499),
+        );
+        ids.push(...rows!.map((row) => row.id));
+        if (rows!.length < 500) return ids;
+      }
+    };
+    const beforeLogs = await reviewLogIds();
+    expect(beforeLogs.length).toBeGreaterThan(1000);
     const result = await getStudySessionCard(sessions, queue, cards, {
       ownerId: ownerA,
       sessionId,
@@ -681,9 +696,7 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
           .in("practice_item_id", eligibleIds),
       ),
     ).toEqual(beforeStates);
-    expect(await checked(clientA.from("review_logs").select("id").eq("owner_id", ownerA))).toEqual(
-      beforeLogs,
-    );
+    expect(await reviewLogIds()).toEqual(beforeLogs);
     for (const client of [clientB, anonymous]) {
       expect(
         await createSupabaseStudyCardRepository(client).findContent({
