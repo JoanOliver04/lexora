@@ -21,6 +21,7 @@ import { formatEnvError, shouldSkipValidation } from "./shared";
  */
 const serverSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  LEXORA_ALLOW_REGISTRATION: z.enum(["true", "false"]).optional(),
 });
 
 type ServerEnv = z.infer<typeof serverSchema>;
@@ -32,6 +33,7 @@ function loadServerEnv(): ServerEnv {
 
   const parsed = serverSchema.safeParse({
     NODE_ENV: process.env["NODE_ENV"],
+    LEXORA_ALLOW_REGISTRATION: process.env["LEXORA_ALLOW_REGISTRATION"],
   });
 
   if (!parsed.success) {

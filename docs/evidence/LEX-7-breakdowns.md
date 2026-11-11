@@ -42,6 +42,13 @@ El control CSRF de producción mantiene su origen configurado; no se relaja.
 
 ## Producción anterior verificada
 
+Actualización: PR #101 integrado como `3ce064b`, CI 43044098220 con tres SUCCESS.
+La migración de desgloses se aplicó con snapshot aislado del PR y dry-run posterior
+sin pendientes. Deployment 7713684562 SUCCESS; health público 200, app/database true.
+La CI fijó Ubuntu 24.04 y usa las bibliotecas de navegador del runner, validadas
+por Playwright al lanzar el Chromium fijado. El primer intento falló en DNS de
+mirrors apt antes de ejecutar pruebas; los checks finales se ejecutaron completos.
+
 PR #100 integrado con tres checks SUCCESS. Las tres migraciones de ese snapshot
 se aplicaron en el proyecto verificado, con dry-run posterior sin pendientes.
 El despliegue de Vercel 7711900277 corresponde al merge `0f823fe` y figura SUCCESS.
