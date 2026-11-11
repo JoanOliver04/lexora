@@ -21,6 +21,9 @@ export default defineConfig({
     // cabecera.
     environment: "node",
     globals: false,
+    // Bound CPU/RAM contention between jsdom, ESLint and local Supabase.
+    // This matches CI concurrency without weakening assertions or timeouts.
+    maxWorkers: 2,
 
     // Los valores por defecto de Vitest (5 s) bastan cuando la maquina esta
     // libre. No cuando arranca la base de datos local: los contenedores de

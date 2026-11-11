@@ -23,3 +23,8 @@ No se cambia el login ni la recuperación existentes.
 - No hay migración ni dependencia nueva en la app.
 
 Contrato operativo: [PERSONAL_ACCESS](../PERSONAL_ACCESS.md).
+
+Publicación: PR #103, tres checks SUCCESS en CI 43046555453, merge `c80847d`.
+Deployment 7714079011 SUCCESS. `/en/signup` devuelve 200, contiene «Personal
+access» y no contiene input de email; `/api/health` devuelve 200 con app/database
+true. No se han usado credenciales ni se ha creado una cuenta real de prueba.

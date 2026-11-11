@@ -1,5 +1,16 @@
 # Lexora — Estado actual
 
+> **Estado operativo 2026-11-11:** producción en `c80847d`, PR #103 con CI
+> 43046555453, tres SUCCESS; deployment 7714079011 SUCCESS. Registro cerrado
+> en Supabase y app; `/en/signup` muestra acceso personal sin formulario. Health
+> 200 app/database true. Preferencias de PR #102 publicadas; migración aplicada
+> y dry-run limpio. 19 migraciones en producción. Trabajo actual: JSON/CSV en
+> `feat/v1-data-export`, con migración 20261111151533 exclusivamente local,
+> límite de tamaño/cooldown y comprobación de integridad. Verificación local:
+> 835 PASS + 1 omitida y build; pgTAP 516 PASS; 20 migraciones desde cero,
+> 15 aserciones sin seed; E2E dirigido 4 PASS sin reintentos. CSV importado con
+> LibreOffice, cero fórmulas y control positivo válido. Preparación de PR.
+
 > **Publicación verificada 2026-11-11 — estadísticas completas:** PR #101
 > integrado como `3ce064b`, CI 43044098220 con tres SUCCESS. Migración
 > `20261111134401_statistics_breakdowns.sql` aplicada en producción; dry-run

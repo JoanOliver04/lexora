@@ -1,0 +1,15 @@
+begin;
+select plan(10);
+select has_table('public','account_export_requests','Cooldown is persisted');
+select is((select prosecdef from pg_proc where oid='public.export_account_data()'::regprocedure),false,'Export is INVOKER');
+select is((select prosecdef from pg_proc where oid='public.guard_export_request()'::regprocedure),false,'Cooldown guard is INVOKER');
+select ok(not has_function_privilege('anon','public.export_account_data()','execute'),'Anonymous cannot export');
+select ok(has_function_privilege('authenticated','public.export_account_data()','execute'),'Authenticated export passes RLS');
+select ok(not has_table_privilege('authenticated','public.account_export_requests','delete'),'A caller cannot remove cooldown');
+select ok(not has_table_privilege('anon','public.account_export_requests','select'),'Anonymous cannot read quota');
+select ok(not has_table_privilege('anon','public.account_export_requests','insert'),'Anonymous cannot insert quota');
+select ok((select relrowsecurity from pg_class where oid='public.account_export_requests'::regclass),'Quota has RLS');
+set local role authenticated;
+select throws_ok($$select public.export_account_data()$$,'28000','authentication required','Role without JWT subject cannot export');
+select * from finish();
+rollback;

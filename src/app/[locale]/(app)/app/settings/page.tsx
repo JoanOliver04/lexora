@@ -4,6 +4,7 @@ import { getPreferencesForCurrentUser } from "@/composition/preferences";
 import { Link } from "@/i18n/navigation";
 import { FormStatus } from "@/shared/presentation/components";
 import { PreferencesForm } from "./preferences-form";
+import { ExportControls } from "./export-controls";
 
 export default async function SettingsPage({
   params,
@@ -63,6 +64,7 @@ export default async function SettingsPage({
           courseOnly
         />
       </section>
+      <ExportControls />
     </main>
   );
 }

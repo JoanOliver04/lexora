@@ -34,6 +34,29 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_export_requests: {
+        Row: {
+          owner_id: string
+          requested_at: string
+        }
+        Insert: {
+          owner_id: string
+          requested_at?: string
+        }
+        Update: {
+          owner_id?: string
+          requested_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_export_requests_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       concept_tags: {
         Row: {
           concept_id: string
@@ -838,6 +861,7 @@ export type Database = {
         }
         Returns: string
       }
+      export_account_data: { Args: never; Returns: Json }
       save_preferences: {
         Args: {
           p_course_id: string

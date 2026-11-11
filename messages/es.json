@@ -784,6 +784,30 @@
     "dark": "Oscuro",
     "system": "Sistema"
   },
+  "DataExport": {
+    "title": "Tus datos, contigo",
+    "description": "Descarga tus cursos, contenido y actividad guardada, incluido lo archivado. No se incluyen contraseñas ni credenciales.",
+    "jsonNote": "Conserva campos, identificadores y relaciones en un formato técnico versionado. No hay restauración automática de este archivo en la app.",
+    "csvNote": "Para consultar en una hoja de cálculo: cada fila indica su origen e incluye sus datos completos. Las celdas que podrían ser fórmulas se exportan como texto.",
+    "privacy": "Los archivos contienen tus datos sin cifrar. Guárdalos en un lugar privado. Puedes solicitar una exportación cada minuto; una descarga fallida no genera un archivo parcial.",
+    "format": "Formato de descarga",
+    "json": "Descargar JSON",
+    "csv": "Descargar CSV",
+    "preparing": "Preparando tus datos…",
+    "progress": "Descargando: {percent} %",
+    "checking": "Comprobando la descarga…",
+    "cancel": "Cancelar descarga",
+    "success": "Descarga preparada. Tu navegador gestiona dónde guardarla.",
+    "errors": {
+      "unauthenticated": "Vuelve a entrar en tu cuenta para descargar tus datos.",
+      "invalid-input": "El formato de descarga no es válido. Recarga los ajustes y vuelve a intentarlo.",
+      "cooldown": "Espera un minuto antes de solicitar otra exportación.",
+      "too-large": "Tus datos superan el límite de exportación de esta versión. No se ha descargado un archivo parcial.",
+      "unavailable": "No se ha podido preparar la descarga. Tus datos siguen guardados; vuelve a intentarlo.",
+      "interrupted": "Descarga cancelada. No se ha descargado ningún archivo.",
+      "integrity": "La descarga no ha superado la comprobación de integridad. No se ha guardado ningún archivo; vuelve a intentarlo."
+    }
+  },
   "Settings": {
     "title": "Ajustes",
     "back": "Volver a Hoy",

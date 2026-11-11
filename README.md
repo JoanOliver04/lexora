@@ -11,8 +11,9 @@ propio estado de memoria.
 > ⚠️ **Estado: en desarrollo.** Cuenta, onboarding, biblioteca, importación y
 > núcleo FSRS implementados. El estudio guarda cada valoración antes de avanzar,
 > permite pausar y reanudar y recupera errores sin duplicar repasos. Historial y
-> estadísticas ES/EN disponibles en el trabajo local; ajustes, ciclo de datos y
-> PWA pendientes. Todavía no es una V1 terminada.
+> estadísticas y ajustes ES/EN publicados. La entrega actual es de uso personal,
+> con registro público cerrado. Exportación, ciclo de datos y PWA en desarrollo.
+> Todavía no es una V1 terminada.
 > Ver [`docs/STATUS.md`](docs/STATUS.md) para evidencia y límites actuales.
 
 ## Modelo conceptual
