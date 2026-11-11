@@ -2,7 +2,14 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useActionState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import {
   PracticeItemAnswer,
@@ -172,10 +179,12 @@ function StudyCardControls({
   useEffect(() => {
     promptHeading.current?.focus();
   }, []);
-  useEffect(() => {
+  // A retry must become usable in the same commit that enables its button.
+  // Passive effects can leave an enabled control guarded by the previous intent.
+  useLayoutEffect(() => {
     revealLock.current = pending;
   }, [pending, state]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     submitLock.current = reviewPending || confirmed;
     if (reviewError && !reviewPending) reviewErrorRef.current?.focus();
   }, [reviewPending, reviewError, reviewState, confirmed]);

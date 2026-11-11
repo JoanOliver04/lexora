@@ -21,6 +21,13 @@
     "statisticsLink": "Statistics"
   },
   "Statistics": {
+    "breakdowns": "Practice by type and level",
+    "byKind": "By concept type",
+    "byLevel": "By content level",
+    "breakdownNote": "Review counts cover the selected period and memory states are current. Content classification is current, including for older reviews. Levels describe the content and do not certify your English level.",
+    "reviewsInPeriod": "Reviews in the period",
+    "noBreakdown": "No cards or reviews in this selection yet.",
+    "unassigned": "No level assigned",
     "title": "Understand your progress",
     "intro": "A view of your practice based on saved reviews. Use it to guide your learning, at your own pace.",
     "filters": "Filter statistics",

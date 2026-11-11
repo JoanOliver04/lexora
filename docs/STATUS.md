@@ -1,5 +1,43 @@
 # Lexora — Estado actual
 
+> **Checkpoint vigente, dominio público verificado — 2026-11-11:**
+> `https://lexora-one-alpha.vercel.app/en` HTTP 200; `/api/health` HTTP 200 con
+> `status: ok`, `app: true`, `database: true`. El PR #100 ya está publicado.
+> El siguiente bloque, en `feat/v1-statistics-breakdowns`, completa desgloses
+> por tipo/nivel y corrige la liberación de guardas al reintentar estudio.
+> Gate: 762 PASS + 1 omitida y build; pgTAP 497 PASS; 18 migraciones desde cero
+> sin seed; E2E 130 PASS + 4 omitidas, cero reintentos, puerto 3100. Tipos/lint
+> correctos y capturas con los paneles abiertos inspeccionadas. Preparado para
+> PR y publicación autorizados; migración nueva aplicada solo local todavía.
+> Evidencia: [LEX-7-breakdowns](evidence/LEX-7-breakdowns.md). LEX-7.5…7.9
+> verificados localmente; LEX-7.10 espera CI y cierre de publicación. Continúa
+> después LEX-8.1, sin reabrir aceptación física como condición de código.
+> El detalle inferior conserva el registro histórico y no prevalece sobre esto.
+
+> **Publicación 2026-11-11:** PR #100 integrado con los tres checks SUCCESS
+> (CI 43031707562), merge `0f823fe904adde658402e4e3a50ce1adbb56f7d4`.
+> Supabase reactivado de INACTIVE a ACTIVE_HEALTHY, 14 migraciones previas
+> comprobadas y exactamente tres compatibles aplicadas desde snapshot 28369c7:
+> guarda de sesión, índices de historial y RPC estadística. Dry-run posterior
+> sin pendientes de ese snapshot; RLS en las 15 tablas, RPC sin acceso anon.
+> Vercel Production deployment 7711900277 informa SUCCESS para ese merge.
+> Health de esa URL técnica no acreditado: redirige al login de Vercel.
+>
+> **Trabajo local siguiente, sin publicar:** rama `feat/v1-statistics-breakdowns`,
+> basada en 28369c7. Migración `20261111134401_statistics_breakdowns.sql` aplicada
+> solo local; amplía la RPC sin cambiar su firma. Desgloses por tipo/nivel,
+> estados actuales y actividad del periodo, clasificación actual explícita.
+> Primeros diez tests dirigidos PASS y tipos/lint PASS antes de las últimas
+> ampliaciones de test. Nueva prueba de pertenencia a varios mazos y reclasificación.
+> Último gate general no pasa todavía (test de componente con timeout; consultar
+> `%TEMP%/lexora-breakdown-check.log`), sin relajar aserciones ni timeouts.
+> Playwright admite `LEXORA_E2E_PORT` y establece el origen de la app de prueba;
+> usar 3100 para conservar Planora, que ocupa 127.0.0.1:3000. No se detuvo Planora.
+> Pendiente validar estos últimos cambios, ejecutar E2E, documentar y publicar
+> el siguiente bloque con PR. El control de navegador se detuvo por no poder
+> determinar la URL de Chrome; no se realizaron acciones nativas de interfaz.
+> No se declara terminada la V1 ni se cierran sus gates humanos.
+
 > **Autorización vigente de publicación — 2026-11-11:** Joan autoriza commits y
 > despliegues a producción durante la continuación autónoma de la V1. Se
 > conservan PR, checks y protecciones de rama; migraciones revisadas y

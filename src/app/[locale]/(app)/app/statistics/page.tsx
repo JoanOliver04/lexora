@@ -8,6 +8,7 @@ import { getStatistics } from "@/modules/study/application/statistics";
 import { MEMORY_PHASES, REVIEW_RATINGS } from "@/modules/study/domain/memory";
 import { V1_PRACTICE_MODES } from "@/modules/library/domain/taxonomy";
 import { Button, Label } from "@/shared/presentation/components";
+import { StatisticsBreakdowns } from "./statistics-breakdowns";
 
 export default async function StatisticsPage({
   params,
@@ -295,6 +296,7 @@ export default async function StatisticsPage({
           </p>
         </section>
       </div>
+      <StatisticsBreakdowns byKind={s.byKind} byLevel={s.byLevel} locale={locale} />
       <section className={sectionClass} aria-labelledby="difficult-title">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="difficult-title" className="text-xl font-semibold">

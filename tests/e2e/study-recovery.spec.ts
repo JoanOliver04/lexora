@@ -215,9 +215,11 @@ test("offline, lost acknowledgement and another device preserve one durable revi
 
 test("review API rejects missing identity, cross-origin writes and oversized bodies", async ({
   request,
+  baseURL,
 }) => {
+  if (!baseURL) throw new Error("Review API tests require an explicit application origin");
   const response = await request.post("/api/study/reviews", {
-    headers: { origin: "http://localhost:3000" },
+    headers: { origin: new URL(baseURL).origin },
     form: {
       locale: "es",
       sessionId: randomUUID(),
@@ -237,7 +239,7 @@ test("review API rejects missing identity, cross-origin writes and oversized bod
   expect(csrf.status()).toBe(403);
   const oversized = await request.post("/api/study/reviews", {
     headers: {
-      origin: "http://localhost:3000",
+      origin: new URL(baseURL).origin,
       "content-type": "application/x-www-form-urlencoded",
     },
     data: "x".repeat(2049),

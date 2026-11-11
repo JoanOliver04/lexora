@@ -24,7 +24,7 @@ env:
 jobs:
   calidad:
     name: Calidad
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
 
@@ -65,7 +65,7 @@ jobs:
 
   base-de-datos:
     name: Base de datos
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
 
@@ -133,7 +133,7 @@ jobs:
 
   e2e:
     name: Extremo a extremo
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
 
@@ -175,7 +175,11 @@ jobs:
         # Solo Chromium. Firefox y WebKit se anadiran cuando exista producto que
         # pueda romperse de forma distinta en cada motor; hoy solo alargarian
         # cada ejecucion.
-        run: pnpm exec playwright install --with-deps chromium
+        # El runner incluye Chrome y sus bibliotecas. Playwright valida las
+        # dependencias al arrancar el navegador; una ausencia sigue fallando el gate.
+        # Se descarga nuestro Chromium fijado sin instalar fuentes extra con apt,
+        # cuyos mirrors fallaron por DNS antes de ejecutar cualquier prueba.
+        run: pnpm exec playwright install chromium
 
       - name: Tests E2E
         run: pnpm e2e

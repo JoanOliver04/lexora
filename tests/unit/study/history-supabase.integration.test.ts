@@ -79,6 +79,7 @@ describe.skipIf(!enabled)("History against local Supabase and real RLS", () => {
         owner_id: ownerId,
         course_id: courseId,
         kind: "vocabulary",
+        cefr_level: "A2",
         title: "<script>Original literal</script>",
         summary: "Original fixture",
       }),
@@ -223,6 +224,16 @@ describe.skipIf(!enabled)("History against local Supabase and real RLS", () => {
     });
     expect(result.statistics.observedRecall).toBe(1043 / 1044);
     expect(result.statistics.states.review).toBe(1);
+    expect(result.statistics.byKind).toEqual([
+      {
+        key: "vocabulary",
+        reviews: 1044,
+        states: { new: 0, learning: 0, review: 1, relearning: 0 },
+      },
+    ]);
+    expect(result.statistics.byLevel).toEqual([
+      { key: "A2", reviews: 1044, states: { new: 0, learning: 0, review: 1, relearning: 0 } },
+    ]);
     expect(result.statistics.lapses).toBe(3);
     expect(result.statistics.difficultTotal).toBe(1);
     expect(result.statistics.difficult[0]?.id).toBe(item);
@@ -238,6 +249,35 @@ describe.skipIf(!enabled)("History against local Supabase and real RLS", () => {
       deck: undefined,
     });
     expect(empty.ok && empty.statistics.totals.reviews).toBe(0);
+  });
+  it("deduplicates multiple deck membership and uses current content classification", async () => {
+    const secondDeck = randomUUID();
+    await checked(
+      a.from("decks").insert({
+        id: secondDeck,
+        owner_id: ownerId,
+        course_id: courseId,
+        title: "Second original fixture",
+      }),
+    );
+    await checked(
+      a
+        .from("deck_concepts")
+        .insert({ deck_id: secondDeck, concept_id: concept, owner_id: ownerId }),
+    );
+    await checked(
+      a.from("concepts").update({ kind: "grammar", cefr_level: "B1" }).eq("id", concept),
+    );
+    const result = await getStatistics(createSupabaseStatisticsRepository(a), {
+      ...input(),
+      days: "30",
+      deck: undefined,
+    });
+    if (!result.ok) throw new Error("Valid period rejected");
+    expect(result.statistics.totals.reviews).toBe(1044);
+    expect(result.statistics.states.review).toBe(1);
+    expect(result.statistics.byKind[0]).toMatchObject({ key: "grammar", reviews: 1044 });
+    expect(result.statistics.byLevel[0]).toMatchObject({ key: "B1", reviews: 1044 });
   });
   it("uses an owner/time index on a dataset with over 1,000 rows", () => {
     const plan = execFileSync(
@@ -283,5 +323,8 @@ describe.skipIf(!enabled)("History against local Supabase and real RLS", () => {
     });
     expect(statistics.ok && statistics.statistics.totals.reviews).toBe(1044);
     expect(statistics.ok && statistics.statistics.states.review).toBe(0);
+    expect(statistics.ok && statistics.statistics.byLevel).toEqual([
+      { key: "B1", reviews: 1044, states: { new: 0, learning: 0, review: 0, relearning: 0 } },
+    ]);
   });
 });

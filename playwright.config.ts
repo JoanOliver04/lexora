@@ -1,6 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = "http://localhost:3000";
+// A separate port keeps local E2E from reusing another project's preview.
+const port = Number(process.env["LEXORA_E2E_PORT"] ?? "3000");
+if (!Number.isInteger(port) || port < 1024 || port > 65535) {
+  throw new Error("LEXORA_E2E_PORT must be an integer between 1024 and 65535");
+}
+const baseURL = `http://localhost:${port}`;
 
 /**
  * El Poco F5 es el dispositivo Android real donde se va a usar Lexora a diario.
@@ -54,9 +59,10 @@ export default defineConfig({
    * de errores, y lo que importa es que funcione lo que se despliega.
    */
   webServer: {
-    command: "pnpm build && pnpm start",
+    command: `pnpm build && pnpm exec next start --hostname localhost --port ${port}`,
     url: baseURL,
-    reuseExistingServer: !process.env["CI"],
+    reuseExistingServer: false,
+    env: { NEXT_PUBLIC_SITE_URL: baseURL },
     timeout: 180_000,
   },
 });
