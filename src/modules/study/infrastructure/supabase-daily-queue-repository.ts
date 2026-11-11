@@ -138,13 +138,16 @@ export function createSupabaseDailyQueueRepository(
       return candidates;
     },
 
-    async countTodayActivity({ ownerId, dayStart, dayEnd }) {
+    async countTodayActivity({ ownerId, courseId, dayStart, dayEnd }) {
       const data = await readStudyRows(
         (from, to) =>
           client
             .from("review_logs")
-            .select("practice_item_id, state_before")
+            .select(
+              "practice_item_id, state_before, practice_items!inner(concepts!inner(course_id))",
+            )
             .eq("owner_id", ownerId)
+            .eq("practice_items.concepts.course_id", courseId)
             .gte("reviewed_at", dayStart.toISOString())
             .lt("reviewed_at", dayEnd.toISOString())
             .order("id")

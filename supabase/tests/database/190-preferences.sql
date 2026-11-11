@@ -1,0 +1,14 @@
+begin;
+select plan(9);
+select has_column('public', 'profiles', 'theme_preference', 'Account theme is persisted');
+select is((select prosecdef from pg_proc where oid = 'public.save_preferences(uuid,timestamptz,timestamptz,public.ui_locale,text,text,integer,integer,boolean)'::regprocedure), false, 'Preference update is INVOKER');
+select is((select prosecdef from pg_proc where oid = 'public.set_active_course(uuid,timestamptz)'::regprocedure), false, 'Course switch is INVOKER');
+select ok(not has_function_privilege('anon', 'public.save_preferences(uuid,timestamptz,timestamptz,public.ui_locale,text,text,integer,integer,boolean)', 'execute'), 'Anon cannot save preferences');
+select ok(not has_function_privilege('anon', 'public.set_active_course(uuid,timestamptz)', 'execute'), 'Anon cannot switch courses');
+select ok(has_function_privilege('authenticated', 'public.save_preferences(uuid,timestamptz,timestamptz,public.ui_locale,text,text,integer,integer,boolean)', 'execute'), 'Authenticated can save under RLS');
+select ok(has_function_privilege('authenticated', 'public.set_active_course(uuid,timestamptz)', 'execute'), 'Authenticated can switch under RLS');
+set local role authenticated;
+select throws_ok($$select public.set_active_course('00000000-0000-4000-8000-000000000000',now())$$, '28000', 'authentication required', 'A role without a JWT cannot switch courses');
+select throws_ok($$select public.save_preferences('00000000-0000-4000-8000-000000000000',now(),now(),'en','dark','UTC',5)$$, '28000', 'authentication required', 'A role without a JWT cannot save');
+select * from finish();
+rollback;

@@ -17,15 +17,8 @@ export interface StudyDayWindow {
   end: Date;
 }
 
-export function isIanaTimeZone(value: string): boolean {
-  if (value.trim() === "" || value.trim() !== value) return false;
-  try {
-    Intl.DateTimeFormat("en-US", { timeZone: value }).format(new Date(0));
-    return true;
-  } catch {
-    return false;
-  }
-}
+import { isIanaTimeZone } from "@/shared/domain/time-zone";
+export { isIanaTimeZone } from "@/shared/domain/time-zone";
 
 export function studyDayWindow(now: Date, timeZone: string): StudyDayWindow {
   if (!isIanaTimeZone(timeZone)) {

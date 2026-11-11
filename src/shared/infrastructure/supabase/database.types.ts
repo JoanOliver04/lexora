@@ -600,6 +600,7 @@ export type Database = {
           display_name: string | null
           id: string
           onboarding_completed_at: string | null
+          theme_preference: string
           timezone: string
           ui_locale: Database["public"]["Enums"]["ui_locale"]
           updated_at: string
@@ -610,6 +611,7 @@ export type Database = {
           display_name?: string | null
           id: string
           onboarding_completed_at?: string | null
+          theme_preference?: string
           timezone?: string
           ui_locale?: Database["public"]["Enums"]["ui_locale"]
           updated_at?: string
@@ -620,6 +622,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           onboarding_completed_at?: string | null
+          theme_preference?: string
           timezone?: string
           ui_locale?: Database["public"]["Enums"]["ui_locale"]
           updated_at?: string
@@ -834,6 +837,24 @@ export type Database = {
           p_ui_locale: Database["public"]["Enums"]["ui_locale"]
         }
         Returns: string
+      }
+      save_preferences: {
+        Args: {
+          p_course_id: string
+          p_daily_new_limit: number
+          p_maximum_reviews?: number
+          p_profile_version: string
+          p_settings_version: string
+          p_show_intervals?: boolean
+          p_theme: string
+          p_timezone: string
+          p_ui_locale: Database["public"]["Enums"]["ui_locale"]
+        }
+        Returns: undefined
+      }
+      set_active_course: {
+        Args: { p_course_id: string; p_profile_version: string }
+        Returns: undefined
       }
       study_statistics: {
         Args: {

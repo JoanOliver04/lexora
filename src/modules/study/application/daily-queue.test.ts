@@ -105,6 +105,7 @@ describe("getDailyQueue", () => {
 
     expect(repository.countTodayActivity).toHaveBeenCalledWith({
       ownerId: "user-1",
+      courseId: "course-1",
       dayStart: MADRID_DAY_START,
       dayEnd: MADRID_DAY_END,
     });

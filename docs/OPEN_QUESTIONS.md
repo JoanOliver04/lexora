@@ -4,7 +4,7 @@
 > Cada entrada tiene un ID estable `Q-nnn` que nunca se reutiliza.
 > Protocolo: `ROADMAP.md` §3.5 (documento privado y local).
 
-**Última actualización:** 2026-10-23
+**Última actualización:** 2026-11-11
 
 ## Índice de estado
 
@@ -19,6 +19,16 @@
 | Q-007 | Identificar y conectar el entorno de producción | `RESUELTA` | Publicación solicitada |
 | Q-008 | Preview sin backend aislado | `RESUELTA` | Publicación solicitada |
 | Q-009 | Aceptación manual en dispositivo físico | `ABIERTA` | LEX-6.13; aceptación manual pendiente de LEX-6.12 |
+| Q-010 | Uso personal y servicios de correo | `RESUELTA` | Entrega actual; ADR-008 |
+
+## Q-010 — Uso personal y servicios de correo
+
+**Estado:** `RESUELTA`, por instrucción de Joan el 2026-11-11.
+
+La app es para uso personal por ahora. No se publica correo de contacto ni se
+contrata/configura SMTP nuevo. Se adapta la entrega a [ADR-008](adrs/008-personal-use.md),
+incluido cerrar el registro público conservando el acceso existente. Los
+requisitos de lanzamiento a terceros quedan diferidos, sin declararlos completados.
 
 > Este archivo es público. Se aplican las mismas exclusiones que en
 > [`STATUS.md`](STATUS.md): sin credenciales, sin datos personales, sin contenido

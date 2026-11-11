@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { ensureProfileForCurrentUser, getCurrentUserId } from "@/composition/identity";
+import { getAccountThemeForCurrentUser } from "@/composition/preferences";
+import { AccountTheme } from "@/shared/presentation/theme/account-theme";
 
 /**
  * Puerta del área autenticada.
@@ -36,5 +38,11 @@ export default async function AppLayout({
 
   await ensureProfileForCurrentUser();
 
-  return children;
+  const theme = await getAccountThemeForCurrentUser();
+  return (
+    <>
+      {theme && <AccountTheme preference={theme} />}
+      {children}
+    </>
+  );
 }
