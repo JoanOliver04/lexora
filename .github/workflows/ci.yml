@@ -175,7 +175,11 @@ jobs:
         # Solo Chromium. Firefox y WebKit se anadiran cuando exista producto que
         # pueda romperse de forma distinta en cada motor; hoy solo alargarian
         # cada ejecucion.
-        run: pnpm exec playwright install --with-deps chromium
+        # El runner incluye Chrome y sus bibliotecas. Playwright valida las
+        # dependencias al arrancar el navegador; una ausencia sigue fallando el gate.
+        # Se descarga nuestro Chromium fijado sin instalar fuentes extra con apt,
+        # cuyos mirrors fallaron por DNS antes de ejecutar cualquier prueba.
+        run: pnpm exec playwright install chromium
 
       - name: Tests E2E
         run: pnpm e2e
