@@ -5,6 +5,8 @@ import { Link } from "@/i18n/navigation";
 import { FormStatus } from "@/shared/presentation/components";
 import { PreferencesForm } from "./preferences-form";
 import { ExportControls } from "./export-controls";
+import { DeleteAccountForm } from "./delete-account-form";
+import { getCurrentDeletionFactors } from "@/composition/account-deletion";
 
 export default async function SettingsPage({
   params,
@@ -17,6 +19,7 @@ export default async function SettingsPage({
   setRequestLocale(locale);
   const snapshot = await getPreferencesForCurrentUser();
   if (!snapshot) redirect(`/${locale}/onboarding`);
+  const factors = await getCurrentDeletionFactors();
   const t = await getTranslations("Settings");
   const saved = (await searchParams).saved === "1";
   return (
@@ -65,6 +68,13 @@ export default async function SettingsPage({
         />
       </section>
       <ExportControls />
+      <Link
+        href="/app/settings/data"
+        className="inline-flex min-h-11 items-center self-start text-(--color-accent) underline underline-offset-4"
+      >
+        {t("dataInformation")}
+      </Link>
+      <DeleteAccountForm factors={factors} />
     </main>
   );
 }

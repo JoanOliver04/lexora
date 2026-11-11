@@ -808,7 +808,66 @@
       "integrity": "La descarga no ha superado la comprobación de integridad. No se ha guardado ningún archivo; vuelve a intentarlo."
     }
   },
+  "DataInformation": {
+    "title": "Tus datos en Lexora",
+    "back": "Volver a ajustes",
+    "intro": "Este es un espacio personal con el registro público cerrado. Aquí se explica qué se guarda, dónde y qué implica eliminar la cuenta.",
+    "content": {
+      "title": "Contenido e historial",
+      "body": "Tu perfil, preferencias, cursos, tarjetas e historial de repasos permanecen en tu cuenta hasta que los modificas o eliminas la cuenta. Archivar oculta contenido sin destruir sus relaciones ni su historial. Los repasos se conservan durante la vida de la cuenta."
+    },
+    "imports": {
+      "title": "Archivos importados",
+      "body": "El archivo original no se guarda en el servidor. Los registros de importación conservan el nombre, hash, mapeo, contadores y diagnósticos de error acotados durante la vida de la cuenta. Un diagnóstico puede incluir hasta 500 caracteres de una fila. Son privados y se eliminan con la cuenta."
+    },
+    "exports": {
+      "title": "Descargas bajo tu control",
+      "body": "Se comprueba que las descargas JSON y CSV estén completas y sean íntegras antes de ofrecerlas. Son archivos sin cifrar en tu dispositivo. Lexora no conserva un snapshot en el servidor, solo la última fecha de solicitud para limitar exportaciones repetidas. Las copias descargadas siguen en tu dispositivo tras borrar la cuenta. Estos formatos no tienen restauración automática."
+    },
+    "deletion": {
+      "title": "Eliminar una cuenta",
+      "body": "El borrado exige tu contraseña actual, aceptación explícita y una sesión de Auth reciente y vigente. Si hay un segundo factor activado, también debe verificarse. La transacción elimina la identidad de Auth y todos sus datos de aplicación, incluidos archivados, importaciones y repasos. Si la transacción falla, se revierte. El registro público sigue cerrado después."
+    },
+    "providers": {
+      "title": "Dónde se ejecuta la app",
+      "body": "Supabase proporciona la autenticación y la base de datos PostgreSQL. Vercel aloja y ejecuta la aplicación web. No se envía contenido de aprendizaje a ningún servicio de IA. Esta entrega personal no añade analítica de contenido, Sentry ni un proveedor de correo nuevo."
+    },
+    "limits": {
+      "title": "Backups y logs técnicos",
+      "body": "Eliminar la cuenta borra los registros activos de Auth y de la aplicación. Los backups y logs técnicos de los proveedores siguen sus propias políticas de retención; esta acción no afirma borrarlos al instante. Los logs de aplicación no capturan intencionadamente tus contraseñas, contenido de tarjetas ni archivos exportados."
+    }
+  },
+  "AccountDeletion": {
+    "title": "Eliminar tu cuenta",
+    "description": "Elimina de forma permanente tu identidad y todos tus datos de Lexora, incluidos el contenido archivado y el historial de repasos.",
+    "open": "Revisar la eliminación de cuenta",
+    "warning": "No se puede deshacer desde la app. Descarga primero lo que quieras conservar. El registro público está cerrado: eliminar tu cuenta personal no permite crear otra aquí.",
+    "email": "Confirma el correo de tu cuenta",
+    "password": "Tu contraseña actual",
+    "otp": "Código del autenticador, si utilizas doble factor",
+    "factor": "Autenticador que vas a verificar",
+    "factorUnnamed": "Autenticador {number}",
+    "factorLoadError": "No se han podido cargar tus métodos de autenticación. Vuelve a cargarlos antes de borrar.",
+    "reloadFactors": "Recargar métodos de autenticación",
+    "unsupportedFactor": "Este flujo de borrado admite códigos del autenticador. Tu cuenta utiliza otro método de segundo factor y el borrado queda desactivado aquí para conservar su protección.",
+    "confirmation": "Escribe DELETE para confirmar",
+    "acknowledged": "Entiendo que se eliminarán permanentemente mi cuenta y todo su contenido.",
+    "submit": "Eliminar mi cuenta permanentemente",
+    "deleting": "Verificando y eliminando…",
+    "deleted": "Se han eliminado tu cuenta y sus datos activos de aplicación.",
+    "errors": {
+      "invalid-input": "Revisa el correo, la contraseña y la confirmación. Escribe DELETE exactamente y marca la casilla de aceptación.",
+      "invalid-credentials": "No se han podido verificar el correo o la contraseña. No se ha solicitado el borrado.",
+      "unauthenticated": "Inicia sesión de nuevo antes de eliminar tu cuenta.",
+      "reauth-required": "Se necesita una sesión reciente y vigente. Introduce tu contraseña otra vez.",
+      "mfa-required": "Se necesita un código válido del autenticador. Si tu cuenta utiliza otro segundo factor, debe verificarse ese método antes de borrar; no se omitirá la protección.",
+      "cooldown": "Hay demasiados intentos de verificación. Espera un minuto antes de reintentarlo.",
+      "unavailable": "No se ha podido confirmar el borrado. Comprueba si todavía puedes iniciar sesión antes de reintentarlo.",
+      "uncertain": "Se ha interrumpido la conexión. El borrado podría haberse completado. Comprueba si todavía puedes iniciar sesión antes de reintentarlo."
+    }
+  },
   "Settings": {
+    "dataInformation": "Cómo se guardan y eliminan tus datos",
     "title": "Ajustes",
     "back": "Volver a Hoy",
     "intro": "Adapta Lexora a tu ritmo. Tus preferencias se guardan en tu cuenta y se recuperan al entrar desde otro dispositivo.",

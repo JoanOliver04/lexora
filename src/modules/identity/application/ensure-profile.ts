@@ -47,6 +47,9 @@ export class EnsureProfileError extends Error {
   }
 }
 
+/** Auth identity was deleted while its signed access token has not yet expired. */
+export class MissingAuthOwnerError extends EnsureProfileError {}
+
 export async function ensureProfile(
   repository: ProfileRepository,
   userId: string,

@@ -7,6 +7,7 @@ import { resolveSafeRedirect } from "@/modules/identity/application/safe-redirec
 import { AuthShell } from "../_components/auth-shell";
 import { LoginForm } from "./login-form";
 import { isRegistrationOpen } from "@/composition/identity";
+import { FormStatus } from "@/shared/presentation/components";
 
 // El callback redirige aquí con `?error=` cuando un enlace de correo falla.
 const SHOWN_ERRORS = new Set<AuthErrorCode>(["auth-unavailable", "missing-recovery-session"]);
@@ -16,13 +17,14 @@ export default async function LoginPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ next?: string; error?: string }>;
+  searchParams: Promise<{ next?: string; error?: string; deleted?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("Auth");
 
-  const { next, error } = await searchParams;
+  const deletion = await getTranslations("AccountDeletion");
+  const { next, error, deleted } = await searchParams;
   // Se sanea aquí también: lo que se guarda en el campo oculto ya está filtrado.
   const safeNext = next ? resolveSafeRedirect(next, `/${locale}`) : undefined;
   const initialError = SHOWN_ERRORS.has(error as AuthErrorCode)
@@ -45,6 +47,11 @@ export default async function LoginPage({
         )
       }
     >
+      {deleted === "1" && (
+        <FormStatus>
+          <p>{deletion("deleted")}</p>
+        </FormStatus>
+      )}
       <LoginForm locale={locale} next={safeNext} initialError={initialError} />
       <Link
         href="/forgot-password"

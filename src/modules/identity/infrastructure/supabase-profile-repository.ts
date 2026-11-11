@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
   EnsureProfileError,
+  MissingAuthOwnerError,
   type EnsureProfileOutcome,
   type ProfileRepository,
 } from "@/modules/identity/application/ensure-profile";
@@ -34,6 +35,8 @@ export function createSupabaseProfileRepository(
         .select("id");
 
       if (error) {
+        if (error.code === "23503")
+          throw new MissingAuthOwnerError("Auth identity no longer exists");
         throw new EnsureProfileError(
           `no se pudo asegurar el perfil (código ${error.code ?? "desconocido"})`,
           { cause: error },

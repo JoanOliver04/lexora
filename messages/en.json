@@ -808,7 +808,66 @@
       "integrity": "The download did not pass its integrity check. No file has been saved; please try again."
     }
   },
+  "DataInformation": {
+    "title": "Your data in Lexora",
+    "back": "Back to settings",
+    "intro": "This is a personal workspace with public registration closed. Here is what is stored, where it lives and what deletion means.",
+    "content": {
+      "title": "Content and history",
+      "body": "Your profile, preferences, courses, cards and review history stay in your account until you change them or delete the account. Archiving hides content without destroying its relationships or history. Reviews are preserved during the life of the account."
+    },
+    "imports": {
+      "title": "Imported files",
+      "body": "The original file is not stored on the server. Import records keep the filename, hash, mapping, counters and bounded error diagnostics for the life of the account. A diagnostic may include up to 500 characters from a row. They are private and deleted with the account."
+    },
+    "exports": {
+      "title": "Downloads you control",
+      "body": "JSON and CSV downloads are checked for completeness and integrity before being offered. They are unencrypted files on your device. Lexora keeps no server snapshot, only the last request time to limit repeated exports. Downloaded copies remain on your device after account deletion. These formats do not have automatic restoration."
+    },
+    "deletion": {
+      "title": "Deleting an account",
+      "body": "Deletion requires your current password, explicit acknowledgment and a recent live Auth session. An enabled second factor must also be verified. The transaction removes the Auth identity and all its application data, including archived content, imports and review events. A failed transaction rolls back. Public registration remains closed afterwards."
+    },
+    "providers": {
+      "title": "Where the app runs",
+      "body": "Supabase provides authentication and the PostgreSQL database. Vercel hosts and runs the web application. No learning content is sent to an AI service. This personal delivery adds no content analytics, Sentry or new email provider."
+    },
+    "limits": {
+      "title": "Backups and technical logs",
+      "body": "Account deletion removes active Auth and application records. Provider backups and technical logs follow the providers’ own retention policies; this action does not claim to erase them immediately. Application logs do not intentionally capture your passwords, card content or exported files."
+    }
+  },
+  "AccountDeletion": {
+    "title": "Delete your account",
+    "description": "Permanently remove your identity and all your Lexora data. Archived content and review history are included.",
+    "open": "Review account deletion",
+    "warning": "This cannot be undone in the app. Download anything you want to keep first. Public registration is closed: deleting your personal account does not let you create a replacement here.",
+    "email": "Confirm your account email",
+    "password": "Your current password",
+    "otp": "Authenticator code, if you use two-factor authentication",
+    "factor": "Authenticator to verify",
+    "factorUnnamed": "Authenticator {number}",
+    "factorLoadError": "Your authentication methods could not be loaded. Reload them before deleting.",
+    "reloadFactors": "Reload authentication methods",
+    "unsupportedFactor": "This deletion flow supports authenticator codes. Your account uses a different second-factor method, so deletion is disabled here to preserve its protection.",
+    "confirmation": "Type DELETE to confirm",
+    "acknowledged": "I understand that my account and all its content will be permanently deleted.",
+    "submit": "Permanently delete my account",
+    "deleting": "Verifying and deleting…",
+    "deleted": "Your account and its active application data have been deleted.",
+    "errors": {
+      "invalid-input": "Check your email, password and confirmation. Type DELETE exactly and tick the acknowledgment.",
+      "invalid-credentials": "The email or password could not be verified. No deletion was requested.",
+      "unauthenticated": "Sign in again before deleting your account.",
+      "reauth-required": "A recent live session is required. Enter your password again.",
+      "mfa-required": "A valid authenticator code is required. Accounts using another second-factor method must verify that method before deletion; it will not be bypassed.",
+      "cooldown": "Too many verification attempts. Wait a minute before trying again.",
+      "unavailable": "Deletion could not be confirmed. Check whether you can still sign in before trying again.",
+      "uncertain": "The connection was interrupted. Deletion may have completed. Check whether you can still sign in before trying again."
+    }
+  },
   "Settings": {
+    "dataInformation": "How your data is stored and deleted",
     "title": "Settings",
     "back": "Back to Today",
     "intro": "Make Lexora fit your rhythm. Your preferences are saved to your account and restored when you enter from another device.",

@@ -36,7 +36,7 @@ export default async function AppLayout({
     redirect(`/${locale}/login`);
   }
 
-  await ensureProfileForCurrentUser();
+  if (!(await ensureProfileForCurrentUser())) redirect(`/${locale}/login`);
 
   const theme = await getAccountThemeForCurrentUser();
   return (

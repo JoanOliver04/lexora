@@ -1,5 +1,17 @@
 # Lexora — Estado actual
 
+> **Publicación 2026-11-11 — exportación:** PR #104, CI 43058851154 con tres
+> SUCCESS; merge `27cb2d9`, deployment 7715757243 SUCCESS, health 200 app/database
+> true. Migración de exportación aplicada desde su snapshot exacto; 20 migraciones
+> en producción y dry-run limpio. Trabajo siguiente en `feat/v1-account-lifecycle`:
+> conservación explícita y borrado propio con reautenticación y cascada Auth/app.
+> Su migración 20261111163306 está aplicada exclusivamente local.
+> Gate general de ciclo de datos: 846 PASS + 1 omitida y build; pgTAP 538 PASS;
+> 21 migraciones desde cero sin seed, 15 aserciones PASS. E2E dirigido 4 PASS,
+> prueba Auth con dos TOTP PASS y revisión independiente cerrada. Suite de
+> navegador completa: 142 PASS + 4 omisiones condicionales existentes, sin
+> reintentos. Build cerrado: 4 PASS. Bloque listo para PR y checks protegidos.
+
 > **Estado operativo 2026-11-11:** producción en `c80847d`, PR #103 con CI
 > 43046555453, tres SUCCESS; deployment 7714079011 SUCCESS. Registro cerrado
 > en Supabase y app; `/en/signup` muestra acceso personal sin formulario. Health

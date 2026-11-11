@@ -8,6 +8,7 @@ import {
 } from "@/modules/identity/application/auth-flows";
 import {
   ensureProfile,
+  MissingAuthOwnerError,
   type EnsureProfileOutcome,
 } from "@/modules/identity/application/ensure-profile";
 import { createSupabaseAuthGateway } from "@/modules/identity/infrastructure/supabase-auth-gateway";
@@ -47,7 +48,13 @@ export async function ensureProfileForCurrentUser(): Promise<EnsureProfileOutcom
     return null;
   }
 
-  return ensureProfile(createSupabaseProfileRepository(client), userId);
+  try {
+    return await ensureProfile(createSupabaseProfileRepository(client), userId);
+  } catch (error) {
+    if (!(error instanceof MissingAuthOwnerError)) throw error;
+    await client.auth.signOut({ scope: "local" });
+    return null;
+  }
 }
 
 /**
