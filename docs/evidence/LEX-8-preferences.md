@@ -37,5 +37,8 @@ días de Madrid/Nueva York para los mismos eventos UTC.
 - Primera suite dirigida: 28 PASS; añadida después regresión de cupos por curso.
 - `pnpm audit`: cero avisos en todas las severidades, incluido desarrollo.
 
-Este bloque está local, sin aplicar su migración a producción. No acredita
-aceptación física ni cierra Q-009. Detalle del contrato: [PREFERENCES](../PREFERENCES.md).
+Publicación: PR #102 integrado como `b0ef04d`, CI 43044767214 con tres SUCCESS.
+Migración `20261111142539_persistent_preferences.sql` aplicada desde snapshot
+aislado; dry-run posterior sin pendientes. Incluida también en el despliegue
+posterior `c80847d`, con health público 200 y app/database true. No acredita
+aceptación física ni cierra Q-009. Detalle: [PREFERENCES](../PREFERENCES.md).

@@ -784,6 +784,30 @@
     "dark": "Dark",
     "system": "System"
   },
+  "DataExport": {
+    "title": "Keep your data with you",
+    "description": "Download your courses, content and saved activity, including archived records. Passwords and credentials are excluded.",
+    "jsonNote": "Preserves fields, identifiers and relationships in a versioned technical format. The app does not automatically restore this file.",
+    "csvNote": "For a spreadsheet: each row identifies its source and includes its complete data. Cells that could be formulas are exported as text.",
+    "privacy": "Files contain your unencrypted data. Keep them somewhere private. You can request an export once a minute; a failed download does not produce a partial file.",
+    "format": "Download format",
+    "json": "Download JSON",
+    "csv": "Download CSV",
+    "preparing": "Preparing your data…",
+    "progress": "Downloading: {percent}%",
+    "checking": "Checking your download…",
+    "cancel": "Cancel download",
+    "success": "Download prepared. Your browser handles where to save it.",
+    "errors": {
+      "unauthenticated": "Sign in again to download your data.",
+      "invalid-input": "This download format is invalid. Reload settings and try again.",
+      "cooldown": "Wait one minute before requesting another export.",
+      "too-large": "Your data exceeds this version's export limit. No partial file has been downloaded.",
+      "unavailable": "The download could not be prepared. Your data is still saved; please try again.",
+      "interrupted": "Download cancelled. No file has been downloaded.",
+      "integrity": "The download did not pass its integrity check. No file has been saved; please try again."
+    }
+  },
   "Settings": {
     "title": "Settings",
     "back": "Back to Today",
