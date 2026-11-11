@@ -41,6 +41,7 @@ como una colección de ceros.
 | Minutos registrados | Suma de `duration_ms / 60000` únicamente para duraciones presentes. Se muestra la cobertura de medición; sin duraciones no se inventa tiempo. |
 | Actividad diaria | Eventos agrupados por día del perfil. Los días sin eventos son cero. El gráfico muestra hasta los últimos 14 días; el resumen incluye todo el periodo. |
 | Estados actuales | Ítems habilitados, de modos V1, con concepto activo y al menos un mazo activo. Sin `learning_state`, estado New. Cada ítem se cuenta una vez aunque pertenezca a varios mazos. |
+| Desgloses | Tipo de concepto y nivel del contenido. Cada grupo muestra repasos del periodo y estados actuales por separado. La clasificación es la actual, también para eventos antiguos; los niveles describen el contenido, no una certificación del usuario. El filtro de mazo se aplica a ambos datos. |
 | Lapsos | Suma acumulada de lapsos en esas tarjetas elegibles; no se atribuye al periodo histórico. |
 | Difíciles | La misma regla de Hoy: al menos tres lapsos o dos Again entre los últimos tres eventos. Orden por lapsos, Again recientes e ID. Se muestran hasta 20 y el total completo. |
 | Previsión | Vencimientos futuros de las tarjetas actuales durante siete días, incluido lo que queda de hoy. Las ya vencidas aparecen por separado. No incluye nuevas, futuras repeticiones aún desconocidas ni efectos de respuestas futuras. |
@@ -63,6 +64,7 @@ empates de timestamp, fechas DST y cifras calculables manualmente. Las pruebas
 de navegador usan un repaso guardado por la UI y verifican después historial y
 estadísticas; no sustituyen la aceptación con dispositivo o lector reales.
 
-Queda pendiente ampliar los desgloses por categoría y nivel, completar la
-auditoría de fase y acreditar los gates humanos y de publicación. Esto no
+Los desgloses incluyen grupos con actividad antigua aunque no queden tarjetas
+activas. La pertenencia a varios mazos no duplica el total del curso. Queda
+completar la auditoría de fase y acreditar los gates humanos de aceptación. Esto no
 certifica conformidad WCAG completa ni cierra la V1.

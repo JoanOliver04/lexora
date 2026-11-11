@@ -21,6 +21,13 @@
     "statisticsLink": "Estadísticas"
   },
   "Statistics": {
+    "breakdowns": "Práctica por tipo y nivel",
+    "byKind": "Por tipo de concepto",
+    "byLevel": "Por nivel del contenido",
+    "breakdownNote": "Las valoraciones corresponden al periodo elegido y los estados de memoria son actuales. La clasificación del contenido es la actual, también para repasos antiguos. Los niveles describen el contenido y no certifican tu nivel de inglés.",
+    "reviewsInPeriod": "Repasos del periodo",
+    "noBreakdown": "Todavía no hay tarjetas o repasos en esta selección.",
+    "unassigned": "Sin nivel asignado",
     "title": "Entiende tu progreso",
     "intro": "Una visión de tu práctica basada en repasos guardados. Úsala para orientar tu estudio, a tu ritmo.",
     "filters": "Filtrar estadísticas",

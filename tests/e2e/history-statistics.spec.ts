@@ -145,6 +145,20 @@ for (const locale of ["es", "en"] as const) {
           .first(),
       ).toBeVisible();
       await expect(page.getByRole("meter")).not.toHaveCount(0);
+      await page
+        .getByText(locale === "es" ? "Por tipo de concepto" : "By concept type", { exact: true })
+        .click();
+      await page
+        .getByText(locale === "es" ? "Por nivel del contenido" : "By content level", {
+          exact: true,
+        })
+        .click();
+      await expect(
+        page.getByRole("heading", {
+          name: locale === "es" ? "Sin nivel asignado" : "No level assigned",
+          exact: true,
+        }),
+      ).toBeVisible();
       await assertStudyLayout(page, info, `statistics-${locale}`);
       await page.screenshot({ path: info.outputPath(`statistics-${locale}.png`), fullPage: true });
       await page

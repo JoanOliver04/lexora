@@ -4,6 +4,8 @@ import { estimateStudyTime } from "./study-time-estimate";
 import { isDifficultItem } from "./difficult-item";
 
 export interface StatisticsData {
+  byKind: StatisticsBreakdown[];
+  byLevel: StatisticsBreakdown[];
   activity: {
     day: string;
     rating: ReviewRating;
@@ -25,6 +27,12 @@ export interface StatisticsData {
   }[];
   difficultTotal: number;
   durations: number[];
+}
+
+export interface StatisticsBreakdown {
+  key: string;
+  states: Record<MemoryPhase, number>;
+  reviews: number;
 }
 
 export function statisticsDay(instant: Date, timeZone: string): string {
@@ -103,6 +111,8 @@ export function summarizeStatistics(
     next = window.end;
   }
   return {
+    byKind: data.byKind,
+    byLevel: data.byLevel,
     ratings,
     states,
     activity,

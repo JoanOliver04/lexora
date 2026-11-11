@@ -6,7 +6,14 @@ import { MEMORY_PHASES, REVIEW_RATINGS } from "../domain/memory";
 import type { Database } from "@/shared/infrastructure/supabase/database.types";
 
 const count = z.number().int().nonnegative().safe();
+const breakdown = z.object({
+  key: z.string().min(1).max(40),
+  states: z.object({ new: count, learning: count, review: count, relearning: count }),
+  reviews: count,
+});
 const payload = z.object({
+  by_kind: z.array(breakdown).max(7),
+  by_level: z.array(breakdown).max(5),
   activity: z
     .array(
       z.object({
@@ -55,6 +62,8 @@ export function createSupabaseStatisticsRepository(
       if (!result.success) throw new Error("Invalid statistics response");
       const raw = result.data;
       return {
+        byKind: raw.by_kind,
+        byLevel: raw.by_level,
         activity: raw.activity.map((r) => ({
           day: r.day,
           rating: r.rating,

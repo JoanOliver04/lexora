@@ -200,6 +200,11 @@ describe("study reveal and rating controls", () => {
     await screen.findByRole("alert");
     fireEvent.click(screen.getByRole("button", { name: "Reintentar revelado" }));
     await waitFor(() => expect(reveal).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Reintentar revelado" })).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar revelado" }));
+    await waitFor(() => expect(reveal).toHaveBeenCalledTimes(3));
     for (const call of reveal.mock.calls)
       expect((call[1] as FormData).get("practiceItemId")).toBe("item");
     expect(screen.getByRole("button", { name: "Bien" })).toBeDisabled();

@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { statisticsWindows, summarizeStatistics, type StatisticsData } from "./statistics";
 const now = new Date("2026-10-25T12:00:00Z");
 const empty = (): StatisticsData => ({
+  byKind: [],
+  byLevel: [],
   activity: [],
   states: [],
   lapses: 0,
