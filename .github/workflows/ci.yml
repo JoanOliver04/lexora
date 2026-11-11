@@ -24,7 +24,7 @@ env:
 jobs:
   calidad:
     name: Calidad
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
 
@@ -65,7 +65,7 @@ jobs:
 
   base-de-datos:
     name: Base de datos
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
 
@@ -133,7 +133,7 @@ jobs:
 
   e2e:
     name: Extremo a extremo
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
 
