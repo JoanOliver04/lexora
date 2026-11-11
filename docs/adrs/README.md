@@ -15,6 +15,8 @@ explicarse y, si hace falta, revertirse con conocimiento de causa.
 | [ADR-005](ADR-005-creacion-de-perfil.md) | La creación del perfil es un caso de uso, no un trigger | Aceptado |
 | [ADR-006](ADR-006-commit-atomico-de-repaso.md) | El commit de un repaso es una RPC SECURITY INVOKER | Aceptado |
 | [ADR-007](ADR-007-graficos-estadisticos-html.md) | Gráficos iniciales con HTML accesible y sin librería de cliente | Aceptado |
+| [ADR-008](008-personal-use.md) | Entrega para uso personal con registro cerrado | Aceptado |
+| [ADR-009](009-self-account-deletion.md) | Eliminación propia de Auth con privilegio acotado | Aceptado |
 
 ## Reglas
 

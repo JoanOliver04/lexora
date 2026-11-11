@@ -861,6 +861,10 @@ export type Database = {
         }
         Returns: string
       }
+      delete_own_account: {
+        Args: { p_confirmation: string; p_email: string }
+        Returns: boolean
+      }
       export_account_data: { Args: never; Returns: Json }
       save_preferences: {
         Args: {

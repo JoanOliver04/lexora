@@ -1,7 +1,10 @@
 # Exportación JSON/CSV e integridad de descarga
 
 Fecha: 2026-11-11. Rama: `feat/v1-data-export`, base publicada `c80847d`.
-Migración `20261111151533_account_data_export.sql`, exclusivamente local por ahora.
+PR #104 integrado como `27cb2d9`, CI 43058851154 con tres SUCCESS. Migración
+`20261111151533_account_data_export.sql` aplicada en producción desde snapshot
+exacto `cc0e330`; dry-run posterior sin pendientes. Deployment 7715757243 SUCCESS
+y health 200 con app/database true. No se descargaron datos privados para probarlo.
 
 ## Implementación
 
