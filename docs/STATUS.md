@@ -1,5 +1,19 @@
 # Lexora — Estado actual
 
+> **Publicación 2026-11-11 — opciones completas:** PR #110/head `f2ca8c4`,
+> CI43113580150 tres SUCCESS; navegador184 PASS+4 omisiones, cerrado4 y Preview4.
+> Merge `3d795f7`, deployment7723171106 SUCCESS. M24 aplicada desde snapshot
+> exacto; veinticuatro migraciones y dry-run limpio. INVOKER/anon denegado,
+> health200 app/database true y CSP/no-store/DENY comprobados.
+> Trabajo actual `chore/v1-performance-evidence`, base `3d795f7`: medir bundles
+> y laboratorio. Se reprodujo un CLS de navegación al resolver el Suspense de
+> Hoy (0,1013 móvil/0,0165 desktop, seis cargas con lecturas locales retrasadas).
+> Navegación adelantada: seis cargas equivalentes, CLS0. Medición limpia36 cargas
+> con CLS0 y cinco guardados/5 logs confirmados. Gate921+1/build PASS, ocho E2E
+> PASS y capturas inspeccionadas. Sin SQL/deps. Preparar PR/checks y publicación.
+> [Laboratorio](evidence/LEX-9-web-lab.md). El borrador de cifrado/ensayo de backup
+> permanece local y separado de este commit, sin copia de datos reales todavía.
+
 > **Publicación 2026-11-11 — biblioteca grande:** PR #109/`fb3b7a4`, CI43109315353
 > tres SUCCESS; navegador180 PASS+4 omisiones, cerrado4 y Preview4. Merge
 > `154a849`, deployment7722591334 SUCCESS. M23 aplicada desde ese head exacto,

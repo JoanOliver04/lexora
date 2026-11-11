@@ -57,19 +57,6 @@ export default async function AppHome({
           <h2 className="font-medium break-words text-(--color-ink)">{activeCourse.title}</h2>
         </div>
       </header>
-      <Suspense
-        fallback={
-          <div
-            role="status"
-            aria-live="polite"
-            className="rounded-(--radius-surface) border border-(--color-border) bg-(--color-surface) p-6"
-          >
-            {tToday("loading")}
-          </div>
-        }
-      >
-        <DashboardContent courseId={activeCourse.id} locale={locale} deckQuery={deck} />
-      </Suspense>
       <nav className="flex flex-wrap gap-x-6 gap-y-2">
         <Link
           href="/app/settings"
@@ -108,6 +95,19 @@ export default async function AppHome({
           {t("importLink")}
         </Link>
       </nav>
+      <Suspense
+        fallback={
+          <div
+            role="status"
+            aria-live="polite"
+            className="rounded-(--radius-surface) border border-(--color-border) bg-(--color-surface) p-6"
+          >
+            {tToday("loading")}
+          </div>
+        }
+      >
+        <DashboardContent courseId={activeCourse.id} locale={locale} deckQuery={deck} />
+      </Suspense>
     </main>
   );
 }
