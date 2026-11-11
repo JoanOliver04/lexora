@@ -73,9 +73,10 @@ export function useImportTransfer(
         retained =
           carried === previous.carried ? previous : { carried, filename: carried.filename };
         const mapping = readImportMapping(
-          form,
+          carried === previous.carried ? form : new FormData(),
           Math.max(carried.columnCount, 1),
-          carried === previous.carried ? previous.mapping : pending?.mapping,
+          (carried === previous.carried ? previous.mapping : pending?.mapping) ??
+            carried.defaultMapping,
         );
         const sameMapping =
           previous.mapping?.front === mapping.front &&

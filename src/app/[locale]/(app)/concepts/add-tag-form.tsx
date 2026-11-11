@@ -17,7 +17,15 @@ const ERROR_ID = "add-tag-error";
  * `useActionState`: es una unión de error distinta (`TagIssue`) a la del
  * formulario del concepto (`ConceptIssue`) y no comparten región `role="alert"`.
  */
-export function AddTagForm({ locale, conceptId }: { locale: string; conceptId: string }) {
+export function AddTagForm({
+  locale,
+  conceptId,
+  returnQuery = "",
+}: {
+  locale: string;
+  conceptId: string;
+  returnQuery?: string;
+}) {
   const t = useTranslations("Concepts");
   const [state, action] = useActionState<TagFormState, FormData>(attachTagAction, {});
   const formRef = useRef<HTMLFormElement>(null);
@@ -29,6 +37,7 @@ export function AddTagForm({ locale, conceptId }: { locale: string; conceptId: s
     <form ref={formRef} action={action} className="flex flex-col gap-3" noValidate>
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="conceptId" value={conceptId} />
+      <input type="hidden" name="returnQuery" value={returnQuery} />
 
       {issues.length > 0 || state.error ? (
         <FormError id={ERROR_ID}>

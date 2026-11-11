@@ -6,7 +6,7 @@ import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
 import { searchConcepts } from "@/modules/library/application/concept";
-import { listTagsForConcepts } from "@/modules/library/application/tag";
+import { readTagPreviews } from "@/modules/library/application/library-options";
 import {
   CEFR_LEVELS,
   CONCEPT_KINDS,
@@ -85,11 +85,12 @@ export default async function ConceptsPage({
     activeCourse.id,
     { includeArchived, search, kind, cefrLevel, limit: PAGE_SIZE, offset },
   );
-  const tagsByConcept = await listTagsForConcepts(
-    context.tags,
-    context.ownerId,
-    concepts.map((concept) => concept.id),
-  );
+  const previews = await readTagPreviews(context.options, {
+    ownerId: context.ownerId,
+    conceptIds: concepts.map((concept) => concept.id),
+  });
+  const tagsByConcept = Object.fromEntries(previews.map((p) => [p.conceptId, p.items]));
+  const tagTotals = Object.fromEntries(previews.map((p) => [p.conceptId, p.total]));
 
   const t = await getTranslations("Concepts");
   const isFiltered = Boolean(search || kind || cefrLevel);
@@ -231,6 +232,14 @@ export default async function ConceptsPage({
                         {tag.displayName}
                       </span>
                     ))}
+                    {(tagTotals[concept.id] ?? 0) > 3 ? (
+                      <Link
+                        href={`/concepts/${concept.id}`}
+                        className="inline-flex min-h-11 items-center text-xs underline"
+                      >
+                        {t("tags.more", { count: (tagTotals[concept.id] ?? 0) - 3 })}
+                      </Link>
+                    ) : null}
                   </div>
                 ) : null}
 

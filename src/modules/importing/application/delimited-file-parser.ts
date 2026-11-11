@@ -18,6 +18,7 @@
 
 import type { Separator } from "@/modules/importing/domain/separator";
 import type { ImportRowIssue, ParsedImportRow, RawImportRow } from "@/modules/importing/domain/row";
+import type { ColumnMapping } from "../domain/column-mapping";
 
 export interface ParseFileResult {
   /** El separador que se usó: el de la directiva `#separator:` o el de la heurística. */
@@ -26,6 +27,8 @@ export interface ParseFileResult {
   separatorFromDirective: boolean;
   /** Nº de columnas de la fila más ancha; `0` si no hay ninguna fila de datos. */
   columnCount: number;
+  /** Initial mapping from file directives; an explicit user mapping takes priority. */
+  defaultMapping?: ColumnMapping;
   rows: ParsedImportRow[];
   issues: ImportRowIssue[];
   /**
@@ -46,7 +49,7 @@ export interface DelimitedFileParser {
 
 export type TokenizedImport = Pick<
   ParseFileResult,
-  "separator" | "separatorFromDirective" | "columnCount" | "rawRows"
+  "separator" | "separatorFromDirective" | "columnCount" | "rawRows" | "defaultMapping"
 >;
 
 export interface TokenizingFileParser extends DelimitedFileParser {

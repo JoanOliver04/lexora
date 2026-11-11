@@ -39,11 +39,15 @@ export function createPapaParseDelimitedFileParser(): TokenizingFileParser {
       return parseContent(rawContent, true);
     },
     tokenize(rawContent: string) {
-      const { separator, separatorFromDirective, columnCount, rawRows } = parseContent(
-        rawContent,
-        false,
-      );
-      return { separator, separatorFromDirective, columnCount, rawRows };
+      const { separator, separatorFromDirective, columnCount, rawRows, defaultMapping } =
+        parseContent(rawContent, false);
+      return {
+        separator,
+        separatorFromDirective,
+        columnCount,
+        rawRows,
+        ...(defaultMapping ? { defaultMapping } : {}),
+      };
     },
   };
 }
@@ -102,10 +106,14 @@ function parseContent(rawContent: string, classify: boolean): ParseFileResult {
     }
   });
 
+  const tags =
+    columnCount > 2 ? (directives.tagsColumn <= columnCount ? directives.tagsColumn - 1 : 2) : null;
+  const contentIndexes = [0, 1, 2].filter((index) => index !== tags);
   return {
     separator,
     separatorFromDirective: directives.separator !== null,
     columnCount,
+    defaultMapping: { front: contentIndexes[0]!, back: contentIndexes[1]!, tags },
     rows,
     issues,
     rawRows,

@@ -6,8 +6,10 @@ import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
 import { getConcept } from "@/modules/library/application/concept";
-import { listPracticeItems } from "@/modules/library/application/practice-item";
-import { listConceptTags } from "@/modules/library/application/tag";
+import {
+  libraryPageOffset,
+  readConceptOptions,
+} from "@/modules/library/application/library-options";
 import { canReverse } from "@/modules/library/domain/practice-item";
 import { Button } from "@/shared/presentation/components";
 
@@ -15,6 +17,8 @@ import { detachTagAction, reversePracticeItemAction, setConceptArchivedAction } 
 import { AddTagForm } from "../add-tag-form";
 import { CreatePracticeItemForm } from "../create-practice-item-form";
 import { EditConceptForm } from "../edit-concept-form";
+import { ConceptOptionsNavigation } from "../concept-options-navigation";
+import { conceptOptionsQuery } from "../concept-options-query";
 
 /**
  * Detalle y edición de un concepto (LEX-3.6). A diferencia del detalle de mazo
@@ -29,8 +33,10 @@ import { EditConceptForm } from "../edit-concept-form";
  */
 export default async function ConceptDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; conceptId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, conceptId } = await params;
   setRequestLocale(locale);
@@ -54,15 +60,28 @@ export default async function ConceptDetailPage({
     notFound();
   }
 
-  const tags = await listConceptTags(context.tags, context.ownerId, concept.id);
-  const items = await listPracticeItems(context.practiceItems, context.ownerId, concept.id, {
-    includeArchived: true,
+  const query = await searchParams;
+  const options = await readConceptOptions(context.options, {
+    ownerId: context.ownerId,
+    courseId: activeCourse.id,
+    conceptId: concept.id,
+    tagOffset: libraryPageOffset(query["tagPage"]),
+    itemOffset: libraryPageOffset(query["itemPage"]),
   });
+  if (!options) notFound();
+  const { tags, items } = options;
+  const returnQuery =
+    tags.total >= 20 || items.total >= 20
+      ? new URLSearchParams({
+          tagPage: String(tags.offset / 20 + 1),
+          itemPage: String(items.offset / 20 + 1),
+        }).toString()
+      : conceptOptionsQuery({});
   const t = await getTranslations("Concepts");
   const tHistory = await getTranslations("History");
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-8 px-6 py-12">
+    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-8 px-6 py-12 [overflow-wrap:anywhere]">
       <header className="flex flex-col gap-2">
         <Link
           href="/concepts"
@@ -77,14 +96,21 @@ export default async function ConceptDetailPage({
       </header>
 
       <EditConceptForm locale={locale} concept={concept} />
+      {["tag", "item", "reverse"].includes(
+        typeof query["saved"] === "string" ? query["saved"] : "",
+      ) ? (
+        <p role="status" className="text-sm text-(--color-ink-muted)">
+          {t("optionsSaved")}
+        </p>
+      ) : null}
 
       <section className="flex flex-col gap-3 border-t border-(--color-border) pt-8">
         <h2 className="text-lg font-medium">{t("tags.heading")}</h2>
-        {tags.length === 0 ? (
+        {tags.total === 0 ? (
           <p className="text-sm text-(--color-ink-muted)">{t("tags.empty")}</p>
         ) : (
           <ul className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
+            {tags.items.map((tag) => (
               <li key={tag.id}>
                 <form
                   action={detachTagAction}
@@ -93,10 +119,11 @@ export default async function ConceptDetailPage({
                   <input type="hidden" name="locale" value={locale} />
                   <input type="hidden" name="conceptId" value={concept.id} />
                   <input type="hidden" name="tagId" value={tag.id} />
+                  <input type="hidden" name="returnQuery" value={returnQuery} />
                   <span>{tag.displayName}</span>
                   <button
                     type="submit"
-                    className="text-(--color-ink-subtle) hover:text-(--color-danger)"
+                    className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-(--color-ink-subtle) hover:text-(--color-danger)"
                     aria-label={`${t("tags.removeButton")}: ${tag.displayName}`}
                   >
                     ×
@@ -106,16 +133,23 @@ export default async function ConceptDetailPage({
             ))}
           </ul>
         )}
-        <AddTagForm locale={locale} conceptId={concept.id} />
+        <ConceptOptionsNavigation
+          conceptId={concept.id}
+          result={tags}
+          pageKey="tagPage"
+          otherPage={items.offset / 20 + 1}
+          label={t("tags.pages")}
+        />
+        <AddTagForm locale={locale} conceptId={concept.id} returnQuery={returnQuery} />
       </section>
 
       <section className="flex flex-col gap-3 border-t border-(--color-border) pt-8">
         <h2 className="text-lg font-medium">{t("items.heading")}</h2>
-        {items.length === 0 ? (
+        {items.total === 0 ? (
           <p className="text-sm text-(--color-ink-muted)">{t("items.empty")}</p>
         ) : (
           <ul className="flex flex-col gap-2">
-            {items.map((item) => (
+            {items.items.map((item) => (
               <li
                 key={item.id}
                 className="flex flex-col gap-2 rounded-(--radius-control) border border-(--color-border) p-3"
@@ -135,7 +169,10 @@ export default async function ConceptDetailPage({
                 </p>
                 <div className="flex flex-wrap items-center gap-3">
                   <Link
-                    href={`/concepts/${concept.id}/items/${item.id}`}
+                    href={{
+                      pathname: `/concepts/${concept.id}/items/${item.id}`,
+                      query: Object.fromEntries(new URLSearchParams(returnQuery)),
+                    }}
                     className="text-sm underline underline-offset-4"
                   >
                     {t("items.actions.edit")}
@@ -145,6 +182,7 @@ export default async function ConceptDetailPage({
                       <input type="hidden" name="locale" value={locale} />
                       <input type="hidden" name="conceptId" value={concept.id} />
                       <input type="hidden" name="itemId" value={item.id} />
+                      <input type="hidden" name="returnQuery" value={returnQuery} />
                       <Button type="submit" variant="secondary">
                         {t("items.actions.reverse")}
                       </Button>
@@ -155,7 +193,14 @@ export default async function ConceptDetailPage({
             ))}
           </ul>
         )}
-        <CreatePracticeItemForm locale={locale} conceptId={concept.id} />
+        <ConceptOptionsNavigation
+          conceptId={concept.id}
+          result={items}
+          pageKey="itemPage"
+          otherPage={tags.offset / 20 + 1}
+          label={t("items.pages")}
+        />
+        <CreatePracticeItemForm locale={locale} conceptId={concept.id} returnQuery={returnQuery} />
       </section>
 
       <Link

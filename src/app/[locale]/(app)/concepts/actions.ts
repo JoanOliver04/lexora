@@ -18,7 +18,7 @@ import {
   archivePracticeItem,
   createPracticeItem,
   createReversePracticeItem,
-  listPracticeItems,
+  getPracticeItem,
   restorePracticeItem,
   updatePracticeItem,
 } from "@/modules/library/application/practice-item";
@@ -28,6 +28,7 @@ import type { PracticeItemIssue } from "@/modules/library/domain/practice-item";
 import type { TagIssue } from "@/modules/library/domain/tag";
 
 import type { ConceptFieldDefaults } from "./concept-fields";
+import { conceptOptionsReturnPath } from "./concept-options-query";
 
 /**
  * Server Actions de conceptos, de sus etiquetas y de sus ítems de práctica.
@@ -276,7 +277,7 @@ export async function attachTagAction(
   }
 
   revalidatePath(`/${locale}/concepts/${conceptId}`);
-  redirect(`/${locale}/concepts/${conceptId}`);
+  redirect(conceptOptionsReturnPath(locale, conceptId, formData.get("returnQuery"), "tag"));
 }
 
 export async function detachTagAction(formData: FormData): Promise<void> {
@@ -291,7 +292,7 @@ export async function detachTagAction(formData: FormData): Promise<void> {
   await untagConcept(scope.context.tags, scope.context.ownerId, { conceptId, tagId });
 
   revalidatePath(`/${locale}/concepts/${conceptId}`);
-  redirect(`/${locale}/concepts/${conceptId}`);
+  redirect(conceptOptionsReturnPath(locale, conceptId, formData.get("returnQuery")));
 }
 
 export async function createPracticeItemAction(
@@ -324,7 +325,7 @@ export async function createPracticeItemAction(
   }
 
   revalidatePath(`/${locale}/concepts/${conceptId}`);
-  redirect(`/${locale}/concepts/${conceptId}`);
+  redirect(conceptOptionsReturnPath(locale, conceptId, formData.get("returnQuery"), "item"));
 }
 
 export async function updatePracticeItemAction(
@@ -359,7 +360,7 @@ export async function updatePracticeItemAction(
 
   revalidatePath(`/${locale}/concepts/${conceptId}`);
   revalidatePath(`/${locale}/concepts/${conceptId}/items/${itemId}`);
-  redirect(`/${locale}/concepts/${conceptId}`);
+  redirect(conceptOptionsReturnPath(locale, conceptId, formData.get("returnQuery")));
 }
 
 export async function setPracticeItemArchivedAction(formData: FormData): Promise<void> {
@@ -376,17 +377,10 @@ export async function setPracticeItemArchivedAction(formData: FormData): Promise
   await run(scope.context.practiceItems, scope.context.ownerId, itemId);
 
   revalidatePath(`/${locale}/concepts/${conceptId}`);
-  redirect(`/${locale}/concepts/${conceptId}`);
+  redirect(conceptOptionsReturnPath(locale, conceptId, formData.get("returnQuery")));
 }
 
-/**
- * Crea la dirección inversa de un ítem existente. `PracticeItemRepository` no
- * tiene `get` (LEX-3.4): se lee la lista del concepto —incluidos los
- * archivados, por si se invierte uno archivado— y se busca, como en el
- * detalle de mazo (LEX-3.5). Si el modo no tiene inversa (`createReversePracticeItem`
- * devuelve `null`), no pasa nada: la pantalla no debería haber ofrecido el
- * botón para ese ítem.
- */
+/** Reads the selected owner-bound item directly, including beyond the first page. */
 export async function reversePracticeItemAction(formData: FormData): Promise<void> {
   const locale = safeLocale(formData);
   const conceptId = String(formData.get("conceptId") ?? "");
@@ -396,16 +390,21 @@ export async function reversePracticeItemAction(formData: FormData): Promise<voi
     redirect(`/${locale}/concepts`);
   }
 
-  const items = await listPracticeItems(
+  const item = await getPracticeItem(
     scope.context.practiceItems,
     scope.context.ownerId,
     conceptId,
-    { includeArchived: true },
+    itemId,
   );
-  const item = items.find((candidate) => candidate.id === itemId);
+  let reversed = false;
   if (item) {
     try {
-      await createReversePracticeItem(scope.context.practiceItems, scope.context.ownerId, item);
+      const outcome = await createReversePracticeItem(
+        scope.context.practiceItems,
+        scope.context.ownerId,
+        item,
+      );
+      reversed = outcome?.ok === true;
     } catch (error) {
       if (error instanceof LibraryError) {
         console.error("reversePracticeItemAction", error.kind);
@@ -416,5 +415,12 @@ export async function reversePracticeItemAction(formData: FormData): Promise<voi
   }
 
   revalidatePath(`/${locale}/concepts/${conceptId}`);
-  redirect(`/${locale}/concepts/${conceptId}`);
+  redirect(
+    conceptOptionsReturnPath(
+      locale,
+      conceptId,
+      formData.get("returnQuery"),
+      reversed ? "reverse" : undefined,
+    ),
+  );
 }

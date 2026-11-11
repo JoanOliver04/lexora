@@ -5,7 +5,7 @@ import { getActiveCourseForCurrentUser } from "@/composition/courses";
 import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
-import { listDecks } from "@/modules/library/application/deck";
+import { readDeckOptions } from "@/modules/library/application/library-options";
 
 import { ImportPreviewForm } from "./import-preview-form";
 import { pendingImportForCurrentUser } from "@/composition/import-transfer";
@@ -44,12 +44,14 @@ export default async function ImportPage({
     typeof query.job === "string" ? query.job : undefined,
   );
   const library = await getLibraryContextForCurrentUser();
-  const decks = library
-    ? (await listDecks(library.decks, library.ownerId, activeCourse.id)).map((deck) => ({
-        id: deck.id,
-        title: deck.title,
-      }))
-    : [];
+  if (!library) redirect(`/${locale}/login`);
+  const deckOptions = await readDeckOptions(library.options, {
+    ownerId: library.ownerId,
+    courseId: activeCourse.id,
+    search: "",
+    offset: 0,
+    ...(pending?.deckId ? { selectedId: pending.deckId } : {}),
+  });
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-6 py-12 [overflow-wrap:anywhere]">
@@ -63,7 +65,7 @@ export default async function ImportPage({
 
       <ImportPreviewForm
         locale={locale}
-        decks={decks}
+        deckOptions={deckOptions}
         courseId={activeCourse.id}
         pending={pending}
       />

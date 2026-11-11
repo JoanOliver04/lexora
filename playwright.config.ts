@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // A separate port keeps local E2E from reusing another project's preview.
-const port = Number(process.env["LEXORA_E2E_PORT"] ?? "3000");
+const port = Number(process.env["LEXORA_E2E_PORT"] ?? "3100");
 if (!Number.isInteger(port) || port < 1024 || port > 65535) {
   throw new Error("LEXORA_E2E_PORT must be an integer between 1024 and 65535");
 }

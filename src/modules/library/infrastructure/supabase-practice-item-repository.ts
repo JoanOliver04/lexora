@@ -38,6 +38,18 @@ export function createSupabasePracticeItemRepository(
   client: SupabaseClient<Database>,
 ): PracticeItemRepository {
   return {
+    async get({ ownerId, conceptId, itemId }) {
+      const { data, error } = await client
+        .from("practice_items")
+        .select("*")
+        .eq("owner_id", ownerId)
+        .eq("concept_id", conceptId)
+        .eq("id", itemId)
+        .abortSignal(AbortSignal.timeout(12000))
+        .maybeSingle();
+      if (error) throw libraryErrorFrom(error, "practice item unavailable");
+      return data ? toPracticeItem(data) : null;
+    },
     async create({ ownerId, conceptId, draft }) {
       const { data, error } = await client
         .from("practice_items")

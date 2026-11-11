@@ -6,11 +6,12 @@ import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
 import { getConcept } from "@/modules/library/application/concept";
-import { listPracticeItems } from "@/modules/library/application/practice-item";
+import { getPracticeItem } from "@/modules/library/application/practice-item";
 import { Button } from "@/shared/presentation/components";
 
 import { setPracticeItemArchivedAction } from "../../../actions";
 import { EditPracticeItemForm } from "../../../edit-practice-item-form";
+import { conceptOptionsQuery } from "../../../concept-options-query";
 import { PracticeItemPreview } from "./practice-item-preview";
 
 /**
@@ -22,8 +23,10 @@ import { PracticeItemPreview } from "./practice-item-preview";
  */
 export default async function PracticeItemDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; conceptId: string; itemId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, conceptId, itemId } = await params;
   setRequestLocale(locale);
@@ -47,21 +50,22 @@ export default async function PracticeItemDetailPage({
     notFound();
   }
 
-  const items = await listPracticeItems(context.practiceItems, context.ownerId, conceptId, {
-    includeArchived: true,
-  });
-  const item = items.find((candidate) => candidate.id === itemId);
+  const item = await getPracticeItem(context.practiceItems, context.ownerId, conceptId, itemId);
   if (!item) {
     notFound();
   }
 
   const t = await getTranslations("Concepts");
+  const returnQuery = conceptOptionsQuery(await searchParams);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-8 px-6 py-12">
       <header className="flex flex-col gap-2">
         <Link
-          href={`/concepts/${conceptId}`}
+          href={{
+            pathname: `/concepts/${conceptId}`,
+            query: Object.fromEntries(new URLSearchParams(returnQuery)),
+          }}
           className="text-sm text-(--color-ink-muted) underline underline-offset-4"
         >
           {t("items.backToConcept")}
@@ -74,7 +78,12 @@ export default async function PracticeItemDetailPage({
 
       <PracticeItemPreview item={item} />
 
-      <EditPracticeItemForm locale={locale} conceptId={conceptId} item={item} />
+      <EditPracticeItemForm
+        locale={locale}
+        conceptId={conceptId}
+        item={item}
+        returnQuery={returnQuery}
+      />
 
       <form
         action={setPracticeItemArchivedAction}
@@ -83,6 +92,7 @@ export default async function PracticeItemDetailPage({
         <input type="hidden" name="locale" value={locale} />
         <input type="hidden" name="conceptId" value={conceptId} />
         <input type="hidden" name="itemId" value={item.id} />
+        <input type="hidden" name="returnQuery" value={returnQuery} />
         <input type="hidden" name="archived" value={item.archivedAt ? "0" : "1"} />
         <Button type="submit" variant="secondary">
           {item.archivedAt ? t("items.actions.restore") : t("items.actions.archive")}

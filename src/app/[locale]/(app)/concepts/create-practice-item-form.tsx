@@ -17,9 +17,11 @@ const ERROR_ID = "create-practice-item-error";
 export function CreatePracticeItemForm({
   locale,
   conceptId,
+  returnQuery = "",
 }: {
   locale: string;
   conceptId: string;
+  returnQuery?: string;
 }) {
   const t = useTranslations("Concepts");
   const [state, action] = useActionState<PracticeItemFormState, FormData>(
@@ -35,6 +37,7 @@ export function CreatePracticeItemForm({
     <form ref={formRef} action={action} className="flex flex-col gap-4" noValidate>
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="conceptId" value={conceptId} />
+      <input type="hidden" name="returnQuery" value={returnQuery} />
 
       {issues.length > 0 || state.error ? (
         <FormError id={ERROR_ID}>
