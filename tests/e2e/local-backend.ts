@@ -3,7 +3,7 @@ import { parseEnv } from "node:util";
 
 /** Fail before starting an app/browser, even when a shell overrides .env.local. */
 export function localBackend() {
-  let fallback: Record<string, string> = {};
+  let fallback: Record<string, string | undefined> = {};
   if (
     !process.env["NEXT_PUBLIC_SUPABASE_URL"] ||
     !process.env["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"]

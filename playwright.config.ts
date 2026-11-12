@@ -1,11 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 import { localBackend } from "./tests/e2e/local-backend";
 
-// Validate before building, navigating or creating any synthetic account. Force
-// the same destination into the app and worker processes, including build-time env.
+// Validate before building, navigating or creating any synthetic account. The app
+// receives these values explicitly; fixtures use the same read-only resolution.
 const backend = localBackend();
-process.env["NEXT_PUBLIC_SUPABASE_URL"] = backend.url;
-process.env["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"] = backend.publishableKey;
 
 // A separate port keeps local E2E from reusing another project's preview.
 const port = Number(process.env["LEXORA_E2E_PORT"] ?? "3100");
