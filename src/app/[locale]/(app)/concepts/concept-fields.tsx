@@ -63,6 +63,7 @@ export function ConceptFields({
       <div className="flex flex-col gap-2">
         <Label htmlFor="concept-kind">{t("fields.kindLabel")}</Label>
         <select
+          key={defaults.kind ?? CONCEPT_KINDS[0]}
           id="concept-kind"
           name="kind"
           required
@@ -139,6 +140,7 @@ export function ConceptFields({
       <div className="flex flex-col gap-2">
         <Label htmlFor="concept-cefrLevel">{t("fields.levelLabel")}</Label>
         <select
+          key={defaults.cefrLevel ?? ""}
           id="concept-cefrLevel"
           name="cefrLevel"
           defaultValue={defaults.cefrLevel ?? ""}

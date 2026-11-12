@@ -19,6 +19,7 @@ import {
 import { LibraryError } from "@/modules/library/application/library-error";
 import type { DeckIssue } from "@/modules/library/domain/deck";
 import { deckDetailReturnPath } from "./deck-detail-query";
+import type { DeckFieldDefaults } from "./deck-fields";
 
 /**
  * Server Actions de mazos. Delgadas (ADR-001): leen el formulario, resuelven la
@@ -38,6 +39,20 @@ import { deckDetailReturnPath } from "./deck-detail-query";
 export interface DeckFormState {
   issues?: DeckIssue[];
   error?: "generic";
+  values?: DeckFieldDefaults;
+}
+
+function fieldValuesFromForm(formData: FormData): DeckFieldDefaults {
+  const text = (key: string) => {
+    const value = formData.get(key);
+    return typeof value === "string" ? value : "";
+  };
+  return {
+    title: text("title"),
+    description: text("description"),
+    cefrLevel: text("cefrLevel"),
+    category: text("category"),
+  };
 }
 
 function safeLocale(formData: FormData): string {
@@ -70,10 +85,11 @@ export async function createDeckAction(
   _prev: DeckFormState,
   formData: FormData,
 ): Promise<DeckFormState> {
+  const values = fieldValuesFromForm(formData);
   const locale = safeLocale(formData);
   const scope = await decksContext();
   if (!scope) {
-    return { error: "generic" };
+    return { error: "generic", values };
   }
 
   try {
@@ -84,12 +100,12 @@ export async function createDeckAction(
       draftFromForm(formData),
     );
     if (!outcome.ok) {
-      return { issues: outcome.issues };
+      return { issues: outcome.issues, values };
     }
   } catch (error) {
     if (error instanceof LibraryError) {
       console.error("createDeckAction", error.kind);
-      return { error: "generic" };
+      return { error: "generic", values };
     }
     throw error;
   }
@@ -102,11 +118,12 @@ export async function updateDeckAction(
   _prev: DeckFormState,
   formData: FormData,
 ): Promise<DeckFormState> {
+  const values = fieldValuesFromForm(formData);
   const locale = safeLocale(formData);
   const deckId = String(formData.get("deckId") ?? "");
   const scope = await decksContext();
   if (!scope || deckId === "") {
-    return { error: "generic" };
+    return { error: "generic", values };
   }
 
   try {
@@ -117,12 +134,12 @@ export async function updateDeckAction(
       draftFromForm(formData),
     );
     if (!outcome.ok) {
-      return { issues: outcome.issues };
+      return { issues: outcome.issues, values };
     }
   } catch (error) {
     if (error instanceof LibraryError) {
       console.error("updateDeckAction", error.kind);
-      return { error: "generic" };
+      return { error: "generic", values };
     }
     throw error;
   }

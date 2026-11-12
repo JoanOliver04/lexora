@@ -23,6 +23,7 @@ import { practiceItemIssueKey } from "./message-key";
  * se muestra siempre —sin JS que lo oculte según el modo— con una nota de
  * cuándo se usa: mismo principio que las pantallas de mazo/concepto, sin
  * estado de cliente para mostrar/ocultar.
+ * La key del select conserva su nuevo defaultSelected tras un envío fallido.
  */
 
 const CONTROL_CLASS = [
@@ -64,6 +65,7 @@ export function PracticeItemFields({
       <div className="flex flex-col gap-2">
         <Label htmlFor="item-mode">{t("items.fields.modeLabel")}</Label>
         <select
+          key={defaults.mode ?? V1_PRACTICE_MODES[0]}
           id="item-mode"
           name="mode"
           required

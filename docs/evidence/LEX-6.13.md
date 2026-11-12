@@ -1,5 +1,13 @@
 # LEX-6.13 — Validación responsive y aceptación física
 
+> **Consolidación vigente2026-11-12:** aceptación personal acotada, Q-009
+> resuelta. Joan indica que la app funciona bien en móvil y ordenador y confirma
+> instalación/cierre/reapertura en ambos, además de zoom/texto ampliado y lector
+> real sin problemas. [Informe](LEX-9-installation.md). No se deducen modelo,
+> versiones, recorrido completo de cada fila ni fatiga con una mano.
+> La matriz automática anterior conserva su alcance; los pendientes de la
+> plantilla histórica que sigue no anulan las confirmaciones posteriores.
+
 **Fecha:** 2026-10-16
 
 **Última preparación local:** 2026-10-18; no constituye aceptación física.

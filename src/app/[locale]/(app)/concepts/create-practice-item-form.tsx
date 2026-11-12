@@ -24,7 +24,7 @@ export function CreatePracticeItemForm({
   returnQuery?: string;
 }) {
   const t = useTranslations("Concepts");
-  const [state, action] = useActionState<PracticeItemFormState, FormData>(
+  const [state, action, pending] = useActionState<PracticeItemFormState, FormData>(
     createPracticeItemAction,
     {},
   );
@@ -35,22 +35,32 @@ export function CreatePracticeItemForm({
 
   return (
     <form ref={formRef} action={action} className="flex flex-col gap-4" noValidate>
-      <input type="hidden" name="locale" value={locale} />
-      <input type="hidden" name="conceptId" value={conceptId} />
-      <input type="hidden" name="returnQuery" value={returnQuery} />
+      <fieldset
+        disabled={pending}
+        aria-label={t("items.actions.create")}
+        className="flex min-w-0 flex-col gap-4"
+      >
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="conceptId" value={conceptId} />
+        <input type="hidden" name="returnQuery" value={returnQuery} />
 
-      {issues.length > 0 || state.error ? (
-        <FormError id={ERROR_ID}>
-          {state.error ? <p>{t("items.genericError")}</p> : null}
-          {issues.map((issue) => (
-            <p key={issue}>{t(`items.errors.${practiceItemIssueKey(issue)}`)}</p>
-          ))}
-        </FormError>
-      ) : null}
+        {issues.length > 0 || state.error ? (
+          <FormError id={ERROR_ID}>
+            {state.error ? <p>{t("items.genericError")}</p> : null}
+            {issues.map((issue) => (
+              <p key={issue}>{t(`items.errors.${practiceItemIssueKey(issue)}`)}</p>
+            ))}
+          </FormError>
+        ) : null}
 
-      <PracticeItemFields issues={issues} errorId={ERROR_ID} />
+        <PracticeItemFields
+          issues={issues}
+          errorId={ERROR_ID}
+          {...(state.values ? { defaults: state.values } : {})}
+        />
 
-      <PendingButton idle={t("items.actions.create")} pending={t("items.actions.creating")} />
+        <PendingButton idle={t("items.actions.create")} pending={t("items.actions.creating")} />
+      </fieldset>
     </form>
   );
 }

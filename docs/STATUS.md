@@ -1,6 +1,18 @@
 # Lexora — Estado actual
 
-> **Reanudado por Joan —2026-11-12.** Git y el punto de recuperación coinciden
+> **2026-11-12 — recuperación publicada e instalación aceptada.** PR112/head
+> `4920063`, CI43193476879: tres SUCCESS; navegador184 PASS+4 omisiones,
+> acceso personal4 y Preview4 PASS. Merge `6b8f31b`, deployment7733865569
+> Production SUCCESS y health200 app/database true. Sin migración nueva.
+> Joan confirma cierre/reapertura desde el icono instalado de escritorio;
+> ya había confirmado instalación móvil, zoom y lector sin problemas. Son
+> informes del propietario, sin atribuir versión de navegador o commit servido.
+> Trabajo actual LEX-3.13, `fix/lex-3-13-form-recovery`: conservar borradores
+> de biblioteca al fallar validación, también al editar. Regresión antes/después
+> acreditada; seis E2E PASS, gate921+1 y Node12/build PASS. Preparar PR y CI.
+> Siguiente: auditoría de accesibilidad y matriz de motores.
+
+> **Checkpoint histórico de reanudación —2026-11-12.** Git y el punto de recuperación coinciden
 > con el cierre de la pausa. Rama `feat/v1-recovery`, base `e45e3dc`.
 > Revisión del bloque cerrada; siguiente paso: escaneo del snapshot publicable,
 > PR y tres checks antes de publicar. Sin migraciones ni dependencias nuevas.

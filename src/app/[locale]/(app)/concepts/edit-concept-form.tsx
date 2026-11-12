@@ -21,7 +21,10 @@ const ERROR_ID = "edit-concept-error";
  */
 export function EditConceptForm({ locale, concept }: { locale: string; concept: Concept }) {
   const t = useTranslations("Concepts");
-  const [state, action] = useActionState<ConceptFormState, FormData>(updateConceptAction, {});
+  const [state, action, pending] = useActionState<ConceptFormState, FormData>(
+    updateConceptAction,
+    {},
+  );
   const formRef = useRef<HTMLFormElement>(null);
   useFocusFirstInvalid(formRef, state);
 
@@ -29,33 +32,41 @@ export function EditConceptForm({ locale, concept }: { locale: string; concept: 
 
   return (
     <form ref={formRef} action={action} className="flex flex-col gap-4" noValidate>
-      <input type="hidden" name="locale" value={locale} />
-      <input type="hidden" name="conceptId" value={concept.id} />
+      <fieldset
+        disabled={pending}
+        aria-label={t("actions.save")}
+        className="flex min-w-0 flex-col gap-4"
+      >
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="conceptId" value={concept.id} />
 
-      {issues.length > 0 || state.error ? (
-        <FormError id={ERROR_ID}>
-          {state.error ? <p>{t("genericError")}</p> : null}
-          {issues.map((issue) => (
-            <p key={issue}>{t(`errors.${conceptIssueKey(issue)}`)}</p>
-          ))}
-        </FormError>
-      ) : null}
+        {issues.length > 0 || state.error ? (
+          <FormError id={ERROR_ID}>
+            {state.error ? <p>{t("genericError")}</p> : null}
+            {issues.map((issue) => (
+              <p key={issue}>{t(`errors.${conceptIssueKey(issue)}`)}</p>
+            ))}
+          </FormError>
+        ) : null}
 
-      <ConceptFields
-        issues={issues}
-        errorId={ERROR_ID}
-        defaults={{
-          kind: concept.kind,
-          title: concept.title,
-          summary: concept.summary,
-          explanation: concept.explanation,
-          example: concept.example,
-          cefrLevel: concept.cefrLevel,
-          sourceReference: concept.sourceReference,
-        }}
-      />
+        <ConceptFields
+          issues={issues}
+          errorId={ERROR_ID}
+          defaults={
+            state.values ?? {
+              kind: concept.kind,
+              title: concept.title,
+              summary: concept.summary,
+              explanation: concept.explanation,
+              example: concept.example,
+              cefrLevel: concept.cefrLevel,
+              sourceReference: concept.sourceReference,
+            }
+          }
+        />
 
-      <PendingButton idle={t("actions.save")} pending={t("actions.saving")} />
+        <PendingButton idle={t("actions.save")} pending={t("actions.saving")} />
+      </fieldset>
     </form>
   );
 }

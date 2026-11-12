@@ -16,6 +16,8 @@ import { deckIssueKey } from "./message-key";
  *
  * El borde de error acompaña al color pero no lo sustituye: el detalle textual
  * vive en el `role="alert"` del formulario, referenciado por `errorId`.
+ * La key de cada select renueva defaultSelected cuando vuelve un borrador:
+ * cambiar solo defaultValue no actualiza el destino del reset nativo de React.
  */
 
 const CONTROL_CLASS = [
@@ -83,6 +85,7 @@ export function DeckFields({
       <div className="flex flex-col gap-2">
         <Label htmlFor="deck-cefrLevel">{t("fields.levelLabel")}</Label>
         <select
+          key={defaults.cefrLevel ?? ""}
           id="deck-cefrLevel"
           name="cefrLevel"
           defaultValue={defaults.cefrLevel ?? ""}
@@ -102,6 +105,7 @@ export function DeckFields({
       <div className="flex flex-col gap-2">
         <Label htmlFor="deck-category">{t("fields.categoryLabel")}</Label>
         <select
+          key={defaults.category ?? ""}
           id="deck-category"
           name="category"
           defaultValue={defaults.category ?? ""}

@@ -31,7 +31,7 @@ export function EditPracticeItemForm({
   returnQuery?: string;
 }) {
   const t = useTranslations("Concepts");
-  const [state, action] = useActionState<PracticeItemFormState, FormData>(
+  const [state, action, pending] = useActionState<PracticeItemFormState, FormData>(
     updatePracticeItemAction,
     {},
   );
@@ -43,33 +43,41 @@ export function EditPracticeItemForm({
 
   return (
     <form ref={formRef} action={action} className="flex flex-col gap-4" noValidate>
-      <input type="hidden" name="locale" value={locale} />
-      <input type="hidden" name="conceptId" value={conceptId} />
-      <input type="hidden" name="itemId" value={item.id} />
-      <input type="hidden" name="returnQuery" value={returnQuery} />
+      <fieldset
+        disabled={pending}
+        aria-label={t("items.actions.save")}
+        className="flex min-w-0 flex-col gap-4"
+      >
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="conceptId" value={conceptId} />
+        <input type="hidden" name="itemId" value={item.id} />
+        <input type="hidden" name="returnQuery" value={returnQuery} />
 
-      {issues.length > 0 || state.error ? (
-        <FormError id={ERROR_ID}>
-          {state.error ? <p>{t("items.genericError")}</p> : null}
-          {issues.map((issue) => (
-            <p key={issue}>{t(`items.errors.${practiceItemIssueKey(issue)}`)}</p>
-          ))}
-        </FormError>
-      ) : null}
+        {issues.length > 0 || state.error ? (
+          <FormError id={ERROR_ID}>
+            {state.error ? <p>{t("items.genericError")}</p> : null}
+            {issues.map((issue) => (
+              <p key={issue}>{t(`items.errors.${practiceItemIssueKey(issue)}`)}</p>
+            ))}
+          </FormError>
+        ) : null}
 
-      <PracticeItemFields
-        issues={issues}
-        errorId={ERROR_ID}
-        defaults={{
-          mode: item.mode,
-          promptText: item.promptText,
-          answerText: item.answerText,
-          hintText: item.hintText,
-          clozeAnswers,
-        }}
-      />
+        <PracticeItemFields
+          issues={issues}
+          errorId={ERROR_ID}
+          defaults={
+            state.values ?? {
+              mode: item.mode,
+              promptText: item.promptText,
+              answerText: item.answerText,
+              hintText: item.hintText,
+              clozeAnswers,
+            }
+          }
+        />
 
-      <PendingButton idle={t("items.actions.save")} pending={t("items.actions.saving")} />
+        <PendingButton idle={t("items.actions.save")} pending={t("items.actions.saving")} />
+      </fieldset>
     </form>
   );
 }

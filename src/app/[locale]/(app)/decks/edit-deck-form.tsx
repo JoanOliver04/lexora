@@ -22,7 +22,7 @@ const ERROR_ID = "edit-deck-error";
  */
 export function EditDeckForm({ locale, deck }: { locale: string; deck: Deck }) {
   const t = useTranslations("Library");
-  const [state, action] = useActionState<DeckFormState, FormData>(updateDeckAction, {});
+  const [state, action, pending] = useActionState<DeckFormState, FormData>(updateDeckAction, {});
   const formRef = useRef<HTMLFormElement>(null);
   useFocusFirstInvalid(formRef, state);
 
@@ -30,30 +30,38 @@ export function EditDeckForm({ locale, deck }: { locale: string; deck: Deck }) {
 
   return (
     <form ref={formRef} action={action} className="flex flex-col gap-4" noValidate>
-      <input type="hidden" name="locale" value={locale} />
-      <input type="hidden" name="deckId" value={deck.id} />
+      <fieldset
+        disabled={pending}
+        aria-label={t("actions.save")}
+        className="flex min-w-0 flex-col gap-4"
+      >
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="deckId" value={deck.id} />
 
-      {issues.length > 0 || state.error ? (
-        <FormError id={ERROR_ID}>
-          {state.error ? <p>{t("genericError")}</p> : null}
-          {issues.map((issue) => (
-            <p key={issue}>{t(`errors.${deckIssueKey(issue)}`)}</p>
-          ))}
-        </FormError>
-      ) : null}
+        {issues.length > 0 || state.error ? (
+          <FormError id={ERROR_ID}>
+            {state.error ? <p>{t("genericError")}</p> : null}
+            {issues.map((issue) => (
+              <p key={issue}>{t(`errors.${deckIssueKey(issue)}`)}</p>
+            ))}
+          </FormError>
+        ) : null}
 
-      <DeckFields
-        issues={issues}
-        errorId={ERROR_ID}
-        defaults={{
-          title: deck.title,
-          description: deck.description,
-          cefrLevel: deck.cefrLevel,
-          category: deck.category,
-        }}
-      />
+        <DeckFields
+          issues={issues}
+          errorId={ERROR_ID}
+          defaults={
+            state.values ?? {
+              title: deck.title,
+              description: deck.description,
+              cefrLevel: deck.cefrLevel,
+              category: deck.category,
+            }
+          }
+        />
 
-      <PendingButton idle={t("actions.save")} pending={t("actions.saving")} />
+        <PendingButton idle={t("actions.save")} pending={t("actions.saving")} />
+      </fieldset>
     </form>
   );
 }

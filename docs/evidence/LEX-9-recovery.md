@@ -41,7 +41,7 @@ navegador. No se modifica la API ni su cooldown. La prueba ahora comprueba tambi
 el formato de Retry-After. Repetición dirigida: seis PASS (tres por perfil), sin
 retries. No se presenta la pasada anterior como libre de flakes.
 
-## Pendiente de publicación
+## Publicación verificada
 
 Gate general actualizado:921 PASS+1 omisión, doce pruebas Node adicionales,
 formato/lint/tipos/contraste/build PASS, exit0. Parser PowerShell final PASS;
@@ -52,5 +52,9 @@ recuperación local conservando los tres nombres/checks protegidos.
 
 Reanudación2026-11-12: snapshot publicable de656 archivos, Gitleaks8.30.1
 con redacción y exit0, sin secretos detectados. No se escaneó ni publicó la
-carpeta privada. Pendientes CI y deployment de las herramientas.
+carpeta privada. PR112/head4920063, CI43193476879: Calidad, Base de datos y
+Extremo a extremo SUCCESS. Navegador184 PASS+4 omisiones condicionadas, sin
+retries; acceso personal4 PASS y Preview4 PASS. El ensayo de recuperación también
+pasó en Linux/CI. Merge6b8f31b, deployment7733865569 Production SUCCESS;
+health200 con app/database true. No se añadió migración.
 El backup privado ya existe y está verificado; no depende de publicar estas fuentes.
