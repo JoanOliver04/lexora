@@ -284,7 +284,7 @@
   width: 100%;
   max-width: 76rem;
   margin-inline: auto;
-  padding: 1.25rem;
+  padding: clamp(16px, 3vw, 20px);
   gap: 1.25rem;
   align-items: center;
   justify-content: space-between;
@@ -299,7 +299,7 @@
   max-width: 70rem;
   flex: 1;
   margin: 1rem auto 3rem;
-  padding: 1.25rem;
+  padding: clamp(12px, 3vw, 20px);
   align-items: center;
 }
 .auth-story {
@@ -312,7 +312,7 @@
   width: 100%;
   max-width: 27rem;
   margin-inline: auto;
-  padding: 2rem 1.5rem;
+  padding: 2rem clamp(16px, 3vw, 24px);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 1.5rem;
@@ -321,7 +321,7 @@
 .home-shell {
   max-width: 76rem;
   margin-inline: auto;
-  padding: 1.5rem;
+  padding: clamp(16px, 3vw, 24px);
 }
 .home-header {
   display: flex;
@@ -381,7 +381,7 @@
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
   min-height: 22rem;
-  padding: 2rem 1rem;
+  padding: 2rem min(1rem, 3vw);
 }
 .recall-stage::before {
   content: "";
@@ -392,11 +392,10 @@
 }
 .recall-card {
   position: relative;
-  transform: rotate(-4deg);
   width: 100%;
   max-width: 25rem;
   margin-inline: auto;
-  padding: 2rem;
+  padding: clamp(16px, 3vw, 32px);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   border-radius: 1.6rem;
@@ -504,6 +503,9 @@ html {
 }
 
 @media (min-width: 48rem) {
+  .recall-card {
+    transform: rotate(-4deg);
+  }
   .home-hero {
     grid-template-columns: 1.1fr 1fr;
     gap: 4rem;

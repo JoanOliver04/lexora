@@ -7,7 +7,12 @@ import { Google_Sans } from "next/font/google";
 import { FormError } from "@/shared/presentation/components";
 import { googleLoginAction, type AuthFormState } from "../actions";
 
-const googleSans = Google_Sans({ subsets: ["latin"], weight: "500", display: "swap" });
+const googleSans = Google_Sans({
+  subsets: ["latin"],
+  weight: "500",
+  display: "swap",
+  adjustFontFallback: false,
+});
 
 export function GoogleSignIn({ locale, next }: { locale: string; next?: string | undefined }) {
   const t = useTranslations("Auth");

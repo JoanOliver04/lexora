@@ -76,6 +76,12 @@ async function auditKeyboard(page: Page, stage: string) {
 }
 
 export async function audit(page: Page, info: TestInfo, stage: string) {
+  await auditAxe(page, info, stage);
+  await auditKeyboard(page, stage);
+}
+
+/** Engine-independent rules; native keyboard behavior is tested separately. */
+export async function auditAxe(page: Page, info: TestInfo, stage: string) {
   await expect(page.getByRole("main")).toBeVisible();
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   for (const theme of ["light", "dark"] as const) {
@@ -109,5 +115,4 @@ export async function audit(page: Page, info: TestInfo, stage: string) {
     });
     expect.soft(result.violations, `${stage}/${theme}`).toEqual([]);
   }
-  await auditKeyboard(page, stage);
 }

@@ -922,7 +922,7 @@
     },
     "providers": {
       "title": "Dónde se ejecuta la app",
-      "body": "Supabase proporciona la autenticación y la base de datos PostgreSQL. Vercel aloja y ejecuta la aplicación web. No se envía contenido de aprendizaje a ningún servicio de IA. Esta entrega personal no añade analítica de contenido, Sentry ni un proveedor de correo nuevo."
+      "body": "Supabase proporciona la autenticación y la base de datos PostgreSQL. Vercel aloja y ejecuta la aplicación web. Si eliges Google, se usa tu identidad y perfil básico para entrar mediante Supabase, sin solicitar permisos de Gmail ni Drive. No se envía contenido de aprendizaje a ningún servicio de IA. Esta entrega personal no añade analítica de contenido, Sentry ni un proveedor de correo nuevo."
     },
     "limits": {
       "title": "Backups y logs técnicos",

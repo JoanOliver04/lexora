@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { localBackend } from "./local-backend";
-import { audit } from "./a11y-audit";
+import { audit, auditAxe } from "./a11y-audit";
 import { assertStudyLayout } from "./study-layout";
 
 /** No Google credentials, provider activation or external accounts. The denial is synthetic. */
@@ -9,6 +9,7 @@ for (const locale of ["es", "en"] as const) {
     page,
     context,
     baseURL,
+    browserName,
   }, info) => {
     test.setTimeout(90000);
     const backend = localBackend();
@@ -36,9 +37,17 @@ for (const locale of ["es", "en"] as const) {
       callback.searchParams.set("error", "access_denied");
       callback.searchParams.set("error_description", "synthetic-private-provider-message");
       initiated = true;
+      // WebKit cannot fulfill a mocked HTTP redirect. A synthetic provider
+      // document performs the same navigation without changing the app's CSP.
+      const destination = callback.toString().replaceAll("&", "&amp;").replaceAll('"', "&quot;");
       await route.fulfill({
-        status: 302,
-        headers: { location: callback.toString(), "cache-control": "no-store" },
+        status: 200,
+        contentType: "text/html",
+        headers: {
+          "cache-control": "no-store",
+          "content-security-policy": "default-src 'none'; base-uri 'none'",
+        },
+        body: `<!doctype html><html lang="${locale}"><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=${destination}"><title>Synthetic provider cancellation</title><body>Returning to Lexora.</body></html>`,
       });
     });
     // Fail explicitly if a future implementation attempts an actual Google navigation.
@@ -47,10 +56,27 @@ for (const locale of ["es", "en"] as const) {
     await expect(page.locator('a[href$="/signup"]')).toHaveCount(0);
     const google = page.getByRole("button", { name: label, exact: true });
     await expect(google).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+    await page.screenshot({
+      path: info.outputPath(`google-${locale}-initial.png`),
+      fullPage: true,
+      animations: "disabled",
+    });
     await expect(page.locator('input[name="email"]')).toBeVisible();
     await assertStudyLayout(page, info, `google-${locale}`);
-    await audit(page, info, `google-${locale}`);
+    // Full-document Tab wrapping is Chromium-specific: Windows Firefox stops at
+    // the last native control and WebKit excludes links by default, even in a
+    // minimal HTML fixture. Keep that existing audit intact and exercise the
+    // actual form's forward/backward native Tab sequence in every engine.
+    const auditRules = browserName === "chromium" ? audit : auditAxe;
+    await auditRules(page, info, `google-${locale}`);
     await google.focus();
+    await page.keyboard.press("Tab");
+    await expect(page.locator('input[name="email"]')).toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    await expect(google).toBeFocused();
+    await expect(google).toHaveCSS("outline-style", "solid");
+    await expect(google).toHaveCSS("outline-width", "2px");
     await page.keyboard.press("Enter");
     await expect(page).toHaveURL(new RegExp(`/${locale}/login\\?error=google-unavailable`));
     expect(initiated).toBe(true);
@@ -64,7 +90,7 @@ for (const locale of ["es", "en"] as const) {
     await expect(page.locator('form input[name="next"]').first()).toHaveValue(
       `/${locale}/app/library`,
     );
-    await audit(page, info, `google-denied-${locale}`);
+    await auditRules(page, info, `google-denied-${locale}`);
     // The existing email path still submits and reports its usual validation.
     await page.locator('input[name="email"]').fill("synthetic-google-fallback@example.com");
     await page.locator('input[name="password"]').fill("synthetic-invalid-password");

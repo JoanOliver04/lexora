@@ -922,7 +922,7 @@
     },
     "providers": {
       "title": "Where the app runs",
-      "body": "Supabase provides authentication and the PostgreSQL database. Vercel hosts and runs the web application. No learning content is sent to an AI service. This personal delivery adds no content analytics, Sentry or new email provider."
+      "body": "Supabase provides authentication and the PostgreSQL database. Vercel hosts and runs the web application. If you choose Google, your identity and basic profile are used to sign in through Supabase, without requesting Gmail or Drive permissions. No learning content is sent to an AI service. This personal delivery adds no content analytics, Sentry or new email provider."
     },
     "limits": {
       "title": "Backups and technical logs",

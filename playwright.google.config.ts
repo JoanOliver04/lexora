@@ -9,6 +9,11 @@ export default defineConfig({
   ...base,
   testMatch: "**/google-sign-in.spec.ts",
   testIgnore: [],
+  projects: [
+    ...base.projects!,
+    { name: "google-firefox", use: { browserName: "firefox" } },
+    { name: "google-webkit", use: { browserName: "webkit", colorScheme: "dark" } },
+  ],
   webServer: {
     ...server,
     env: {
