@@ -102,7 +102,8 @@ export function DashboardView({
           </div>
           {status === "ready" && (
             <div>
-              <p className="font-medium" aria-label={t("estimateLabel")}>
+              <p className="font-medium">
+                <span className="sr-only">{t("estimateLabel")}: </span>
                 {t("estimate", { minutes: Math.ceil(overview.estimate.totalMs / 60_000) })}
               </p>
               <p className="mt-1 text-sm leading-relaxed text-(--color-ink-muted)">
@@ -166,9 +167,9 @@ export function DashboardView({
                   {format.number(metric.value)}
                 </dd>
                 {metric.key === "dueReviews" && overview.hiddenDueReviews > 0 && (
-                  <p className="mt-1 text-xs text-(--color-ink-muted)">
+                  <dd className="mt-1 text-xs text-(--color-ink-muted)">
                     {t("availableReviews", { count: overview.availableReviews })}
-                  </p>
+                  </dd>
                 )}
               </div>
             ))}

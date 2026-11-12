@@ -1,4 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
+import { localBackend } from "./tests/e2e/local-backend";
+
+// Validate before building, navigating or creating any synthetic account. The app
+// receives these values explicitly; fixtures use the same read-only resolution.
+const backend = localBackend();
 
 // A separate port keeps local E2E from reusing another project's preview.
 const port = Number(process.env["LEXORA_E2E_PORT"] ?? "3100");
@@ -65,6 +70,8 @@ export default defineConfig({
     reuseExistingServer: false,
     env: {
       NEXT_PUBLIC_SITE_URL: baseURL,
+      NEXT_PUBLIC_SUPABASE_URL: backend.url,
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: backend.publishableKey,
       LEXORA_ALLOW_REGISTRATION: process.env["LEXORA_ALLOW_REGISTRATION"] ?? "true",
     },
     timeout: 180_000,

@@ -132,16 +132,16 @@ export default async function StatisticsPage({
             <dd className="text-4xl font-semibold tracking-tight tabular-nums">
               {s.totals.measured > 0 ? n.format(s.totals.durationMs / 60000) : "—"}
             </dd>
-            <p className="text-sm text-(--color-ink-muted)">
+            <dd className="text-sm text-(--color-ink-muted)">
               {t("coverage", { measured: s.totals.measured, total: s.totals.reviews })}
-            </p>
+            </dd>
           </div>
           <div className="flex flex-col gap-2">
             <dt className="text-sm text-(--color-ink-muted)">{t("observedRecall")}</dt>
             <dd className="text-4xl font-semibold tracking-tight tabular-nums">
               {s.observedRecall === null ? "—" : percent.format(s.observedRecall)}
             </dd>
-            <p className="text-sm text-(--color-ink-muted)">{t("recallFormula")}</p>
+            <dd className="text-sm text-(--color-ink-muted)">{t("recallFormula")}</dd>
           </div>
         </dl>
       </section>
@@ -195,15 +195,15 @@ export default async function StatisticsPage({
           <h2 id="ratings-title" className="text-xl font-semibold">
             {t("ratings")}
           </h2>
-          <dl className="grid gap-5">
+          <ul className="grid gap-5">
             {REVIEW_RATINGS.map((rating) => (
-              <div key={rating}>
+              <li key={rating}>
                 <div className="mb-2 flex flex-wrap justify-between gap-2">
-                  <dt>{h(`ratings.${rating}`)}</dt>
-                  <dd className="tabular-nums">
+                  <span>{h(`ratings.${rating}`)}</span>
+                  <span className="tabular-nums">
                     {n.format(s.ratings[rating])} ·{" "}
                     {s.totals.reviews ? percent.format(s.ratings[rating] / s.totals.reviews) : "—"}
-                  </dd>
+                  </span>
                 </div>
                 <meter
                   className="h-3 w-full accent-(--color-accent)"
@@ -212,9 +212,9 @@ export default async function StatisticsPage({
                   value={s.ratings[rating]}
                   aria-label={h(`ratings.${rating}`)}
                 />
-              </div>
+              </li>
             ))}
-          </dl>
+          </ul>
           <p className="text-sm leading-relaxed text-(--color-ink-muted)">{t("recallNote")}</p>
           <Link
             href={{

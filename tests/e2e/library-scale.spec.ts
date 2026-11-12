@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { expect, test } from "@playwright/test";
 import type { Database } from "../../src/shared/infrastructure/supabase/database.types";
 import { completeOnboarding, PASSWORD, signUp, uniqueEmail } from "./helpers";
+import { localBackend } from "./local-backend";
 
 async function checked(query: PromiseLike<{ error: unknown }>) {
   if ((await query).error) throw new Error("Synthetic library fixture operation failed");
@@ -14,16 +15,10 @@ for (const locale of ["es", "en"] as const)
     test.setTimeout(60000);
     const email = await signUp(page, { email: uniqueEmail("e2e-library-scale") });
     await completeOnboarding(page, { uiLocale: locale });
-    if (!process.env["NEXT_PUBLIC_SUPABASE_URL"]) process.loadEnvFile(".env.local");
-    const url = process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
-      target = new URL(url);
-    if (!["localhost", "127.0.0.1"].includes(target.hostname) || target.port !== "54321")
-      throw new Error("Local synthetic fixtures only");
-    const client = createClient<Database>(
-      url,
-      process.env["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"]!,
-      { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } },
-    );
+    const { url, publishableKey } = localBackend();
+    const client = createClient<Database>(url, publishableKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    });
     const { data: auth, error } = await client.auth.signInWithPassword({
       email,
       password: PASSWORD,

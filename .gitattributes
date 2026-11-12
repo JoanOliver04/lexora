@@ -17,6 +17,7 @@
 *.woff2   binary
 *.pdf     binary
 
-# Ficheros generados: se versionan, pero no ensucian la revisión del diff.
-pnpm-lock.yaml       linguist-generated=true -diff
+# Ficheros generados versionados. El lockfile conserva un diff de texto para
+# revisar los cambios de dependencias, aunque GitHub lo agrupe como generado.
+pnpm-lock.yaml       linguist-generated=true
 database.types.ts    linguist-generated=true

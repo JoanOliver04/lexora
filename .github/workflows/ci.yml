@@ -206,18 +206,27 @@ jobs:
           echo "::error::supabase start fallo tras 3 intentos"
           exit 1
 
-      - name: Instalar Chromium
-        # Solo Chromium. Firefox y WebKit se anadiran cuando exista producto que
-        # pueda romperse de forma distinta en cada motor; hoy solo alargarian
-        # cada ejecucion.
-        # El runner incluye Chrome y sus bibliotecas. Playwright valida las
-        # dependencias al arrancar el navegador; una ausencia sigue fallando el gate.
-        # Se descarga nuestro Chromium fijado sin instalar fuentes extra con apt,
-        # cuyos mirrors fallaron por DNS antes de ejecutar cualquier prueba.
-        run: pnpm exec playwright install chromium
+      - name: Bibliotecas de Firefox y WebKit
+        # Chromium already works in this runner. New engines need additional
+        # libraries; bounded retries address the previously observed mirror DNS
+        # failures without ignoring a failed dependency installation.
+        run: |
+          for attempt in 1 2 3; do
+            if pnpm exec playwright install-deps firefox webkit; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then sleep 5; fi
+          done
+          exit 1
+
+      - name: Instalar navegadores fijados por Playwright
+        run: pnpm exec playwright install chromium firefox webkit
 
       - name: Tests E2E
         run: pnpm e2e
+
+      - name: Compatibilidad Firefox y WebKit
+        run: pnpm e2e:compat
 
       - name: Acceso personal sin registro
         env:

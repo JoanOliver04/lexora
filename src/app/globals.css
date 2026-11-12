@@ -45,7 +45,7 @@
 
   --color-ink: oklch(18% 0.008 240);
   --color-ink-muted: oklch(46% 0.012 240);
-  --color-ink-subtle: oklch(58% 0.012 240);
+  --color-ink-subtle: oklch(54% 0.012 240);
 
   --color-border: oklch(90% 0.006 240);
   --color-border-strong: oklch(62% 0.012 240);
@@ -131,7 +131,8 @@
 
   /* El foco visible no se elimina nunca. Quien navega con teclado necesita
      saber donde esta; sin esto la aplicacion es inservible sin raton. */
-  :focus-visible {
+  :focus-visible,
+  input[type="date"]:focus-within {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }

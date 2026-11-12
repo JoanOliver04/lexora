@@ -1,5 +1,27 @@
 # Lexora — Estado actual
 
+> **2026-11-12 — accesibilidad y compatibilidad verificadas localmente.** Rama
+> `test/v1-accessibility-compatibility`, implementación `d0970da`. Gate general
+> 930 PASS+1 omisión condicional, Node12 y build PASS. Pase Chromium dirigido8
+> PASS:216 análisis A/AA sin infracciones ni incompletos y sincronización entre
+> contextos. Firefox/WebKit8, acceso cerrado4 y Preview4 PASS, sin retries.
+> Tres revisiones cerradas; configuración de pruebas unificada, con rechazo de
+> destinos remotos antes de cualquier alta. Sin migración; axe solo en desarrollo.
+> Configuración local parcial: normal4, cerrado4 y Preview4 PASS sin retries.
+> Snapshot público670 archivos: Gitleaks8.30.1 sin secretos. Siguiente:
+> PR y tres checks protegidos antes de publicar.
+> [Accesibilidad](evidence/LEX-9-accessibility.md),
+> [compatibilidad](evidence/LEX-9-compatibility.md), [antiabuso](ANTI_ABUSE.md).
+
+> **Checkpoint anterior — formularios publicados; auditoría de accesibilidad.** PR113,
+> head `203a2cd`, CI43198336497: tres SUCCESS; navegador190 PASS+4 omisiones,
+> cerrado4 y Preview4 PASS, sin retries. Merge `f3af988`, deployment7734572057
+> Production SUCCESS, health200 app/database true. Sin migración nueva.
+> Rama `test/v1-accessibility-compatibility`: contraste de texto pequeño corregido,
+> listas estadísticas y semántica de Hoy corregidas;216 análisis automatizados
+> PASS ES/EN×dos perfiles×dos temas, sin infracciones ni incompletos. Se validan
+> ahora registro cerrado y Preview. Después: motores Firefox/WebKit y RC.
+
 > **2026-11-12 — recuperación publicada e instalación aceptada.** PR112/head
 > `4920063`, CI43193476879: tres SUCCESS; navegador184 PASS+4 omisiones,
 > acceso personal4 y Preview4 PASS. Merge `6b8f31b`, deployment7733865569

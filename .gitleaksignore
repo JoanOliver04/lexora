@@ -1,3 +1,6 @@
 # Historical disposable-local Supabase publishable key, deliberately public.
 # Only this exact finding is excluded; recheck if CI endpoint changes (2027-Q1).
 8f677bab8959b6b0afeae68bb0895cc04b42ec20:.github/workflows/ci.yml:generic-api-key:22
+# Historical nonfunctional placeholder in a --list-only test (no SDK/network).
+# Replaced by "test-key" in 7caad2e; exclude only this exact historical addition.
+6de4aeeb974b9208ddc7fd22395e8fd5b5b45212:tests/unit/security/e2e-backend-boundary.test.ts:generic-api-key:22

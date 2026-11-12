@@ -34,5 +34,9 @@ aserciones de selección ni se reemplazaron por esperas temporales arbitrarias.
 Gate general final con integración local: 921 PASS + 1 omisión, Node: 12 PASS;
 formato, lint, tipos, contraste y build de producción PASS/exit0. Revisión
 completa del diff y dependencias directas cerrada, sin hallazgos pendientes.
-Pendiente CI de publicación. La aceptación física registrada en este bloque
+PR #113/head `203a2cd`, CI43198336497: tres checks SUCCESS,190 E2E PASS y
+4 omisiones condicionadas; acceso personal4 y Preview4 PASS, sin retries.
+Merge `f3af988`, deployment7734572057 Production SUCCESS y health200
+app/database true. Snapshot659 archivos: Gitleaks8.30.1 exit0.
+La aceptación física registrada en este bloque
 procede del propietario y no se deduce de estos E2E.

@@ -4,6 +4,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import type { Database } from "../../src/shared/infrastructure/supabase/database.types";
 import { completeOnboarding, PASSWORD, signUp } from "./helpers";
 import { assertStudyLayout } from "./study-layout";
+import { localBackend } from "./local-backend";
 
 async function checked<T>(query: PromiseLike<{ data: T; error: { message: string } | null }>) {
   const { data, error } = await query;
@@ -26,20 +27,12 @@ for (const locale of ["es", "en"] as const) {
     context,
   }, testInfo) => {
     test.setTimeout(60_000);
-    if (!process.env["NEXT_PUBLIC_SUPABASE_URL"]) process.loadEnvFile(".env.local");
-    const url = process.env["NEXT_PUBLIC_SUPABASE_URL"]!;
-    const parsed = new URL(url);
-    if (!["localhost", "127.0.0.1"].includes(parsed.hostname) || parsed.port !== "54321")
-      throw new Error("Keyboard fixtures require local Supabase");
+    const { url, publishableKey } = localBackend();
     const email = await signUp(page);
     await completeOnboarding(page);
-    const client = createClient<Database>(
-      url,
-      process.env["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"]!,
-      {
-        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-      },
-    );
+    const client = createClient<Database>(url, publishableKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    });
     const { data: auth, error } = await client.auth.signInWithPassword({
       email,
       password: PASSWORD,
