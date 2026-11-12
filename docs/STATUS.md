@@ -1,5 +1,21 @@
 # Lexora — Estado actual
 
+> **Reanudado por Joan —2026-11-12.** Git y el punto de recuperación coinciden
+> con el cierre de la pausa. Rama `feat/v1-recovery`, base `e45e3dc`.
+> Revisión del bloque cerrada; siguiente paso: escaneo del snapshot publicable,
+> PR y tres checks antes de publicar. Sin migraciones ni dependencias nuevas.
+> Después: matriz Firefox/WebKit, auditoría de accesibilidad y cierre de V1.
+
+> **Trabajo actual2026-11-12 — recuperación:** `feat/v1-recovery`, base`e45e3dc`.
+> Dump cifrado de producción creado/verificado (schema20261111223000/24migraciones),
+> carpeta ignorada con ACL usuario/SYSTEM, sin plaintext residual ni subida externa.
+> Ensayo local:46tablas idénticas, login/TOTP AAL2, historial y owner/B/anon PASS;
+> dos bases desechables/tres helpers eliminados. Node12 PASS; gate921+1/build PASS.
+> Herramientas/procedimiento y CI local listos para escaneo/PR. Sin SQL/deps nuevas.
+> PR111 rendimiento publicado:e45e3dc, CI43116849776 tres SUCCESS (183+1flaky+4;
+> captura de body429 corregida y6repeticiones PASS en este bloque), deployment
+> 7723705717 SUCCESS y health200 app/database true. [Recuperación](BACKUP_RECOVERY.md).
+
 > **Publicación 2026-11-11 — opciones completas:** PR #110/head `f2ca8c4`,
 > CI43113580150 tres SUCCESS; navegador184 PASS+4 omisiones, cerrado4 y Preview4.
 > Merge `3d795f7`, deployment7723171106 SUCCESS. M24 aplicada desde snapshot

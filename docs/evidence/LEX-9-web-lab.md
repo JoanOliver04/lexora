@@ -81,3 +81,11 @@ diff y dependencias directas cerrada. Sin migración ni dependencia nueva.
 Pendientes CI protegida y publicación de la corrección de navegación.
 Snapshot indexado de648 archivos/3,16MB: Gitleaks8.30.1 sin hallazgos, exit0.
 Excluye los borradores de backup no incluidos en este commit.
+
+Publicación verificada el2026-11-12: PR111, CI43116849776 con los tres trabajos
+SUCCESS. Navegador183 PASS+1 flaky+4 omisiones; el retry fue una captura de body
+429 de una prueba de importación, registrada y estabilizada en el siguiente
+bloque de recuperación (seis repeticiones dirigidas PASS). Cerrado4 y Preview4.
+Merge `e45e3dc7d36ce52c6935746aa9b0a5d5e2a3a372`, deployment7723705717 Production
+SUCCESS; health200 app/database true. Sin SQL nuevo. No se declara esa pasada
+de CI libre de retries.
