@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import Papa from "papaparse";
+import packageMetadata from "../../../../package.json";
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { formatDataExport, safeSpreadsheetCell } from "./export-format";
@@ -74,6 +75,7 @@ describe("Portable data artifacts", () => {
       format: "lexora-account-export",
       formatVersion: 1,
       schemaVersion: 1,
+      appVersion: packageMetadata.version,
       exportedAtUtc: snapshot.exportedAt,
     });
     expect(createHash("sha256").update(JSON.stringify(parsed.payload)).digest("hex")).toBe(

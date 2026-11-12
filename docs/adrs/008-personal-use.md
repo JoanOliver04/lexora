@@ -30,3 +30,8 @@ La validación de seguridad y datos sigue siendo obligatoria. Los pendientes
 exclusivos de lanzamiento público se documentan como fuera del alcance actual,
 sin presentarlos como implementados. Las comprobaciones físicas aún no realizadas
 conservan su estado y no se sustituyen por emulación.
+
+En el cierre personal, la evidencia de estabilización es acotada a los gates,
+los despliegues comprobados y los informes recibidos. No se inventa un periodo
+de observación acordado ni un SLA. La versión personal1.0.0 puede entregarse sin
+declarar cerrado el hito de lanzamiento público, marca/licencia o portfolio.

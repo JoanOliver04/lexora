@@ -44,4 +44,7 @@ sustituyó por un placeholder inequívoco; las nueve regresiones volvieron a pas
 El primer check de CI detectó también su adición histórica en `6de4aee`: se
 documenta únicamente ese fingerprint exacto en `.gitleaksignore`, sin excluir
 archivos, reglas ni futuras coincidencias. No era una credencial funcional.
-Pendientes: CI del head exacto y publicación.
+Publicación: PR114/head `1d9cd93`, CI43210753351 tres SUCCESS; Chromium198
+PASS+4 omisiones, Firefox/WebKit8 y modos cerrado4/Preview4 PASS, sin retries.
+SQL592 e integración53 PASS. Merge `a93db6c`, deployment7736415994 Production
+SUCCESS; health200 app/database true y cabeceras verificadas. Sin migración.

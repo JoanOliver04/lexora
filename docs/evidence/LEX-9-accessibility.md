@@ -51,4 +51,8 @@ tipos, contraste de28 combinaciones y build PASS. Tres revisiones independientes
 cerradas; se corrigieron la validación tardía del backend de pruebas y su resolución
 parcial inconsistente. Nueve regresiones verifican rechazo temprano de destinos
 remotos y configuración local inmutable. No se cambia SQL ni datos reales.
-Pendientes para publicación: CI del head exacto y comprobación del despliegue.
+Publicación: PR114/head `1d9cd93`, CI43210753351 con los tres trabajos SUCCESS.
+Navegador198 PASS+4 omisiones, Firefox/WebKit8, cerrado4 y Preview4 PASS, sin
+retries. Merge `a93db6c`; deployment7736415994 Production SUCCESS. Health200
+app/database true y login con no-store, DENY/nosniff, nonce nuevo por respuesta
+y strict-dynamic comprobados. No hubo nueva migración.

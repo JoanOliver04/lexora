@@ -9,7 +9,7 @@
     "problem": "Recognising a word when you see it is not the same as recalling it when you want to speak or write. They are different abilities, and they fade at different rates.",
     "approach": "Lexora splits each concept into the skills it is made of and schedules each one separately, with spaced repetition. Being able to recognise a word does not mark its production as learned.",
     "statusTitle": "Status",
-    "status": "A personal learning app in development. Sign in with your account to study.",
+    "status": "Your personal space to learn at your own pace. Sign in to continue.",
     "repository": "View the code on GitHub"
   },
   "App": {

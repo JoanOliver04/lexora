@@ -21,6 +21,10 @@
 | Q-009 | Aceptación manual en dispositivo físico | `RESUELTA` | Aceptación personal acotada; evidencia LEX-9-installation |
 | Q-010 | Uso personal y servicios de correo | `RESUELTA` | Entrega actual; ADR-008 |
 
+Q-005/Q-006 siguen abiertas como decisiones históricas de producto. Sus opciones
+actuales están implementadas y probadas; no bloquean la entrega personal ni se
+consideran aprobadas de nuevo por ausencia de respuesta.
+
 ## Q-010 — Uso personal y servicios de correo
 
 **Estado:** `RESUELTA`, por instrucción de Joan el 2026-11-11.
@@ -246,11 +250,10 @@ concepto que los agrupa ya no aparezca en la lista por defecto ni en los
 mazos que lo contenían (`listDeckConcepts` filtra por concepto archivado,
 LEX-3.4).
 
-FASE 5 (motor FSRS) todavía no existe: hoy esto no tiene ningún efecto
-observable en un flujo de repaso porque no hay planificador que consulte
-`practice_items` para programar nada. La pregunta importa **antes** de FASE 5
-porque decidirla después, con historial de repaso real acumulado sobre esos
-ítems, es más cara.
+Al abrir esta pregunta todavía no existía el motor FSRS. **Actualización de
+cierre, 2026-11-12:** ya está implementado; la cola excluye conceptos archivados
+mediante lectura conjunta, sin archivar ni borrar sus ítems o memorias. La
+pregunta conserva su estado para una eventual decisión distinta del propietario.
 
 ### Opciones
 

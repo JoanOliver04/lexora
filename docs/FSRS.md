@@ -128,7 +128,7 @@ producción para que sea reproducible.
 Con `enable_short_term: false` la librería no aplica esos pasos.
 
 En la V1 no hay optimización personalizada de parámetros: requiere un historial
-que todavía no existe.
+suficiente y un proceso de validación propio, fuera de esta entrega.
 
 ## Cola diaria
 
@@ -310,9 +310,10 @@ el ítem no borra la memoria; reactivar la conserva. Reiniciar el
 calendario es una acción explícita que no existe en la V1. Q-006 sigue
 abierta (sin cascada en V1).
 
-## Pendiente
+## Entrega y decisiones futuras
 
-- UI diaria, Hoy, pausa/resumen y E2E multidispositivo: FASE 6 / M6.
+- UI diaria, Hoy, pausa/resumen, recuperación, teclado y progreso entre contextos
+  independientes implementados; [evidencia de compatibilidad](evidence/LEX-9-compatibility.md).
 - Q-006 (¿archivar un concepto en cascada sobre sus ítems?) sigue
   abierta. La cola filtra `concepts.archived_at` (opción 1, sin cascada).
 - Salto de paquete 5.x→6.x: ADR + migración + regresión. No hay fecha.

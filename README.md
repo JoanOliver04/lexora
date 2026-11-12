@@ -8,15 +8,13 @@ Su idea central es que **reconocer una palabra no es lo mismo que poder producir
 cada concepto se descompone en competencias distintas, y cada competencia tiene su
 propio estado de memoria.
 
-> ⚠️ **Estado: en desarrollo.** Cuenta, onboarding, biblioteca, importación y
-> núcleo FSRS implementados. El estudio guarda cada valoración antes de avanzar,
-> permite pausar y reanudar y recupera errores sin duplicar repasos. Historial y
-> estadísticas y ajustes ES/EN publicados. La entrega actual es de uso personal,
-> con registro público cerrado, exportación JSON/CSV verificada y borrado propio
-> con reautenticación. PWA con fallback neutral publicada; refuerzo de despliegue,
-> rendimiento y recuperación en curso.
-> Todavía no es una V1 terminada.
-> Ver [`docs/STATUS.md`](docs/STATUS.md) para evidencia y límites actuales.
+> **V1.0 para uso personal.** Biblioteca e importación TXT/CSV, estudio FSRS con
+> guardado confirmado, pausa/reanudación, historial, estadísticas y preferencias
+> ES/EN. Exportación JSON/CSV verificada, borrado propio con reautenticación y PWA
+> instalable con fallback neutral. El registro público permanece cerrado.
+> [Aplicación](https://lexora-one-alpha.vercel.app/en) ·
+> [aceptación y límites](docs/evidence/LEX-1.0-personal-acceptance.md) ·
+> [estado de publicación](docs/STATUS.md).
 
 ## Modelo conceptual
 
@@ -36,6 +34,7 @@ Saber reconocer *achievement* no marca automáticamente como dominada su producc
 - **Repetición espaciada:** `ts-fsrs`, encapsulado tras un puerto de dominio
 - **Interfaz:** Tailwind CSS, controles y tokens propios, next-intl (ES/EN), Zod
 - **Testing:** Vitest, React Testing Library, Playwright, pgTAP
+- **Accesibilidad automatizada:** axe-core en los flujos críticos, teclado, contraste y reflow
 - **Infraestructura:** GitHub Actions, Vercel
 
 Arquitectura: monolito modular con Clean Architecture pragmática y organización
@@ -51,6 +50,10 @@ instalable · interfaz en español e inglés.
 **No incluye:** IA generativa o correctora, evaluación automática de pronunciación,
 generación de audio, funcionamiento completo sin conexión, aplicaciones nativas,
 compartir mazos ni funciones sociales. Llegarán, si llegan, después de cerrar la V1.
+
+La cuenta personal existente conserva su acceso; el registro y el onboarding
+de cuentas sintéticas se prueban en local. Demo de captación, portfolio, SMTP
+dedicado y Sentry quedan fuera de esta entrega por [ADR-008](docs/adrs/008-personal-use.md).
 
 ## Puesta en marcha local
 
@@ -72,11 +75,17 @@ A partir de ahí:
 | `pnpm dev` | Servidor de desarrollo en `http://localhost:3000`. |
 | `pnpm check` | Todas las puertas de calidad en cadena: formato, lint, tipos, contraste, tests y build. |
 | `pnpm e2e` | Pruebas de extremo a extremo (Playwright) contra el build de producción. |
+| `pnpm e2e:compat` | Matriz adicional Firefox/WebKit. |
 | `pnpm db:test` | Pruebas de esquema y RLS (pgTAP). |
+| `pnpm ops:backup:test` | Pruebas de las herramientas de backup cifrado. |
+| `pnpm ops:recovery:verify` | Recuperación y Auth/RLS en bases locales desechables propias. |
 | `pnpm db:stop` | Detiene la base de datos local. |
 
 El detalle de ramas, commits, versiones fijadas, migraciones y entornos está en
 [`docs/WORKFLOW.md`](docs/WORKFLOW.md).
+`db:reset` se usa para inicializar una base local prescindible: elimina los datos
+locales existentes. Los tests de navegador exigen backend loopback:54321 y usan
+el puerto3100, separado del servidor de desarrollo. No apuntan a producción.
 
 ## Documentación
 
@@ -89,6 +98,9 @@ El detalle de ramas, commits, versiones fijadas, migraciones y entornos está en
 | [`docs/SECURITY.md`](docs/SECURITY.md) | Entradas no confiables y enlaces a los contratos de protección. |
 | [`docs/DEPLOYMENT_SECURITY.md`](docs/DEPLOYMENT_SECURITY.md) | CSP, cookies, Preview, CI y revisión de secretos. |
 | [`docs/DATA_LIFECYCLE.md`](docs/DATA_LIFECYCLE.md) | Conservación, exportación y borrado propio con reautenticación. |
+| [`docs/BACKUP_RECOVERY.md`](docs/BACKUP_RECOVERY.md) | Cifrado, copia externa y ensayo de recuperación con Auth/RLS. |
+| [`docs/ANTI_ABUSE.md`](docs/ANTI_ABUSE.md) | Registro cerrado, límites de Auth y cuotas duraderas de operaciones costosas. |
+| [`docs/evidence/LEX-1.0-personal-acceptance.md`](docs/evidence/LEX-1.0-personal-acceptance.md) | Trazabilidad de la entrega personal y límites conocidos. |
 | [`docs/PWA.md`](docs/PWA.md) | Instalación explícita, actualizaciones y límite del fallback offline. |
 | [`docs/GLOSSARY.md`](docs/GLOSSARY.md) | Términos del dominio y convenciones de nombres. |
 | [`docs/CONTENT_POLICY.md`](docs/CONTENT_POLICY.md) | Qué contenido puede vivir en un repositorio público. |

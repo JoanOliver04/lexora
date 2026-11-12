@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import Papa from "papaparse";
+import packageMetadata from "../../../../package.json";
 import { DataExportError } from "../application/export-data";
 import {
   EXPORT_ENTITIES,
@@ -70,7 +71,7 @@ export function formatDataExport(snapshot: ExportSnapshot, format: ExportFormat)
     format: "lexora-account-export",
     formatVersion: 1,
     schemaVersion: 1,
-    appVersion: "0.1.0",
+    appVersion: packageMetadata.version,
     exportedAtUtc: snapshot.exportedAt,
     payloadSha256,
   };
