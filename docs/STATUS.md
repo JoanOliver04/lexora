@@ -1,5 +1,14 @@
 # Lexora — Estado actual
 
+> **2026-11-12 — formularios publicados; auditoría de accesibilidad.** PR113,
+> head `203a2cd`, CI43198336497: tres SUCCESS; navegador190 PASS+4 omisiones,
+> cerrado4 y Preview4 PASS, sin retries. Merge `f3af988`, deployment7734572057
+> Production SUCCESS, health200 app/database true. Sin migración nueva.
+> Rama `test/v1-accessibility-compatibility`: contraste de texto pequeño corregido,
+> listas estadísticas y semántica de Hoy corregidas;216 análisis automatizados
+> PASS ES/EN×dos perfiles×dos temas, sin infracciones ni incompletos. Se validan
+> ahora registro cerrado y Preview. Después: motores Firefox/WebKit y RC.
+
 > **2026-11-12 — recuperación publicada e instalación aceptada.** PR112/head
 > `4920063`, CI43193476879: tres SUCCESS; navegador184 PASS+4 omisiones,
 > acceso personal4 y Preview4 PASS. Merge `6b8f31b`, deployment7733865569

@@ -99,11 +99,16 @@ function extractTokens(blockSelector) {
 const pairs = [
   ["color-ink", "color-canvas", 4.5, "Texto principal sobre el fondo"],
   ["color-ink", "color-surface", 4.5, "Texto principal sobre una superficie"],
+  ["color-ink", "color-surface-sunken", 4.5, "Texto principal sobre superficie secundaria"],
   ["color-ink-muted", "color-canvas", 4.5, "Texto secundario: sigue siendo texto"],
-  ["color-ink-subtle", "color-canvas", 3.0, "Texto de apoyo, tamano grande"],
+  ["color-ink-muted", "color-surface", 4.5, "Texto secundario sobre una superficie"],
+  ["color-ink-muted", "color-surface-sunken", 4.5, "Texto secundario sobre superficie secundaria"],
+  ["color-ink-subtle", "color-canvas", 4.5, "Texto de apoyo, incluido texto pequeno"],
+  ["color-ink-subtle", "color-surface", 4.5, "Texto de apoyo sobre una superficie"],
+  ["color-ink-subtle", "color-surface-sunken", 4.5, "Texto de apoyo sobre superficie secundaria"],
   ["color-on-accent", "color-accent", 4.5, "Texto dentro de un boton principal"],
   ["color-on-danger", "color-danger", 4.5, "Texto dentro de un boton destructivo"],
-  ["color-accent", "color-canvas", 3.0, "Enlaces y bordes de acento"],
+  ["color-accent", "color-canvas", 4.5, "Enlaces de texto y bordes de acento"],
   ["color-border-strong", "color-canvas", 3.0, "Borde de un control con el que se interactua"],
   ["color-focus", "color-canvas", 3.0, "Indicador de foco: quien navega con teclado depende de el"],
 ];

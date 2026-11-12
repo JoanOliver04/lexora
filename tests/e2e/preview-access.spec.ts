@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { audit } from "./a11y-audit";
 for (const locale of ["es", "en"] as const)
   test(`manual preview cannot reach personal access (${locale})`, async ({
     page,
     request,
     baseURL,
-  }) => {
+  }, info) => {
     const backendRequests: string[] = [];
     page.on("request", (request) => {
       if (new URL(request.url()).port === "54321" || request.url().includes(".supabase.co"))
@@ -31,6 +32,7 @@ for (const locale of ["es", "en"] as const)
       await expect(page.locator("input[type=email], input[type=password], form")).toHaveCount(0);
     }
     expect(backendRequests).toEqual([]);
+    await audit(page, info, "preview-information");
     const health = await request.get("/api/health");
     expect(health.status()).toBe(503);
     expect(await health.json()).toMatchObject({ app: true, database: false });
