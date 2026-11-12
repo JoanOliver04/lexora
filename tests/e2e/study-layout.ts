@@ -56,8 +56,10 @@ export async function assertStudyLayout(page: Page, info: TestInfo, stage: strin
               })),
           };
         });
+        // Mobile browsers can expand innerWidth to fit overflowing content.
+        // The requested viewport is the contract, not that expanded value.
         expect(geometry.width, `${label}: horizontal overflow`).toBeLessThanOrEqual(
-          geometry.viewport + 1,
+          variant.width + 1,
         );
         expect(geometry.overlaps, `${label}: terms collide with their values`).toEqual([]);
         for (const target of geometry.targets) {

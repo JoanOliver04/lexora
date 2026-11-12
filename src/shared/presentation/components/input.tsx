@@ -4,7 +4,7 @@ export function Input({ className = "", ...props }: ComponentProps<"input">) {
   return (
     <input
       className={[
-        "w-full rounded-(--radius-control) px-3 min-h-11",
+        "w-full min-w-0 rounded-(--radius-control) px-3.5 min-h-12 text-base sm:text-sm",
         "border border-(--color-border-strong)",
         "bg-(--color-surface) text-(--color-ink)",
         "placeholder:text-(--color-ink-subtle)",

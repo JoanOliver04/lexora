@@ -1,5 +1,13 @@
 # Lexora — Estado actual
 
+**Trabajo solicitado después de1.0.0 —2026-11-12:** LEX-15.2, renovación visual
+en `feat/lex-15-2-visual-refresh`. Portada, acceso, navegación lateral/inferior,
+contraste y foco actualizados; sin cambios en datos o FSRS. GoogleLEX-15.1 es
+el siguiente bloque. El propietario confirma conservar acceso personal cerrado.
+Gate local930+1/Node12/build PASS; se comprueba la matriz final y publicación.
+La configuración externa de Google sigue sin activar; no se presenta como lista.
+Dirección y evidencia en [LEX-15](evidence/LEX-15-visual-direction.md).
+
 **Entrega: V1.0.0 personal · revisión de cierre 2026-11-12.**
 
 El alcance personal de [ADR-008](adrs/008-personal-use.md) está implementado:

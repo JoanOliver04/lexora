@@ -1,11 +1,36 @@
 {
+  "Navigation": {
+    "today": "Hoy",
+    "decks": "Mis mazos",
+    "concepts": "Mis conceptos",
+    "statistics": "Estadísticas",
+    "settings": "Ajustes",
+    "import": "Importar",
+    "history": "Historial",
+    "primary": "Navegación principal",
+    "tools": "Herramientas de estudio",
+    "skip": "Ir al contenido",
+    "space": "Tu espacio de estudio",
+    "note": "Una idea. Varias formas de recordarla. A tu ritmo."
+  },
+  "Visual": {
+    "studySpace": "Tu espacio de estudio",
+    "authStatement": "Haz sitio a lo que quieres recordar.",
+    "authDescription": "Tu vocabulario, tus ideas y una pequeña sesión que te ayuda a seguir avanzando.",
+    "practiceNote": "Recuperación activa. Repetición espaciada. Tu propio ritmo.",
+    "cardHint": "Una idea, varias formas de practicar",
+    "cardMeaning": "Un pequeño paso, cada día.",
+    "recognise": "Reconocer",
+    "recall": "Recordar",
+    "complete": "Completar"
+  },
   "Metadata": {
     "title": "Lexora",
     "description": "Aprende y mantén tu inglés A1–B2 con recuperación activa y repetición espaciada."
   },
   "Home": {
     "title": "Lexora",
-    "tagline": "Aprende y mantén tu inglés A1–B2 con recuperación activa.",
+    "tagline": "De entenderlo a decirlo.",
     "problem": "Reconocer una palabra al verla no es lo mismo que recuperarla cuando quieres hablar o escribir. Son capacidades distintas y se olvidan a ritmos distintos.",
     "approach": "Lexora separa cada concepto en las competencias que lo componen y programa cada una por separado, con repetición espaciada. Saber reconocer una palabra no marca como dominada su producción.",
     "statusTitle": "Estado",

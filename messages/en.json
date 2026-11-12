@@ -1,11 +1,36 @@
 {
+  "Navigation": {
+    "today": "Today",
+    "decks": "My decks",
+    "concepts": "My concepts",
+    "statistics": "Statistics",
+    "settings": "Settings",
+    "import": "Import",
+    "history": "History",
+    "primary": "Main navigation",
+    "tools": "Study tools",
+    "skip": "Skip to content",
+    "space": "Your study space",
+    "note": "One idea. Different ways to remember it. At your own pace."
+  },
+  "Visual": {
+    "studySpace": "Your study space",
+    "authStatement": "Make room for what you want to remember.",
+    "authDescription": "Your vocabulary, your ideas and a little practice to keep you moving forward.",
+    "practiceNote": "Active recall. Spaced repetition. Your own pace.",
+    "cardHint": "One idea, different ways to practise",
+    "cardMeaning": "Un pequeño paso, cada día.",
+    "recognise": "Recognise",
+    "recall": "Recall",
+    "complete": "Complete"
+  },
   "Metadata": {
     "title": "Lexora",
     "description": "Learn and keep your A1–B2 English with active recall and spaced repetition."
   },
   "Home": {
     "title": "Lexora",
-    "tagline": "Learn and keep your A1–B2 English through active recall.",
+    "tagline": "From knowing it to saying it.",
     "problem": "Recognising a word when you see it is not the same as recalling it when you want to speak or write. They are different abilities, and they fade at different rates.",
     "approach": "Lexora splits each concept into the skills it is made of and schedules each one separately, with spaced repetition. Being able to recognise a word does not mark its production as learned.",
     "statusTitle": "Status",

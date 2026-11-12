@@ -1,52 +1,59 @@
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { use } from "react";
-
 import { ThemeToggle } from "@/shared/presentation/theme/theme-toggle";
-
+import { Brand } from "@/shared/presentation/components/brand";
 import { LocaleSwitcher } from "./locale-switcher";
 import { SessionControls } from "./session-controls";
 
 export default function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = use(params);
   setRequestLocale(locale);
-
   const t = useTranslations("Home");
-
+  const v = useTranslations("Visual");
   return (
-    <div className="mx-auto flex min-h-screen max-w-2xl flex-col gap-12 px-6 py-12">
-      <header className="flex flex-wrap items-start justify-between gap-6">
-        <span className="font-mono text-sm tracking-wide text-(--color-ink-muted)">
-          {t("title")}
-        </span>
-        <div className="flex flex-wrap items-center gap-5">
-          <SessionControls locale={locale} />
+    <div className="home-shell">
+      <header className="home-header">
+        <Brand />
+        <div className="home-controls">
           <LocaleSwitcher />
           <ThemeToggle />
         </div>
       </header>
-
-      <main className="flex flex-1 flex-col justify-center gap-8">
-        <h1 className="text-4xl leading-tight font-semibold tracking-tight text-balance sm:text-5xl">
-          {t("tagline")}
-        </h1>
-
-        <div className="flex flex-col gap-5 text-lg leading-relaxed text-pretty">
-          <p>{t("problem")}</p>
-          <p className="text-(--color-ink-muted)">{t("approach")}</p>
+      <main className="home-hero">
+        <div>
+          <h1 className="home-heading">{t("tagline")}</h1>
+          <p className="home-description">{t("problem")}</p>
+          <div className="home-entry">
+            <SessionControls locale={locale} />
+          </div>
+        </div>
+        <div className="recall-stage" aria-hidden="true">
+          <div className="recall-card">
+            <p className="recall-card-label">{v("cardHint")}</p>
+            <p className="recall-word" lang="en">
+              a little progress,
+              <br />
+              every day.
+            </p>
+            <p className="recall-meaning" lang="es">
+              {v("cardMeaning")}
+            </p>
+            <div className="recall-skills">
+              <span>{v("recognise")}</span>
+              <span>{v("recall")}</span>
+              <span>{v("complete")}</span>
+            </div>
+          </div>
         </div>
       </main>
-
-      <footer className="flex flex-col gap-3 border-t border-(--color-border) pt-6">
-        <h2 className="text-xs font-medium tracking-wide text-(--color-ink-subtle) uppercase">
-          {t("statusTitle")}
-        </h2>
-        <p className="text-sm text-(--color-ink-muted)">{t("status")}</p>
-        <a
-          className="inline-flex min-h-11 w-fit items-center text-sm text-(--color-accent) underline underline-offset-4"
-          href="https://github.com/JoanOliver04/lexora"
-          rel="noreferrer"
-        >
+      <footer className="home-footer">
+        <div>
+          <h2 className="font-semibold">{t("statusTitle")}</h2>
+          <p>{t("status")}</p>
+          <p className="mt-2">{t("approach")}</p>
+        </div>
+        <a href="https://github.com/JoanOliver04/lexora" rel="noreferrer">
           {t("repository")}
         </a>
       </footer>
