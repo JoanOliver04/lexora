@@ -27,7 +27,7 @@ export function AddTagForm({
   returnQuery?: string;
 }) {
   const t = useTranslations("Concepts");
-  const [state, action] = useActionState<TagFormState, FormData>(attachTagAction, {});
+  const [state, action, pending] = useActionState<TagFormState, FormData>(attachTagAction, {});
   const formRef = useRef<HTMLFormElement>(null);
   useFocusFirstInvalid(formRef, state);
 
@@ -35,36 +35,43 @@ export function AddTagForm({
 
   return (
     <form ref={formRef} action={action} className="flex flex-col gap-3" noValidate>
-      <input type="hidden" name="locale" value={locale} />
-      <input type="hidden" name="conceptId" value={conceptId} />
-      <input type="hidden" name="returnQuery" value={returnQuery} />
+      <fieldset
+        disabled={pending}
+        aria-label={t("tags.addButton")}
+        className="flex min-w-0 flex-col gap-3"
+      >
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="conceptId" value={conceptId} />
+        <input type="hidden" name="returnQuery" value={returnQuery} />
 
-      {issues.length > 0 || state.error ? (
-        <FormError id={ERROR_ID}>
-          {state.error ? <p>{t("tags.genericError")}</p> : null}
-          {issues.map((issue) => (
-            <p key={issue}>{t(`tags.errors.${tagIssueKey(issue)}`)}</p>
-          ))}
-        </FormError>
-      ) : null}
+        {issues.length > 0 || state.error ? (
+          <FormError id={ERROR_ID}>
+            {state.error ? <p>{t("tags.genericError")}</p> : null}
+            {issues.map((issue) => (
+              <p key={issue}>{t(`tags.errors.${tagIssueKey(issue)}`)}</p>
+            ))}
+          </FormError>
+        ) : null}
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="tag-name">{t("tags.addLabel")}</Label>
-          <Input
-            id="tag-name"
-            name="name"
-            type="text"
-            required
-            maxLength={200}
-            placeholder={t("tags.addPlaceholder")}
-            aria-invalid={issues.length > 0 || undefined}
-            aria-describedby={issues.length > 0 ? ERROR_ID : undefined}
-            className="max-w-64"
-          />
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="tag-name">{t("tags.addLabel")}</Label>
+            <Input
+              id="tag-name"
+              name="name"
+              defaultValue={state.name ?? ""}
+              type="text"
+              required
+              maxLength={200}
+              placeholder={t("tags.addPlaceholder")}
+              aria-invalid={issues.length > 0 || undefined}
+              aria-describedby={issues.length > 0 ? ERROR_ID : undefined}
+              className="max-w-64"
+            />
+          </div>
+          <PendingButton idle={t("tags.addButton")} pending={t("tags.adding")} />
         </div>
-        <PendingButton idle={t("tags.addButton")} pending={t("tags.adding")} />
-      </div>
+      </fieldset>
     </form>
   );
 }

@@ -29,6 +29,7 @@ import type { TagIssue } from "@/modules/library/domain/tag";
 
 import type { ConceptFieldDefaults } from "./concept-fields";
 import { conceptOptionsReturnPath } from "./concept-options-query";
+import type { PracticeItemFieldDefaults } from "./practice-item-fields";
 
 /**
  * Server Actions de conceptos, de sus etiquetas y de sus ítems de práctica.
@@ -60,11 +61,13 @@ export interface ConceptFormState {
 export interface TagFormState {
   issues?: TagIssue[];
   error?: "generic";
+  name?: string;
 }
 
 export interface PracticeItemFormState {
   issues?: PracticeItemIssue[];
   error?: "generic";
+  values?: PracticeItemFieldDefaults;
 }
 
 function safeLocale(formData: FormData): string {
@@ -118,6 +121,20 @@ function practiceItemDraftFromForm(formData: FormData): unknown {
   };
 }
 
+function practiceItemValuesFromForm(formData: FormData): PracticeItemFieldDefaults {
+  const text = (key: string) => {
+    const value = formData.get(key);
+    return typeof value === "string" ? value : "";
+  };
+  return {
+    mode: text("mode"),
+    promptText: text("promptText"),
+    answerText: text("answerText"),
+    hintText: text("hintText"),
+    clozeAnswers: text("clozeAnswers"),
+  };
+}
+
 async function libraryScope() {
   const [context, course] = await Promise.all([
     getLibraryContextForCurrentUser(),
@@ -143,7 +160,7 @@ export async function createConceptAction(
   const locale = safeLocale(formData);
   const scope = await libraryScope();
   if (!scope) {
-    return { error: "generic" };
+    return { error: "generic", values: fieldValuesFromForm(formData) };
   }
 
   const confirmDuplicate = formData.get("confirmDuplicate") === "1";
@@ -193,11 +210,12 @@ export async function updateConceptAction(
   _prev: ConceptFormState,
   formData: FormData,
 ): Promise<ConceptFormState> {
+  const values = fieldValuesFromForm(formData);
   const locale = safeLocale(formData);
   const conceptId = String(formData.get("conceptId") ?? "");
   const scope = await libraryScope();
   if (!scope || conceptId === "") {
-    return { error: "generic" };
+    return { error: "generic", values };
   }
 
   try {
@@ -208,12 +226,12 @@ export async function updateConceptAction(
       draftFromForm(formData),
     );
     if (!outcome.ok) {
-      return { issues: outcome.issues };
+      return { issues: outcome.issues, values };
     }
   } catch (error) {
     if (error instanceof LibraryError) {
       console.error("updateConceptAction", error.kind);
-      return { error: "generic" };
+      return { error: "generic", values };
     }
     throw error;
   }
@@ -254,9 +272,10 @@ export async function attachTagAction(
   const locale = safeLocale(formData);
   const conceptId = String(formData.get("conceptId") ?? "");
   const rawName = formData.get("name");
+  const name = typeof rawName === "string" ? rawName : "";
   const scope = await libraryScope();
   if (!scope || conceptId === "") {
-    return { error: "generic" };
+    return { error: "generic", name };
   }
 
   try {
@@ -267,11 +286,11 @@ export async function attachTagAction(
       conceptId,
       rawName,
     );
-    if (!outcome.ok) return { issues: outcome.issues };
+    if (!outcome.ok) return { issues: outcome.issues, name };
   } catch (error) {
     if (error instanceof LibraryError) {
       console.error("attachTagAction", error.kind);
-      return { error: "generic" };
+      return { error: "generic", name };
     }
     throw error;
   }
@@ -299,11 +318,12 @@ export async function createPracticeItemAction(
   _prev: PracticeItemFormState,
   formData: FormData,
 ): Promise<PracticeItemFormState> {
+  const values = practiceItemValuesFromForm(formData);
   const locale = safeLocale(formData);
   const conceptId = String(formData.get("conceptId") ?? "");
   const scope = await libraryScope();
   if (!scope || conceptId === "") {
-    return { error: "generic" };
+    return { error: "generic", values };
   }
 
   try {
@@ -314,12 +334,12 @@ export async function createPracticeItemAction(
       practiceItemDraftFromForm(formData),
     );
     if (!outcome.ok) {
-      return { issues: outcome.issues };
+      return { issues: outcome.issues, values };
     }
   } catch (error) {
     if (error instanceof LibraryError) {
       console.error("createPracticeItemAction", error.kind);
-      return { error: "generic" };
+      return { error: "generic", values };
     }
     throw error;
   }
@@ -332,12 +352,13 @@ export async function updatePracticeItemAction(
   _prev: PracticeItemFormState,
   formData: FormData,
 ): Promise<PracticeItemFormState> {
+  const values = practiceItemValuesFromForm(formData);
   const locale = safeLocale(formData);
   const conceptId = String(formData.get("conceptId") ?? "");
   const itemId = String(formData.get("itemId") ?? "");
   const scope = await libraryScope();
   if (!scope || conceptId === "" || itemId === "") {
-    return { error: "generic" };
+    return { error: "generic", values };
   }
 
   try {
@@ -348,12 +369,12 @@ export async function updatePracticeItemAction(
       practiceItemDraftFromForm(formData),
     );
     if (!outcome.ok) {
-      return { issues: outcome.issues };
+      return { issues: outcome.issues, values };
     }
   } catch (error) {
     if (error instanceof LibraryError) {
       console.error("updatePracticeItemAction", error.kind);
-      return { error: "generic" };
+      return { error: "generic", values };
     }
     throw error;
   }

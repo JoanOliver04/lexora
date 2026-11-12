@@ -4,7 +4,7 @@
 > Cada entrada tiene un ID estable `Q-nnn` que nunca se reutiliza.
 > Protocolo: `ROADMAP.md` §3.5 (documento privado y local).
 
-**Última actualización:** 2026-11-11
+**Última actualización:** 2026-11-12
 
 ## Índice de estado
 
@@ -18,7 +18,7 @@
 | Q-006 | Archivar un concepto, ¿en cascada sobre sus ítems de práctica? | `ABIERTA` | LEX-3.8 |
 | Q-007 | Identificar y conectar el entorno de producción | `RESUELTA` | Publicación solicitada |
 | Q-008 | Preview sin backend aislado | `RESUELTA` | Publicación solicitada |
-| Q-009 | Aceptación manual en dispositivo físico | `ABIERTA` | LEX-6.13; aceptación manual pendiente de LEX-6.12 |
+| Q-009 | Aceptación manual en dispositivo físico | `RESUELTA` | Aceptación personal acotada; evidencia LEX-9-installation |
 | Q-010 | Uso personal y servicios de correo | `RESUELTA` | Entrega actual; ADR-008 |
 
 ## Q-010 — Uso personal y servicios de correo
@@ -386,9 +386,9 @@ No hay cambio de plan, dependencia o ADR nuevo. LEX-6.7 no iniciada.
 
 ## Q-009 — Aceptación manual en dispositivo físico
 
-**Estado:** `ABIERTA`
+**Estado:** `RESUELTA` para la entrega personal, por informe del propietario.
 **Fecha:** 2026-10-16
-**Bloquea:** cierre de LEX-6.13; no bloquea las verificaciones locales automáticas.
+**Cierre:** 2026-11-12.
 
 **Actualización del propietario, 2026-11-11:** confirma instalación de Lexora en
 móvil físico, cierre/reapertura correctos y zoom/texto ampliado y lector de
@@ -396,6 +396,19 @@ pantalla real sin problemas. No se atribuyen modelo, navegador, idioma o commit
 no indicados. Esta aceptación cuenta para esos usos y deja de constar como
 «no realizada». La consolidación final separará esta confirmación de una matriz
 exhaustiva o de pasos de estudio no descritos.
+
+**Consolidación2026-11-12:** Joan había indicado que la app funciona bien en
+móvil y ordenador. Confirma además cierre/reapertura desde el icono instalado
+de escritorio. Se registra aceptación funcional personal junto con las pruebas
+automáticas de responsive, teclado y datos; no se presenta como ejecución de
+cada fila de la antigua plantilla ni como certificación de accesibilidad.
+Modelo/versiones, fatiga con una mano, combinaciones físicas ES/EN y secuencia
+exacta de valoraciones no se han comunicado y no se inventan. La matriz de
+motores y la persistencia entre contextos siguen teniendo verificación técnica
+propia. [Informe de instalación](evidence/LEX-9-installation.md).
+
+Lo siguiente conserva el historial anterior al informe; sus pendientes físicos
+no describen el estado vigente.
 
 ### Contexto
 

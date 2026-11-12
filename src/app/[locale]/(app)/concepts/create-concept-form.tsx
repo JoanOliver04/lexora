@@ -30,7 +30,10 @@ const ERROR_ID = "create-concept-error";
  */
 export function CreateConceptForm({ locale }: { locale: string }) {
   const t = useTranslations("Concepts");
-  const [state, action] = useActionState<ConceptFormState, FormData>(createConceptAction, {});
+  const [state, action, pending] = useActionState<ConceptFormState, FormData>(
+    createConceptAction,
+    {},
+  );
   const formRef = useRef<HTMLFormElement>(null);
   useFocusFirstInvalid(formRef, state);
 
@@ -39,47 +42,55 @@ export function CreateConceptForm({ locale }: { locale: string }) {
 
   return (
     <form ref={formRef} action={action} className="flex flex-col gap-4" noValidate>
-      <input type="hidden" name="locale" value={locale} />
-      <input type="hidden" name="confirmDuplicate" value={duplicates.length > 0 ? "1" : "0"} />
+      <fieldset
+        disabled={pending}
+        aria-label={t("actions.create")}
+        className="flex min-w-0 flex-col gap-4"
+      >
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="confirmDuplicate" value={duplicates.length > 0 ? "1" : "0"} />
 
-      {issues.length > 0 || state.error ? (
-        <FormError id={ERROR_ID}>
-          {state.error ? <p>{t("genericError")}</p> : null}
-          {issues.map((issue) => (
-            <p key={issue}>{t(`errors.${conceptIssueKey(issue)}`)}</p>
-          ))}
-        </FormError>
-      ) : null}
-
-      {duplicates.length > 0 ? (
-        <div
-          aria-live="polite"
-          className="flex flex-col gap-2 rounded-(--radius-control) border border-(--color-border-strong) p-3 text-sm"
-        >
-          <p>{t("duplicates.heading")}</p>
-          <ul className="flex flex-col gap-1">
-            {duplicates.map((duplicate) => (
-              <li key={duplicate.id}>
-                <Link href={`/concepts/${duplicate.id}`} className="underline underline-offset-4">
-                  {duplicate.title}
-                </Link>{" "}
-                <span className="text-(--color-ink-subtle)">({t(`kinds.${duplicate.kind}`)})</span>
-              </li>
+        {issues.length > 0 || state.error ? (
+          <FormError id={ERROR_ID}>
+            {state.error ? <p>{t("genericError")}</p> : null}
+            {issues.map((issue) => (
+              <p key={issue}>{t(`errors.${conceptIssueKey(issue)}`)}</p>
             ))}
-          </ul>
-        </div>
-      ) : null}
+          </FormError>
+        ) : null}
 
-      <ConceptFields
-        issues={issues}
-        errorId={ERROR_ID}
-        {...(state.values ? { defaults: state.values } : {})}
-      />
+        {duplicates.length > 0 ? (
+          <div
+            aria-live="polite"
+            className="flex flex-col gap-2 rounded-(--radius-control) border border-(--color-border-strong) p-3 text-sm"
+          >
+            <p>{t("duplicates.heading")}</p>
+            <ul className="flex flex-col gap-1">
+              {duplicates.map((duplicate) => (
+                <li key={duplicate.id}>
+                  <Link href={`/concepts/${duplicate.id}`} className="underline underline-offset-4">
+                    {duplicate.title}
+                  </Link>{" "}
+                  <span className="text-(--color-ink-subtle)">
+                    ({t(`kinds.${duplicate.kind}`)})
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
-      <PendingButton
-        idle={duplicates.length > 0 ? t("duplicates.createAnyway") : t("actions.create")}
-        pending={t("actions.creating")}
-      />
+        <ConceptFields
+          issues={issues}
+          errorId={ERROR_ID}
+          {...(state.values ? { defaults: state.values } : {})}
+        />
+
+        <PendingButton
+          idle={duplicates.length > 0 ? t("duplicates.createAnyway") : t("actions.create")}
+          pending={t("actions.creating")}
+        />
+      </fieldset>
     </form>
   );
 }
