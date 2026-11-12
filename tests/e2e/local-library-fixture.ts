@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../src/shared/infrastructure/supabase/database.types";
 import { PASSWORD } from "./helpers";
+import { localBackend } from "./local-backend";
 
 export async function checked<T>(
   query: PromiseLike<{ data: T; error: { message: string } | null }>,
@@ -14,12 +15,8 @@ export async function checked<T>(
 /** Synthetic owner fixture, never a hosted backend or administrative credential. */
 export async function localLibraryFixture(email: string) {
   if (!email.endsWith("@example.com")) throw new Error("Synthetic account required");
-  if (!process.env["NEXT_PUBLIC_SUPABASE_URL"]) process.loadEnvFile(".env.local");
-  const url = process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
-    parsed = new URL(url);
-  if (!["localhost", "127.0.0.1"].includes(parsed.hostname) || parsed.port !== "54321")
-    throw new Error("Acceptance fixtures require local Supabase");
-  const client = createClient<Database>(url, process.env["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"]!, {
+  const { url, publishableKey } = localBackend();
+  const client = createClient<Database>(url, publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
   const { data: auth, error } = await client.auth.signInWithPassword({ email, password: PASSWORD });

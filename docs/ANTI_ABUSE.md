@@ -19,7 +19,7 @@ No se modifica Auth ni se añade CAPTCHA, SMTP, Redis o un plan de pago.
 | Importación | Dueño desde sesión/RLS, 2s entre intentos, 50 intentos y100.000 filas por día UTC; replays no cobran de nuevo | `220-batched-import.sql`, integración de import-transfer y E2E de recuperación |
 | Exportación | Una solicitud por cuenta cada60s, lock del perfil y reloj del servidor; cliente no puede backdatear/eliminar el ledger | `200-data-export.sql`, integración de exportación |
 | Repaso | Idempotencia y revisión esperada; estado y log en una transacción; conflicto no produce otro guardado | Tests SQL de commit, integración y `study-recovery.spec.ts` |
-| Borrado | Contraseña reciente, identidad verificada y confirmación explícita; RPC no se concede directamente al cliente | `210-self-account-deletion.sql`, E2E con cuentas sintéticas locales |
+| Borrado | La app exige contraseña y confirmación; RPC solo autenticada, limitada al UID propio, sesión Auth viva de hasta5min, correo/DELETE y AAL2 si hay MFA; sin DELETE directo sobre tablas Auth | `210-self-account-deletion.sql`, E2E con cuentas sintéticas locales |
 
 Los límites de cuerpo, tiempo, lote y resultado están en [SECURITY](SECURITY.md),
 [exportación](DATA_EXPORT.md) y [ADR-010](adrs/010-bounded-import-transactions.md).
