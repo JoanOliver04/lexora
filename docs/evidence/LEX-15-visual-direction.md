@@ -84,4 +84,7 @@ seleccionada anterior no cubría toda esta regresión. El head no se publicó.
 
 La corrección acota la columna de la portada con `minmax(0,1fr)`, permite corte
 de palabras grandes y selecciona el formulario de sesión por su `sessionId`.
-Se validará junto a Google, con nueva CI y revisión del head combinado.
+La validación final corrige además padding excesivo al ampliar texto y limita
+la rotación al escritorio:18 pruebas de reflow, Hoy y navegación PASS sin retries.
+El [informe combinado](LEX-15-google-sign-in.md) recoge código, revisión y
+verificación de Google; la publicación se controla en PR116.

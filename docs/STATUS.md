@@ -1,18 +1,22 @@
 # Lexora — Estado actual
 
-**Trabajo solicitado después de 1.0.0 — 2026-11-12:** LEX-15.1/15.2, acceso
-opcional con Google y renovación visual, en `feat/lex-15-1-google-signin` sobre
-`0d15e2d` (PR116). El propietario confirma conservar el acceso personal cerrado.
-Código Google con SDK/PKCE, cookies SSR, retorno canónico y errores estables;
-sin SQL ni dependencias nuevas. Portada, acceso, navegación lateral/inferior,
-contraste y foco renovados. No se cambian datos ni FSRS.
+**Ampliación 1.1.0 — 2026-11-12:** renovación visual y Google opcional para la
+cuenta personal existente. Código `2bb9237`, publicación en
+[PR116](https://github.com/JoanOliver04/lexora/pull/116), condicionada a sus tres
+checks protegidos y al despliegue Production. El propietario confirma conservar
+el acceso personal cerrado. No hay SQL, dependencias nuevas ni cambios de FSRS.
 
-La CI del primer head visual detectó seis fallos: reflow de portada320/texto200
-y selector de formulario ambiguo al añadir navegación. Se corrigen en este
-head combinado, pendiente de gate, revisión, nueva CI y publicación. La matriz
-local previa y sus límites se conservan en [LEX-15](evidence/LEX-15-visual-direction.md).
-La configuración externa de Google sigue pendiente como Q-011; no se acredita
-login real. [Guía exacta de activación](GOOGLE_SIGN_IN.md) y [ADR-011](adrs/011-personal-google-sign-in.md).
+Gate local PASS962+1/Node12/build; regresión18 PASS y Google8 PASS, sin retries,
+con32 análisis A/AA sin incidencias ni incompletos. Tres revisiones independientes
+cerradas. Se corrigieron el reflow320/texto200, el selector ambiguo de formulario
+y una carrera en la espera de foco de una prueba. Evidencia y límites en
+[Google](evidence/LEX-15-google-sign-in.md) y [diseño](evidence/LEX-15-visual-direction.md).
+
+**Único paso externo de esta ampliación:** Q-011, activar Google y comprobar
+el acceso real a los datos existentes. El botón se detecta automáticamente
+cuando Supabase habilita el proveedor. [Guía de activación](GOOGLE_SIGN_IN.md)
+y [ADR-011](adrs/011-personal-google-sign-in.md). El código probado no se presenta
+como consentimiento o vinculación Google real.
 
 **Entrega: V1.0.0 personal · revisión de cierre 2026-11-12.**
 
