@@ -215,21 +215,34 @@ test.describe("importación — vista previa", () => {
     await page.getByRole("button", { name: "Previsualizar" }).click();
     await expect(page.getByText("2 posibles duplicadas")).toBeVisible();
     await walkToConfirm(page);
+    // Capture in APIRequestContext before browser navigation can evict CDP's body.
+    type BeginReply = { status: number; body: unknown; retryAfter: string | undefined };
+    let capture: (value: BeginReply) => void = () => {};
+    const captured = new Promise<BeginReply>((resolve) => {
+      capture = resolve;
+    });
+    await page.route("**/api/import/jobs", async (route) => {
+      if (route.request().postDataJSON()?.action !== "begin") return route.continue();
+      const response = await route.fetch();
+      capture({
+        status: response.status(),
+        body: await response.json(),
+        retryAfter: response.headers()["retry-after"],
+      });
+      await route.fulfill({ response });
+    });
     const [attempt] = await Promise.all([
-      page.waitForResponse(
-        (response) =>
-          response.url().endsWith("/api/import/jobs") &&
-          response.request().postDataJSON()?.action === "begin",
-      ),
+      captured,
       page.getByRole("button", { name: "Importar al curso" }).click(),
     ]);
-    if (attempt.status() === 429) {
-      expect(await attempt.json()).toEqual({ ok: false, error: "cooldown" });
+    if (attempt.status === 429) {
+      expect(attempt.body).toEqual({ ok: false, error: "cooldown" });
       await expect(
         page.getByText("Espera unos segundos antes de crear otro intento.", { exact: false }),
       ).toBeVisible();
       // This wait exercises the server's explicit Retry-After contract, not a render delay.
-      await page.waitForTimeout(Number(attempt.headers()["retry-after"]) * 1000);
+      expect(attempt.retryAfter).toMatch(/^\d{1,2}$/);
+      await page.waitForTimeout(Number(attempt.retryAfter) * 1000);
       await page.getByRole("button", { name: "Importar al curso" }).click();
     }
     await expect(page.getByText("Creadas: 0")).toBeVisible();

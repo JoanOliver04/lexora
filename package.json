@@ -29,7 +29,9 @@
     "db:test": "supabase test db",
     "db:test:catalogue": "node scripts/verify-language-catalogue.mjs",
     "db:types": "supabase gen types typescript --local > src/shared/infrastructure/supabase/database.types.ts",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm contrast && pnpm test && pnpm build"
+    "ops:backup:test": "node --test scripts/backup-envelope.test.mjs scripts/backup-cli.test.mjs",
+    "ops:recovery:verify": "node scripts/verify-backup-recovery.mjs",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm contrast && pnpm test && pnpm ops:backup:test && pnpm build"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.5",
