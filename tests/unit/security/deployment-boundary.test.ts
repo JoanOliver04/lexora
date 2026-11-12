@@ -35,9 +35,11 @@ import {
   ensureProfileForCurrentUser,
   getCurrentUserId,
   isRegistrationOpen,
+  isGoogleSignInAvailable,
   registerVisitor,
   requestPasswordResetFor,
   signInVisitor,
+  signInGoogleVisitor,
   signOutVisitor,
   updateCurrentPassword,
 } from "@/composition/identity";
@@ -67,6 +69,12 @@ describe("Deployment boundary before any private backend access", () => {
     expect(mocks.fetch).not.toHaveBeenCalled();
   });
   it("denies session refresh, health and every Auth entry before network access, even with registration override", async () => {
+    mocks.env["LEXORA_GOOGLE_AUTH"] = "enabled";
+    expect(await isGoogleSignInAvailable()).toBe(false);
+    expect(await signInGoogleVisitor("https://lexora.example/api/auth/callback")).toEqual({
+      ok: false,
+      error: "preview-disabled",
+    });
     expect(await getCurrentUserId()).toBeNull();
     expect(await ensureProfileForCurrentUser()).toBeNull();
     const credentials = { email: "synthetic@example.com", password: "synthetic-password" };

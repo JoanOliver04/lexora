@@ -780,6 +780,12 @@
     }
   },
   "Auth": {
+    "google": {
+      "continue": "Continuar con Google",
+      "pending": "Conectando…",
+      "personalHint": "Usa la cuenta de Google con el mismo correo que tu cuenta de Lexora.",
+      "orEmail": "o entra con tu correo"
+    },
     "private": {
       "title": "Acceso personal",
       "description": "Lexora es de uso personal por ahora. El registro de nuevas cuentas está cerrado."
@@ -794,7 +800,8 @@
       "missing-recovery-session": "Este enlace de recuperación ha caducado. Pide uno nuevo.",
       "registration-closed": "El registro de nuevas cuentas está cerrado.",
       "preview-disabled": "El acceso personal está desactivado en esta vista previa.",
-      "auth-unavailable": "No hemos podido completar la operación. Inténtalo de nuevo en un momento."
+      "auth-unavailable": "No hemos podido completar la operación. Inténtalo de nuevo en un momento.",
+      "google-unavailable": "No hemos podido entrar con Google. Vuelve a intentarlo o usa tu correo y contraseña."
     },
     "preview": {
       "title": "Vista previa de Lexora",

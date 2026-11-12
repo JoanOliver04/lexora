@@ -1,14 +1,18 @@
 # Lexora — Estado actual
 
-**Trabajo solicitado después de1.0.0 —2026-11-12:** LEX-15.2, renovación visual
-en `feat/lex-15-2-visual-refresh`. Portada, acceso, navegación lateral/inferior,
-contraste y foco actualizados; sin cambios en datos o FSRS. GoogleLEX-15.1 es
-el siguiente bloque. El propietario confirma conservar acceso personal cerrado.
-Gate local930+1/Node12/build PASS; matriz final Chromium8,Firefox/WebKit8,
-cerrado4/Preview4 PASS sin retries.216 análisis A/AA sin incidencias ni incompletos,
-navegación320/texto200 y tres revisiones cerradas. Pendiente PR/CI/publicación.
-La configuración externa de Google sigue sin activar; no se presenta como lista.
-Dirección y evidencia en [LEX-15](evidence/LEX-15-visual-direction.md).
+**Trabajo solicitado después de 1.0.0 — 2026-11-12:** LEX-15.1/15.2, acceso
+opcional con Google y renovación visual, en `feat/lex-15-1-google-signin` sobre
+`0d15e2d` (PR116). El propietario confirma conservar el acceso personal cerrado.
+Código Google con SDK/PKCE, cookies SSR, retorno canónico y errores estables;
+sin SQL ni dependencias nuevas. Portada, acceso, navegación lateral/inferior,
+contraste y foco renovados. No se cambian datos ni FSRS.
+
+La CI del primer head visual detectó seis fallos: reflow de portada320/texto200
+y selector de formulario ambiguo al añadir navegación. Se corrigen en este
+head combinado, pendiente de gate, revisión, nueva CI y publicación. La matriz
+local previa y sus límites se conservan en [LEX-15](evidence/LEX-15-visual-direction.md).
+La configuración externa de Google sigue pendiente como Q-011; no se acredita
+login real. [Guía exacta de activación](GOOGLE_SIGN_IN.md) y [ADR-011](adrs/011-personal-google-sign-in.md).
 
 **Entrega: V1.0.0 personal · revisión de cierre 2026-11-12.**
 

@@ -25,6 +25,7 @@ export type AuthErrorCode =
   | "missing-recovery-session"
   | "registration-closed"
   | "preview-disabled"
+  | "google-unavailable"
   | "auth-unavailable";
 
 export type AuthResult<T = Record<never, never>> =

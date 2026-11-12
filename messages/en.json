@@ -780,6 +780,12 @@
     }
   },
   "Auth": {
+    "google": {
+      "continue": "Continue with Google",
+      "pending": "Connecting…",
+      "personalHint": "Use the Google account with the same email as your Lexora account.",
+      "orEmail": "or sign in with your email"
+    },
     "private": {
       "title": "Personal access",
       "description": "Lexora is for personal use for now. New account registration is closed."
@@ -794,7 +800,8 @@
       "missing-recovery-session": "This recovery link has expired. Request a new one.",
       "registration-closed": "New account registration is closed.",
       "preview-disabled": "Personal access is disabled in this preview.",
-      "auth-unavailable": "We couldn't complete that. Please try again in a moment."
+      "auth-unavailable": "We couldn't complete that. Please try again in a moment.",
+      "google-unavailable": "We couldn't sign you in with Google. Try again or use your email and password."
     },
     "preview": {
       "title": "Lexora preview",

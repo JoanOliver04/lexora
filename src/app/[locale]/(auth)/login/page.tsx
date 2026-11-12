@@ -6,8 +6,9 @@ import { resolveSafeRedirect } from "@/modules/identity/application/safe-redirec
 
 import { AuthShell } from "../_components/auth-shell";
 import { LoginForm } from "./login-form";
-import { isRegistrationOpen } from "@/composition/identity";
-import { FormStatus } from "@/shared/presentation/components";
+import { isRegistrationOpen, isGoogleSignInAvailable } from "@/composition/identity";
+import { FormStatus, FormError } from "@/shared/presentation/components";
+import { GoogleSignIn } from "../_components/google-sign-in";
 
 // El callback redirige aquí con `?error=` cuando un enlace de correo falla.
 const SHOWN_ERRORS = new Set<AuthErrorCode>(["auth-unavailable", "missing-recovery-session"]);
@@ -25,6 +26,7 @@ export default async function LoginPage({
 
   const deletion = await getTranslations("AccountDeletion");
   const { next, error, deleted } = await searchParams;
+  const googleAvailable = await isGoogleSignInAvailable();
   // Se sanea aquí también: lo que se guarda en el campo oculto ya está filtrado.
   const safeNext = next ? resolveSafeRedirect(next, `/${locale}`) : undefined;
   const initialError = SHOWN_ERRORS.has(error as AuthErrorCode)
@@ -55,6 +57,12 @@ export default async function LoginPage({
           <p>{deletion("deleted")}</p>
         </FormStatus>
       )}
+      {error === "google-unavailable" && (
+        <FormError id="google-return-error">
+          <p>{t("errors.google-unavailable")}</p>
+        </FormError>
+      )}
+      {googleAvailable && <GoogleSignIn locale={locale} next={safeNext} />}
       <LoginForm locale={locale} next={safeNext} initialError={initialError} />
       <Link
         href="/forgot-password"

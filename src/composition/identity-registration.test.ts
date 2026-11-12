@@ -1,5 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
+vi.mock("server-only", () => ({}));
 vi.mock("@/env/deployment", () => ({ privateBackendEnabled: () => true }));
+vi.mock("@/env/client", () => ({
+  clientEnv: {
+    NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "public-test-placeholder",
+  },
+}));
 const { createClient } = vi.hoisted(() => ({ createClient: vi.fn() }));
 vi.mock("@/env/server", () => ({
   serverEnv: { NODE_ENV: "production", LEXORA_ALLOW_REGISTRATION: "false" },

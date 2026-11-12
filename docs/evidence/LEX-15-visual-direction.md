@@ -74,4 +74,14 @@ sin cuentas ni contenido reales. No se presentan como prueba de un teléfono fí
 
 ![Hoy y navegación inferior en móvil emulado](assets/lexora-visual-today-mobile.png)
 
-Pendientes: escaneo del snapshot publicable, CI del head exacto y despliegue.
+## Regresión detectada en CI
+
+La CI43234384937 del head documental `0d15e2d` pasó Calidad y Base de datos,
+pero encontró seis fallos E2E: portada320/texto200 en cuatro combinaciones
+ES/EN×perfil y selector genérico `form` ambiguo en dos pruebas de Hoy.
+196 PASS+4 omisiones; los seis fallos se repitieron en el retry. La matriz local
+seleccionada anterior no cubría toda esta regresión. El head no se publicó.
+
+La corrección acota la columna de la portada con `minmax(0,1fr)`, permite corte
+de palabras grandes y selecciona el formulario de sesión por su `sessionId`.
+Se validará junto a Google, con nueva CI y revisión del head combinado.
