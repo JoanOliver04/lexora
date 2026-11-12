@@ -3,8 +3,10 @@
 Convenciones de trabajo del repositorio. Decisiones fijadas el 2026-08-26 contra
 la documentación oficial vigente en esa fecha.
 
-> **Estado:** las decisiones son firmes; su aplicación empieza en la fase 1,
-> cuando exista una aplicación que construir.
+> **Revisión de cierre personal, 2026-11-12.** Los tres checks protegidos son
+> `Calidad`, `Base de datos` y `Extremo a extremo`. La rama main publica en Vercel
+> después de integrarse; las previews Git siguen desactivadas y una Preview manual
+> bloquea el backend personal. Detalle en [DEPLOYMENT_SECURITY](DEPLOYMENT_SECURITY.md).
 
 ---
 
@@ -99,6 +101,9 @@ despliegue de preview antes de tocar producción.
 | `pnpm contrast` | Comprueba el contraste WCAG de los tokens de color. |
 | `pnpm test` / `test:watch` / `test:coverage` | Vitest. Entorno `node` por defecto; `jsdom` con `@vitest-environment jsdom` en la cabecera del fichero. |
 | `pnpm e2e` / `e2e:ui` | Playwright contra el build de producción, en escritorio y en emulación del Poco F5. |
+| `pnpm e2e:compat` | Firefox/WebKit, ES/EN, temas y contextos independientes desktop/móvil. |
+| `pnpm ops:backup:test` | Integridad, cifrado y comportamiento seguro de las herramientas de backup. |
+| `pnpm ops:recovery:verify` | Ensayo de recuperación en bases locales desechables propias; requiere Docker. |
 | `pnpm db:start` / `db:stop` / `db:status` | Entorno Supabase local. |
 | `pnpm db:reset` | Recrea la base desde cero: migraciones y semillas. |
 | `pnpm db:test` | pgTAP. Incluye el invariante de que toda tabla de `public` tiene RLS. |
@@ -118,7 +123,7 @@ despliegue de preview antes de tocar producción.
 | Entorno | Base de datos | Quién la crea | Datos |
 |---|---|---|---|
 | `local` | Supabase local vía CLI y contenedores, puertos 54321–54324 | El desarrollador | Semillas deterministas, sin datos personales |
-| `preview` | Aislada de producción | Configurada en la fase 10 | Datos de prueba |
+| `preview` | Backend personal bloqueado; no hay backend aislado contratado | Despliegues Git desactivados | Sin acceso a datos personales |
 | `production` | Proyecto Supabase de producción | El propietario | Datos reales |
 
 Reglas:
@@ -144,10 +149,28 @@ deja el esquema real y el versionado divergentes sin que nadie lo sepa.
 ## 8. Versionado del producto
 
 [SemVer](https://semver.org/lang/es/). Hasta la V1 el proyecto permanece en
-`0.x`; la primera versión pública será `1.0.0`.
+`0.x`; la entrega personal actual se fija en `1.0.0`.
 
-Se etiqueta al cerrar un hito que produce algo desplegable. Las etiquetas no se
-mueven ni se borran.
+La entrega personal1.0.0 conserva cerrado el registro según ADR-008. `version`
+de `package.json` es la fuente del campo `appVersion` de las exportaciones;
+`formatVersion`/`schemaVersion` son contratos independientes y permanecen en1.
+Se etiqueta un commit de producción verificado. Las etiquetas no se mueven ni
+se borran. Un tag no añade licencia ni abre el servicio a otros usuarios.
+
+## 8 bis. Verificación local y recuperación
+
+Playwright usa el puerto3100 por defecto para no reutilizar otro servidor; puede
+configurarse con `LEXORA_E2E_PORT`. Antes de construir o crear fixtures, exige
+Supabase HTTP loopback:54321. Todos los clientes SDK usan el mismo resolver
+inmutable, con fallback de valores ausentes a `.env.local`. Una URL remota
+explícita se rechaza. Las suites de acceso cerrado y Preview compilan sus flags
+de manera independiente. No se ejecuta otro build mientras esas pruebas usan `.next`.
+
+Con Supabase local ya activo, `LEXORA_DB_TESTS=1 pnpm check` incluye integración;
+en PowerShell se establece primero `$env:LEXORA_DB_TESTS='1'`. La prueba de material
+privado queda condicionada a su directorio local y no se sube a CI. El resto de
+los controles y las limitaciones de caché, backup y restauración están en
+[PWA](PWA.md) y [BACKUP_RECOVERY](BACKUP_RECOVERY.md).
 
 ## 9. Documentos relacionados
 

@@ -4,44 +4,14 @@ Cómo está organizado el código de Lexora y por qué. Las decisiones que hay d
 están en [ADR-001](adrs/ADR-001-monolito-modular-clean-architecture.md) y
 [ADR-002](adrs/ADR-002-supabase-sin-orm.md).
 
-> **Estado:** documento vivo. M5 cerrado (LEX-5.14): el módulo `study` existe
-> con puerto, adaptador `ts-fsrs@5.4.2`, cola, commit atómico y `Clock`
-> inyectado. LEX-6.1 añade el [read model de Hoy](STUDY_OVERVIEW.md),
-> reutilizando la cola y leyendo historia mediante un puerto propio.
-> LEX-6.2 lo conecta al dashboard ES/EN, con actividad de siete días y último
-> filtro leído de las sesiones. LEX-6.3 añade selección de alcance y creación
-> idempotente mediante `StudySessionRepository`, con RLS y reloj del servidor.
-> Se guarda el filtro, no la cola; el destino muestra la sesión guardada y
-> reconstruye su disponibilidad. LEX-6.4 comparte el renderer de contenido con
-> la biblioteca y consulta el primer frente de la cola mediante
-> `StudyCardRepository`. La proyección de sesión excluye respuestas y
-> soluciones antes del revelado. LEX-6.5 obtiene la respuesta mediante una
-> Server Action de lectura que reautoriza sesión, cola e ítem. El cliente
-> habilita las cuatro valoraciones tras el éxito. LEX-6.6 añade intervalos
-> aproximados tras revelar, mediante el
-> scheduler/config/Clock del servidor; el estado inicial es hipotético si aún
-> no hay memoria. LEX-6.7 conecta la intención a `saveSessionReview`, que
-> reautoriza sesión/primer pendiente y reutiliza el commit atómico existente.
-> La UI bloquea el envío y solo cambia de frente tras confirmación del servidor.
-> LEX-6.8 usa un contrato HTTP de guardado con timeout, reintento idempotente
-> manual y validación de origen. El cliente refresca la ruta solo tras recibir
-> confirmación, sin cola offline ni cancelación implícita del commit del servidor.
-> LEX-6.9 distingue el próximo paso Learning/Relearning en la cola y muestra
-> una espera informativa cuando no hay trabajo disponible. La comprobación
-> manual vuelve al servidor; el reloj del navegador nunca admite una tarjeta.
-> LEX-6.10 añade transiciones explícitas de sesión mediante compare-and-set.
-> Pausar/reanudar no altera repasos ni alcance; el retorno reconstruye la cola.
-> El commit bloquea la sesión antes de la memoria para serializarse con el cierre,
-> conservando el replay de recibos aunque la sesión ya no esté activa.
-> LEX-6.11 muestra un resumen de sesiones pausadas/cerradas con un puerto de
-> historial de solo lectura. Agrega logs confirmados y separa los pendientes
-> actuales de las valoraciones guardadas; no inventa duración ni porcentajes.
-> LEX-6.12 mantiene los atajos en la presentación y solo dentro de la tarjeta
-> con foco. Activan los mismos botones/formularios, sin otro camino de escritura
-> ni listeners globales; la navegación nativa de controles se conserva.
-> Las secciones
-> marcadas como *pendiente* se completan cuando la fase correspondiente las
-> implemente.
+> **Revisión de cierre personal, 2026-11-12.** Biblioteca e importación acotadas,
+> estudio FSRS, historial/estadísticas, preferencias, exportación y borrado propio
+> implementados. El navegador envía intenciones; el servidor reautoriza y usa su
+> reloj. El estado y el log se guardan en una transacción idempotente; solo entonces
+> avanza la interfaz. Las lecturas privadas no se comparten en caché. PWA con caché
+> exclusivamente pública y fallback neutral. Las decisiones y límites operativos
+> actuales están en [ADR-008](adrs/008-personal-use.md), [FSRS](FSRS.md),
+> [seguridad](SECURITY.md) y [recuperación](BACKUP_RECOVERY.md).
 
 ## Estilo
 
@@ -97,9 +67,11 @@ Se organiza por área de negocio, no por tipo de archivo.
 | `library` | Mazos, conceptos, ítems de práctica y etiquetas. |
 | `importing` | Previsualización, validación e importación de archivos. |
 | `study` | Cola diaria, sesiones, repetición espaciada, valoraciones e historial. |
-| `analytics` | Consultas y estadísticas. |
-| `settings` | Preferencias, exportación y eliminación de datos. |
-| `demo` | Experiencia pública sin registro. |
+| `preferences` | Preferencias personales y por curso; concurrencia entre pestañas. |
+| `data-management` | Exportación verificada y eliminación de la cuenta propia. |
+
+Las consultas de historial y estadísticas pertenecen a `study`; no existe un
+módulo `analytics` separado. La demo pública queda fuera de la entrega personal.
 
 Un módulo trivial no está obligado a tener las cuatro capas. La regla de
 dependencia sí es obligatoria siempre.
@@ -110,7 +82,7 @@ dependencia sí es obligatoria siempre.
 src/
   app/                      Rutas de App Router
     [locale]/
-      (public)/             Landing y demo
+      page.tsx              Entrada personal
       (auth)/               Registro, login, recuperación
       (app)/                Aplicación autenticada
     api/                    Route Handlers
@@ -124,9 +96,8 @@ src/
     library/
     importing/
     study/
-    analytics/
-    settings/
-    demo/
+    preferences/
+    data-management/
   shared/
     domain/
     application/
@@ -161,12 +132,12 @@ La capa de aplicación depende de puertos; la infraestructura los implementa.
 Cada puerto expresa operaciones del negocio: **no** hay un repositorio genérico
 con `findAll` y `save`.
 
-**Repositorios:** `UserRepository`, `CourseRepository`, `DeckRepository`,
+**Ejemplos de puertos implementados:** `AuthGateway`, `DeckRepository`,
 `ConceptRepository`, `PracticeItemRepository`, `LearningStateRepository`,
-`ReviewLogRepository`, `StudySessionRepository`, `ImportRepository`.
+`StudySessionRepository` y los puertos de consulta de historial/estadísticas.
 
-**Servicios:** `SpacedRepetitionScheduler`, `Clock`, `IdGenerator`,
-`DelimitedFileParser`, `UnitOfWork` / `ReviewCommitter`, `Telemetry`.
+**Servicios:** `SpacedRepetitionScheduler`, `Clock`,
+`DelimitedFileParser` y `ReviewCommitter`. No se añade telemetría de terceros.
 
 Dos de ellos existen por motivos concretos:
 
@@ -225,7 +196,8 @@ Dos barreras, no una:
    privado y se deriva de la sesión, nunca de un identificador enviado por el
    cliente.
 2. **Row Level Security en PostgreSQL.** Cada tabla expuesta lleva políticas
-   explícitas por propietario, con denegación por defecto.
+   explícitas, normalmente por propietario, con denegación por defecto. El
+   catálogo de idiomas permite leer referencias comunes y no modificarlas.
 
 La segunda existe porque la primera puede fallar. Se prueba que un usuario no
 puede leer, escribir ni borrar datos de otro, con tests contra la base de datos.
@@ -237,20 +209,23 @@ completo, y entonces un descuido en una consulta dejaría de ser detectable en l
 revisión.
 
 Corolario: la clave publishable está en el bundle que descarga cualquiera. **Una
-tabla sin políticas queda abierta a Internet.**
+tabla sin RLS puede quedar abierta por sus grants. Con RLS habilitado y sin una
+política aplicable, el rol de aplicación queda denegado por defecto.**
 
 `getSession()` está prohibido por lint: devuelve lo que diga la cookie, sin
 verificar su firma. Para cualquier decisión de permisos se usa `getClaims()`.
 
 **El invariante está comprobado.** `supabase/tests/database/010-rls-enabled.sql`
-falla si alguna tabla de `public` no tiene RLS habilitado, y nombra cuál. Hoy pasa
-sin comprobar nada porque no hay tablas; a partir de la primera migración, olvidar
-`enable row level security` rompe la suite en lugar de pasar inadvertido.
+falla si alguna tabla de `public` no tiene RLS habilitado y nombra cuál. Las24
+migraciones crean18 tablas públicas. Sus permisos y políticas se verifican con
+pgTAP y con integración real A/B/anon, incluidos los RPC transaccionales.
 
 Comprueba que RLS está *habilitado*, no que las políticas sean correctas. Lo
 segundo se prueba tabla por tabla, con un caso de dueño y otro de no-dueño.
 
-*Pendiente:* detalle de políticas por tabla, a medida que las fases 2 a 5 las creen.
+El detalle y las excepciones de solo lectura están en [DATA_MODEL](DATA_MODEL.md)
+y en las migraciones y pruebas SQL versionadas. La eliminación propia usa una
+función privilegiada mínima y explícita, descrita en [DATA_LIFECYCLE](DATA_LIFECYCLE.md).
 
 ## Validación
 

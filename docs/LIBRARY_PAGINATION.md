@@ -37,7 +37,7 @@ navegadores conservan sus controles de navegación y búsqueda nativos.
 
 ## Opciones de conceptos e importación
 
-La siguiente migración local añade `read_library_concept_options` (veinte
+La migración24, aplicada también en producción, añade `read_library_concept_options` (veinte
 etiquetas e ítems por página), `read_library_tag_previews` (tres etiquetas y su
 total exacto para hasta veinte conceptos) y `read_library_deck_options` (veinte
 mazos con búsqueda y selección fijada). Mantienen INVOKER, RLS y EXECUTE solo

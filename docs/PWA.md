@@ -65,3 +65,8 @@ y el borrado de almacenamiento actualizan también el documento.
 Se cubren portada, login, registro, recuperación y
 reset, en ES/EN, a 320 px/texto 200 %. La escala CSS de pruebas no acredita zoom
 nativo, lector de pantalla o instalación física en Android/iOS.
+
+La aceptación física recibida después se registra por separado en
+[instalación y aceptación](evidence/LEX-9-installation.md): móvil y escritorio
+reabren desde su instalación, y el propietario informa zoom y lector correctos
+en móvil. No se atribuye un modelo, versión o cobertura física que no indicó.

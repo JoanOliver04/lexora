@@ -5,21 +5,15 @@ Las decisiones que lo condicionan están en
 [ADR-002](adrs/ADR-002-supabase-sin-orm.md) y
 [ADR-003](adrs/ADR-003-fsrs-programa-practice-item.md).
 
-> **Estado:** existen las cuatro tablas de identidad y curso (`profiles`,
-> `languages`, `courses`, `course_settings`), con sus políticas RLS
-> (migraciones `20260828143434_identity_and_course` y
-> `20260831162304_identity_and_course_rls`); las seis tablas de biblioteca
-> (`decks`, `concepts`, `deck_concepts`, `practice_items`, `tags`,
-> `concept_tags`) con estructura (migración `20260902193649_library_schema`,
-> LEX-3.2), políticas RLS por dueño, índices de `owner_id` y unicidad de
-> `tags.normalized_name` por curso (`20260904122347_library_rls`, LEX-3.3);
-> las dos de importación (`import_jobs`, `import_job_errors`, LEX-4.3);
-> y las tres de estudio (`learning_states`, `study_sessions`, `review_logs`)
-> con estructura (migración `20260911120000_study_schema`, LEX-5.4). Las
-> políticas RLS de estudio, los índices de cola y el aislamiento dueño /
-> no-dueño son LEX-5.5. El resto del modelo descrito aquí es lo acordado;
-> las columnas exactas, restricciones, índices y políticas se fijan en las
-> migraciones SQL de cada fase, que son la fuente de verdad del esquema.
+> **Revisión de cierre, 2026-11-12:**24 migraciones versionadas y18 tablas
+> públicas, con RLS, permisos y aislamiento probados. Identidad/curso:4;
+> biblioteca:6; importación:4, incluidos recibos de lote y ledger de cuotas;
+> estudio:3; ledger de exportación:1. La última migración es
+> `20261111223000_library_options`, aplicada también en producción. Las columnas,
+> restricciones y políticas exactas son las de SQL y `database.types.ts`.
+> Las secciones históricas de creación se complementan con
+> [lecturas paginadas](LIBRARY_PAGINATION.md), [importación acotada](adrs/010-bounded-import-transactions.md),
+> [exportación](DATA_EXPORT.md) y [ciclo de datos](DATA_LIFECYCLE.md).
 
 ## La distinción que lo explica todo
 
@@ -142,7 +136,7 @@ referencia. Conserva UUID, traducción, activación y timestamps de cualquier fi
 existente con la misma clave natural. No crea usuarios, cursos ni contenido de
 estudio. Una colisión de UUID con otro idioma falla, sin sobrescribir datos.
 No se eliminan filas como rollback: podrían estar referenciadas por cursos.
-La aplicación remota está pendiente de autorización; ver
+La aplicación remota está acreditada en el cierre de producción; véase
 [`evidence/LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
 
 **`courses`** — un par origen→destino de un solo dueño.
@@ -283,7 +277,7 @@ físico previsto para esas filas salvo la cascada al borrar el curso. Trigger
 | `explanation` | `text` NULL | CHECK: nulo o ≤ 4000 |
 | `example` | `text` NULL | CHECK: nulo o ≤ 500 |
 | `cefr_level` | `cefr_level` NULL | |
-| `source_reference` | `text` NULL | CHECK: nulo o ≤ 500. El dominio (LEX-3.1) todavía no acota este campo; lo acota la base |
+| `source_reference` | `text` NULL | Nulo o ≤500; validado también en dominio y formularios |
 | `metadata` | `jsonb` NOT NULL | por defecto `'{}'`; CHECK `jsonb_typeof = 'object'`. JSONB permitido aquí por §13.7 (extensión acotada y validada) |
 | `archived_at` | `timestamptz` NULL | |
 | `created_at`, `updated_at` | `timestamptz` NOT NULL | |
@@ -360,8 +354,8 @@ siguiente) para las tablas de fase 4 y 5. La comprobación «≥1 política» vi
 **Índices** (además de los de FK de LEX-3.2): `(owner_id)` en las seis tablas
 —toda consulta filtra por él vía RLS—, como `courses_owner_id_idx`; y
 `concepts (owner_id, canonical_key)` para la sugerencia de duplicados
-(LEX-3.10). El índice de **búsqueda por título** espera a LEX-3.9, que decidirá
-si compensa `pg_trgm` con la forma de consulta real.
+(LEX-3.10). La búsqueda por título usa `ilike`; no se añade un índice de
+trigramas sin un caso medido que lo justifique.
 
 **Unicidad:** índice único `tags (course_id, normalized_name)` — sin duplicados
 equivalentes dentro de un curso (§13.10). `normalized_name` ya colapsa
@@ -442,25 +436,17 @@ en una sola consulta cada uno; sustituyen a `list`, que sigue existiendo para
 las lecturas internas que necesitan el orden completo sin paginar
 (`moveDeckAction`).
 
-**Texto: `ilike`, no `pg_trgm`.** LEX-3.3 dejó explícitamente diferida esta
-decisión. A los volúmenes de la V1 (los mazos y conceptos de un único curso
-por usuario, decenas o pocos cientos de filas) un `ilike '%término%'` sin
-índice de trigramas es un `seq scan` invisible en la práctica; `pg_trgm` gana
-su índice GIN y su migración solo cuando un volumen real lo demuestre falso —
-no antes, por un techo teórico. Diferido, no olvidado: si un caso real lo pide,
-es una migración correctiva con su propia evidencia de medición.
+**Texto:** `ilike '%término%'`, sin índice de trigramas. Las respuestas están
+paginadas; esto no hace constante el coste de buscar ni garantiza rendimiento
+a cualquier escala. [La medición de biblioteca](evidence/LEX-9-library-scale.md)
+separa los recuentos completos del límite de transporte. Un índice nuevo requiere
+medir el patrón de consulta y verificar su coste de escritura.
 
-**Recuentos y etiquetas agregados, sin vista ni función nueva.** El N+1
-anotado en la evidencia de LEX-3.5 (`listDeckConcepts` una vez por mazo
-listado) y LEX-3.6 (`listConceptTags` una vez por concepto listado) se resolvía
-con una vista o una función agregada — pero a estos volúmenes una sola
-consulta por página que trae todas las filas relevantes y las agrupa en
-memoria, en el adaptador, es más simple y no pide una migración:
-`countConceptsByDeck` embebe `concepts!inner(archived_at)` desde
-`deck_concepts` y cuenta agrupando por `deck_id`; `listForConcepts` embebe
-`tags!inner(*)` desde `concept_tags` y agrupa por `concept_id`. Ambos
-respetan el filtro de archivado ya establecido en LEX-3.8: un concepto
-archivado no cuenta en el recuento de su mazo, aunque el enlace siga ahí.
+**Recuentos y opciones acotados en SQL.** Las migraciones23/24 sustituyen las
+lecturas agregadas iniciales que podían truncarse a1.000 filas. Los recuentos
+de mazos son completos; etiquetas e ítems tienen páginas y previews con total
+exacto. Se preserva el filtro de archivado y se evita una lectura por cada fila.
+Los contratos, límites y RPC INVOKER están en [LIBRARY_PAGINATION](LIBRARY_PAGINATION.md).
 
 **Paginación por `limit`/`offset`.** No por cursor: la lista es un puñado de
 páginas numeradas sobre un conjunto pequeño, no un scroll infinito, y ni
@@ -476,7 +462,8 @@ confundiría más de lo que ayuda. `moveDeckAction` sigue leyendo el orden
 completo con `list` (sin paginar) para calcular el nuevo orden — la
 paginación es de la pantalla de lectura, no de esa escritura.
 
-Sin migración: ninguna columna ni índice nuevo. Cubierto por tests de caso de
+La búsqueda inicial de LEX-3.9 no añadió migraciones; las lecturas actuales
+incluyen las mejoras23/24. Cubierto por tests de caso de
 uso (`clampLimit`/`clampOffset`, valores por defecto y acotados) y e2e (buscar
 reduce la lista, filtrar por categoría/tipo reduce la lista, «sin resultados»
 se distingue de «biblioteca vacía», paginar con más de una página muestra
@@ -666,19 +653,18 @@ No se crean tablas vacías por anticipación.
 |---|---|
 | 2 | `profiles`, `languages`, `courses`, `course_settings` — creadas en LEX-2.1 |
 | 3 | `decks`, `concepts`, `deck_concepts`, `practice_items`, `tags`, `concept_tags` |
-| 4 | `import_jobs`, `import_job_errors` |
+| 4 y hardening | `import_jobs`, `import_job_errors`, `import_rate_limits`, `import_job_batches` |
 | 5 | `learning_states`, `study_sessions`, `review_logs` |
+| 8 | `account_export_requests` |
 
-## Pendiente
+## Límites y decisiones conservadas
 
-- Identidad, biblioteca, importación y estudio (estructura LEX-5.4, RLS
-  LEX-5.5, alta idempotente LEX-5.6) ya están arriba. La cola diaria es
-  LEX-5.7.
-- Índice de **búsqueda por título** de `concepts`/`decks`: LEX-3.9, cuando la
-  consulta real decida si compensa `pg_trgm`.
+- Búsqueda por título con `ilike`; un índice de trigramas exige medición.
 - Regla «un mazo y sus conceptos son del mismo curso, no solo del mismo dueño»
   en `deck_concepts` / `concept_tags`: **aceptada como no impuesta** en LEX-3.3
   (la interfaz la respeta; imponerla exige `course_id` en la tabla de enlace).
-- Estrategia de retención de registros históricos y de anonimización al eliminar una cuenta.
-- El diagrama de arriba ya nombra las tablas de fase 4 y 5; se confirmará contra
-  el esquema real cuando se creen esas migraciones.
+- La retención es durante la vida de la cuenta; el borrado propio elimina Auth
+  y datos por cascada. No se anonimiza ni se promete borrado instantáneo de backups
+  del proveedor. Detalle en [DATA_LIFECYCLE](DATA_LIFECYCLE.md).
+- Reordenar mazos realiza escrituras independientes; un fallo intermedio puede
+  dejar un orden parcial. No modifica el contenido ni el calendario de estudio.

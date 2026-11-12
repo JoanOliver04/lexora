@@ -5,7 +5,7 @@ La organización es *feature-first*: todo lo que hace falta para entender
 «importación» vive en `importing/`, no repartido entre `components/`, `hooks/`,
 `services/` y `types/`.
 
-## Módulos previstos
+## Módulos implementados
 
 | Módulo | Responsabilidad | Llega en |
 |---|---|---|
@@ -14,9 +14,12 @@ La organización es *feature-first*: todo lo que hace falta para entender
 | `library` | Mazos, conceptos, ítems de práctica y etiquetas | Fase 3 — **existe** (`domain/` LEX-3.1, `application/` + `infrastructure/` LEX-3.4; `presentation/` en LEX-3.5+) |
 | `importing` | Previsualización, validación e importación de archivos | Fase 4 — **existe** (parser LEX-4.2; preview LEX-4.4; saneamiento LEX-4.5; duplicados LEX-4.6; lote LEX-4.7; wizard LEX-4.8; resumen LEX-4.9; dataset real LEX-4.10; auditoría M4 LEX-4.11) |
 | `study` | Cola diaria, sesiones, repetición espaciada e historial | Fases 5 y 6 — **existe** (`domain/`, `application/`, `infrastructure/`; dashboard y estudio mediante rutas App Router, incluido guardado LEX-6.7) |
-| `analytics` | Consultas y estadísticas | Fase 7 |
-| `settings` | Preferencias, exportación y eliminación | Fase 8 |
-| `demo` | Experiencia pública sin registro | Fase 10 |
+| `preferences` | Preferencias personales y por curso | Fase 8 — existe |
+| `data-management` | Exportación verificada y eliminación propia | Fase 8 — existe |
+
+Historial y estadísticas están en `study`, cerca de sus contratos de lectura.
+No hay carpetas `analytics` ni `settings`. La demo pública queda fuera del
+alcance personal acordado en [ADR-008](../../docs/adrs/008-personal-use.md).
 
 **Las carpetas se crean cuando el módulo se implementa, no antes.** Un árbol de
 directorios vacíos no es arquitectura: es ruido que hay que mantener y que

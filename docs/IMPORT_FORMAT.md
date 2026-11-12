@@ -1,7 +1,7 @@
 # Formato de importación TXT/CSV
 
-Caracterización del formato de archivo que la importación de FASE 4 debe
-leer (`MASTER_SPEC.md` §9.7). Puerto y parser reales: LEX-4.2. Validación y
+Caracterización del formato de archivo que lee la importación de Lexora.
+Puerto y parser reales: LEX-4.2. Validación y
 saneamiento: LEX-4.5, [`SECURITY.md`](SECURITY.md). Esta página describe la
 **forma** del archivo, no cómo se procesa.
 
