@@ -40,6 +40,8 @@ mock; otros cuatro casos prueban la frontera desde la CLI sin lanzar navegador.
 La pasada real con URL en el shell y clave resuelta desde el fichero local terminó
 normal4, acceso cerrado4 y Preview4 PASS, sin retries. Gitleaks8.30.1 sobre los670
 archivos del snapshot publicable: sin secretos. La clave ficticia de la CLI se
-sustituyó por un placeholder inequívoco, sin ampliar las exclusiones del escáner;
-las nueve regresiones volvieron a pasar.
+sustituyó por un placeholder inequívoco; las nueve regresiones volvieron a pasar.
+El primer check de CI detectó también su adición histórica en `6de4aee`: se
+documenta únicamente ese fingerprint exacto en `.gitleaksignore`, sin excluir
+archivos, reglas ni futuras coincidencias. No era una credencial funcional.
 Pendientes: CI del head exacto y publicación.
