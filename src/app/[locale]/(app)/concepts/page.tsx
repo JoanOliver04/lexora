@@ -107,7 +107,10 @@ export default async function ConceptsPage({
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-6 py-12">
       <header className="flex flex-col gap-2">
-        <Link href="/app" className="text-sm text-(--color-ink-muted) underline underline-offset-4">
+        <Link
+          href="/app"
+          className="inline-flex min-h-11 min-w-11 items-center text-sm text-(--color-ink-muted) underline underline-offset-4"
+        >
           {t("backToApp")}
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">{t("listTitle")}</h1>
@@ -115,19 +118,19 @@ export default async function ConceptsPage({
       </header>
 
       <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-4">
           <h2 className="text-lg font-medium">{t("listHeading")}</h2>
           {includeArchived ? (
             <Link
               href={{ pathname: "/concepts", query: filterQuery }}
-              className="text-sm text-(--color-ink-muted) underline underline-offset-4"
+              className="inline-flex min-h-11 min-w-11 items-center text-sm text-(--color-ink-muted) underline underline-offset-4"
             >
               {t("hideArchived")}
             </Link>
           ) : (
             <Link
               href={{ pathname: "/concepts", query: { ...filterQuery, archived: "1" } }}
-              className="text-sm text-(--color-ink-muted) underline underline-offset-4"
+              className="inline-flex min-h-11 min-w-11 items-center text-sm text-(--color-ink-muted) underline underline-offset-4"
             >
               {t("showArchived")}
             </Link>
@@ -135,7 +138,7 @@ export default async function ConceptsPage({
         </div>
 
         <form method="get" className="flex flex-wrap items-end gap-3">
-          <div className="flex flex-col gap-2">
+          <div className="flex min-w-0 max-w-full flex-1 basis-48 flex-col gap-2">
             <Label htmlFor="concept-search-q">{t("search.label")}</Label>
             <Input
               id="concept-search-q"
@@ -145,13 +148,13 @@ export default async function ConceptsPage({
               defaultValue={sp.q ?? ""}
             />
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex min-w-0 max-w-full flex-1 basis-48 flex-col gap-2">
             <Label htmlFor="concept-search-kind">{t("filters.kindLabel")}</Label>
             <select
               id="concept-search-kind"
               name="kind"
               defaultValue={kind ?? ""}
-              className="min-h-11 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-ink)"
+              className="min-h-11 w-full min-w-0 max-w-full rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-ink)"
             >
               <option value="">{t("filters.kindAll")}</option>
               {CONCEPT_KINDS.map((option) => (
@@ -161,13 +164,13 @@ export default async function ConceptsPage({
               ))}
             </select>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex min-w-0 max-w-full flex-1 basis-48 flex-col gap-2">
             <Label htmlFor="concept-search-level">{t("filters.levelLabel")}</Label>
             <select
               id="concept-search-level"
               name="cefrLevel"
               defaultValue={cefrLevel ?? ""}
-              className="min-h-11 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-ink)"
+              className="min-h-11 w-full min-w-0 max-w-full rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-ink)"
             >
               <option value="">{t("filters.levelAll")}</option>
               {CEFR_LEVELS.map((option) => (
@@ -184,7 +187,7 @@ export default async function ConceptsPage({
           {isFiltered || includeArchived ? (
             <Link
               href="/concepts"
-              className="text-sm text-(--color-ink-muted) underline underline-offset-4"
+              className="inline-flex min-h-11 min-w-11 items-center text-sm text-(--color-ink-muted) underline underline-offset-4"
             >
               {t("search.clear")}
             </Link>
@@ -205,7 +208,7 @@ export default async function ConceptsPage({
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <Link
                     href={`/concepts/${concept.id}`}
-                    className="font-medium underline underline-offset-4"
+                    className="inline-flex min-h-11 min-w-11 items-center font-medium underline underline-offset-4"
                   >
                     {concept.title}
                   </Link>
@@ -235,7 +238,7 @@ export default async function ConceptsPage({
                     {(tagTotals[concept.id] ?? 0) > 3 ? (
                       <Link
                         href={`/concepts/${concept.id}`}
-                        className="inline-flex min-h-11 items-center text-xs underline"
+                        className="inline-flex min-h-11 min-w-11 items-center text-xs underline"
                       >
                         {t("tags.more", { count: (tagTotals[concept.id] ?? 0) - 3 })}
                       </Link>
@@ -266,7 +269,7 @@ export default async function ConceptsPage({
                   pathname: "/concepts",
                   query: page - 1 > 1 ? { ...baseQuery, page: String(page - 1) } : baseQuery,
                 }}
-                className="underline underline-offset-4"
+                className="inline-flex min-h-11 min-w-11 items-center underline underline-offset-4"
               >
                 {t("pagination.previous")}
               </Link>
@@ -279,7 +282,7 @@ export default async function ConceptsPage({
             {page < pageCount ? (
               <Link
                 href={{ pathname: "/concepts", query: { ...baseQuery, page: String(page + 1) } }}
-                className="underline underline-offset-4"
+                className="inline-flex min-h-11 min-w-11 items-center underline underline-offset-4"
               >
                 {t("pagination.next")}
               </Link>

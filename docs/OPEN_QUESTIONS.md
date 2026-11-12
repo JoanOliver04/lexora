@@ -20,10 +20,27 @@
 | Q-008 | Preview sin backend aislado | `RESUELTA` | Publicación solicitada |
 | Q-009 | Aceptación manual en dispositivo físico | `RESUELTA` | Aceptación personal acotada; evidencia LEX-9-installation |
 | Q-010 | Uso personal y servicios de correo | `RESUELTA` | Entrega actual; ADR-008 |
+| Q-011 | Activación externa y aceptación de Google | `ABIERTA` | Acceso adicional; ADR-011 |
 
 Q-005/Q-006 siguen abiertas como decisiones históricas de producto. Sus opciones
 actuales están implementadas y probadas; no bloquean la entrega personal ni se
 consideran aprobadas de nuevo por ausencia de respuesta.
+
+## Q-011 — Activación externa y aceptación de Google
+
+**Estado:** `ABIERTA`. **Fecha:** 2026-11-12.
+
+El propietario confirma conservar el acceso personal y añadir Google. El
+registro no se abre. El código usa PKCE y la identidad verificada con el mismo
+correo; el Client ID/secret debe configurarse en Supabase mediante Google Cloud.
+Las herramientas conectadas de esta sesión no gestionan esas opciones de Auth
+ni clientes OAuth de Google; el host del navegador no está disponible.
+
+La [guía de activación](GOOGLE_SIGN_IN.md) deja los pasos concretos y la prueba
+del propietario. No se deben enviar secretos por chat ni incorporarlos al repo.
+Las pruebas locales no acreditan el consentimiento/vinculación real de Google.
+Cerrar esta entrada exige proveedor activo con altas cerradas y confirmación
+de acceso a los datos habituales de la cuenta existente.
 
 ## Q-010 — Uso personal y servicios de correo
 

@@ -40,6 +40,15 @@ Saber reconocer *achievement* no marca automáticamente como dominada su producc
 Arquitectura: monolito modular con Clean Architecture pragmática y organización
 feature-first. El dominio no conoce React, Next.js, Supabase ni `ts-fsrs`.
 
+La revisión visual añade navegación persistente en escritorio y navegación
+inferior en móvil, con temas propios y foco de teclado. La
+[evidencia de diseño](docs/evidence/LEX-15-visual-direction.md) identifica las
+comprobaciones y el estado de publicación; el motor de estudio se conserva.
+
+El acceso adicional con Google usa PKCE y la cuenta personal existente con el
+mismo correo. Su activación externa y aceptación siguen la [guía de Google](docs/GOOGLE_SIGN_IN.md);
+el registro permanece cerrado. No se almacenan secretos de Google en la app.
+
 ## Alcance de la V1
 
 **Incluye:** cuenta y onboarding · mazos, conceptos e ítems · importación TXT/CSV

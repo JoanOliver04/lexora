@@ -1,5 +1,23 @@
 # Lexora — Estado actual
 
+**Ampliación 1.1.0 — 2026-11-12:** renovación visual y Google opcional para la
+cuenta personal existente. Código `2bb9237`, publicación en
+[PR116](https://github.com/JoanOliver04/lexora/pull/116), condicionada a sus tres
+checks protegidos y al despliegue Production. El propietario confirma conservar
+el acceso personal cerrado. No hay SQL, dependencias nuevas ni cambios de FSRS.
+
+Gate local PASS962+1/Node12/build; regresión18 PASS y Google8 PASS, sin retries,
+con32 análisis A/AA sin incidencias ni incompletos. Tres revisiones independientes
+cerradas. Se corrigieron el reflow320/texto200, el selector ambiguo de formulario
+y una carrera en la espera de foco de una prueba. Evidencia y límites en
+[Google](evidence/LEX-15-google-sign-in.md) y [diseño](evidence/LEX-15-visual-direction.md).
+
+**Único paso externo de esta ampliación:** Q-011, activar Google y comprobar
+el acceso real a los datos existentes. El botón se detecta automáticamente
+cuando Supabase habilita el proveedor. [Guía de activación](GOOGLE_SIGN_IN.md)
+y [ADR-011](adrs/011-personal-google-sign-in.md). El código probado no se presenta
+como consentimiento o vinculación Google real.
+
 **Entrega: V1.0.0 personal · revisión de cierre 2026-11-12.**
 
 El alcance personal de [ADR-008](adrs/008-personal-use.md) está implementado:

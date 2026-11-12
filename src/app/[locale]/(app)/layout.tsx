@@ -4,6 +4,10 @@ import type { ReactNode } from "react";
 import { ensureProfileForCurrentUser, getCurrentUserId } from "@/composition/identity";
 import { getAccountThemeForCurrentUser } from "@/composition/preferences";
 import { AccountTheme } from "@/shared/presentation/theme/account-theme";
+import { getTranslations } from "next-intl/server";
+import { WorkspaceFrame } from "@/shared/presentation/components/workspace-frame";
+import { Button } from "@/shared/presentation/components";
+import { logoutAction } from "@/app/[locale]/(auth)/actions";
 
 /**
  * Puerta del área autenticada.
@@ -39,10 +43,22 @@ export default async function AppLayout({
   if (!(await ensureProfileForCurrentUser())) redirect(`/${locale}/login`);
 
   const theme = await getAccountThemeForCurrentUser();
+  const t = await getTranslations("Auth");
   return (
     <>
       {theme && <AccountTheme preference={theme} />}
-      {children}
+      <WorkspaceFrame
+        logout={
+          <form action={logoutAction}>
+            <input type="hidden" name="locale" value={locale} />
+            <Button type="submit" variant="secondary">
+              {t("logout")}
+            </Button>
+          </form>
+        }
+      >
+        {children}
+      </WorkspaceFrame>
     </>
   );
 }
