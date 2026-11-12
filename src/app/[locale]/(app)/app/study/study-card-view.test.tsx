@@ -129,7 +129,7 @@ describe("study reveal and rating controls", () => {
     await waitFor(() =>
       expect(screen.getByText(en.StudySession.changeErrors.generic)).toBeVisible(),
     );
-    expect(screen.getByRole("alert").parentElement).toHaveFocus();
+    await waitFor(() => expect(screen.getByRole("alert").parentElement).toHaveFocus());
     expect(screen.getByRole("button", { name: "Complete this session" })).toBeEnabled();
     fireEvent.click(screen.getByRole("button", { name: "Check session status" }));
     expect(refresh).toHaveBeenCalledTimes(1);
