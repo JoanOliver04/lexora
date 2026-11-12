@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { expect, test } from "@playwright/test";
 import { completeOnboarding, PASSWORD, signUp } from "./helpers";
 import { assertStudyLayout } from "./study-layout";
+import { localBackend } from "./local-backend";
 
 for (const locale of ["es", "en"] as const)
   test(`export before explicit self deletion, stale tab and denied login (${locale})`, async ({
@@ -14,12 +15,8 @@ for (const locale of ["es", "en"] as const)
     test.setTimeout(60000);
     const email = await signUp(page);
     await completeOnboarding(page, { uiLocale: locale });
-    if (!process.env["NEXT_PUBLIC_SUPABASE_URL"]) process.loadEnvFile(".env.local");
-    const url = process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
-      parsed = new URL(url);
-    if (!["localhost", "127.0.0.1"].includes(parsed.hostname) || parsed.port !== "54321")
-      throw new Error("Synthetic local deletion only");
-    const client = createClient(url, process.env["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"]!, {
+    const { url, publishableKey } = localBackend();
+    const client = createClient(url, publishableKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
     const auth = await client.auth.signInWithPassword({ email, password: PASSWORD });

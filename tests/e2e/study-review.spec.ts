@@ -5,6 +5,7 @@ import { expect, test } from "@playwright/test";
 
 import type { Database } from "../../src/shared/infrastructure/supabase/database.types";
 import { completeOnboarding, PASSWORD, signUp } from "./helpers";
+import { localBackend } from "./local-backend";
 
 async function checked<T>(query: PromiseLike<{ data: T; error: { message: string } | null }>) {
   const { data, error } = await query;
@@ -18,12 +19,8 @@ test("ratings save once before advancing and survive closing the confirmed tab",
   test.setTimeout(60_000);
   const email = await signUp(page);
   await completeOnboarding(page);
-  if (!process.env["NEXT_PUBLIC_SUPABASE_URL"]) process.loadEnvFile(".env.local");
-  const url = process.env["NEXT_PUBLIC_SUPABASE_URL"]!;
-  const parsed = new URL(url);
-  if (!["localhost", "127.0.0.1"].includes(parsed.hostname) || parsed.port !== "54321")
-    throw new Error("Review E2E fixtures require local Supabase");
-  const client = createClient<Database>(url, process.env["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"]!, {
+  const { url, publishableKey } = localBackend();
+  const client = createClient<Database>(url, publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
   const { data: auth, error: authError } = await client.auth.signInWithPassword({

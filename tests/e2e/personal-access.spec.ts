@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { expect, test } from "@playwright/test";
 import { PASSWORD, uniqueEmail } from "./helpers";
 import { audit } from "./a11y-audit";
+import { localBackend } from "./local-backend";
 test.skip(
   process.env["LEXORA_TEST_PERSONAL_ACCESS"] !== "1",
   "Separate closed-registration production build",
@@ -9,12 +10,8 @@ test.skip(
 
 for (const locale of ["es", "en"] as const)
   test(`closed registration preserves existing login (${locale})`, async ({ page }, info) => {
-    if (!process.env["NEXT_PUBLIC_SUPABASE_URL"]) process.loadEnvFile(".env.local");
-    const url = process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
-      parsed = new URL(url);
-    if (!["localhost", "127.0.0.1"].includes(parsed.hostname) || parsed.port !== "54321")
-      throw new Error("Local synthetic account only");
-    const client = createClient(url, process.env["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"]!, {
+    const { url, publishableKey } = localBackend();
+    const client = createClient(url, publishableKey, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     });
     const email = uniqueEmail("personal-existing");
