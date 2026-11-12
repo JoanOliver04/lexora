@@ -21,9 +21,10 @@ las pantallas de Preview produjeron8 análisis sin infracciones ni incompletos.
 
 El helper también recorre los controles con Tab y comprueba un ciclo completo,
 alcanzabilidad y contorno de al menos2px. Respeta los radios nativos, los controles
-ocultos en details cerrados y los pasos internos de los campos de fecha. La pasada
-dirigida ES/escritorio con este recorrido completo y la mejora de fechas PASS.
-Falta repetir la matriz completa con esta comprobación final antes de publicar.
+ocultos en details cerrados y los pasos internos de los campos de fecha. La matriz
+final completa ES/EN×escritorio/móvil, con este recorrido y la mejora de fechas,
+terminó con4 casos PASS y216 análisis sin infracciones ni incompletos. Los otros
+4 casos Chromium del pase dirigido comprobaron la sincronización entre contextos.
 
 ## Hallazgos corregidos
 
@@ -45,4 +46,9 @@ antes de revelarla. Reflow320px y texto200% se verifican con la utilidad compart
 no equivalen a zoom nativo ni a una prueba física nueva.
 
 Referencia de integración: [Playwright accessibility testing](https://playwright.dev/docs/accessibility-testing).
-Pendientes: gate general final, matriz completa actualizada, revisión, CI y despliegue.
+Gate general final:930 PASS y1 omisión condicional, Node12 PASS, formato, lint,
+tipos, contraste de28 combinaciones y build PASS. Tres revisiones independientes
+cerradas; se corrigieron la validación tardía del backend de pruebas y su resolución
+parcial inconsistente. Nueve regresiones verifican rechazo temprano de destinos
+remotos y configuración local inmutable. No se cambia SQL ni datos reales.
+Pendientes para publicación: CI del head exacto y comprobación del despliegue.

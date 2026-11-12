@@ -19,7 +19,8 @@ function listTests(url: string) {
       env: {
         ...process.env,
         NEXT_PUBLIC_SUPABASE_URL: url,
-        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_e2e_fixture",
+        // --list only needs a nonempty placeholder; no real credential or SDK request.
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "test-key",
         LEXORA_E2E_PORT: "3100",
       },
     },
