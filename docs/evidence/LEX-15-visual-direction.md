@@ -58,4 +58,20 @@ Se espera a los datos de Hoy y las fuentes antes de capturar. Las capturas usan
 cuentas sintéticas locales; no acreditan un móvil físico nuevo. Teclado, estado
 actual de ruta, regreso a Hoy, tema del sistema y skip-link se prueban realmente.
 
-Pendientes: revisión final, matriz con los últimos ajustes de foco/estilo, CI y despliegue.
+## Matriz final local
+
+Commit de interfaz `d3c9727`:8 E2E Chromium PASS, incluidos216 análisis sin
+infracciones/incompletos y navegación ES/EN×escritorio/móvil. Firefox/WebKit8,
+acceso cerrado4 y Preview4 PASS, todos sin retries. La prueba de navegación
+comprueba foco del skip-link, ruta activa y ancho320/texto200%; el CTA de
+importación destaca en el estado vacío. Tres revisiones independientes de
+corrección, seguridad y estándares cerradas sin hallazgos. Sin SQL/deps nuevas.
+
+Las capturas se copiaron sin modificar desde el navegador local. Datos sintéticos,
+sin cuentas ni contenido reales. No se presentan como prueba de un teléfono físico.
+
+![Portada renovada en escritorio](assets/lexora-visual-home-desktop.png)
+
+![Hoy y navegación inferior en móvil emulado](assets/lexora-visual-today-mobile.png)
+
+Pendientes: escaneo del snapshot publicable, CI del head exacto y despliegue.

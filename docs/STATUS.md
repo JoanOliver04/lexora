@@ -4,7 +4,9 @@
 en `feat/lex-15-2-visual-refresh`. Portada, acceso, navegación lateral/inferior,
 contraste y foco actualizados; sin cambios en datos o FSRS. GoogleLEX-15.1 es
 el siguiente bloque. El propietario confirma conservar acceso personal cerrado.
-Gate local930+1/Node12/build PASS; se comprueba la matriz final y publicación.
+Gate local930+1/Node12/build PASS; matriz final Chromium8,Firefox/WebKit8,
+cerrado4/Preview4 PASS sin retries.216 análisis A/AA sin incidencias ni incompletos,
+navegación320/texto200 y tres revisiones cerradas. Pendiente PR/CI/publicación.
 La configuración externa de Google sigue sin activar; no se presenta como lista.
 Dirección y evidencia en [LEX-15](evidence/LEX-15-visual-direction.md).
 
