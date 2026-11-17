@@ -30,6 +30,16 @@ consideran aprobadas de nuevo por ausencia de respuesta.
 
 **Estado:** `ABIERTA`. **Fecha:** 2026-11-12.
 
+**Actualización2026-11-17:** el propietario comunica External/Testing, usuario
+de prueba y cliente OAuth con credenciales copiadas directamente a Supabase;
+está añadiendo el retorno canónico. Consulta pública de Auth confirma Google
+activo y altas cerradas. La comprobación previa a publicación encontró1.0.0 y
+PR116 sin fusionar; su publicación se controla mediante sus tres checks.
+`auto` es el defecto del nuevo código, sin lectura del override de Vercel.
+La regresión de compatibilidad se corrigió en `16a1122`; el acceso Google real
+a los datos existentes sigue pendiente. No cerrar esta entrada por el mero
+flag de proveedor activo. No se solicitan ni reproducen secretos.
+
 El propietario confirma conservar el acceso personal y añadir Google. El
 registro no se abre. El código usa PKCE y la identidad verificada con el mismo
 correo; el Client ID/secret debe configurarse en Supabase mediante Google Cloud.

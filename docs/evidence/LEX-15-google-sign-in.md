@@ -1,15 +1,37 @@
 # LEX-15 — Google opcional y renovación personal
 
-**Fecha:** 2026-11-12. Código fijado en `2bb9237`, sobre la entrega personal
+**Fecha:** 2026-11-12; actualizada2026-11-17. Código inicial fijado en `2bb9237`, sobre la entrega personal
 `2f50def`. Publicación bajo [PR116](https://github.com/JoanOliver04/lexora/pull/116),
 con los checks protegidos Calidad, Base de datos y Extremo a extremo.
 
 Google está implementado como acceso adicional a la cuenta personal existente.
-Su configuración externa y primer acceso real siguen pendientes en Q-011.
+El proveedor activo se confirmó el17nov; el primer acceso real sigue pendiente en Q-011.
 El registro se mantiene cerrado; no hay SQL ni dependencias de paquete nuevas.
 [ADR-011](../adrs/011-personal-google-sign-in.md) y [activación](../GOOGLE_SIGN_IN.md).
 
 ## Evidencia local ejecutada
+
+### Corrección de compatibilidad del17nov
+
+La CI43242216566 pasó Calidad/DB y202 pruebas principales, con4 omisiones,
+pero falló cuatro escenarios WebKit en errores de precarga RSC. El bucle local
+previo `pnpm e2e:compat --project=webkit-claro --workers=1 --trace=on` reprodujo
+1 FAIL/1 PASS. La traza preservada mostró una respuesta de acceso en356ms y
+el error posterior de una precarga; no justificaba aumentar el timeout de login.
+
+`16a1122` cambia únicamente el envoltorio de enlaces localizados: prefetch
+desactivado por defecto, conservando opt-in explícito, props, ref y navegación.
+Las páginas se solicitan cuando se navega. No cambia Auth, CSP, RLS ni las
+aserciones. Revisión DEEP del delta y dependencias de next-intl realizada.
+
+Después: `pnpm e2e:compat --workers=1 --trace=on`8 PASS, Firefox/WebKit,
+claro/oscuro y ES/EN, sin retries. Las trazas comparables WebKit oscuro/ES
+contienen122 peticiones de prefetch antes y0 después; es el recuento de ese
+recorrido sintético, no un benchmark general de producción. El gate completo
+`LEXORA_DB_TESTS=1 pnpm check` repitió962 PASS+1 omisión opcional, Node12 y
+formato/lint/tipos/contraste/build PASS. No se suavizaron condiciones de prueba.
+
+### Matriz inicial del12nov
 
 | Comprobación | Resultado |
 |---|---|
