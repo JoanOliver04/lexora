@@ -12,6 +12,15 @@ y páginas fuera de rango (PGRST103). Se normalizan búsquedas/páginas, se cons
 el filtro en lecturas de recuento bajo RLS y se redirige a una página válida.
 No hay migraciones, paquetes nuevos, cambios de Auth/RLS ni del motor FSRS.
 
+La primera CI de esta entrega se detuvo por un aviso de picomatch sin versión
+corregida. Se documenta una [excepción temporal](evidence/LEX-17-dependency-review.md)
+solo para ese GHSA, con alcance no expuesto a patrones HTTP/importados según
+la revisión, caducidad1dic2026 y guardas bloqueantes de lock/config/registro/
+trazas. El aviso sigue identificado; no se declara corregido ni se desactiva
+la auditoría del resto. El gate completo del build protegido volvió a dar970+1,
+Nodebackup12 y política9 PASS; el P3 de build directo queda corregido y revisado.
+Esta revisión de seguridad necesita su propia CI verde sobre el nuevo head.
+
 Regresión de pantallas16 PASS sin retries, ES/EN×móvil/escritorio; regresión
 final de interacciones8 PASS y compatibilidad Firefox/WebKit8 PASS. Integración
 de biblioteca7 PASS y pgTAP603 PASS. Gate final970 PASS+1 omisión privada,

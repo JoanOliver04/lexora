@@ -71,6 +71,10 @@ a esa revisión solo completan estos resultados documentales.
 
 La publicación requiere los tres checks protegidos del head exacto; la PR
 conserva sus ejecuciones, resultado de recuperación y despliegue Production.
+La primera ejecución se detuvo en auditoría por un aviso upstream sin parche;
+su [análisis y excepción limitada](LEX-17-dependency-review.md) se registra por
+separado. Los resultados del nuevo head, incluidos sus controles adicionales,
+deben estar verdes antes de publicar.
 
 El diagnóstico de WebKit detectó una carrera de inicio del atajo: un evento
 Ctrl+K válido llegó antes del listener, aunque el control ya parecía habilitado.

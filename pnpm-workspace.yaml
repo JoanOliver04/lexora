@@ -16,6 +16,13 @@ allowBuilds:
   "@swc/core": false
   sharp: false
   unrs-resolver: false
+
+# No upstream fix exists (reviewed 2026-11-17). Trusted build patterns only.
+# This exact exception expires on 2026-12-01 and is checked before audit/build.
+# Remove when upstream releases a fix; see docs/evidence/LEX-17-dependency-review.md.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-fc5q-39xc-vjpf
 overrides:
   # GHSA-68fv-2mgg-jv7q: compatible patch for Next/PostCSS and Tailwind's parser.
   source-map-js: 1.2.2
