@@ -22,6 +22,7 @@ import { formatEnvError, shouldSkipValidation } from "./shared";
 const serverSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   LEXORA_ALLOW_REGISTRATION: z.enum(["true", "false"]).optional(),
+  LEXORA_GOOGLE_AUTH: z.enum(["auto", "enabled", "disabled"]).default("auto"),
   VERCEL: z.literal("1").optional(),
   VERCEL_ENV: z.enum(["production", "preview", "development"]).optional(),
 });
@@ -32,6 +33,7 @@ function loadServerEnv(): ServerEnv {
   if (shouldSkipValidation) {
     return serverSchema.parse({
       NODE_ENV: process.env["NODE_ENV"] ?? "development",
+      LEXORA_GOOGLE_AUTH: process.env["LEXORA_GOOGLE_AUTH"],
       VERCEL: process.env["VERCEL"],
       VERCEL_ENV: process.env["VERCEL_ENV"],
     });
@@ -40,6 +42,7 @@ function loadServerEnv(): ServerEnv {
   const parsed = serverSchema.safeParse({
     NODE_ENV: process.env["NODE_ENV"],
     LEXORA_ALLOW_REGISTRATION: process.env["LEXORA_ALLOW_REGISTRATION"],
+    LEXORA_GOOGLE_AUTH: process.env["LEXORA_GOOGLE_AUTH"],
     VERCEL: process.env["VERCEL"],
     VERCEL_ENV: process.env["VERCEL_ENV"],
   });

@@ -6,6 +6,12 @@ ni publica un contacto. Los proveedores actuales son Supabase (Auth y PostgreSQL
 y Vercel (ejecución y alojamiento). No hay proveedor de IA, analítica de contenido,
 SMTP nuevo ni Sentry incorporado para esta entrega.
 
+Google es un proveedor de identidad opcional para la cuenta existente
+([ADR-011](adrs/011-personal-google-sign-in.md)). Al elegirlo se solicita el
+perfil básico y correo, sin permisos de Gmail/Drive ni envío del contenido
+de aprendizaje. El registro público sigue cerrado; no se fusionan datos de
+aplicación por correo ni se crean credenciales administrativas.
+
 ## Qué se conserva
 
 El perfil, las preferencias, los cursos, el contenido y sus relaciones se conservan

@@ -2,7 +2,6 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
 import type { TodayDashboard } from "@/modules/study/application/today-dashboard";
-import { Button } from "@/shared/presentation/components";
 
 const textLink =
   "inline-flex min-h-11 items-center text-sm text-(--color-accent) underline underline-offset-4";
@@ -68,16 +67,16 @@ export function DashboardView({
         )}
       </section>
 
-      <div className="grid min-w-0 gap-6 lg:grid-cols-2">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[1.15fr_1fr]">
         <section
           aria-labelledby="today-readiness"
-          className="flex min-w-0 flex-col gap-5 rounded-(--radius-surface) border border-(--color-border) bg-(--color-surface) p-5 shadow-(--shadow-raised) sm:p-6"
+          className="study-spotlight flex min-w-0 flex-col gap-5 p-6 sm:p-8"
         >
           <div>
             <h2 id="today-readiness" className="text-xl font-semibold tracking-tight">
               {t(`${status}Title`)}
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-(--color-ink-muted)">
+            <p className="spotlight-secondary mt-2 text-sm leading-relaxed">
               {status === "waiting" && overview.nextDueAt
                 ? t("waitingDescription", {
                     date: formatDate(overview.nextDueAt, {
@@ -92,13 +91,10 @@ export function DashboardView({
             </p>
           </div>
           <div>
-            <p
-              className="text-5xl font-semibold tracking-tight tabular-nums"
-              data-testid="today-available"
-            >
+            <p className="spotlight-value tabular-nums" data-testid="today-available">
               {format.number(overview.availableCount)}
             </p>
-            <p className="mt-1 text-sm text-(--color-ink-muted)">{t("availableLabel")}</p>
+            <p className="spotlight-secondary mt-2 text-sm">{t("availableLabel")}</p>
           </div>
           {status === "ready" && (
             <div>
@@ -106,7 +102,7 @@ export function DashboardView({
                 <span className="sr-only">{t("estimateLabel")}: </span>
                 {t("estimate", { minutes: Math.ceil(overview.estimate.totalMs / 60_000) })}
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-(--color-ink-muted)">
+              <p className="spotlight-secondary mt-1 text-sm leading-relaxed">
                 {t(overview.estimate.source === "fallback" ? "fallbackHint" : "historyHint")}
               </p>
             </div>
@@ -119,27 +115,28 @@ export function DashboardView({
                     ? "/app/study"
                     : { pathname: "/app/study", query: { deck: dashboard.scope.deckIds } }
                 }
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-(--radius-control) bg-(--color-accent) px-4 text-base font-medium text-(--color-on-accent) transition-colors duration-(--duration-quick) hover:bg-(--color-accent-hover)"
+                className="spotlight-action inline-flex min-h-12 w-full items-center justify-center rounded-(--radius-control) px-4 text-base font-semibold transition-colors duration-(--duration-quick)"
               >
                 {t("startSession")}
               </Link>
             ) : (
-              <Button
+              <button
+                type="button"
                 disabled
-                className="min-h-12 w-full text-base"
+                className="min-h-12 w-full rounded-(--radius-control) border border-current px-4 text-base font-medium opacity-60"
                 aria-describedby="session-availability"
               >
                 {t("startSession")}
-              </Button>
+              </button>
             )}
-            <p
-              id="session-availability"
-              className="text-sm leading-relaxed text-(--color-ink-muted)"
-            >
+            <p id="session-availability" className="spotlight-secondary text-sm leading-relaxed">
               {t(status === "ready" ? "sessionScopeHint" : "sessionUnavailable")}
             </p>
             {status === "empty" && (
-              <Link href="/import" className={textLink}>
+              <Link
+                href="/import"
+                className="spotlight-action inline-flex min-h-12 items-center justify-center rounded-(--radius-control) px-4 text-base font-semibold"
+              >
                 {t("emptyAction")}
               </Link>
             )}

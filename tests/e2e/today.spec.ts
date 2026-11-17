@@ -214,19 +214,22 @@ test.describe("Today dashboard", () => {
       ).toEqual([]);
       await selectedDeck.check();
       // Extra browser fields cannot override the server-derived owner, course or clock.
-      await page.locator("form").evaluate((form) => {
-        for (const [name, value] of [
-          ["ownerId", "forged-owner"],
-          ["courseId", "forged-course"],
-          ["startedAt", "2099-01-01T00:00:00Z"],
-        ]) {
-          const field = document.createElement("input");
-          field.type = "hidden";
-          field.name = name!;
-          field.value = value!;
-          form.appendChild(field);
-        }
-      });
+      await page
+        .locator("form")
+        .filter({ has: page.locator('input[name="sessionId"]') })
+        .evaluate((form) => {
+          for (const [name, value] of [
+            ["ownerId", "forged-owner"],
+            ["courseId", "forged-course"],
+            ["startedAt", "2099-01-01T00:00:00Z"],
+          ]) {
+            const field = document.createElement("input");
+            field.type = "hidden";
+            field.name = name!;
+            field.value = value!;
+            form.appendChild(field);
+          }
+        });
       await page.getByRole("button", { name: "Crear sesión" }).click();
       await expect(page).toHaveURL(`/es/app/study/${selectedSessionId}`);
       await expect(page.getByRole("heading", { name: "Sesión activa" })).toBeVisible();

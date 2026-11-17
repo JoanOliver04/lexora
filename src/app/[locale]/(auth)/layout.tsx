@@ -5,6 +5,7 @@ import { isPrivateAccessEnabled } from "@/composition/deployment";
 import { ThemeToggle } from "@/shared/presentation/theme/theme-toggle";
 
 import { LocaleSwitcher } from "../locale-switcher";
+import { Brand } from "@/shared/presentation/components/brand";
 
 /**
  * Marco de las rutas de autenticación. Mantiene a mano el cambio de idioma y de
@@ -15,9 +16,12 @@ export default async function AuthLayout({ children }: { children: ReactNode }) 
   const t = await getTranslations("Auth");
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="mx-auto flex w-full max-w-5xl flex-wrap items-end justify-end gap-4 px-4 py-4 sm:px-6">
-        <LocaleSwitcher />
-        <ThemeToggle />
+      <header className="auth-topbar">
+        <Brand />
+        <div className="flex flex-wrap items-end gap-4">
+          <LocaleSwitcher />
+          <ThemeToggle />
+        </div>
       </header>
       <div className="flex flex-1 flex-col">
         {isPrivateAccessEnabled() ? (

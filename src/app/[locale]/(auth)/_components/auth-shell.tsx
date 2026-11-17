@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 /**
  * Marco visual común de las pantallas de autenticación: una tarjeta centrada,
@@ -15,11 +16,25 @@ export function AuthShell({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  const t = useTranslations("Visual");
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-8 px-6 py-10">
-      <h1 className="text-2xl font-semibold tracking-tight text-balance">{title}</h1>
-      {children}
-      {footer ? <div className="text-sm text-(--color-ink-muted)">{footer}</div> : null}
+    <main className="auth-composition">
+      <section className="auth-story" aria-label={t("studySpace")}>
+        <div>
+          <p className="auth-statement">{t("authStatement")}</p>
+          <p className="auth-story-description">{t("authDescription")}</p>
+        </div>
+        <p className="auth-story-footnote">{t("practiceNote")}</p>
+      </section>
+      <section className="auth-form-panel" aria-labelledby="auth-title">
+        <h1 id="auth-title" className="text-3xl font-semibold tracking-tight text-balance">
+          {title}
+        </h1>
+        {children}
+        {footer ? (
+          <div className="text-sm leading-relaxed text-(--color-ink-muted)">{footer}</div>
+        ) : null}
+      </section>
     </main>
   );
 }

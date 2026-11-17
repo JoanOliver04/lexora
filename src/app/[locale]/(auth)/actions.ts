@@ -10,6 +10,7 @@ import {
   signInVisitor,
   signOutVisitor,
   updateCurrentPassword,
+  signInGoogleVisitor,
 } from "@/composition/identity";
 import { clientEnv } from "@/env/client";
 import { routing } from "@/i18n/routing";
@@ -38,6 +39,21 @@ function safeLocale(formData: FormData): string {
 
 function absoluteUrl(path: string): string {
   return new URL(path, clientEnv.NEXT_PUBLIC_SITE_URL).toString();
+}
+
+export async function googleLoginAction(
+  _prev: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const locale = safeLocale(formData);
+  const destination = resolveSafeRedirect(String(formData.get("next") ?? ""), `/${locale}/app`);
+  const callback = new URL(absoluteUrl("/api/auth/callback"));
+  callback.searchParams.set("locale", locale);
+  callback.searchParams.set("flow", "google");
+  callback.searchParams.set("next", destination);
+  const outcome = await signInGoogleVisitor(callback.toString());
+  if (!outcome.ok) return { error: outcome.error };
+  redirect(outcome.url);
 }
 
 export async function loginAction(

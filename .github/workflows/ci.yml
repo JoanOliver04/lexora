@@ -236,6 +236,9 @@ jobs:
       - name: Preview sin acceso al backend personal
         run: pnpm exec playwright test --config playwright.preview.config.ts --retries=0
 
+      - name: Google PKCE y cancelación sin credenciales reales
+        run: pnpm e2e:google
+
       - name: Guardar el informe si algo falla
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

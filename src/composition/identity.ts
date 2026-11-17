@@ -17,6 +17,38 @@ import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/ser
 import { serverEnv } from "@/env/server";
 import { registrationAllowed } from "@/modules/identity/domain/registration-policy";
 import { privateBackendEnabled } from "@/env/deployment";
+import { clientEnv } from "@/env/client";
+import { beginGoogleSignIn } from "@/modules/identity/application/google-sign-in";
+import {
+  createSupabaseGoogleSignIn,
+  googleProviderAvailable,
+} from "@/modules/identity/infrastructure/supabase-google-sign-in";
+
+export async function isGoogleSignInAvailable(): Promise<boolean> {
+  if (!privateBackendEnabled()) return false;
+  if (serverEnv.LEXORA_GOOGLE_AUTH === "disabled") return false;
+  if (serverEnv.LEXORA_GOOGLE_AUTH === "enabled") return true;
+  return googleProviderAvailable(
+    clientEnv.NEXT_PUBLIC_SUPABASE_URL,
+    clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  );
+}
+
+export async function signInGoogleVisitor(
+  callbackUrl: string,
+): Promise<AuthResult<{ url: string }>> {
+  if (!privateBackendEnabled()) return { ok: false, error: "preview-disabled" };
+  const client = await createSupabaseServerClient();
+  return beginGoogleSignIn(
+    createSupabaseGoogleSignIn(
+      client,
+      clientEnv.NEXT_PUBLIC_SUPABASE_URL,
+      clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+      isGoogleSignInAvailable,
+    ),
+    callbackUrl,
+  );
+}
 
 export function isRegistrationOpen(): boolean {
   return (

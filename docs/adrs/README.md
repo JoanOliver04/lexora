@@ -18,6 +18,7 @@ explicarse y, si hace falta, revertirse con conocimiento de causa.
 | [ADR-008](008-personal-use.md) | Entrega para uso personal con registro cerrado | Aceptado |
 | [ADR-009](009-self-account-deletion.md) | Eliminación propia de Auth con privilegio acotado | Aceptado |
 | [ADR-010](010-bounded-import-transactions.md) | Importación por lotes con recibos y progreso protegido | Aceptado |
+| [ADR-011](011-personal-google-sign-in.md) | Google como acceso opcional a la cuenta personal existente | Aceptado |
 
 ## Reglas
 

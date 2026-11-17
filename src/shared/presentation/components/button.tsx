@@ -4,7 +4,7 @@ type Variant = "primary" | "secondary" | "danger";
 
 const base = [
   "inline-flex items-center justify-center gap-2",
-  "rounded-(--radius-control) px-4 text-sm font-medium",
+  "rounded-(--radius-control) px-5 text-sm font-semibold",
   // 44px de alto minimo: es el objetivo tactil recomendado. Un boton de 32px
   // funciona con raton y falla con el pulgar, que es como se va a usar esto.
   "min-h-11",
@@ -15,7 +15,7 @@ const base = [
 const variants: Record<Variant, string> = {
   primary: "bg-(--color-accent) text-(--color-on-accent) hover:bg-(--color-accent-hover)",
   secondary:
-    "border border-(--color-border-strong) text-(--color-ink) hover:bg-(--color-surface-sunken)",
+    "border border-(--color-border-strong) bg-(--color-surface) text-(--color-ink) hover:bg-(--color-surface-sunken)",
   danger: "bg-(--color-danger) text-(--color-on-danger)",
 };
 

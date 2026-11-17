@@ -4,6 +4,12 @@ Lexora utiliza Supabase Auth, una clave pública y el JWT del usuario; las consu
 de negocio siguen sujetas a RLS. El registro está cerrado en aplicación y Auth.
 No se añaden SMTP, telemetría de contenido ni nuevos servicios para el uso personal.
 
+El proveedor opcional Google de [ADR-011](adrs/011-personal-google-sign-in.md)
+añade un salto OAuth con PKCE. El secreto está solo en Supabase; las opciones
+públicas de proveedor pueden compartirse en caché durante60s, sin sesión.
+No se relajan CSP, RLS, guardas de Preview ni el cierre de altas. La activación
+externa y el primer acceso real se distinguen de los tests en Q-011.
+
 ## Navegador y sesiones
 
 El proxy crea un nonce aleatorio de 192 bits por respuesta y sobrescribe cualquier

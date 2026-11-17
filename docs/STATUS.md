@@ -1,5 +1,83 @@
 # Lexora — Estado actual
 
+**Entrega1.1.0 — 2026-11-17:** Google opcional para la cuenta personal y diseño
+renovado. Código `16a1122`, sobre la implementación Google/visual `45e9221`.
+La publicación se controla en [PR116](https://github.com/JoanOliver04/lexora/pull/116),
+con Calidad, Base de datos y Extremo a extremo obligatorios sobre su head.
+
+La regresión WebKit se reprodujo y corrigió pidiendo las rutas al navegar, en
+lugar de precargarlas al entrar los enlaces en pantalla. Se conservan idioma,
+destino, ref, opciones de navegación y opt-in de prefetch; no se filtran errores
+ni se amplían timeouts. Compatibilidad8 PASS, gate962+1/Node12/build PASS.
+El resto de la matriz y los resultados protegidos se registran en la PR y en
+[la evidencia](evidence/LEX-15-google-sign-in.md).
+
+Google está activo en las opciones públicas de Auth y el registro sigue cerrado.
+`auto` es el defecto de la nueva versión; no se han leído ni cambiado secretos.
+Q-011 conserva pendiente el primer acceso Google real a los datos existentes.
+La [guía de activación](GOOGLE_SIGN_IN.md) distingue los retornos de Google y Lexora.
+
+Los siguientes apartados son checkpoints históricos de preparación/publicación.
+
+**Comprobación de Google/producción — 2026-11-17.** El propietario comunica
+Google Auth Platform External/Testing, cuenta de prueba y credenciales guardadas
+directamente en Supabase; añadirá el retorno canónico. Lectura pública de Auth:
+Google activo, correo activo y `disable_signup=true`. No se cambiaron opciones,
+credenciales, altas ni el despliegue.
+
+Producción continúa en `2f50def` (1.0.0), deployment7736813683 SUCCESS. `/es/login`
+responde200/no-store y no contiene el botón ni el nuevo marco visual. PR116 sigue
+abierta, sin fusionar, head `45e9221`. CI43242216566 terminó: Calidad y Base de
+datos SUCCESS; E2E falla en compatibilidad WebKit (4 fallos por errores de acceso
+en prefetch RSC). La suite principal202 PASS+4 omisiones. Los pasos posteriores
+de cerrado/Preview/Google no se ejecutaron en esa CI; no acreditarlos como PASS.
+
+`LEXORA_GOOGLE_AUTH` tiene defecto `auto` en el código de la PR; la versión
+publicada todavía no reconoce esa variable. No se pudo leer un override de
+Vercel: sin conector instalado, CLI autenticada ni host de navegador disponible.
+Por tanto, no se afirma haber verificado un valor efectivo de entorno. El botón
+ausente se explica por la implementación aún no publicada, independientemente
+del retorno canónico. Siguiente trabajo de publicación: resolver WebKit y las
+comprobaciones pendientes, obtener CI verde del head y verificar Production.
+Q-011 conserva pendiente el acceso Google real a la misma cuenta.
+
+**Pausa solicitada por el propietario — 2026-11-12,16:04 Madrid.** Rama local
+`feat/lex-15-1-google-signin`, HEAD `45e9221`; mismo head en PR116. Calidad y
+Base de datos SUCCESS en CI43242216566, E2E todavía en curso. No se ha fusionado
+esta ampliación. La CI remota ya iniciada puede terminar durante la pausa.
+
+La comprobación adicional local dio4 PASS/216 análisis Axe sin infracciones
+ni incompletos. Compatibilidad dio6 PASS/2 fallos WebKit en espera de login;
+el diagnóstico con traza dio1 PASS/1 fallo, todavía sin analizar. La pantalla
+seguía «Entrando…» al superar5s; no se atribuye causa sin revisar la traza.
+Los pases cerrado/Preview encadenados no llegaron a ejecutarse en este pase.
+El código permanece sin cambios después de publicar la PR; solo este registro
+de pausa queda pendiente de commit.
+
+**Siguiente acción exacta al volver:** comprobar la CI del head, analizar la
+traza sintética conservada de WebKit y resolver su demora antes de fusionar;
+completar cerrado/Preview y verificar Production. El propietario hará después
+de la pausa la [configuración de Google](GOOGLE_SIGN_IN.md); Q-011 sigue abierta.
+No reiniciar las pruebas físicas ya confirmadas ni tocar datos reales.
+
+**Ampliación 1.1.0 — 2026-11-12:** renovación visual y Google opcional para la
+cuenta personal existente. Código `2bb9237`, publicación en
+[PR116](https://github.com/JoanOliver04/lexora/pull/116), condicionada a sus tres
+checks protegidos y al despliegue Production. El propietario confirma conservar
+el acceso personal cerrado. No hay SQL, dependencias nuevas ni cambios de FSRS.
+
+Gate local PASS962+1/Node12/build; regresión18 PASS y Google8 PASS, sin retries,
+con32 análisis A/AA sin incidencias ni incompletos. Tres revisiones independientes
+cerradas. Se corrigieron el reflow320/texto200, el selector ambiguo de formulario
+y una carrera en la espera de foco de una prueba. Evidencia y límites en
+[Google](evidence/LEX-15-google-sign-in.md) y [diseño](evidence/LEX-15-visual-direction.md).
+
+**Único paso externo de esta ampliación:** Q-011, activar Google y comprobar
+el acceso real a los datos existentes. El botón se detecta automáticamente
+cuando Supabase habilita el proveedor. [Guía de activación](GOOGLE_SIGN_IN.md)
+y [ADR-011](adrs/011-personal-google-sign-in.md). El código probado no se presenta
+como consentimiento o vinculación Google real.
+
 **Entrega: V1.0.0 personal · revisión de cierre 2026-11-12.**
 
 El alcance personal de [ADR-008](adrs/008-personal-use.md) está implementado:
