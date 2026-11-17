@@ -1,8 +1,8 @@
 {
   "name": "lexora",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
-  "description": "Plataforma adaptativa de aprendizaje de inglés A1–B2 con repetición espaciada.",
+  "description": "Plataforma adaptativa de aprendizaje de inglés A1–C1 con repetición espaciada.",
   "engines": {
     "node": "24.x"
   },

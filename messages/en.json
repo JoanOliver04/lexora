@@ -26,7 +26,7 @@
   },
   "Metadata": {
     "title": "Lexora",
-    "description": "Learn and keep your A1–B2 English with active recall and spaced repetition."
+    "description": "Learn and keep your A1–C1 English with active recall and spaced repetition."
   },
   "Home": {
     "title": "Lexora",
@@ -546,6 +546,7 @@
     "levelA2": "A2 — Elementary",
     "levelB1": "B1 — Intermediate",
     "levelB2": "B2 — Upper intermediate",
+    "levelC1": "C1 — Advanced",
     "submit": "Create my course",
     "submitting": "Creating…",
     "genericError": "We couldn't create the course. Check the details and try again.",

@@ -75,7 +75,7 @@ Mezclarlos es la vía rápida a un modelo que no admite un segundo par de idioma
 #### Esquema exacto (migración `20260828143434_identity_and_course`, LEX-2.1)
 
 Estados cerrados como enums de PostgreSQL: `ui_locale` (`es`, `en`) y
-`cefr_level` (`A1`, `A2`, `B1`, `B2`).
+`cefr_level` (`A1`, `A2`, `B1`, `B2`, `C1`).
 
 **`profiles`** — extensión uno a uno de `auth.users`.
 

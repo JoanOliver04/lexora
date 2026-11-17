@@ -24,10 +24,10 @@
 export type UiLocale = "es" | "en";
 
 /** Nivel del Marco Común Europeo. Coincide con el enum `public.cefr_level`. */
-export type CefrLevel = "A1" | "A2" | "B1" | "B2";
+export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1";
 
 export const UI_LOCALES: readonly UiLocale[] = ["es", "en"];
-export const CEFR_LEVELS: readonly CefrLevel[] = ["A1", "A2", "B1", "B2"];
+export const CEFR_LEVELS: readonly CefrLevel[] = ["A1", "A2", "B1", "B2", "C1"];
 
 /**
  * Curso de referencia (seed.sql, DATA_MODEL §6.3). Fuente única para el

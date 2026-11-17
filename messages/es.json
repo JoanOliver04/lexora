@@ -26,7 +26,7 @@
   },
   "Metadata": {
     "title": "Lexora",
-    "description": "Aprende y mantén tu inglés A1–B2 con recuperación activa y repetición espaciada."
+    "description": "Aprende y mantén tu inglés A1–C1 con recuperación activa y repetición espaciada."
   },
   "Home": {
     "title": "Lexora",
@@ -546,6 +546,7 @@
     "levelA2": "A2 — Básico",
     "levelB1": "B1 — Intermedio",
     "levelB2": "B2 — Intermedio alto",
+    "levelC1": "C1 — Avanzado",
     "submit": "Crear mi curso",
     "submitting": "Creando…",
     "genericError": "No hemos podido crear el curso. Revisa los datos e inténtalo de nuevo.",

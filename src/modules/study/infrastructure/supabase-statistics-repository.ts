@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { StatisticsRepository } from "../application/statistics";
 import { studyErrorFrom } from "../application/study-error";
 import { MEMORY_PHASES, REVIEW_RATINGS } from "../domain/memory";
+import { CEFR_LEVELS } from "@/modules/library/domain/taxonomy";
 import type { Database } from "@/shared/infrastructure/supabase/database.types";
 
 const count = z.number().int().nonnegative().safe();
@@ -13,7 +14,7 @@ const breakdown = z.object({
 });
 const payload = z.object({
   by_kind: z.array(breakdown).max(7),
-  by_level: z.array(breakdown).max(5),
+  by_level: z.array(breakdown).max(CEFR_LEVELS.length + 1),
   activity: z
     .array(
       z.object({

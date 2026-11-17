@@ -1,9 +1,27 @@
 # Lexora — Estado actual
 
-**Entrega1.1.0 — 2026-11-17:** Google opcional para la cuenta personal y diseño
-renovado. Código `16a1122`, sobre la implementación Google/visual `45e9221`.
-La publicación se controla en [PR116](https://github.com/JoanOliver04/lexora/pull/116),
-con Calidad, Base de datos y Extremo a extremo obligatorios sobre su head.
+**Entrega1.2.0 — 2026-11-17:** niveles A1, A2, B1, B2 y C1
+en onboarding, biblioteca y filtros. C1 clasifica contenido; no incorpora un
+currículo precargado ni reclasifica datos existentes. Migración aditiva
+`20261117161352_add_c1_level.sql` aplicada a producción y al backend local;
+enum verificado con los cinco valores, sin cambios de filas ni RLS.
+[ADR-012](adrs/012-c1-level.md) y [evidencia](evidence/LEX-16-c1.md).
+
+Pruebas específicas: dominios41 PASS; pgTAP11 PASS y suite SQL603 PASS;
+E2E4 PASS sin retries, móvil/escritorio y ES/EN, con selección, persistencia,
+filtros y comprobaciones de accesibilidad. La revisión detectó el límite de
+cinco grupos en estadísticas; corregido para admitir los cinco niveles más
+contenido sin nivel, con regresión contra RPC real (rojo1 FAIL, después8 PASS).
+La publicación requiere Calidad, Base de datos y Extremo a extremo verdes
+sobre el head exacto; sus resultados y Production se registran en la PR.
+Gate final tras la corrección:966 PASS+1 omisión privada, Nodebackup12 PASS,
+formato/lint/tipos/28 contrastes/build PASS. No hay nuevas dependencias.
+
+**Entrega1.1.0 publicada — 2026-11-17:** Google opcional para la cuenta personal
+y diseño renovado. [PR116](https://github.com/JoanOliver04/lexora/pull/116),
+head `cb48b85`, merge `bd0709a`, deployment7858441139 SUCCESS. Calidad, Base de
+datos y Extremo a extremo SUCCESS en CI44114841801. El propietario confirma
+«Ya funciona lo de google»; Q-011 se cierra por su aceptación funcional.
 
 La regresión WebKit se reprodujo y corrigió pidiendo las rutas al navegar, en
 lugar de precargarlas al entrar los enlaces en pantalla. Se conservan idioma,
@@ -14,7 +32,8 @@ El resto de la matriz y los resultados protegidos se registran en la PR y en
 
 Google está activo en las opciones públicas de Auth y el registro sigue cerrado.
 `auto` es el defecto de la nueva versión; no se han leído ni cambiado secretos.
-Q-011 conserva pendiente el primer acceso Google real a los datos existentes.
+La confirmación no detalla comprobaciones individuales de UID o datos; no se
+le atribuyen esas verificaciones.
 La [guía de activación](GOOGLE_SIGN_IN.md) distingue los retornos de Google y Lexora.
 
 Los siguientes apartados son checkpoints históricos de preparación/publicación.
