@@ -5,8 +5,10 @@ import { expect, type Page, type TestInfo } from "@playwright/test";
 /** Traverse native Tab stops, including checked radio groups, without activating actions. */
 async function auditKeyboard(page: Page, stage: string) {
   const expected = await page.evaluate(() => {
+    // showModal makes the rest of the document inert without an [inert] attribute.
+    const root = document.querySelector("dialog:modal") ?? document;
     const nodes = Array.from(
-      document.querySelectorAll<HTMLElement>(
+      root.querySelectorAll<HTMLElement>(
         "a[href], button, input, textarea, select, summary, [tabindex]",
       ),
     ).filter(

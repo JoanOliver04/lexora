@@ -13,11 +13,24 @@ import {
   type DeckCategory,
 } from "@/modules/library/domain/taxonomy";
 import { Button, Input, Label } from "@/shared/presentation/components";
+import {
+  CollectionEmpty,
+  CollectionPagination,
+  CollectionResults,
+} from "@/shared/presentation/components/collection-tools";
+import {
+  collectionPage,
+  collectionPageQuery,
+  collectionSearch,
+  queryValue,
+  COLLECTION_PAGE_SIZE as PAGE_SIZE,
+  MAX_COLLECTION_SEARCH_LENGTH,
+  type QueryValue,
+} from "@/shared/presentation/library-query";
 
 import { setDeckArchivedAction, moveDeckAction } from "./actions";
 import { CreateDeckForm } from "./create-deck-form";
-
-const PAGE_SIZE = 20;
+import { PendingButton } from "../../(auth)/_components/pending-button";
 
 function parseCategory(value: string | undefined): DeckCategory | undefined {
   return DECK_CATEGORIES.includes(value as DeckCategory) ? (value as DeckCategory) : undefined;
@@ -25,11 +38,6 @@ function parseCategory(value: string | undefined): DeckCategory | undefined {
 
 function parseCefrLevel(value: string | undefined): CefrLevel | undefined {
   return CEFR_LEVELS.includes(value as CefrLevel) ? (value as CefrLevel) : undefined;
-}
-
-function parsePage(value: string | undefined): number {
-  const page = Number.parseInt(value ?? "1", 10);
-  return Number.isFinite(page) && page > 0 ? page : 1;
 }
 
 /**
@@ -59,11 +67,11 @@ export default async function DecksPage({
 }: {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{
-    archived?: string;
-    q?: string;
-    category?: string;
-    cefrLevel?: string;
-    page?: string;
+    archived?: QueryValue;
+    q?: QueryValue;
+    category?: QueryValue;
+    cefrLevel?: QueryValue;
+    page?: QueryValue;
   }>;
 }) {
   const { locale } = await params;
@@ -84,12 +92,18 @@ export default async function DecksPage({
   }
 
   const sp = await searchParams;
-  const includeArchived = sp.archived === "1";
-  const search = sp.q?.trim() || undefined;
-  const category = parseCategory(sp.category);
-  const cefrLevel = parseCefrLevel(sp.cefrLevel);
-  const page = parsePage(sp.page);
+  const includeArchived = queryValue(sp.archived) === "1";
+  const search = collectionSearch(sp.q);
+  const category = parseCategory(queryValue(sp.category));
+  const cefrLevel = parseCefrLevel(queryValue(sp.cefrLevel));
+  const page = collectionPage(sp.page);
   const offset = (page - 1) * PAGE_SIZE;
+  const filterQuery: Record<string, string> = {
+    ...(search ? { q: search } : {}),
+    ...(category ? { category } : {}),
+    ...(cefrLevel ? { cefrLevel } : {}),
+  };
+  const baseQuery = includeArchived ? { ...filterQuery, archived: "1" } : filterQuery;
 
   const { items: decks, total } = await searchDecks(
     context.decks,
@@ -104,6 +118,11 @@ export default async function DecksPage({
       offset,
     },
   );
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (page > pageCount) {
+    const query = new URLSearchParams(collectionPageQuery(baseQuery, pageCount));
+    redirect(`/${locale}/decks${query.size ? `?${query}` : ""}`);
+  }
   const counts = await countConceptsPerDeck(
     context.decks,
     context.ownerId,
@@ -111,215 +130,205 @@ export default async function DecksPage({
   );
 
   const t = await getTranslations("Library");
+  const collection = await getTranslations("Collection");
   const isFiltered = Boolean(search || category || cefrLevel);
   const reorderable = !isFiltered && !includeArchived && total <= PAGE_SIZE;
-  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  // Sin `archived`: cada enlace decide si lo añade, para no arrastrar
-  // `archived: undefined` a la query string.
-  const filterQuery = {
-    ...(sp.q ? { q: sp.q } : {}),
-    ...(category ? { category } : {}),
-    ...(cefrLevel ? { cefrLevel } : {}),
-  };
-  const baseQuery = includeArchived ? { ...filterQuery, archived: "1" } : filterQuery;
+  const filters = [
+    ...(search ? [{ key: "q", label: search }] : []),
+    ...(category ? [{ key: "category", label: t(`categories.${category}`) }] : []),
+    ...(cefrLevel ? [{ key: "cefrLevel", label: cefrLevel }] : []),
+    ...(includeArchived ? [{ key: "archived", label: collection("archived") }] : []),
+  ];
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-6 py-12">
-      <header className="flex flex-col gap-2">
+    <main className="collection-page">
+      <header className="collection-header">
         <Link href="/app" className="text-sm text-(--color-ink-muted) underline underline-offset-4">
           {t("backToApp")}
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("decksTitle")}</h1>
-        <p className="text-sm text-(--color-ink-muted)">{t("decksIntro")}</p>
+        <div className="collection-heading">
+          <div>
+            <h1>{t("decksTitle")}</h1>
+            <p>{t("decksIntro")}</p>
+          </div>
+          <Link href="/decks#new-deck" className="collection-action">
+            {t("createHeading")}
+          </Link>
+        </div>
       </header>
 
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="text-lg font-medium">{t("listHeading")}</h2>
-          {includeArchived ? (
-            <Link
-              href={{ pathname: "/decks", query: filterQuery }}
-              className="text-sm text-(--color-ink-muted) underline underline-offset-4"
-            >
-              {t("hideArchived")}
-            </Link>
-          ) : (
-            <Link
-              href={{ pathname: "/decks", query: { ...filterQuery, archived: "1" } }}
-              className="text-sm text-(--color-ink-muted) underline underline-offset-4"
-            >
-              {t("showArchived")}
-            </Link>
-          )}
-        </div>
+      <div className="collection-layout">
+        <section className="collection-list" aria-labelledby="collection-list-heading">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h2 id="collection-list-heading" className="text-lg font-medium">
+              {t("listHeading")}
+            </h2>
+            {includeArchived ? (
+              <Link
+                href={{ pathname: "/decks", query: filterQuery }}
+                className="text-sm text-(--color-ink-muted) underline underline-offset-4"
+              >
+                {t("hideArchived")}
+              </Link>
+            ) : (
+              <Link
+                href={{ pathname: "/decks", query: { ...filterQuery, archived: "1" } }}
+                className="text-sm text-(--color-ink-muted) underline underline-offset-4"
+              >
+                {t("showArchived")}
+              </Link>
+            )}
+          </div>
 
-        <form method="get" className="flex flex-wrap items-end gap-3">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="deck-search-q">{t("search.label")}</Label>
-            <Input
-              id="deck-search-q"
-              name="q"
-              type="text"
-              placeholder={t("search.placeholder")}
-              defaultValue={sp.q ?? ""}
+          <form method="get" className="collection-toolbar">
+            <div className="collection-field">
+              <Label htmlFor="deck-search-q">{t("search.label")}</Label>
+              <Input
+                id="deck-search-q"
+                name="q"
+                type="search"
+                maxLength={MAX_COLLECTION_SEARCH_LENGTH}
+                placeholder={t("search.placeholder")}
+                defaultValue={search ?? ""}
+              />
+            </div>
+            <div className="collection-field">
+              <Label htmlFor="deck-search-category">{t("filters.categoryLabel")}</Label>
+              <select
+                id="deck-search-category"
+                name="category"
+                defaultValue={category ?? ""}
+                className="min-h-11 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-ink)"
+              >
+                <option value="">{t("filters.categoryAll")}</option>
+                {DECK_CATEGORIES.map((option) => (
+                  <option key={option} value={option}>
+                    {t(`categories.${option}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="collection-field">
+              <Label htmlFor="deck-search-level">{t("filters.levelLabel")}</Label>
+              <select
+                id="deck-search-level"
+                name="cefrLevel"
+                defaultValue={cefrLevel ?? ""}
+                className="min-h-11 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-ink)"
+              >
+                <option value="">{t("filters.levelAll")}</option>
+                {CEFR_LEVELS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {includeArchived ? <input type="hidden" name="archived" value="1" /> : null}
+            <Button type="submit" variant="secondary">
+              {t("search.submit")}
+            </Button>
+            {isFiltered || includeArchived ? (
+              <Link
+                href="/decks"
+                className="text-sm text-(--color-ink-muted) underline underline-offset-4"
+              >
+                {t("search.clear")}
+              </Link>
+            ) : null}
+          </form>
+
+          <CollectionResults
+            pathname="/decks"
+            query={baseQuery}
+            filters={filters}
+            total={total}
+            page={page}
+          />
+          {decks.length === 0 ? (
+            <CollectionEmpty
+              pathname="/decks"
+              filtered={isFiltered || includeArchived}
+              message={
+                total === 0 && !isFiltered && !includeArchived ? t("emptyDecks") : t("noResults")
+              }
             />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="deck-search-category">{t("filters.categoryLabel")}</Label>
-            <select
-              id="deck-search-category"
-              name="category"
-              defaultValue={category ?? ""}
-              className="min-h-11 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-ink)"
-            >
-              <option value="">{t("filters.categoryAll")}</option>
-              {DECK_CATEGORIES.map((option) => (
-                <option key={option} value={option}>
-                  {t(`categories.${option}`)}
-                </option>
+          ) : (
+            <ul className="collection-items">
+              {decks.map((deck, index) => (
+                <li key={deck.id} className="collection-item">
+                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <Link href={`/decks/${deck.id}`} className="collection-item-title">
+                      {deck.title}
+                    </Link>
+                    {deck.category ? (
+                      <span className="collection-badge">{t(`categories.${deck.category}`)}</span>
+                    ) : null}
+                    {deck.cefrLevel ? (
+                      <span className="collection-badge">{deck.cefrLevel}</span>
+                    ) : null}
+                    {deck.archivedAt ? (
+                      <span className="text-xs text-(--color-ink-subtle)">
+                        {t("archivedBadge")}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <p className="text-sm text-(--color-ink-muted)">
+                    {t("conceptCount", { count: counts[deck.id] ?? 0 })}
+                  </p>
+
+                  <div className="flex flex-wrap gap-2">
+                    {reorderable && !deck.archivedAt ? (
+                      <>
+                        <form action={moveDeckAction}>
+                          <input type="hidden" name="locale" value={locale} />
+                          <input type="hidden" name="deckId" value={deck.id} />
+                          <input type="hidden" name="direction" value="up" />
+                          <PendingButton
+                            idle={t("actions.moveUp")}
+                            pending={collection("saving")}
+                            variant="secondary"
+                            disabled={index === 0}
+                          />
+                        </form>
+                        <form action={moveDeckAction}>
+                          <input type="hidden" name="locale" value={locale} />
+                          <input type="hidden" name="deckId" value={deck.id} />
+                          <input type="hidden" name="direction" value="down" />
+                          <PendingButton
+                            idle={t("actions.moveDown")}
+                            pending={collection("saving")}
+                            variant="secondary"
+                            disabled={index === decks.length - 1}
+                          />
+                        </form>
+                      </>
+                    ) : null}
+                    <form action={setDeckArchivedAction}>
+                      <input type="hidden" name="locale" value={locale} />
+                      <input type="hidden" name="deckId" value={deck.id} />
+                      <input type="hidden" name="archived" value={deck.archivedAt ? "0" : "1"} />
+                      <PendingButton
+                        idle={deck.archivedAt ? t("actions.restore") : t("actions.archive")}
+                        pending={collection("saving")}
+                        variant="secondary"
+                      />
+                    </form>
+                  </div>
+                </li>
               ))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="deck-search-level">{t("filters.levelLabel")}</Label>
-            <select
-              id="deck-search-level"
-              name="cefrLevel"
-              defaultValue={cefrLevel ?? ""}
-              className="min-h-11 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-ink)"
-            >
-              <option value="">{t("filters.levelAll")}</option>
-              {CEFR_LEVELS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          {includeArchived ? <input type="hidden" name="archived" value="1" /> : null}
-          <Button type="submit" variant="secondary">
-            {t("search.submit")}
-          </Button>
-          {isFiltered || includeArchived ? (
-            <Link
-              href="/decks"
-              className="text-sm text-(--color-ink-muted) underline underline-offset-4"
-            >
-              {t("search.clear")}
-            </Link>
-          ) : null}
-        </form>
+            </ul>
+          )}
 
-        {decks.length === 0 ? (
-          <p className="text-sm text-(--color-ink-muted)">
-            {total === 0 && !isFiltered && !includeArchived ? t("emptyDecks") : t("noResults")}
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {decks.map((deck, index) => (
-              <li
-                key={deck.id}
-                className="flex flex-col gap-2 rounded-(--radius-control) border border-(--color-border) p-4"
-              >
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <Link
-                    href={`/decks/${deck.id}`}
-                    className="font-medium underline underline-offset-4"
-                  >
-                    {deck.title}
-                  </Link>
-                  {deck.category ? (
-                    <span className="text-xs text-(--color-ink-subtle)">
-                      {t(`categories.${deck.category}`)}
-                    </span>
-                  ) : null}
-                  {deck.cefrLevel ? (
-                    <span className="text-xs text-(--color-ink-subtle)">{deck.cefrLevel}</span>
-                  ) : null}
-                  {deck.archivedAt ? (
-                    <span className="text-xs text-(--color-ink-subtle)">{t("archivedBadge")}</span>
-                  ) : null}
-                </div>
+          <CollectionPagination pathname="/decks" query={baseQuery} page={page} pages={pageCount} />
+        </section>
 
-                <p className="text-sm text-(--color-ink-muted)">
-                  {t("conceptCount", { count: counts[deck.id] ?? 0 })}
-                </p>
-
-                <div className="flex flex-wrap gap-2">
-                  {reorderable && !deck.archivedAt ? (
-                    <>
-                      <form action={moveDeckAction}>
-                        <input type="hidden" name="locale" value={locale} />
-                        <input type="hidden" name="deckId" value={deck.id} />
-                        <input type="hidden" name="direction" value="up" />
-                        <Button type="submit" variant="secondary" disabled={index === 0}>
-                          {t("actions.moveUp")}
-                        </Button>
-                      </form>
-                      <form action={moveDeckAction}>
-                        <input type="hidden" name="locale" value={locale} />
-                        <input type="hidden" name="deckId" value={deck.id} />
-                        <input type="hidden" name="direction" value="down" />
-                        <Button
-                          type="submit"
-                          variant="secondary"
-                          disabled={index === decks.length - 1}
-                        >
-                          {t("actions.moveDown")}
-                        </Button>
-                      </form>
-                    </>
-                  ) : null}
-                  <form action={setDeckArchivedAction}>
-                    <input type="hidden" name="locale" value={locale} />
-                    <input type="hidden" name="deckId" value={deck.id} />
-                    <input type="hidden" name="archived" value={deck.archivedAt ? "0" : "1"} />
-                    <Button type="submit" variant="secondary">
-                      {deck.archivedAt ? t("actions.restore") : t("actions.archive")}
-                    </Button>
-                  </form>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {total > PAGE_SIZE ? (
-          <div className="flex items-center justify-between gap-4 text-sm">
-            {page > 1 ? (
-              <Link
-                href={{
-                  pathname: "/decks",
-                  query: page - 1 > 1 ? { ...baseQuery, page: String(page - 1) } : baseQuery,
-                }}
-                className="underline underline-offset-4"
-              >
-                {t("pagination.previous")}
-              </Link>
-            ) : (
-              <span />
-            )}
-            <span className="text-(--color-ink-muted)">
-              {t("pagination.status", { page, pages: pageCount })}
-            </span>
-            {page < pageCount ? (
-              <Link
-                href={{ pathname: "/decks", query: { ...baseQuery, page: String(page + 1) } }}
-                className="underline underline-offset-4"
-              >
-                {t("pagination.next")}
-              </Link>
-            ) : (
-              <span />
-            )}
-          </div>
-        ) : null}
-      </section>
-
-      <section className="flex flex-col gap-4 border-t border-(--color-border) pt-8">
-        <h2 className="text-lg font-medium">{t("createHeading")}</h2>
-        <CreateDeckForm locale={locale} />
-      </section>
+        <section id="new-deck" tabIndex={-1} className="collection-create">
+          <h2 className="text-lg font-medium">{t("createHeading")}</h2>
+          <CreateDeckForm locale={locale} />
+        </section>
+      </div>
     </main>
   );
 }

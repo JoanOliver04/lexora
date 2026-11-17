@@ -13,6 +13,43 @@
     "space": "Tu espacio de estudio",
     "note": "Una idea. Varias formas de recordarla. A tu ritmo."
   },
+  "Commands": {
+    "trigger": "Accesos rápidos",
+    "title": "¿Adónde quieres ir?",
+    "close": "Cerrar accesos rápidos",
+    "search": "Busca una sección o una acción",
+    "empty": "No hay coincidencias. Prueba con otro nombre.",
+    "matches": "{count, plural, one {# acceso disponible} other {# accesos disponibles}}",
+    "hint": "Tab para moverte, Intro para abrir y Esc para cerrar.",
+    "newConcept": "Nuevo concepto",
+    "newDeck": "Nuevo mazo",
+    "study": "Abrir sesiones",
+    "hints": {
+      "newConcept": "Añadir y crear una idea para practicar",
+      "newDeck": "Crear y organizar una colección",
+      "study": "Preparar o continuar una sesión de repaso",
+      "today": "Repasos disponibles y actividad reciente",
+      "decks": "Organizar tu biblioteca en mazos",
+      "concepts": "Buscar y editar tu vocabulario e ideas",
+      "statistics": "Consultar tu actividad y evolución",
+      "settings": "Cambiar preferencias, idioma y aspecto",
+      "import": "Añadir contenido desde archivos CSV o TSV",
+      "history": "Consultar los repasos guardados"
+    }
+  },
+  "Collection": {
+    "results": "{total, plural, =0 {Sin resultados} one {{from, number}–{to, number} de # resultado} other {{from, number}–{to, number} de # resultados}}",
+    "activeFilters": "Filtros activos",
+    "saving": "Guardando…",
+    "removeFilter": "Quitar filtro: {label}",
+    "archived": "Archivados incluidos",
+    "pagination": "Páginas de la biblioteca",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Página {page} de {pages}",
+    "clear": "Quitar filtros",
+    "create": "Crear el primero"
+  },
   "Visual": {
     "studySpace": "Tu espacio de estudio",
     "authStatement": "Haz sitio a lo que quieres recordar.",
@@ -153,6 +190,13 @@
     }
   },
   "Today": {
+    "libraryHeading": "Haz crecer tu biblioteca",
+    "addConcept": "Añadir un concepto",
+    "addConceptHint": "Guarda una palabra, una expresión o una idea.",
+    "organizeDecks": "Organizar mis mazos",
+    "organizeDecksHint": "Agrupa lo que quieres practicar junto.",
+    "importContent": "Importar contenido",
+    "importContentHint": "Trae tus apuntes desde un archivo.",
     "title": "Hoy",
     "allDecks": "Todos los mazos",
     "selectedDecks": "{count, plural, one {# mazo seleccionado} other {# mazos seleccionados}}",

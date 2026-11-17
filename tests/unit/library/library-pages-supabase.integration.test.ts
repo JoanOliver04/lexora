@@ -4,6 +4,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Database } from "@/shared/infrastructure/supabase/database.types";
 import { createSupabaseDeckRepository } from "@/modules/library/infrastructure/supabase-deck-repository";
+import { createSupabaseConceptRepository } from "@/modules/library/infrastructure/supabase-concept-repository";
 import { createSupabaseDeckDetailRepository } from "@/modules/library/infrastructure/supabase-deck-detail-repository";
 import { createSupabaseTagRepository } from "@/modules/library/infrastructure/supabase-tag-repository";
 import { createSupabaseLibraryOptionsRepository } from "@/modules/library/infrastructure/supabase-library-options-repository";
@@ -144,6 +145,37 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
         deckId: deck,
         ...parseDeckDetailQuery(query),
       });
+
+    it("recovers exact private counts for out-of-range collection pages and retains every filter", async () => {
+      const input = {
+        ownerId: owner,
+        courseId: course,
+        includeArchived: false,
+        offset: 999999,
+        limit: 20,
+      };
+      for (const testCase of [
+        { repository: createSupabaseDeckRepository(a), search: "Synthetic large deck", total: 1 },
+        {
+          repository: createSupabaseConceptRepository(a),
+          search: "Synthetic library 000",
+          total: 100,
+        },
+      ]) {
+        expect(await testCase.repository.search({ ...input, search: testCase.search })).toEqual({
+          items: [],
+          total: testCase.total,
+        });
+        expect(
+          await testCase.repository.search({ ...input, search: testCase.search, cefrLevel: "C1" }),
+        ).toEqual({ items: [], total: 0 });
+      }
+      for (const repository of [
+        createSupabaseDeckRepository(b),
+        createSupabaseConceptRepository(b),
+      ])
+        expect(await repository.search(input)).toEqual({ items: [], total: 0 });
+    });
 
     it("counts all 1010 relationships and returns only bounded member/available pages", async () => {
       const counts = await createSupabaseDeckRepository(a).countConceptsByDeck({

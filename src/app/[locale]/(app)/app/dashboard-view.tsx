@@ -1,6 +1,7 @@
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
+import { WorkspaceIcon } from "@/shared/presentation/components/workspace-destinations";
 import type { TodayDashboard } from "@/modules/study/application/today-dashboard";
 
 const textLink =
@@ -191,6 +192,33 @@ export function DashboardView({
           )}
         </section>
       </div>
+
+      <section className="dashboard-shortcuts" aria-labelledby="today-library">
+        <h2 id="today-library">{t("libraryHeading")}</h2>
+        <div>
+          <Link href="/concepts#new-concept">
+            <WorkspaceIcon path="M12 4v16M4 12h16" />
+            <span>
+              <strong>{t("addConcept")}</strong>
+              <span>{t("addConceptHint")}</span>
+            </span>
+          </Link>
+          <Link href="/decks">
+            <WorkspaceIcon path="m5 8 7-4 7 4-7 4-7-4Zm0 4 7 4 7-4M5 16l7 4 7-4" />
+            <span>
+              <strong>{t("organizeDecks")}</strong>
+              <span>{t("organizeDecksHint")}</span>
+            </span>
+          </Link>
+          <Link href="/import">
+            <WorkspaceIcon path="M12 3v12m-4-4 4 4 4-4M4 15v5h16v-5" />
+            <span>
+              <strong>{t("importContent")}</strong>
+              <span>{t("importContentHint")}</span>
+            </span>
+          </Link>
+        </div>
+      </section>
 
       <section
         aria-labelledby="today-activity"

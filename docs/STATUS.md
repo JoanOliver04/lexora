@@ -1,5 +1,27 @@
 # Lexora — Estado actual
 
+**Entrega1.3.0 — 2026-11-17:** mejoras integradas de navegación y biblioteca.
+Panel de accesos rápidos con búsqueda local ES/EN, Ctrl/Cmd+K, diálogo nativo,
+foco restituido y uso móvil. Biblioteca con resultados, filtros removibles,
+estados vacíos accionables, acceso a crear y distribución adaptativa. Hoy añade
+acciones concretas para ampliar la biblioteca. Las operaciones de archivo,
+restauración y orden muestran espera y bloquean su propio reenvío pendiente.
+
+Corregidos dos errores reproducidos: búsquedas con parámetros repetidos (HTTP500)
+y páginas fuera de rango (PGRST103). Se normalizan búsquedas/páginas, se conserva
+el filtro en lecturas de recuento bajo RLS y se redirige a una página válida.
+No hay migraciones, paquetes nuevos, cambios de Auth/RLS ni del motor FSRS.
+
+Regresión de pantallas16 PASS sin retries, ES/EN×móvil/escritorio; regresión
+final de interacciones8 PASS y compatibilidad Firefox/WebKit8 PASS. Integración
+de biblioteca7 PASS y pgTAP603 PASS. Gate final970 PASS+1 omisión privada,
+Nodebackup12/formato/lint/tipos/28 contrastes/build PASS. Tres revisiones
+independientes sin hallazgos accionables en27 archivos. La publicación exige los
+tres checks del head exacto y verificación Production. Resultados remotos en la
+PR y evidencia de implementación en [LEX-17](evidence/LEX-17-workspace.md).
+
+Los siguientes apartados conservan las entregas anteriores.
+
 **Entrega1.2.0 — 2026-11-17:** niveles A1, A2, B1, B2 y C1
 en onboarding, biblioteca y filtros. C1 clasifica contenido; no incorpora un
 currículo precargado ni reclasifica datos existentes. Migración aditiva

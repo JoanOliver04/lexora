@@ -30,6 +30,23 @@ for (const locale of ["es", "en"] as const) {
       desktop.on("pageerror", (error) => errors.push(error.message));
       const email = await signUp(desktop);
       await completeOnboarding(desktop, { uiLocale: locale });
+      await expect(
+        desktop.getByRole("button", {
+          name: es ? "Accesos rápidos" : "Quick navigation",
+          exact: true,
+        }),
+      ).toBeEnabled();
+      await desktop.keyboard.press("Control+k");
+      const commands = desktop.getByRole("dialog");
+      await expect(commands.getByRole("searchbox")).toBeFocused();
+      await desktop.screenshot({
+        path: info.outputPath(`commands-all-${locale}.png`),
+        animations: "disabled",
+      });
+      await commands.getByRole("searchbox").fill(es ? "estadisticas" : "statistics");
+      await expect(commands.getByRole("link")).toHaveCount(1);
+      await desktop.keyboard.press("Escape");
+      await expect(commands).not.toBeVisible();
       fixture = await localLibraryFixture(email);
       mobileContext = await browser.newContext({
         baseURL,
@@ -66,6 +83,17 @@ for (const locale of ["es", "en"] as const) {
         .getByRole("button", { name: es ? "Crear sesión" : "Create session", exact: true })
         .click();
       await expect(desktop.getByTestId("study-card")).toBeVisible();
+      await desktop.keyboard.press("Control+k");
+      await expect(commands.getByRole("searchbox")).toBeFocused();
+      await commands.getByRole("searchbox").fill("1 2 3 4");
+      await desktop.keyboard.press("Escape");
+      await expect(
+        desktop.getByRole("button", {
+          name: es ? "Revelar respuesta" : "Reveal answer",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(desktop.getByText("An original answer", { exact: true })).toHaveCount(0);
       await desktop
         .getByRole("button", { name: es ? "Revelar respuesta" : "Reveal answer", exact: true })
         .click();
