@@ -11,6 +11,12 @@ const valid = {
 } as const;
 
 describe("validateDeckDraft", () => {
+  it("conserva C1 en un mazo avanzado", () => {
+    expect(validateDeckDraft({ ...valid, cefrLevel: "C1" })).toMatchObject({
+      ok: true,
+      value: { cefrLevel: "C1" },
+    });
+  });
   it("acepta un borrador completo y normaliza el título", () => {
     const result = validateDeckDraft({ ...valid, title: "  A1 ·   Vocabulario  " });
     expect(result).toEqual({
@@ -51,7 +57,7 @@ describe("validateDeckDraft", () => {
   });
 
   it("rechaza nivel y categoría fuera del vocabulario, y acumula las dos pegas", () => {
-    const result = validateDeckDraft({ title: "x", cefrLevel: "C1", category: "slang" });
+    const result = validateDeckDraft({ title: "x", cefrLevel: "C2", category: "slang" });
     expect(result).toEqual({
       ok: false,
       issues: ["deck.cefrLevel.invalid", "deck.category.invalid"],

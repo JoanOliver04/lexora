@@ -1072,7 +1072,7 @@ export type Database = {
       }
     }
     Enums: {
-      cefr_level: "A1" | "A2" | "B1" | "B2"
+      cefr_level: "A1" | "A2" | "B1" | "B2" | "C1"
       concept_kind:
         | "vocabulary"
         | "collocation"
@@ -1245,7 +1245,7 @@ export const Constants = {
   },
   public: {
     Enums: {
-      cefr_level: ["A1", "A2", "B1", "B2"],
+      cefr_level: ["A1", "A2", "B1", "B2", "C1"],
       concept_kind: [
         "vocabulary",
         "collocation",

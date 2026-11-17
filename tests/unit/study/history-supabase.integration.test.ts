@@ -327,4 +327,61 @@ describe.skipIf(!enabled)("History against local Supabase and real RLS", () => {
       { key: "B1", reviews: 1044, states: { new: 0, learning: 0, review: 0, relearning: 0 } },
     ]);
   });
+  it("reads all five CEFR levels plus unassigned content without rejecting statistics", async () => {
+    const levels = ["A1", "A2", "B1", "B2", "C1", null] as const;
+    const statisticsDeck = randomUUID();
+    const concepts = levels.map((level) => ({
+      id: randomUUID(),
+      owner_id: ownerId,
+      course_id: otherCourse,
+      kind: "vocabulary" as const,
+      cefr_level: level,
+      title: `Synthetic statistics ${level ?? "unassigned"}`,
+      summary: "Synthetic fixture",
+    }));
+    await checked(
+      a.from("decks").insert({
+        id: statisticsDeck,
+        owner_id: ownerId,
+        course_id: otherCourse,
+        title: "Synthetic complete level distribution",
+      }),
+    );
+    await checked(a.from("concepts").insert(concepts));
+    await checked(
+      a.from("deck_concepts").insert(
+        concepts.map((row) => ({
+          deck_id: statisticsDeck,
+          concept_id: row.id,
+          owner_id: ownerId,
+        })),
+      ),
+    );
+    await checked(
+      a.from("practice_items").insert(
+        concepts.map((row) => ({
+          owner_id: ownerId,
+          concept_id: row.id,
+          mode: "basic_recall" as const,
+          prompt_text: "Synthetic prompt",
+          answer_text: "Synthetic answer",
+          config: { mode: "basic_recall" },
+        })),
+      ),
+    );
+    const statistics = await createSupabaseStatisticsRepository(a).read({
+      courseId: otherCourse,
+      days: 7,
+      now: input().now,
+      timeZone: input().timeZone,
+      deckId: null,
+    });
+    expect(statistics.byLevel).toEqual(
+      levels.map((level) => ({
+        key: level ?? "unassigned",
+        reviews: 0,
+        states: { new: 1, learning: 0, review: 0, relearning: 0 },
+      })),
+    );
+  });
 });

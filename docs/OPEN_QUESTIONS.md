@@ -20,7 +20,7 @@
 | Q-008 | Preview sin backend aislado | `RESUELTA` | Publicación solicitada |
 | Q-009 | Aceptación manual en dispositivo físico | `RESUELTA` | Aceptación personal acotada; evidencia LEX-9-installation |
 | Q-010 | Uso personal y servicios de correo | `RESUELTA` | Entrega actual; ADR-008 |
-| Q-011 | Activación externa y aceptación de Google | `ABIERTA` | Acceso adicional; ADR-011 |
+| Q-011 | Activación externa y aceptación de Google | `RESUELTA` | Acceso adicional; ADR-011 |
 
 Q-005/Q-006 siguen abiertas como decisiones históricas de producto. Sus opciones
 actuales están implementadas y probadas; no bloquean la entrega personal ni se
@@ -28,9 +28,15 @@ consideran aprobadas de nuevo por ausencia de respuesta.
 
 ## Q-011 — Activación externa y aceptación de Google
 
-**Estado:** `ABIERTA`. **Fecha:** 2026-11-12.
+**Estado:** `RESUELTA`. **Fecha:** 2026-11-12. **Cierre:** 2026-11-17.
 
-**Actualización2026-11-17:** el propietario comunica External/Testing, usuario
+El propietario confirma «Ya funciona lo de google» después del despliegue1.1.0.
+Se registra su aceptación funcional del acceso Google y se cierra esta entrada.
+El reporte no detalla verificaciones individuales de biblioteca, progreso o UID;
+no se le atribuyen esas comprobaciones. Las notas siguientes conservan el
+contexto previo a la publicación y a esta confirmación.
+
+**Nota histórica anterior al cierre (2026-11-17):** el propietario comunica External/Testing, usuario
 de prueba y cliente OAuth con credenciales copiadas directamente a Supabase;
 está añadiendo el retorno canónico. Consulta pública de Auth confirma Google
 activo y altas cerradas. La comprobación previa a publicación encontró1.0.0 y
@@ -49,8 +55,8 @@ ni clientes OAuth de Google; el host del navegador no está disponible.
 La [guía de activación](GOOGLE_SIGN_IN.md) deja los pasos concretos y la prueba
 del propietario. No se deben enviar secretos por chat ni incorporarlos al repo.
 Las pruebas locales no acreditan el consentimiento/vinculación real de Google.
-Cerrar esta entrada exige proveedor activo con altas cerradas y confirmación
-de acceso a los datos habituales de la cuenta existente.
+La aceptación prevista antes del cierre incluía revisar los datos habituales;
+el alcance exacto de la confirmación recibida se registra al principio.
 
 ## Q-010 — Uso personal y servicios de correo
 

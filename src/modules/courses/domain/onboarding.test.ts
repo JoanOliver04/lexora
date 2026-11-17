@@ -19,6 +19,14 @@ const valid = {
 } as const;
 
 describe("validateOnboardingSelection", () => {
+  it("acepta C1 como nivel declarado e inicial", () => {
+    expect(
+      validateOnboardingSelection({ ...valid, declaredLevel: "C1", startLevel: "C1" }),
+    ).toEqual({
+      ok: true,
+      value: { ...valid, declaredLevel: "C1", startLevel: "C1" },
+    });
+  });
   it("acepta una selección dentro de todos los rangos", () => {
     const result = validateOnboardingSelection(valid);
     expect(result).toEqual({ ok: true, value: { ...valid } });
@@ -50,7 +58,7 @@ describe("validateOnboardingSelection", () => {
   });
 
   it("rechaza un nivel declarado desconocido", () => {
-    const result = validateOnboardingSelection({ ...valid, declaredLevel: "C1" });
+    const result = validateOnboardingSelection({ ...valid, declaredLevel: "C2" });
     expect(result).toEqual({ ok: false, issues: ["onboarding.declaredLevel.invalid"] });
   });
 

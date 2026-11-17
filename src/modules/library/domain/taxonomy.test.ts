@@ -42,7 +42,8 @@ describe("readOptionalEnum", () => {
     expect(readOptionalEnum("", CEFR_LEVELS)).toBeNull();
     expect(readOptionalEnum(null, CEFR_LEVELS)).toBeNull();
     expect(readOptionalEnum("B1", CEFR_LEVELS)).toBe("B1");
-    expect(readOptionalEnum("C1", CEFR_LEVELS)).toBe(INVALID_ENUM);
+    expect(readOptionalEnum("C1", CEFR_LEVELS)).toBe("C1");
+    expect(readOptionalEnum("C2", CEFR_LEVELS)).toBe(INVALID_ENUM);
   });
 });
 

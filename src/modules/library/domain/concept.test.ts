@@ -24,6 +24,12 @@ describe("canonicalKey", () => {
 });
 
 describe("validateConceptDraft", () => {
+  it("conserva C1 en un concepto avanzado", () => {
+    expect(validateConceptDraft({ ...valid, cefrLevel: "C1" })).toMatchObject({
+      ok: true,
+      value: { cefrLevel: "C1" },
+    });
+  });
   it("validates source references before the database CHECK can reject a private row", () => {
     expect(validateConceptDraft({ ...valid, sourceReference: "x".repeat(500) }).ok).toBe(true);
     expect(validateConceptDraft({ ...valid, sourceReference: "x".repeat(501) })).toEqual({
