@@ -1,6 +1,6 @@
 {
   "name": "lexora",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "private": true,
   "description": "Plataforma adaptativa de aprendizaje de inglés A1–C1 con repetición espaciada.",
   "engines": {
@@ -9,7 +9,7 @@
   "packageManager": "pnpm@11.24.0",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm security:policy && next build && pnpm security:policy --trace",
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -33,7 +33,9 @@
     "db:types": "supabase gen types typescript --local > src/shared/infrastructure/supabase/database.types.ts",
     "ops:backup:test": "node --test scripts/backup-envelope.test.mjs scripts/backup-cli.test.mjs",
     "ops:recovery:verify": "node scripts/verify-backup-recovery.mjs",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm contrast && pnpm test && pnpm ops:backup:test && pnpm build"
+    "security:policy": "node scripts/check-dependency-exception.mjs",
+    "security:policy:test": "node --test scripts/dependency-exception.test.mjs",
+    "check": "pnpm format:check && pnpm lint && pnpm security:policy:test && pnpm typecheck && pnpm contrast && pnpm test && pnpm ops:backup:test && pnpm build"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.5",

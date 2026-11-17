@@ -37,6 +37,9 @@ for (const locale of ["es", "en"] as const) {
       await expect(page.getByRole("link", { name: title!, exact: true })).toBeVisible();
     }
     await page.goto(`/${locale}/decks?cefrLevel=C1`);
+    await expect(page.locator(".collection-count")).toHaveText(
+      locale === "es" ? "1–1 de 1 resultado" : "1–1 of 1 result",
+    );
     await expect(page.getByRole("link", { name: "Advanced C1 deck", exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: "Retained B2 deck", exact: true })).toHaveCount(0);
     await page.getByRole("link", { name: "Advanced C1 deck", exact: true }).click();
@@ -56,11 +59,23 @@ for (const locale of ["es", "en"] as const) {
       await expect(page.getByRole("link", { name: title!, exact: true })).toBeVisible();
     }
     await page.goto(`/${locale}/concepts?cefrLevel=C1`);
+    await expect(page.locator(".collection-count")).toHaveText(
+      locale === "es" ? "1–1 de 1 resultado" : "1–1 of 1 result",
+    );
     await expect(page.getByRole("link", { name: "Advanced C1 phrase", exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: "Retained B2 phrase", exact: true })).toHaveCount(
       0,
     );
     await audit(page, info, `c1-filter-${locale}`);
+    await page.evaluate(() => {
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+      window.scrollTo(0, 0);
+    });
+    await page.screenshot({
+      path: info.outputPath(`concepts-populated-${locale}.png`),
+      fullPage: true,
+      animations: "disabled",
+    });
     await page.getByRole("link", { name: "Advanced C1 phrase", exact: true }).click();
     await expect(page.locator("#concept-cefrLevel")).toHaveValue("C1");
 

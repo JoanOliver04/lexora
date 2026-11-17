@@ -1,0 +1,17 @@
+{
+  "advisory": "GHSA-fc5q-39xc-vjpf",
+  "cve": "CVE-2026-112366",
+  "reviewedAt": "2026-11-17T00:00:00Z",
+  "expiresAt": "2026-12-01T00:00:00Z",
+  "registryVersion": "4.0.7",
+  "versions": ["2.3.2", "4.0.7"],
+  "fingerprints": {
+    "pnpm-lock.yaml": "95a80058a97d5575c5d5b9d0428ca970a87bda389c72b5770c18b85493e0eb5e",
+    "pnpm-workspace.yaml": "9aecad0dfd68d14b3dcb2a6d9b9fa29f3a523929a17a77e0e7cfa40c58fe636b",
+    "next.config.ts": "70f390f7dcab8ad6f267f32447ea60ca6f801b32cf670be02596ed63610a3de1",
+    "vitest.config.mts": "999755fdd424444cf586660db1cc01f943b1dece36c4771991fbb007b7ccd34c",
+    "eslint.config.mjs": "5636b120e93c1381fd0c8cfefea972ec59c444657c7efc8df4f0375e40cea1fb",
+    "package.json": "272227837883deac5c760523b162ff7e95e1dfa63da9251ba3baec56be66cf21",
+    "vercel.json": "ea257745d131f54321b1ab01288d7f0f9aea46c66336be1fd69d5999e9e598c3"
+  }
+}

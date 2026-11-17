@@ -190,19 +190,29 @@ export function createSupabaseDeckRepository(client: SupabaseClient<Database>): 
       limit,
       offset,
     }) {
-      let query = client
-        .from("decks")
-        .select("*", { count: "exact" })
-        .eq("owner_id", ownerId)
-        .eq("course_id", courseId);
-      if (!includeArchived) query = query.is("archived_at", null);
-      if (search) query = query.ilike("title", `%${search}%`);
-      if (category) query = query.eq("category", category);
-      if (cefrLevel) query = query.eq("cefr_level", cefrLevel);
-      const { data, error, count } = await query
+      const filtered = (head = false) => {
+        let query = client
+          .from("decks")
+          .select("*", { count: "exact", head })
+          .eq("owner_id", ownerId)
+          .eq("course_id", courseId);
+        if (!includeArchived) query = query.is("archived_at", null);
+        if (search) query = query.ilike("title", `%${search}%`);
+        if (category) query = query.eq("category", category);
+        if (cefrLevel) query = query.eq("cefr_level", cefrLevel);
+        return query;
+      };
+      const { data, error, count } = await filtered()
         .order("position", { ascending: true })
         .order("created_at", { ascending: true })
         .range(offset, offset + limit - 1);
+      // PostgREST rejects a stale range before returning its exact count.
+      // A count-only read retains all filters and RLS; valid pages need no retry.
+      if (error?.code === "PGRST103" && offset > 0) {
+        const { count: total, error: countError } = await filtered(true);
+        if (countError) throw libraryErrorFrom(countError, "no se pudieron buscar los mazos");
+        return { items: [], total: total ?? 0 };
+      }
       if (error) throw libraryErrorFrom(error, "no se pudieron buscar los mazos");
       return { items: (data ?? []).map(toDeck), total: count ?? 0 };
     },

@@ -13,6 +13,43 @@
     "space": "Your study space",
     "note": "One idea. Different ways to remember it. At your own pace."
   },
+  "Commands": {
+    "trigger": "Quick navigation",
+    "title": "Where would you like to go?",
+    "close": "Close quick navigation",
+    "search": "Find a section or action",
+    "empty": "No matches. Try another name.",
+    "matches": "{count, plural, one {# destination available} other {# destinations available}}",
+    "hint": "Tab to move, Enter to open and Esc to close.",
+    "newConcept": "New concept",
+    "newDeck": "New deck",
+    "study": "Open sessions",
+    "hints": {
+      "newConcept": "Add and create an idea to practise",
+      "newDeck": "Create and organise a collection",
+      "study": "Prepare or continue a review session",
+      "today": "Available reviews and recent activity",
+      "decks": "Organise your library into decks",
+      "concepts": "Find and edit your vocabulary and ideas",
+      "statistics": "Explore your activity and progress",
+      "settings": "Change preferences, language and appearance",
+      "import": "Add content from CSV or TSV files",
+      "history": "Explore your saved reviews"
+    }
+  },
+  "Collection": {
+    "results": "{total, plural, =0 {No results} one {{from, number}–{to, number} of # result} other {{from, number}–{to, number} of # results}}",
+    "activeFilters": "Active filters",
+    "saving": "Saving…",
+    "removeFilter": "Remove filter: {label}",
+    "archived": "Archived included",
+    "pagination": "Library pages",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page} of {pages}",
+    "clear": "Clear filters",
+    "create": "Create your first one"
+  },
   "Visual": {
     "studySpace": "Your study space",
     "authStatement": "Make room for what you want to remember.",
@@ -153,6 +190,13 @@
     }
   },
   "Today": {
+    "libraryHeading": "Grow your library",
+    "addConcept": "Add a concept",
+    "addConceptHint": "Save a word, an expression or an idea.",
+    "organizeDecks": "Organise my decks",
+    "organizeDecksHint": "Group what you want to practise together.",
+    "importContent": "Import content",
+    "importContentHint": "Bring in your notes from a file.",
     "title": "Today",
     "allDecks": "All decks",
     "selectedDecks": "{count, plural, one {# selected deck} other {# selected decks}}",

@@ -8,13 +8,17 @@ Su idea central es que **reconocer una palabra no es lo mismo que poder producir
 cada concepto se descompone en competencias distintas, y cada competencia tiene su
 propio estado de memoria.
 
-> **V1.0 para uso personal.** Biblioteca e importación TXT/CSV, estudio FSRS con
+> **Entrega para uso personal.** Biblioteca e importación TXT/CSV, estudio FSRS con
 > guardado confirmado, pausa/reanudación, historial, estadísticas y preferencias
 > ES/EN. Exportación JSON/CSV verificada, borrado propio con reautenticación y PWA
 > instalable con fallback neutral. El registro público permanece cerrado.
 > [Aplicación](https://lexora-one-alpha.vercel.app/en) ·
 > [aceptación y límites](docs/evidence/LEX-1.0-personal-acceptance.md) ·
 > [estado de publicación](docs/STATUS.md).
+
+Los **accesos rápidos** de la barra y `Ctrl`/`⌘` + `K` permiten encontrar una
+sección o crear contenido. La biblioteca muestra resultados, filtros removibles
+y acceso directo a los formularios; conserva los niveles A1–C1.
 
 ## Modelo conceptual
 
