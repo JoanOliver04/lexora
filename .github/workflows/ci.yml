@@ -218,9 +218,14 @@ jobs:
 
       - name: Bibliotecas de Firefox y WebKit
         # Chromium already works in this runner. New engines need additional
-        # libraries; bounded retries address the previously observed mirror DNS
-        # failures without ignoring a failed dependency installation.
+        # libraries. The regional EC2 mirror has exhausted the job timeout.
+        # Use the primary Ubuntu archive for that mirror and keep signed sources.
         run: |
+          for source in /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; do
+            if [ -f "$source" ]; then
+              sudo sed -Ei 's~https?://[[:alnum:]-]+\.ec2\.archive\.ubuntu\.com/ubuntu/?~https://archive.ubuntu.com/ubuntu/~g' "$source"
+            fi
+          done
           for attempt in 1 2 3; do
             if pnpm exec playwright install-deps firefox webkit; then
               exit 0
