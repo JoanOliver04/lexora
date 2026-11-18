@@ -58,7 +58,7 @@ describe("validateOnboardingSelection", () => {
   });
 
   it("rechaza un nivel declarado desconocido", () => {
-    const result = validateOnboardingSelection({ ...valid, declaredLevel: "C2" });
+    const result = validateOnboardingSelection({ ...valid, declaredLevel: "C3" });
     expect(result).toEqual({ ok: false, issues: ["onboarding.declaredLevel.invalid"] });
   });
 

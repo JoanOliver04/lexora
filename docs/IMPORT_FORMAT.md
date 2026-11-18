@@ -19,15 +19,15 @@ etiquetas para vocabulario, gramática o frases, ver el CSV de ejemplo y
 descargarlo en UTF-8. Cada fila es una tarjeta. La plantilla empieza con
 `#separator:comma` y los datos siguen directamente, sin fila de títulos.
 
-**Preparar un tema con ChatGPT** permite elegir tema, nivel A1–C1, número de
+**Preparar un tema con ChatGPT** permite elegir tema, nivel A1–C2, número de
 tarjetas, idioma de las respuestas y un enfoque opcional. Se copia el prompt
 y se pega en ChatGPT. La respuesta se puede subir como archivo o pegar
 directamente como CSV o TSV, incluso dentro de un bloque de código de Markdown.
 La gramática se importa como preguntas y respuestas y se organiza con etiquetas
 como `grammar::present-perfect`. La vista previa permite revisar columnas,
-filas y duplicados antes de guardar las tarjetas. Si el curso aún no tiene
-mazos, se puede crear uno en el paso de destino o en el resumen y conservar la
-previsualización. Lexora selecciona ese mazo para confirmar la importación.
+filas y duplicados antes de guardar las tarjetas. En el paso de destino se
+puede elegir un mazo existente o crear uno nuevo para el tema conservando la
+previsualización. Lexora selecciona el mazo recién creado.
 
 ## Encoding
 

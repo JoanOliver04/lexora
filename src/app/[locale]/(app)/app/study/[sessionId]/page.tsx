@@ -134,7 +134,10 @@ export default async function StudySessionPage({
         />
       )}
       {result.ok && result.queue?.entries.length === 0 && result.queue.nextLearningDueAt && (
-        <StudyStepWait remainingMs={result.queue.nextLearningDueAt.getTime() - now.getTime()} />
+        <StudyStepWait
+          sessionId={sessionId}
+          remainingMs={result.queue.nextLearningDueAt.getTime() - now.getTime()}
+        />
       )}
       {showSummary && <SessionSummaryView summary={summary} />}
       {result.ok && result.queue && result.queue.entries.length > 0 && !result.card && (

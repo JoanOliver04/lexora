@@ -28,3 +28,10 @@ Los dominios de cursos y biblioteca conservan sus vocabularios separados por
 feature; ambos coinciden con el mismo tipo SQL.
 
 Fuente: [PostgreSQL ALTER TYPE](https://www.postgresql.org/docs/current/sql-altertype.html).
+
+## Ampliación a C2
+
+La entrega LEX-22.3 aplica el mismo patrón con `20261118221500_add_c2_level.sql`.
+C2 se añade al final del enum y se admite en onboarding, biblioteca,
+filtros, estadísticas y preparación de archivos. Se conserva la decisión de
+usar el nivel para clasificar contenido y elegir un punto de partida.

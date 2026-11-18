@@ -171,7 +171,7 @@
   },
   "Metadata": {
     "title": "Lexora",
-    "description": "Aprende y mantén tu inglés A1–C1 con recuperación activa y repetición espaciada."
+    "description": "Aprende y mantén tu inglés A1–C2 con recuperación activa y repetición espaciada."
   },
   "Home": {
     "title": "Lexora",
@@ -298,6 +298,7 @@
     }
   },
   "Today": {
+    "freeStudy": "Estudio libre",
     "libraryHeading": "Haz crecer tu biblioteca",
     "addConcept": "Añadir un concepto",
     "addConceptHint": "Guarda una palabra, una expresión o una idea.",
@@ -356,6 +357,32 @@
     "errorDescription": "Tus datos siguen guardados. Inténtalo de nuevo para ver tus repasos y tu actividad.",
     "invalidFilter": "No se puede aplicar ese filtro. Vuelve a todos los mazos para continuar.",
     "retry": "Volver a intentar"
+  },
+  "FreeStudy": {
+    "title": "Estudio libre",
+    "intro": "Recorre las tarjetas de tus mazos en orden aleatorio con sus respuestas a la vista. Puedes terminar cuando quieras.",
+    "back": "Volver a Estudio",
+    "scope": "Mazos para esta sesión",
+    "all": "Todos los mazos",
+    "selected": "Elegir mazos",
+    "emptyDecks": "Añade un mazo con tarjetas para empezar.",
+    "manageDecks": "Ir a Mis mazos",
+    "start": "Empezar estudio libre",
+    "loading": "Cargando tarjetas…",
+    "position": "Tarjeta {count}",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "finish": "Terminar sesión",
+    "summary": "Resumen de estudio libre",
+    "total": "Tarjetas recorridas",
+    "distinct": "Tarjetas distintas",
+    "duration": "Tiempo de estudio",
+    "elapsed": "{minutes} min {seconds} s",
+    "restart": "Nueva sesión libre",
+    "errors": {
+      "empty": "No hay tarjetas disponibles en esta selección.",
+      "unavailable": "No se pudieron cargar las tarjetas. Vuelve a intentarlo."
+    }
   },
   "PracticeCard": {
     "shortcuts": "Con el foco en la tarjeta: Espacio revela; 1 Otra vez, 2 Difícil, 3 Bien y 4 Fácil guardan tras revelar. En botones y casillas usa Tab, Mayús+Tab, Intro o Espacio como siempre.",
@@ -457,6 +484,7 @@
     "refreshing": "Actualizando resumen…"
   },
   "StudySession": {
+    "freeStudy": "Estudio libre",
     "setupTitle": "Prepara tu sesión",
     "setupIntro": "Repasa todos tus mazos o elige algunos. La sesión respetará tus límites diarios.",
     "backToToday": "Volver a Hoy",
@@ -482,9 +510,15 @@
     "changedAvailability": "Tu selección sigue guardada, pero ahora no hay ítems disponibles. Puedes volver a Hoy para ver qué queda pendiente.",
     "stepWaitTitle": "Hay un paso de aprendizaje pendiente",
     "stepWaitTime": "En la última comprobación quedaban aproximadamente {minutes, plural, one {# minuto} other {# minutos}} para el próximo paso.",
-    "stepWaitHint": "No necesitas quedarte esperando. Puedes volver a Hoy sin perder los repasos guardados. Comprueba los pendientes para cargar lo que haya vencido; este aviso no es una cuenta atrás.",
+    "stepWaitSeconds": "En la última comprobación quedaban {seconds, plural, one {# segundo} other {# segundos}} para el próximo paso.",
+    "stepWaitHint": "Puedes volver a Hoy y retomar la sesión cuando quieras. Pulsa Comprobar pendientes para actualizar el tiempo o cargar las tarjetas disponibles.",
     "checkSteps": "Comprobar pendientes",
     "checkingSteps": "Comprobando pendientes…",
+    "stepCheck": {
+      "waiting": "Aún no hay tarjetas pendientes disponibles. El tiempo se ha actualizado.",
+      "refresh": "La sesión ha cambiado desde la última comprobación.",
+      "error": "No se pudo comprobar la sesión. Vuelve a intentarlo."
+    },
     "sessionStatuses": {
       "active": "Sesión activa",
       "paused": "Sesión pausada",
@@ -765,6 +799,7 @@
     "levelB1": "B1 — Intermedio",
     "levelB2": "B2 — Intermedio alto",
     "levelC1": "C1 — Avanzado",
+    "levelC2": "C2 — Dominio",
     "submit": "Crear mi curso",
     "submitting": "Creando…",
     "genericError": "No hemos podido crear el curso. Revisa los datos e inténtalo de nuevo.",

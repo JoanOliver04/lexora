@@ -6,19 +6,19 @@ import { audit } from "./a11y-audit";
 import { assertStudyLayout } from "./study-layout";
 
 for (const locale of ["es", "en"] as const) {
-  test(`C1 onboarding, library persistence and filters (${locale})`, async ({ page }, info) => {
+  test(`C2 onboarding, library persistence and filters (${locale})`, async ({ page }, info) => {
     test.setTimeout(90000);
     const es = locale === "es";
     const email = await signUp(page);
     await page.goto(`/${locale}/onboarding`);
     await expect(
-      page.getByText(es ? "C1 — Avanzado" : "C1 — Advanced", { exact: true }),
+      page.getByText(es ? "C2 — Dominio" : "C2 — Proficiency", { exact: true }),
     ).toHaveCount(2);
     await page.locator(`input[name="uiLocale"][value="${locale}"]`).check();
-    await page.locator('input[name="declaredLevel"][value="C1"]').check();
-    await page.locator('input[name="startLevel"][value="C1"]').check();
-    await assertStudyLayout(page, info, `c1-onboarding-${locale}`);
-    await audit(page, info, `c1-onboarding-${locale}`);
+    await page.locator('input[name="declaredLevel"][value="C2"]').check();
+    await page.locator('input[name="startLevel"][value="C2"]').check();
+    await assertStudyLayout(page, info, `c2-onboarding-${locale}`);
+    await audit(page, info, `c2-onboarding-${locale}`);
     await page
       .getByRole("button", { name: es ? "Crear mi curso" : "Create my course", exact: true })
       .click();
@@ -26,8 +26,8 @@ for (const locale of ["es", "en"] as const) {
 
     await page.goto(`/${locale}/decks`);
     for (const [title, level] of [
-      ["Advanced C1 deck", "C1"],
-      ["Retained B2 deck", "B2"],
+      ["Advanced C2 deck", "C2"],
+      ["Retained C1 deck", "C1"],
     ]) {
       await page.locator('input[name="title"]').fill(title!);
       await page.locator("#deck-cefrLevel").selectOption(level!);
@@ -36,19 +36,19 @@ for (const locale of ["es", "en"] as const) {
         .click();
       await expect(page.getByRole("link", { name: title!, exact: true })).toBeVisible();
     }
-    await page.goto(`/${locale}/decks?cefrLevel=C1`);
+    await page.goto(`/${locale}/decks?cefrLevel=C2`);
     await expect(page.locator(".collection-count")).toHaveText(
       locale === "es" ? "1–1 de 1 resultado" : "1–1 of 1 result",
     );
-    await expect(page.getByRole("link", { name: "Advanced C1 deck", exact: true })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Retained B2 deck", exact: true })).toHaveCount(0);
-    await page.getByRole("link", { name: "Advanced C1 deck", exact: true }).click();
-    await expect(page.locator("#deck-cefrLevel")).toHaveValue("C1");
+    await expect(page.getByRole("link", { name: "Advanced C2 deck", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Retained C1 deck", exact: true })).toHaveCount(0);
+    await page.getByRole("link", { name: "Advanced C2 deck", exact: true }).click();
+    await expect(page.locator("#deck-cefrLevel")).toHaveValue("C2");
 
     await page.goto(`/${locale}/concepts`);
     for (const [title, level] of [
-      ["Advanced C1 phrase", "C1"],
-      ["Retained B2 phrase", "B2"],
+      ["Advanced C2 phrase", "C2"],
+      ["Retained C1 phrase", "C1"],
     ]) {
       await page.locator('input[name="title"]').fill(title!);
       await page.locator('[name="summary"]').fill("Synthetic learning content");
@@ -58,15 +58,15 @@ for (const locale of ["es", "en"] as const) {
         .click();
       await expect(page.getByRole("link", { name: title!, exact: true })).toBeVisible();
     }
-    await page.goto(`/${locale}/concepts?cefrLevel=C1`);
+    await page.goto(`/${locale}/concepts?cefrLevel=C2`);
     await expect(page.locator(".collection-count")).toHaveText(
       locale === "es" ? "1–1 de 1 resultado" : "1–1 of 1 result",
     );
-    await expect(page.getByRole("link", { name: "Advanced C1 phrase", exact: true })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Retained B2 phrase", exact: true })).toHaveCount(
+    await expect(page.getByRole("link", { name: "Advanced C2 phrase", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Retained C1 phrase", exact: true })).toHaveCount(
       0,
     );
-    await audit(page, info, `c1-filter-${locale}`);
+    await audit(page, info, `c2-filter-${locale}`);
     await page.evaluate(() => {
       if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
       window.scrollTo(0, 0);
@@ -76,8 +76,8 @@ for (const locale of ["es", "en"] as const) {
       fullPage: true,
       animations: "disabled",
     });
-    await page.getByRole("link", { name: "Advanced C1 phrase", exact: true }).click();
-    await expect(page.locator("#concept-cefrLevel")).toHaveValue("C1");
+    await page.getByRole("link", { name: "Advanced C2 phrase", exact: true }).click();
+    await expect(page.locator("#concept-cefrLevel")).toHaveValue("C2");
 
     const backend = localBackend();
     const client = createClient(backend.url, backend.publishableKey, {
@@ -87,7 +87,7 @@ for (const locale of ["es", "en"] as const) {
     expect(signed.error).toBeNull();
     const course = await client.from("courses").select("declared_level,start_level").single();
     expect(course.error).toBeNull();
-    expect(course.data).toEqual({ declared_level: "C1", start_level: "C1" });
+    expect(course.data).toEqual({ declared_level: "C2", start_level: "C2" });
     await client.auth.signOut({ scope: "local" });
   });
 }

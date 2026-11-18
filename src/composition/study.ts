@@ -1,4 +1,5 @@
 import type { ReviewCommitter } from "@/modules/study/application/confirm-review";
+import { createSupabaseActiveCourseRepository } from "@/modules/courses/infrastructure/supabase-active-course-repository";
 import type { DailyQueueRepository } from "@/modules/study/application/daily-queue";
 import type { LearningStateRepository } from "@/modules/study/application/learning-state";
 import type { SpacedRepetitionScheduler } from "@/modules/study/application/spaced-repetition-scheduler";
@@ -15,7 +16,11 @@ import { createTsFsrsScheduler } from "@/modules/study/infrastructure/ts-fsrs-sc
 import { createSupabaseTodayOverviewRepository } from "@/modules/study/infrastructure/supabase-today-overview-repository";
 import { createSupabaseTodayDashboardRepository } from "@/modules/study/infrastructure/supabase-today-dashboard-repository";
 import { createSupabaseStudySessionRepository } from "@/modules/study/infrastructure/supabase-study-session-repository";
-import { createSupabaseStudyCardRepository } from "@/modules/study/infrastructure/supabase-study-card-repository";
+import {
+  createSupabaseStudyCardRepository,
+  listFreeStudyCards,
+} from "@/modules/study/infrastructure/supabase-study-card-repository";
+import { listEligibleStudyItemIds } from "@/modules/study/infrastructure/supabase-eligible-study-items";
 import { createSupabaseSessionHistoryRepository } from "@/modules/study/infrastructure/supabase-session-history-repository";
 import type { Clock } from "@/shared/application/clock";
 import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/server-client";
@@ -83,5 +88,22 @@ export async function getStudyContextForCurrentUser(): Promise<StudyContext | nu
     scheduler: createTsFsrsScheduler(),
     reviewCommitter: createSupabaseReviewCommitter(client),
     sessionHistory: createSupabaseSessionHistoryRepository(client),
+  };
+}
+
+export async function getFreeStudyContextForCurrentUser() {
+  const client = await createSupabaseServerClient();
+  const { data, error } = await client.auth.getClaims();
+  const ownerId = data?.claims.sub;
+  if (error || !ownerId) return null;
+  const course = await createSupabaseActiveCourseRepository(client).getActiveCourse(ownerId);
+  if (!course) return null;
+  const scope = { ownerId, courseId: course.id };
+  return {
+    courseId: course.id,
+    listDecks: () => createSupabaseTodayDashboardRepository(client).listActiveDecks(scope),
+    listItemIds: (deckIds: string[] | null) =>
+      listEligibleStudyItemIds(client, { ...scope, deckIds }),
+    readCards: (itemIds: string[]) => listFreeStudyCards(client, scope, itemIds),
   };
 }

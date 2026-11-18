@@ -327,8 +327,8 @@ describe.skipIf(!enabled)("History against local Supabase and real RLS", () => {
       { key: "B1", reviews: 1044, states: { new: 0, learning: 0, review: 0, relearning: 0 } },
     ]);
   });
-  it("reads all five CEFR levels plus unassigned content without rejecting statistics", async () => {
-    const levels = ["A1", "A2", "B1", "B2", "C1", null] as const;
+  it("reads all six CEFR levels plus unassigned content without rejecting statistics", async () => {
+    const levels = ["A1", "A2", "B1", "B2", "C1", "C2", null] as const;
     const statisticsDeck = randomUUID();
     const concepts = levels.map((level) => ({
       id: randomUUID(),

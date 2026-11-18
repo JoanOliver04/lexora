@@ -1,0 +1,61 @@
+import { FREE_STUDY_BATCH_SIZE, type FreeStudyCard } from "./free-study";
+
+export interface FreeStudyRun {
+  pool: string[];
+  order: string[];
+  offset: number;
+  cursor: number;
+  trail: FreeStudyCard[];
+  contents: Map<string, FreeStudyCard | null>;
+}
+
+export function newFreeStudyRun(ids: string[]): FreeStudyRun {
+  return { pool: ids, order: [], offset: 0, cursor: -1, trail: [], contents: new Map() };
+}
+
+function shuffle(ids: string[], lastId?: string): string[] {
+  const order = [...ids];
+  for (let index = order.length - 1; index > 0; index--) {
+    const other = Math.floor(Math.random() * (index + 1));
+    [order[index], order[other]] = [order[other]!, order[index]!];
+  }
+  if (order.length > 1 && order[0] === lastId) {
+    const other = 1 + Math.floor(Math.random() * (order.length - 1));
+    [order[0], order[other]] = [order[other]!, order[0]!];
+  }
+  return order;
+}
+
+/** Revisit the existing trail before drawing from the next shuffled round. */
+export async function nextFreeStudyCard(
+  run: FreeStudyRun,
+  load: (ids: string[]) => Promise<FreeStudyCard[]>,
+): Promise<FreeStudyCard | null> {
+  if (run.cursor + 1 < run.trail.length) return run.trail[++run.cursor]!;
+  while (run.pool.length > 0) {
+    if (run.offset === run.order.length) {
+      run.order = shuffle(run.pool, run.trail.at(-1)?.id);
+      run.offset = 0;
+    }
+
+    const id = run.order[run.offset]!;
+    if (!run.contents.has(id)) {
+      const batch = run.order
+        .slice(run.offset, run.offset + FREE_STUDY_BATCH_SIZE)
+        .filter((item) => !run.contents.has(item));
+      const cards = new Map((await load(batch)).map((card) => [card.id, card]));
+      for (const item of batch) run.contents.set(item, cards.get(item) ?? null);
+      if (cards.size !== batch.length) {
+        run.pool = run.pool.filter((item) => run.contents.get(item) !== null);
+      }
+    }
+
+    run.offset++;
+    const card = run.contents.get(id);
+    if (!card) continue;
+    run.trail.push(card);
+    run.cursor++;
+    return card;
+  }
+  return null;
+}

@@ -1,6 +1,6 @@
 # Lexora
 
-**Plataforma adaptativa de aprendizaje de inglés A1–C1.**
+**Plataforma adaptativa de aprendizaje de inglés A1–C2.**
 
 Lexora ayuda a convertir vocabulario pasivo en vocabulario activo mediante
 recuperación activa y repetición espaciada con [FSRS](https://github.com/open-spaced-repetition/ts-fsrs).
