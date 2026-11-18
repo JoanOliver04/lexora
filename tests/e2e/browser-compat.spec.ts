@@ -158,6 +158,10 @@ for (const locale of ["es", "en"] as const) {
         fullPage: true,
         animations: "disabled",
       });
+      for (const section of ["decks", "concepts", "app/history"]) {
+        await mobile.goto(`/${locale}/${section}`);
+        await assertStudyLayout(mobile, info, `compat-${section.replace("/", "-")}-${locale}`);
+      }
       expect(errors).toEqual([]);
     } finally {
       release();

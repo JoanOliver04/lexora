@@ -3,6 +3,8 @@
     "today": "Today",
     "decks": "My decks",
     "concepts": "My concepts",
+    "decksShort": "Decks",
+    "conceptsShort": "Concepts",
     "statistics": "Statistics",
     "settings": "Settings",
     "import": "Import",
@@ -11,11 +13,11 @@
     "primary": "Main navigation",
     "tools": "Study tools",
     "skip": "Skip to content",
-    "space": "Your study space",
-    "note": "One idea. Different ways to remember it. At your own pace."
+    "space": "Your study space"
   },
   "Commands": {
     "trigger": "Quick navigation",
+    "triggerShort": "Navigation",
     "title": "Where would you like to go?",
     "close": "Close quick navigation",
     "search": "Find a section or action",

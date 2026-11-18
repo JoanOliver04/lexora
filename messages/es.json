@@ -3,6 +3,8 @@
     "today": "Hoy",
     "decks": "Mis mazos",
     "concepts": "Mis conceptos",
+    "decksShort": "Mazos",
+    "conceptsShort": "Conceptos",
     "statistics": "Estadísticas",
     "settings": "Ajustes",
     "import": "Importar",
@@ -11,11 +13,11 @@
     "primary": "Navegación principal",
     "tools": "Herramientas de estudio",
     "skip": "Ir al contenido",
-    "space": "Tu espacio de estudio",
-    "note": "Una idea. Varias formas de recordarla. A tu ritmo."
+    "space": "Tu espacio de estudio"
   },
   "Commands": {
     "trigger": "Accesos rápidos",
+    "triggerShort": "Accesos",
     "title": "¿Adónde quieres ir?",
     "close": "Cerrar accesos rápidos",
     "search": "Busca una sección o una acción",

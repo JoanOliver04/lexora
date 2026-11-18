@@ -21,29 +21,34 @@ export function WorkspaceFrame({ children, logout }: { children: ReactNode; logo
       .filter((_, index) => !mobile || index < 5)
       .map((item) => {
         const active = isWorkspaceDestinationActive(pathname, item.href);
+        const short = mobile && (item.key === "decks" || item.key === "concepts");
         return (
           <Link
             key={item.key}
             href={item.href}
             className="workspace-link"
             aria-current={active ? "page" : undefined}
+            aria-label={short ? t(item.key) : undefined}
           >
             <WorkspaceIcon path={item.path} />
-            <span>{t(item.key)}</span>
+            <span>{short ? t(`${item.key}Short`) : t(item.key)}</span>
           </Link>
         );
       });
   }
 
   return (
-    <div className="workspace-frame" tabIndex={-1}>
+    <div
+      className="workspace-frame"
+      tabIndex={-1}
+      data-study-session={pathname.startsWith("/app/study/") || undefined}
+    >
       <a className="skip-link" href="#workspace-content">
         {t("skip")}
       </a>
       <aside className="workspace-sidebar">
         <Brand href="/app" />
         <nav aria-label={t("primary")}>{navigation(false)}</nav>
-        <p className="workspace-note">{t("note")}</p>
       </aside>
       <div className="workspace-body">
         <header className="workspace-topbar">
@@ -60,11 +65,17 @@ export function WorkspaceFrame({ children, logout }: { children: ReactNode; logo
             {logout}
           </div>
           <nav className="workspace-tools" aria-label={t("tools")}>
-            <Link href="/import">{t("import")}</Link>
-            <Link href="/app/history">{t("history")}</Link>
-            <Link href="/app/help" aria-current={pathname === "/app/help" ? "page" : undefined}>
-              {t("help")}
-            </Link>
+            {workspaceDestinations.slice(5).map((item) => (
+              <Link
+                key={item.key}
+                href={item.href}
+                aria-current={
+                  isWorkspaceDestinationActive(pathname, item.href) ? "page" : undefined
+                }
+              >
+                {t(item.key)}
+              </Link>
+            ))}
           </nav>
         </header>
         <div id="workspace-content" className="workspace-content" tabIndex={-1}>

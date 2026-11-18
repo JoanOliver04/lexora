@@ -52,9 +52,30 @@ for (const locale of ["es", "en"] as const) {
     await assertStudyLayout(page, info, "workspace-concepts");
     await page.getByRole("link", { name: es ? "Importar" : "Import", exact: true }).click();
     await expect(page).toHaveURL(`/${locale}/import`);
+    await expect(
+      page.getByRole("link", { name: es ? "Importar" : "Import", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
     await nav.getByRole("link", { name: es ? "Hoy" : "Today", exact: true }).click();
     await expect(page).toHaveURL(`/${locale}/app`);
     await expect(page.getByTestId("today-available")).toBeVisible();
+    const original = page.viewportSize()!;
+    try {
+      for (const viewport of [
+        { width: 393, height: 873 },
+        { width: 568, height: 320 },
+        { width: 820, height: 1180 },
+      ]) {
+        await page.setViewportSize(viewport);
+        await expect(nav).toHaveCount(1);
+        await expect(nav.getByRole("link")).toHaveCount(viewport.width < 768 ? 5 : 8);
+        await expect(nav).toBeInViewport();
+        await expect
+          .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+          .toBeLessThanOrEqual(viewport.width + 1);
+      }
+    } finally {
+      await page.setViewportSize(original);
+    }
     await page.emulateMedia({ colorScheme: "dark" });
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     await page.screenshot({

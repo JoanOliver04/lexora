@@ -53,15 +53,19 @@ export function WorkspaceCommands() {
   const pathname = usePathname();
   const id = useId();
   const dialog = useRef<HTMLDialogElement>(null);
+  const openedPath = useRef<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
   const firstLink = useRef<HTMLAnchorElement>(null);
   const [query, setQuery] = useState("");
-  const commands = [
-    { href: "/concepts#new-concept", key: "newConcept", label: t("newConcept"), path: addPath },
-    { href: "/decks#new-deck", key: "newDeck", label: t("newDeck"), path: addPath },
-    { href: "/app/study", key: "study", label: t("study"), path: "m9 4 11 8-11 8V4Z" },
-    ...workspaceDestinations.map((item) => ({ ...item, label: navigation(item.key) })),
-  ];
+  const [isOpen, setIsOpen] = useState(false);
+  const commands = isOpen
+    ? [
+        { href: "/concepts#new-concept", key: "newConcept", label: t("newConcept"), path: addPath },
+        { href: "/decks#new-deck", key: "newDeck", label: t("newDeck"), path: addPath },
+        { href: "/app/study", key: "study", label: t("study"), path: "m9 4 11 8-11 8V4Z" },
+        ...workspaceDestinations.map((item) => ({ ...item, label: navigation(item.key) })),
+      ]
+    : [];
   const words = normalize(query).split(/\s+/).filter(Boolean);
   const matches = commands.filter((item) => {
     const text = normalize(`${item.label} ${t(`hints.${item.key}`)}`);
@@ -70,7 +74,10 @@ export function WorkspaceCommands() {
 
   const open = useCallback(() => {
     if (!dialog.current || document.querySelector("dialog[open]")) return;
+    setQuery("");
+    openedPath.current = window.location.pathname;
     dialog.current.showModal();
+    setIsOpen(true);
     input.current?.focus();
   }, []);
 
@@ -86,7 +93,11 @@ export function WorkspaceCommands() {
   const ready = useSyncExternalStore(subscribe, shortcut.getSnapshot, serverReady);
 
   useEffect(() => {
-    dialog.current?.close();
+    // A shortcut may open the dialog after navigation but before this effect.
+    // Close only a dialog carried over from the previous URL.
+    if (dialog.current?.open && openedPath.current !== window.location.pathname) {
+      dialog.current.close();
+    }
   }, [pathname]);
 
   return (
@@ -94,6 +105,7 @@ export function WorkspaceCommands() {
       <button
         type="button"
         className="command-trigger"
+        title={t("trigger")}
         aria-keyshortcuts="Control+K Meta+K"
         aria-haspopup="dialog"
         aria-controls={id}
@@ -101,7 +113,10 @@ export function WorkspaceCommands() {
         onClick={open}
       >
         <WorkspaceIcon path="m21 21-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" />
-        <span>{t("trigger")}</span>
+        <span className="command-trigger-full">{t("trigger")}</span>
+        <span className="command-trigger-short" aria-hidden="true">
+          {t("triggerShort")}
+        </span>
         <kbd aria-hidden="true">Ctrl/⌘ K</kbd>
       </button>
       <dialog
@@ -110,7 +125,11 @@ export function WorkspaceCommands() {
         className="command-dialog"
         aria-labelledby={`${id}-title`}
         aria-describedby={`${id}-hint`}
-        onClose={() => setQuery("")}
+        onClose={() => {
+          if (dialog.current?.open) return;
+          setIsOpen(false);
+          setQuery("");
+        }}
       >
         <header className="command-heading">
           <h2 id={`${id}-title`}>{t("title")}</h2>
@@ -152,31 +171,35 @@ export function WorkspaceCommands() {
             }
           }}
         />
-        <p className={matches.length === 0 ? "command-empty" : "sr-only"} role="status">
-          {matches.length === 0 ? t("empty") : t("matches", { count: matches.length })}
-        </p>
-        <nav aria-label={t("trigger")} className="command-results">
-          {matches.length > 0 && (
-            <ul>
-              {matches.map((item, index) => (
-                <li key={item.key}>
-                  <Link
-                    ref={index === 0 ? firstLink : undefined}
-                    href={item.href}
-                    className="command-result"
-                    onClick={() => dialog.current?.close()}
-                  >
-                    <WorkspaceIcon path={item.path} />
-                    <span>
-                      <strong>{item.label}</strong>
-                      <span>{t(`hints.${item.key}`)}</span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </nav>
+        {isOpen && (
+          <>
+            <p className={matches.length === 0 ? "command-empty" : "sr-only"} role="status">
+              {matches.length === 0 ? t("empty") : t("matches", { count: matches.length })}
+            </p>
+            {matches.length > 0 && (
+              <nav aria-label={t("trigger")} className="command-results">
+                <ul>
+                  {matches.map((item, index) => (
+                    <li key={item.key}>
+                      <Link
+                        ref={index === 0 ? firstLink : undefined}
+                        href={item.href}
+                        className="command-result"
+                        onClick={() => dialog.current?.close()}
+                      >
+                        <WorkspaceIcon path={item.path} />
+                        <span>
+                          <strong>{item.label}</strong>
+                          <span>{t(`hints.${item.key}`)}</span>
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )}
+          </>
+        )}
         <p id={`${id}-hint`} className="command-hint">
           {t("hint")}
         </p>
