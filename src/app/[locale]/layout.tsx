@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 
 import { routing } from "@/i18n/routing";
+import { ClientMessages } from "@/i18n/client-messages";
 import { ThemeScript } from "@/shared/presentation/theme/theme-script";
 import { PwaRuntime } from "@/shared/presentation/pwa/pwa-runtime";
 
@@ -19,6 +20,7 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
 export const viewport: Viewport = {
@@ -83,10 +85,10 @@ export default async function LocaleLayout({
         <ThemeScript nonce={nonce} />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <NextIntlClientProvider>
+        <ClientMessages namespaces={["LocaleSwitcher", "Pwa", "Theme"]}>
           <PwaRuntime />
           {children}
-        </NextIntlClientProvider>
+        </ClientMessages>
       </body>
     </html>
   );

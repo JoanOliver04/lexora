@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MIN_NEW_PASSWORD_LENGTH } from "./password-policy";
 
 /**
  * Validación de las credenciales de correo y contraseña.
@@ -9,7 +10,6 @@ import { z } from "zod";
  */
 
 const MAX_EMAIL_LENGTH = 254;
-export const MIN_NEW_PASSWORD_LENGTH = 12;
 const MAX_PASSWORD_BYTES = 72;
 
 export const emailSchema = z

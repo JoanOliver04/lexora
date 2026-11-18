@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { isPrivateAccessEnabled } from "@/composition/deployment";
+import { ClientMessages } from "@/i18n/client-messages";
 
 import { ThemeToggle } from "@/shared/presentation/theme/theme-toggle";
 
@@ -25,7 +26,7 @@ export default async function AuthLayout({ children }: { children: ReactNode }) 
       </header>
       <div className="flex flex-1 flex-col">
         {isPrivateAccessEnabled() ? (
-          children
+          <ClientMessages namespaces={["Auth"]}>{children}</ClientMessages>
         ) : (
           <main className="mx-auto w-full max-w-lg px-4 py-12">
             <h1 className="text-3xl font-semibold">{t("preview.title")}</h1>

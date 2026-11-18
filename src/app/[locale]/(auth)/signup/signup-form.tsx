@@ -1,6 +1,6 @@
 "use client";
 
-import { MIN_NEW_PASSWORD_LENGTH } from "@/modules/identity/application/credentials";
+import { MIN_NEW_PASSWORD_LENGTH } from "@/modules/identity/application/password-policy";
 
 import { useTranslations } from "next-intl";
 import { useActionState, useRef } from "react";

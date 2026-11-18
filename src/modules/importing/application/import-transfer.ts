@@ -6,6 +6,9 @@ import { validateConceptDraft } from "@/modules/library/domain/concept";
 import { validateTagDraft, type TagDraft } from "@/modules/library/domain/tag";
 import { importErrorMessage } from "./import-error-message";
 import type { ImportPersistErrorCode } from "./import-job";
+import { ImportTransferError, type ImportTransferFailure } from "./import-transfer-error";
+
+export { ImportTransferError, type ImportTransferFailure } from "./import-transfer-error";
 
 export const IMPORT_BATCH_ROWS = 250;
 export const IMPORT_BATCH_BYTES = 128 * 1024;
@@ -122,14 +125,6 @@ export interface ImportDuplicateMatch {
   rowNumber: number;
   canonicalKey: string;
   existingTitles: string[];
-}
-export type ImportTransferFailure =
-  "unauthenticated" | "not-found" | "invalid-input" | "conflict" | "cooldown" | "unavailable";
-export class ImportTransferError extends Error {
-  constructor(readonly kind: ImportTransferFailure) {
-    super(kind);
-    this.name = "ImportTransferError";
-  }
 }
 export interface ImportPersistenceRecordValid {
   kind: "valid";

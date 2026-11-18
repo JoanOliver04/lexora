@@ -1,22 +1,14 @@
 "use client";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  readBrowserImportFile,
-  transferBrowserImport,
-  yieldImportControl,
-} from "@/composition/import-browser";
+import type {
+  ImportDescriptor,
+  ImportProgress,
+} from "@/modules/importing/application/import-transfer";
 import {
   ImportTransferError,
-  type ImportDescriptor,
-  type ImportProgress,
   type ImportTransferFailure,
-} from "@/modules/importing/application/import-transfer";
-import { prepareBrowserImport } from "@/modules/importing/application/prepare-browser-import";
-import {
-  requestImportJob,
-  runBrowserImport,
-} from "@/modules/importing/application/run-browser-import";
+} from "@/modules/importing/application/import-transfer-error";
 import type { ImportJobError } from "@/modules/importing/application/import-job";
 import { readImportMapping, type ImportPreviewState } from "./import-state";
 
@@ -64,7 +56,17 @@ export function useImportTransfer(
       try {
         let carried = previous.carried;
         const file = form.get("file");
-        if (file instanceof File && (file.size > 0 || file.name !== "")) {
+        const hasNewFile = file instanceof File && (file.size > 0 || file.name !== "");
+        if (!hasNewFile && !carried) return { ...previous, error: "no-file" };
+        const {
+          prepareBrowserImport,
+          readBrowserImportFile,
+          runBrowserImport,
+          transferBrowserImport,
+          yieldImportControl,
+        } = await import("@/composition/import-browser");
+        abort.signal.throwIfAborted();
+        if (hasNewFile) {
           const loaded = await readBrowserImportFile(file);
           if (!loaded.ok) return { error: loaded.error };
           carried = loaded.carried;
@@ -197,6 +199,9 @@ export function useImportTransfer(
     const abort = new AbortController();
     controller.current = abort;
     try {
+      const { requestImportJob, transferBrowserImport } =
+        await import("@/composition/import-browser");
+      abort.signal.throwIfAborted();
       updateJob(
         await requestImportJob(
           transferBrowserImport,

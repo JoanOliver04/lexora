@@ -8,6 +8,8 @@ import { getTranslations } from "next-intl/server";
 import { WorkspaceFrame } from "@/shared/presentation/components/workspace-frame";
 import { Button } from "@/shared/presentation/components";
 import { logoutAction } from "@/app/[locale]/(auth)/actions";
+import { ClientMessages } from "@/i18n/client-messages";
+import { WorkspaceIcon } from "@/shared/presentation/components/workspace-destinations";
 
 /**
  * Puerta del área autenticada.
@@ -47,18 +49,27 @@ export default async function AppLayout({
   return (
     <>
       {theme && <AccountTheme preference={theme} />}
-      <WorkspaceFrame
-        logout={
-          <form action={logoutAction}>
-            <input type="hidden" name="locale" value={locale} />
-            <Button type="submit" variant="secondary">
-              {t("logout")}
-            </Button>
-          </form>
-        }
-      >
-        {children}
-      </WorkspaceFrame>
+      <ClientMessages namespaces={["Commands", "Navigation"]}>
+        <WorkspaceFrame
+          logout={
+            <form action={logoutAction}>
+              <input type="hidden" name="locale" value={locale} />
+              <Button
+                type="submit"
+                variant="secondary"
+                className="workspace-logout"
+                aria-label={t("logout")}
+                title={t("logout")}
+              >
+                <WorkspaceIcon path="M10 17l5-5-5-5m5 5H3m10-8h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5" />
+                <span>{t("logout")}</span>
+              </Button>
+            </form>
+          }
+        >
+          {children}
+        </WorkspaceFrame>
+      </ClientMessages>
     </>
   );
 }
