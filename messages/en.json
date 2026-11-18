@@ -944,8 +944,8 @@
     "errors": {
       "email-required": "Enter your email.",
       "email-invalid": "That email doesn't look valid.",
-      "password-too-short": "The password needs at least 8 characters.",
-      "password-too-long": "The password can't be longer than 72 characters.",
+      "password-too-short": "Use at least 12 characters.",
+      "password-too-long": "The password is too long. Try a shorter one.",
       "invalid-credentials": "That email or password is not correct.",
       "weak-password": "That password is too weak. Try a longer one.",
       "missing-recovery-session": "This recovery link has expired. Request a new one.",
@@ -972,7 +972,7 @@
       "title": "Create an account",
       "emailLabel": "Email",
       "passwordLabel": "Password",
-      "passwordHint": "At least 8 characters.",
+      "passwordHint": "At least 12 characters.",
       "submit": "Create account",
       "submitting": "Creating…",
       "loginPrompt": "Already have an account?",
@@ -993,7 +993,7 @@
     "reset": {
       "title": "Choose a new password",
       "passwordLabel": "New password",
-      "passwordHint": "At least 8 characters.",
+      "passwordHint": "At least 12 characters.",
       "submit": "Save the password",
       "submitting": "Saving…",
       "doneTitle": "Password changed",

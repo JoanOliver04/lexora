@@ -1,5 +1,7 @@
 "use client";
 
+import { MIN_NEW_PASSWORD_LENGTH } from "@/modules/identity/application/credentials";
+
 import { useTranslations } from "next-intl";
 import { useActionState, useRef } from "react";
 
@@ -63,7 +65,7 @@ export function SignupForm({ locale, next }: { locale: string; next?: string | u
           name="password"
           type="password"
           autoComplete="new-password"
-          minLength={8}
+          minLength={MIN_NEW_PASSWORD_LENGTH}
           required
           aria-invalid={passwordInvalid || undefined}
           aria-describedby={passwordInvalid ? "signup-error password-hint" : "password-hint"}

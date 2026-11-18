@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseCredentials, parseEmail } from "./credentials";
+import { newPasswordSchema, parseCredentials, parseEmail } from "./credentials";
 
 describe("parseCredentials", () => {
   it("acepta un correo y una contraseña válidos, y normaliza el correo", () => {
@@ -39,6 +39,27 @@ describe("parseCredentials", () => {
 
     expect(parsed.ok).toBe(false);
     expect(parsed.issue).toBeDefined();
+  });
+});
+
+describe("nuevas contraseñas", () => {
+  it("pide doce caracteres al registrarse y al cambiar de contraseña", () => {
+    const password = "ochoabcd";
+    expect(
+      parseCredentials({ email: "persona@example.com", password }, "registration"),
+    ).toMatchObject({
+      ok: false,
+      issue: "password-too-short",
+    });
+    expect(newPasswordSchema.safeParse(password).success).toBe(false);
+    expect(newPasswordSchema.safeParse("🔑".repeat(6)).success).toBe(false);
+    expect(newPasswordSchema.safeParse("una frase larga").success).toBe(true);
+  });
+
+  it("mide el límite de bcrypt en bytes UTF-8 sin prohibir Unicode", () => {
+    expect(newPasswordSchema.safeParse("é".repeat(36)).success).toBe(true);
+    const result = newPasswordSchema.safeParse("é".repeat(37));
+    expect(result.error?.issues[0]?.message).toBe("password-too-long");
   });
 });
 

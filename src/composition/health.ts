@@ -1,3 +1,5 @@
+import "server-only";
+
 import { checkHealth, type HealthReport } from "@/shared/application/health/check-health";
 import { createSupabaseDatabaseProbe } from "@/shared/infrastructure/health/supabase-database-probe";
 
@@ -17,6 +19,20 @@ import { createSupabaseDatabaseProbe } from "@/shared/infrastructure/health/supa
  * peor: una excepción abre la puerta a que la siguiente ruta meta una consulta
  * directamente, y entonces la regla deja de significar nada.
  */
-export function getHealthReport(): Promise<HealthReport> {
-  return checkHealth(createSupabaseDatabaseProbe());
+// Requests share a single bounded probe per runtime. The cached result is
+// anonymous and expires even when the upstream is down.
+let last: { report: HealthReport; expiresAt: number } | undefined;
+let pending: Promise<HealthReport> | undefined;
+
+export async function getHealthReport(): Promise<HealthReport> {
+  if (last && performance.now() < last.expiresAt) return last.report;
+  pending ??= checkHealth(createSupabaseDatabaseProbe())
+    .then((report) => {
+      last = { report, expiresAt: performance.now() + 10_000 };
+      return report;
+    })
+    .finally(() => {
+      pending = undefined;
+    });
+  return pending;
 }

@@ -14,6 +14,37 @@ import { MAX_ROW_SAMPLE_LENGTH } from "./limits";
 
 const CONTROL_CHARS = /[\u0000-\u001F\u007F]/g;
 
+function stripComments(input: string): string {
+  const pieces: string[] = [];
+  let cursor = 0;
+  for (;;) {
+    const start = input.indexOf("<!--", cursor);
+    if (start === -1) break;
+    const end = input.indexOf("-->", start + 4);
+    if (end === -1) break;
+    pieces.push(input.slice(cursor, start), " ");
+    cursor = end + 3;
+  }
+  return pieces.length === 0 ? input : pieces.join("") + input.slice(cursor);
+}
+
+function stripIgnoredElements(text: string): string {
+  // A tag cannot end beyond the last bracket. Do not send the unfinished tail
+  // to patterns that would retry the same missing closing bracket.
+  const lastTagEnd = text.lastIndexOf(">") + 1;
+  let tail = text.slice(lastTagEnd);
+  const markup = text
+    .slice(0, lastTagEnd)
+    .replace(
+      /<(script|style|iframe|object|embed|link|meta|svg|form|textarea)\b[^>]*>[\s\S]*?(<\/\1>|$)/gi,
+      (_match, _tag: string, closing: string) => {
+        if (closing === "") tail = "";
+        return " ";
+      },
+    );
+  return markup + tail;
+}
+
 /**
  * Quita etiquetas HTML y deja el texto. El contenido de `script`/`style`/
  * `iframe` y similares se descarta entero (no basta con borrar la etiqueta).
@@ -21,20 +52,13 @@ const CONTROL_CHARS = /[\u0000-\u001F\u007F]/g;
  * etiquetas que empiezan por una letra.
  */
 export function stripImportedHtml(input: string): string {
-  let text = input;
-
-  text = text.replace(/<!--[\s\S]*?-->/g, " ");
-  text = text.replace(
-    /<(script|style|iframe|object|embed|link|meta|svg|form|textarea)\b[^>]*>[\s\S]*?(<\/\1>|$)/gi,
-    " ",
-  );
-  text = text.replace(
-    /<(script|style|iframe|object|embed|link|meta|svg|form|textarea)\b[^>]*\/?>/gi,
-    " ",
-  );
+  let text = stripIgnoredElements(stripComments(input));
   text = text.replace(/<br\s*\/?>/gi, " ");
   text = text.replace(/<\/(?:p|div|tr|li|h[1-6]|blockquote|pre)>/gi, " ");
-  text = text.replace(/<\/?[a-zA-Z][a-zA-Z0-9:-]*(?:\s[^>]*)?>/g, "");
+  const lastTagEnd = text.lastIndexOf(">") + 1;
+  text =
+    text.slice(0, lastTagEnd).replace(/<\/?[a-zA-Z][a-zA-Z0-9:-]*(?:\s[^>]*)?>/g, "") +
+    text.slice(lastTagEnd);
 
   return decodeBasicEntities(text);
 }

@@ -4,15 +4,18 @@
 
 | Contexto | Cliente | Fichero |
 |---|---|---|
-| Componente de cliente, navegador | `createSupabaseBrowserClient()` | `browser-client.ts` |
 | Server Component, Server Action, Route Handler | `createSupabaseServerClient()` | `server-client.ts` |
 | Proxy | `refreshSupabaseSession()` — renueva el token y devuelve `{ response, userId }` | `session.ts` |
 
-**Los tres usan la misma clave publishable.** No hay un cliente privilegiado, y no
+**Ambos usan la misma clave publishable.** No hay un cliente privilegiado, y no
 debería haberlo: la identidad la aporta la cookie de sesión y los permisos los
 decide Row Level Security dentro de PostgreSQL. Un cliente con clave privilegiada
 saltaría RLS por completo, de modo que cualquier descuido en una consulta
 expondría datos de otros usuarios.
+
+El navegador usa Server Actions y rutas de Lexora. El servidor canjea y renueva
+la sesión y guarda sus cookies como HttpOnly. Los componentes de cliente no
+necesitan leer la sesión ni el verificador PKCE.
 
 Corolario: **RLS no es una capa de seguridad más, es la capa.** La clave
 publishable está en el bundle que descarga cualquiera. Una tabla sin políticas

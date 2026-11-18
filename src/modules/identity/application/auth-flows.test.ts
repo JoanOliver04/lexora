@@ -9,7 +9,7 @@ import {
 import { registerUser, requestPasswordReset, signInUser, updatePassword } from "./auth-flows";
 
 const validEmail = "persona@example.com";
-const validPassword = "abcd1234";
+const validPassword = "synthetic-passphrase";
 
 function gateway(overrides: Partial<AuthGateway> = {}): AuthGateway {
   return {
@@ -70,6 +70,12 @@ describe("registerUser", () => {
 });
 
 describe("signInUser", () => {
+  it("no aplica el nuevo mínimo a las contraseñas existentes", async () => {
+    const auth = gateway();
+    const result = await signInUser(auth, { email: validEmail, password: "abcd1234" });
+    expect(result).toEqual({ ok: true });
+    expect(auth.signIn).toHaveBeenCalledWith({ email: validEmail, password: "abcd1234" });
+  });
   it("cualquier error de credenciales es el mismo: invalid-credentials", async () => {
     const badFormat = await signInUser(gateway(), { email: "x", password: "y" });
     const wrongPassword = await signInUser(

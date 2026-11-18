@@ -15,7 +15,8 @@ No se modifica Auth ni se añade CAPTCHA, SMTP, Redis o un plan de pago.
 
 | Operación | Barrera aplicada | Evidencia ejecutable |
 |---|---|---|
-| Nuevo acceso | Registro denegado en app y Auth; login existente conservado | `personal-access.spec.ts`, consulta pública indicada arriba |
+| Nuevo acceso | Registro denegado en app y Auth. Las altas o cambios desde Lexora exigen 12 caracteres y respetan 72 bytes UTF-8 de bcrypt. | `personal-access.spec.ts`, pruebas de credenciales y consulta pública |
+| Salud | Una sola consulta pendiente por instancia y diez segundos de reutilización de la respuesta anónima | `health.test.ts` y pruebas de la sonda |
 | Importación | Dueño desde sesión/RLS, 2s entre intentos, 50 intentos y100.000 filas por día UTC; replays no cobran de nuevo | `220-batched-import.sql`, integración de import-transfer y E2E de recuperación |
 | Exportación | Una solicitud por cuenta cada60s, lock del perfil y reloj del servidor; cliente no puede backdatear/eliminar el ledger | `200-data-export.sql`, integración de exportación |
 | Repaso | Idempotencia y revisión esperada; estado y log en una transacción; conflicto no produce otro guardado | Tests SQL de commit, integración y `study-recovery.spec.ts` |
@@ -28,6 +29,6 @@ pierda entre funciones. No se abre una excepción de RLS para saltar cuotas.
 
 No hay una regla WAF personalizada contratada ni se atribuye protección ilimitada
 al proveedor. La protección de contraseñas filtradas figura como aviso del plan
-alojado y no se activa cambiando a un plan de pago. La auditoría de dependencias
-del 12/11 terminó con todas las severidades en0. Los tests de abuso no usan datos
-ni cuentas reales de producción.
+alojado. El informe de dependencias del 18/11 mantiene el aviso de picomatch
+con su excepción acotada y fecha de vencimiento. Los tests de límites y
+aislamiento usan datos y cuentas sintéticos.

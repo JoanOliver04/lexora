@@ -30,6 +30,19 @@ describe("stripImportedHtml", () => {
     expect(stripImportedHtml("A &amp; B")).toBe("A & B");
     expect(stripImportedHtml("&lt;div&gt;")).toBe("<div>");
   });
+
+  it("reemplaza comentarios completos y conserva texto sin cierre", () => {
+    expect(stripImportedHtml("uno<!-- nota -->dos<!-- otra nota -->tres")).toBe("uno dos tres");
+    expect(stripImportedHtml("<b>uno</b><!-- nota sin cerrar")).toBe("uno<!-- nota sin cerrar");
+    expect(stripImportedHtml("<b>uno</b><i sin cerrar")).toBe("uno<i sin cerrar");
+  });
+
+  it("descarta el contenido de un bloque sin cierre, incluido el final sin etiquetas", () => {
+    expect(stripImportedHtml("texto<STYLE>contenidos desde el inicio")).toBe("texto ");
+    expect(stripImportedHtml("<style>contenido</STYLE>texto < sin etiqueta")).toBe(
+      " texto < sin etiqueta",
+    );
+  });
 });
 
 describe("sanitizeRowSample", () => {
