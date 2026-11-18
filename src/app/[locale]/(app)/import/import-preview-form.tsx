@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
-import { Link } from "@/i18n/navigation";
 import { Button, FormError, FormStatus, Label } from "@/shared/presentation/components";
 import { useFocusFirstInvalid } from "@/shared/presentation/hooks/use-focus-first-invalid";
 
@@ -14,6 +13,7 @@ import { PendingButton } from "../../(auth)/_components/pending-button";
 import type { ImportProgress } from "@/modules/importing/application/import-transfer";
 import { useImportTransfer } from "./use-import-transfer";
 import type { DeckOptions } from "@/modules/library/application/library-options";
+import { ImportCreateDeckDialog } from "./import-create-deck-dialog";
 import { ImportDeckPicker } from "./import-deck-picker";
 import { ImportPreparation } from "./import-preparation";
 import { ImportSource } from "./import-source";
@@ -106,6 +106,7 @@ function ImportPreviewFormSession({
 }) {
   const t = useTranslations("Import");
   const formRef = useRef<HTMLFormElement>(null);
+  const createDeckDialog = useRef<HTMLDialogElement>(null);
   const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const transferHeadingRef = useRef<HTMLHeadingElement>(null);
   const { state, action, busy, job, failure, stopping, stop, pause } = useImportTransfer(
@@ -122,6 +123,7 @@ function ImportPreviewFormSession({
   );
   const [createReverse, setCreateReverse] = useState(pending?.mapping.createReverse === true);
   const [strategy, setStrategy] = useState(pending?.mapping.strategy ?? "skip");
+  const canCreateDeck = !selectedDeck && !job && deckOptions.total === 0;
 
   useFocusFirstInvalid(formRef, state);
 
@@ -467,19 +469,18 @@ function ImportPreviewFormSession({
               </section>
 
               <section {...stepSectionProps(step === "destination", "gap-3")}>
-                {deckOptions.total === 0 ? (
-                  <p className="text-sm text-(--color-ink-muted)">
-                    {t("execute.noDeck")}{" "}
-                    <Link href="/decks" className="underline underline-offset-4">
-                      {t("execute.createDeck")}
-                    </Link>
-                  </p>
-                ) : (
+                {selectedDeck || deckOptions.total > 0 ? (
                   <ImportDeckPicker
-                    initial={deckOptions}
+                    initial={
+                      deckOptions.total === 0 && selectedDeck
+                        ? { items: [selectedDeck], selected: selectedDeck, total: 1, offset: 0 }
+                        : deckOptions
+                    }
                     selected={selectedDeck}
                     onSelect={setSelectedDeck}
                   />
+                ) : (
+                  <p className="text-sm text-(--color-ink-muted)">{t("execute.noDeck")}</p>
                 )}
                 <label className="flex min-h-11 items-center gap-2 text-sm">
                   <input
@@ -549,7 +550,7 @@ function ImportPreviewFormSession({
                 {...stepSectionProps(step === "confirm", "gap-3")}
                 className={step === "confirm" ? "flex flex-col gap-3 text-sm" : undefined}
               >
-                <p>{t("wizard.confirmIntro")}</p>
+                {selectedDeck && <p>{t("wizard.confirmIntro")}</p>}
                 <ul className="flex flex-col gap-1 text-(--color-ink-muted)">
                   <li>
                     {t("wizard.recapFile", {
@@ -565,9 +566,9 @@ function ImportPreviewFormSession({
                     })}
                   </li>
                   <li>
-                    {deckOptions.total === 0
-                      ? t("wizard.recapNoDeck")
-                      : t("wizard.recapDeck", { deck: selectedDeck?.title ?? "" })}
+                    {selectedDeck
+                      ? t("wizard.recapDeck", { deck: selectedDeck.title })
+                      : t("wizard.recapNoDeck")}
                   </li>
                   <li>
                     {createReverse ? t("wizard.recapReverseOn") : t("wizard.recapReverseOff")}
@@ -595,6 +596,14 @@ function ImportPreviewFormSession({
                 pending={t("execute.submitting")}
               />
             ) : null}
+            {canCreateDeck && (step === "destination" || step === "confirm") && (
+              <Button aria-haspopup="dialog" onClick={() => createDeckDialog.current?.showModal()}>
+                {t("execute.createDeck")}
+              </Button>
+            )}
+            {step === "confirm" && !selectedDeck && deckOptions.total > 0 && (
+              <Button onClick={() => goTo("destination")}>{t("deckChoose")}</Button>
+            )}
             <div className="flex flex-wrap gap-2">
               {previousWizardStep(step) ? (
                 <Button
@@ -613,7 +622,7 @@ function ImportPreviewFormSession({
               {hasPreview && nextWizardStep(step) ? (
                 <Button
                   type="button"
-                  variant={step === "mapping" ? "secondary" : "primary"}
+                  variant={step === "mapping" || canCreateDeck ? "secondary" : "primary"}
                   onClick={() => {
                     const next = nextWizardStep(step);
                     if (next) {
@@ -628,6 +637,16 @@ function ImportPreviewFormSession({
           </div>
         </fieldset>
       </form>
+      {canCreateDeck && (
+        <ImportCreateDeckDialog
+          courseId={courseId}
+          dialog={createDeckDialog}
+          onCreated={(deck) => {
+            setSelectedDeck(deck);
+            stepHeadingRef.current?.focus();
+          }}
+        />
+      )}
     </>
   );
 }
