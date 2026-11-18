@@ -128,9 +128,5 @@ test("English import helper offers a selectable prompt when the clipboard is blo
     "href",
     "https://chatgpt.com/",
   );
-  // Audit the form with the source controls clear of the fixed mobile navigation.
-  await page.getByRole("radio", { name: "From device" }).evaluate((radio) => {
-    radio.scrollIntoView({ block: "center", behavior: "instant" });
-  });
   await auditAxe(page, info, "import-preparation");
 });
