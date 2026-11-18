@@ -61,7 +61,7 @@ El guard de Node verifica antes de auditar:
   fallida detienen la excepción para volver a revisar y actualizar.
 
 El propio pnpm build exige la política antes de compilar y revisa después las
-NFT: exige la traza del servidor, rechaza nuevos
+NFT: exige la traza del servidor correspondiente al modo de build, rechaza nuevos
 paquetes de globbing y distingue la copia compilada de Next ya revisada. Esta
 distinción está vinculada al lock/config fijados, no es permiso general para
 futuros compiladores. Los controles no sustituyen la revisión de alcanzabilidad.
@@ -125,3 +125,37 @@ Gitleaks8.30.1 del diff (12,91KB), exit0 y sin fugas.
 La CI anterior solo ejercitaba los bytes del checkout, de ahí que no detectara
 la reescritura del proveedor. La regresión ahora reproduce esa frontera antes
 de compilar, en vez de depender de que el formato sobreviva al despliegue.
+
+## Trazas del servidor de plataforma — 2026-11-18
+
+PR119 corrigió el formato y pasó CI44275571017; Production7879557579 volvió
+a fallar. Una comprobación local independiente con NOW_BUILDER=1 reprodujo
+otro defecto del guard, confirmado después por el log del propietario: Next16.4.6
+compiló correctamente, pero solo generó la traza del servidor mínimo, y el guard
+exigió la del servidor completo. Tanto el comando local ejecutado como el log
+aportado fallan después de compilar con Missing production server trace.
+
+La señal coincide con hasNextSupport de next/dist/server/ci-info.js. Con ella,
+el build observado produjo31 NFT, incluida next-minimal-server.js.nft.json;
+sin ella se observaron32, incluida next-server.js.nft.json. El guard ahora exige
+el nombre correspondiente a ese modo y revisa todas las trazas encontradas en
+ambos casos. Solo admite esos dos nombres; no se introduce un modo sin traza.
+La inspección del build de plataforma no encontró copias compiladas de
+picomatch en sus NFT (compiledNextFiles0); no acredita ausencia de código
+inlined ni inspecciona el servidor de imágenes que gestiona el proveedor.
+
+Regresión nueva:1 FAIL antes del cambio con Missing production server trace;
+después11 pruebas del guard PASS. Cubre las dos trazas, ausencia de la requerida,
+nombre arbitrario y dependencia de globbing añadida en modo mínimo. El guard
+con registro y las trazas reales del build de plataforma también pasa. La CI
+añade un pnpm build con NOW_BUILDER=1 tras el build normal para verificar la
+frontera real, conservando permisos, acciones fijadas, auditoría y demás gates.
+
+Gate final de este arreglo: LEXORA_DB_TESTS=1 pnpm check exit0,970 PASS+
+1 omisión privada, Nodebackup12/política11, formato/lint/tipos/28 contrastes y
+build normal PASS (productionServerTrace completo, compiledNextFiles2).
+Después NOW_BUILDER=1 pnpm build exit0, con traza mínima y compiledNextFiles0.
+La nueva prueba pasó sin errores ni omisiones después del rojo observado.
+Revisión DEEP de los cinco archivos y pasiva de seguridad del delta, sin
+hallazgos accionables; Gitleaks8.30.1 del diff sin fugas. Resultados de CI y
+Production posteriores a esta instantánea se registran en la PR de corrección.
