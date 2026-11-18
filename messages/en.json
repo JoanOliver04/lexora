@@ -96,12 +96,12 @@
       },
       "import": {
         "label": "Import",
-        "title": "How to import vocabulary",
-        "intro": "If you already have Anki cards, you can bring them into Lexora from a text or CSV file.",
+        "title": "How to import cards",
+        "intro": "Bring in Anki cards or use Lexora’s template to prepare a vocabulary, grammar or phrase set.",
         "steps": {
           "1": "Create or choose the deck where you want to put the cards.",
-          "2": "Open Import and select your TXT or CSV file.",
-          "3": "Set the front and back columns. Check the preview to make sure they line up.",
+          "2": "Open Import to view the template or copy a prompt for ChatGPT. Upload the file or paste the generated text.",
+          "3": "Use the preview to check the front, back and tags of each card.",
           "4": "Choose the deck and what to do with duplicates. Check the summary and select Import into the course."
         },
         "tip": "The preview lets you check columns and rows before saving. You can skip duplicates or copy them as new concepts.",
@@ -545,7 +545,7 @@
       "heading": "Import progress",
       "progressLabel": "Confirmed rows",
       "progress": "{done} of {total} rows confirmed",
-      "resumeHint": "You can pause and continue. After reloading or changing devices, select the same file and keep its mapping and options. The original file is not stored.",
+      "resumeHint": "You can pause and continue. After reloading or changing devices, select the same file or paste the same text again and keep the options.",
       "pause": "Pause import",
       "resume": "Check and continue",
       "stop": "Finish this attempt",
@@ -563,7 +563,67 @@
     },
     "backToApp": "Back to home",
     "title": "Import",
-    "intro": "Upload a TXT or CSV prepared for Anki. Pick a deck, review duplicates, and confirm. Duplicate rows are skipped or copied, never merged.",
+    "intro": "Import vocabulary, grammar or phrases for a topic. Review the cards and choose a deck before saving.",
+    "preparation": {
+      "title": "Import template",
+      "intro": "Use one row per card. The front and back are required. Leave the third column empty if you do not use tags.",
+      "type": "Card type",
+      "answerLanguage": "Answer language",
+      "types": {
+        "vocabulary": "Vocabulary",
+        "grammar": "Grammar",
+        "phrases": "Useful phrases"
+      },
+      "languages": {
+        "es": "Spanish",
+        "en": "English"
+      },
+      "topics": {
+        "vocabulary": "Sports",
+        "grammar": "Present perfect",
+        "phrases": "Shopping"
+      },
+      "columns": {
+        "front": "Front · column 1",
+        "back": "Back · column 2",
+        "tags": "Tags · column 3"
+      },
+      "download": "Download sample CSV",
+      "raw": "View the CSV",
+      "jumpToSource": "Go to upload or paste",
+      "assistant": "Prepare a topic with ChatGPT",
+      "instructions": "Customise the prompt and paste it into ChatGPT. Then upload the CSV or paste its contents below.",
+      "topic": "Topic",
+      "level": "English level",
+      "count": "Number of cards",
+      "focus": "Focus (optional)",
+      "focusPlaceholder": "Equipment, rules and British English",
+      "copy": "Copy prompt",
+      "chat": "Open ChatGPT",
+      "showPrompt": "View the prompt",
+      "copied": "Prompt copied. Paste it into ChatGPT.",
+      "manual": "The prompt could not be copied automatically. Select and copy the prompt text.",
+      "prompt": {
+        "goal": "Create {count} level {level} English flashcards about {topic} for import into Lexora.",
+        "vocabulary": "Put an English word or expression on each front. Give its meaning and a natural English example on the back.",
+        "grammar": "Put a question, gap-fill sentence or correction task in English on each front. Give the solution and briefly explain the rule on the back. Cover the topic’s uses, forms, examples and common mistakes.",
+        "phrases": "Put a useful English phrase on each front. Explain its meaning and when to use it on the back, with a short context where helpful.",
+        "coverage": "Cover the most useful subtopics for this level. Avoid duplicate fronts and variations that test exactly the same thing.",
+        "language": "Write the meaning or explanation on the back in {language}, keeping the examples and answers in English where appropriate.",
+        "focus": "Prioritise {focus} within the topic where it fits the format.",
+        "format": "Return a comma-separated CSV in UTF-8. Use {directive} as the exact first line. Start the data on the second line, with no header row. Each data row must have exactly three fields. Write the front, back and tags in that order. Put double quotes around every field and double any double quotes inside a field.",
+        "fields": "Use one card per line, with no blank lines or line breaks within fields. Limit the front to {front} characters and the back to {back}. Use plain text.",
+        "tags": "Separate tags with spaces. Use :: for hierarchies, such as sports::equipment, and hyphens within names. If a card has no tags, keep the third column as an empty quoted field.",
+        "delivery": "Provide a downloadable lexora.csv file if you can create it. Otherwise, return only a CSV code block with the complete contents, without extra text or Markdown tables."
+      }
+    },
+    "source": {
+      "title": "Add content",
+      "file": "From device",
+      "paste": "Paste content",
+      "textLabel": "CSV or TSV contents",
+      "textHint": "Paste the file contents or the code block from ChatGPT, then press Preview."
+    },
     "wizard": {
       "navLabel": "Import steps",
       "step": {
@@ -591,11 +651,11 @@
       "another": "Import another file"
     },
     "fileLabel": "File",
-    "fileHint": "Up to 5 MB, 10,000 rows and 200 columns. HTML is turned into plain text.",
+    "fileHint": "CSV, TSV or TXT in UTF-8. Up to 5 MB, 10,000 rows and 200 columns.",
     "submit": "Preview",
     "resubmit": "Refresh preview",
     "submitting": "Reading…",
-    "resubmitHint": "To preview a different file, pick it above and press again.",
+    "resubmitHint": "To preview different content, choose it or paste it above and press again.",
     "separatorDetected": "Detected separator: {separator}",
     "separatorFromDirective": "(declared in the file)",
     "counts": "{valid, plural, one {# valid row} other {# valid rows}} · {issues, plural, =0 {no problems} one {# with a problem} other {# with problems}}",
@@ -646,7 +706,7 @@
     },
     "errors": {
       "no-file": "Choose a file.",
-      "empty-file": "The file is empty.",
+      "empty-file": "The content is empty.",
       "read-failed": "We couldn't read the file.",
       "too-large": "The file is larger than 5 MB.",
       "too-many-rows": "The file has more than 10,000 rows.",

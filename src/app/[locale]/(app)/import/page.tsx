@@ -55,9 +55,12 @@ export default async function ImportPage({
   });
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-6 py-12 [overflow-wrap:anywhere]">
+    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-[clamp(12px,4vw,24px)] py-12 [overflow-wrap:anywhere]">
       <header className="flex flex-col gap-2">
-        <Link href="/app" className="text-sm text-(--color-ink-muted) underline underline-offset-4">
+        <Link
+          href="/app"
+          className="inline-flex min-h-11 min-w-11 w-fit items-center text-sm text-(--color-ink-muted) underline underline-offset-4"
+        >
           {t("backToApp")}
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>

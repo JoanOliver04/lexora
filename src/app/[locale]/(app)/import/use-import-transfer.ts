@@ -10,6 +10,8 @@ import {
   type ImportTransferFailure,
 } from "@/modules/importing/application/import-transfer-error";
 import type { ImportJobError } from "@/modules/importing/application/import-job";
+import { unwrapPastedImport } from "@/modules/importing/application/import-template";
+import { MAX_FILE_BYTES } from "@/modules/importing/domain/limits";
 import { readImportMapping, type ImportPreviewState } from "./import-state";
 
 function rememberJob(job: ImportProgress) {
@@ -55,9 +57,16 @@ export function useImportTransfer(
       let retained = previous;
       try {
         let carried = previous.carried;
-        const file = form.get("file");
-        const hasNewFile = file instanceof File && (file.size > 0 || file.name !== "");
-        if (!hasNewFile && !carried) return { ...previous, error: "no-file" };
+        let file = form.get("file");
+        const pasted = form.get("import-text");
+        if (typeof pasted === "string") {
+          if (pasted.length > MAX_FILE_BYTES) return { error: "too-large" };
+          const content = unwrapPastedImport(pasted);
+          if (!content.trim()) return { error: "empty-file" };
+          file = new File([content], "lexora-pasted.txt", { type: "text/plain;charset=utf-8" });
+        }
+        const newFile = file instanceof File && (file.size > 0 || file.name !== "") ? file : null;
+        if (!newFile && !carried) return { ...previous, error: "no-file" };
         const {
           prepareBrowserImport,
           readBrowserImportFile,
@@ -66,8 +75,8 @@ export function useImportTransfer(
           yieldImportControl,
         } = await import("@/composition/import-browser");
         abort.signal.throwIfAborted();
-        if (hasNewFile) {
-          const loaded = await readBrowserImportFile(file);
+        if (newFile) {
+          const loaded = await readBrowserImportFile(newFile);
           if (!loaded.ok) return { error: loaded.error };
           carried = loaded.carried;
         }

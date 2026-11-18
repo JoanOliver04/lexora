@@ -42,6 +42,7 @@ export function WorkspaceFrame({ children, logout }: { children: ReactNode; logo
       className="workspace-frame"
       tabIndex={-1}
       data-study-session={pathname.startsWith("/app/study/") || undefined}
+      data-import-flow={pathname === "/import" || undefined}
     >
       <a className="skip-link" href="#workspace-content">
         {t("skip")}
