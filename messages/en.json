@@ -756,8 +756,6 @@
       "createDeck": "Create a deck",
       "creatingDeck": "Creating deck…",
       "deckTitle": "Deck name",
-      "deckTitleRequired": "Enter a name for the deck.",
-      "deckTitleLong": "Shorten the deck name.",
       "deckCreateFailed": "The deck could not be created. Try again.",
       "cancelDeck": "Cancel",
       "reverse": "Also create the reverse direction (back → front)",

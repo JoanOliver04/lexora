@@ -11,6 +11,8 @@ import {
   type DeckOptions,
 } from "@/modules/library/application/library-options";
 
+import { draftFromForm } from "../decks/deck-form-data";
+
 export async function searchImportDeckOptions(
   raw: unknown,
 ): Promise<{ ok: true; page: DeckOptions } | { ok: false }> {
@@ -31,21 +33,18 @@ export async function searchImportDeckOptions(
   }
 }
 
-export async function createImportDeck(courseId: string, title: FormDataEntryValue | null) {
+export async function createImportDeck(courseId: string, data: FormData) {
   const [course, context] = await Promise.all([
     getActiveCourseForCurrentUser(),
     getLibraryContextForCurrentUser(),
   ]);
   if (!course || !context || course.id !== courseId) {
-    return { ok: false, error: "deckCreateFailed" } as const;
+    return { ok: false } as const;
   }
 
-  const result = await createDeck(context.decks, context.ownerId, course.id, { title });
+  const result = await createDeck(context.decks, context.ownerId, course.id, draftFromForm(data));
   if (!result.ok) {
-    const error = result.issues.includes("deck.title.empty")
-      ? "deckTitleRequired"
-      : "deckTitleLong";
-    return { ok: false, error } as const;
+    return { ok: false, issues: result.issues } as const;
   }
 
   revalidatePath("/[locale]/decks", "page");

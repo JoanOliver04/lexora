@@ -186,6 +186,9 @@ test.describe("importación — vista previa", () => {
     const dialog = page.getByRole("dialog", { name: "Crear un mazo" });
     const name = dialog.getByLabel("Nombre del mazo");
     await expect(name).toBeFocused();
+    await expect(dialog.getByLabel("Descripción (opcional)")).toHaveValue("");
+    await expect(dialog.getByLabel("Nivel (opcional)")).toHaveValue("");
+    await expect(dialog.getByLabel("Categoría (opcional)")).toHaveValue("");
     await dialog.getByRole("button", { name: "Cancelar" }).click();
     await expect(dialog).toBeHidden();
     await continueTo(page, "Duplicados");
@@ -287,8 +290,21 @@ test.describe("importación — vista previa", () => {
     await expect(picker.locator("option:checked")).toHaveText("Existing deck");
     await page.getByRole("button", { name: "Create a deck" }).click();
     const dialog = page.getByRole("dialog", { name: "Create a deck" });
-    await dialog.getByLabel("Deck name").fill("Imported cards");
-    await dialog.getByLabel("Deck name").press("Enter");
+    const name = dialog.getByLabel("Deck name");
+    const description = dialog.getByLabel("Description (optional)");
+    const level = dialog.getByLabel("Level (optional)");
+    const category = dialog.getByLabel("Category (optional)");
+    await description.fill("Sample vocabulary for advanced study.");
+    await level.selectOption("C2");
+    await category.selectOption({ label: "Vocabulary" });
+    await dialog.getByRole("button", { name: "Create a deck" }).click();
+    await expect(dialog.getByRole("alert")).toHaveText("Enter a name for the deck.");
+    await expect(name).toBeFocused();
+    await expect(description).toHaveValue("Sample vocabulary for advanced study.");
+    await expect(level).toHaveValue("C2");
+    await expect(category).toHaveValue("vocabulary");
+    await name.fill("Imported cards");
+    await name.press("Enter");
     await expect(picker.locator("option:checked")).toHaveText("Imported cards");
     await expect(picker.locator("option")).toHaveText(["Existing deck", "Imported cards"]);
     await next.click();
@@ -297,6 +313,14 @@ test.describe("importación — vista previa", () => {
     await expect(page.getByText("Deck: Imported cards", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Import into the course" }).click();
     await expect(page.getByText("Created: 2", { exact: true })).toBeVisible({ timeout: 15_000 });
+
+    await page.goto("/en/decks");
+    await page.getByRole("link", { name: "Imported cards", exact: true }).click();
+    await expect(page.getByLabel("Description (optional)")).toHaveValue(
+      "Sample vocabulary for advanced study.",
+    );
+    await expect(page.getByLabel("Level (optional)")).toHaveValue("C2");
+    await expect(page.getByLabel("Category (optional)")).toHaveValue("vocabulary");
   });
 
   test("con inversa se crean dos ítems del mismo concepto", async ({ page }) => {

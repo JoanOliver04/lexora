@@ -1,5 +1,11 @@
 # Lexora — Estado actual
 
+**LEX-22.4 · Campos opcionales del mazo al importar.** Crear un mazo desde el
+asistente muestra descripción, nivel y categoría con los mismos campos y
+validaciones de Mis mazos. Se puede crear el mazo solo con un nombre. Los
+valores se conservan ante un error y el mazo creado se selecciona sin perder
+la vista previa del archivo.
+
 **LEX-22.3 · Estudio libre, C2 e importación.** Hoy y Estudio enlazan a un modo
 para recorrer las tarjetas de uno, varios o todos los mazos activos. Las
 tarjetas se barajan al empezar cada vuelta. Se puede volver por el recorrido y el
