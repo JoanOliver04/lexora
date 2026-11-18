@@ -72,7 +72,7 @@ for (const locale of ["es", "en"] as const) {
       .getByRole("main")
       .locator("details")
       .filter({
-        hasText: es ? "Cómo importar vocabulario" : "How to import vocabulary",
+        hasText: es ? "Cómo importar tarjetas" : "How to import cards",
       });
     await importHint.locator("summary").click();
     await expect(importHint.getByRole("listitem").last()).toBeVisible();

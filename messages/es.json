@@ -96,12 +96,12 @@
       },
       "import": {
         "label": "Importación",
-        "title": "Cómo importar vocabulario",
-        "intro": "Si ya tienes tarjetas en Anki, puedes traerlas a Lexora desde un archivo de texto o CSV.",
+        "title": "Cómo importar tarjetas",
+        "intro": "Trae tarjetas de Anki o prepara un tema de vocabulario, gramática o frases con la plantilla de Lexora.",
         "steps": {
           "1": "Crea o elige el mazo donde quieres guardar las tarjetas.",
-          "2": "En Importar, selecciona tu archivo TXT o CSV.",
-          "3": "Asigna las columnas del frente y del reverso. Usa la vista previa para comprobar que coinciden.",
+          "2": "En Importar, revisa la plantilla o copia un prompt para ChatGPT. Sube el archivo o pega el texto generado.",
+          "3": "Usa la vista previa para comprobar el frente, el reverso y las etiquetas de cada tarjeta.",
           "4": "Elige el mazo y qué hacer con los duplicados. Revisa el resumen y pulsa Importar al curso."
         },
         "tip": "La vista previa te permite corregir columnas y filas antes de guardar. Puedes omitir duplicados o copiarlos como conceptos nuevos.",
@@ -543,12 +543,72 @@
     "deckNext": "Siguiente",
     "backToApp": "Volver al inicio",
     "title": "Importar",
-    "intro": "Sube un TXT o CSV preparado para Anki. Eliges mazo, revisas duplicados y confirmas. Las filas duplicadas se omiten o se copian, nunca se fusionan.",
+    "intro": "Importa vocabulario, gramática o frases de un tema. Revisa las tarjetas y elige el mazo antes de guardarlas.",
+    "preparation": {
+      "title": "Plantilla de importación",
+      "intro": "Una tarjeta por fila. El frente y el reverso son obligatorios. Puedes dejar la tercera columna vacía si no usas etiquetas.",
+      "type": "Tipo de tarjetas",
+      "answerLanguage": "Idioma del reverso",
+      "types": {
+        "vocabulary": "Vocabulario",
+        "grammar": "Gramática",
+        "phrases": "Frases útiles"
+      },
+      "languages": {
+        "es": "Español",
+        "en": "Inglés"
+      },
+      "topics": {
+        "vocabulary": "Sports",
+        "grammar": "Present perfect",
+        "phrases": "Shopping"
+      },
+      "columns": {
+        "front": "Frente · columna 1",
+        "back": "Reverso · columna 2",
+        "tags": "Etiquetas · columna 3"
+      },
+      "download": "Descargar ejemplo CSV",
+      "raw": "Ver el CSV",
+      "jumpToSource": "Ir a subir o pegar",
+      "assistant": "Preparar un tema con ChatGPT",
+      "instructions": "Personaliza el prompt y pégalo en ChatGPT. Cuando tengas el CSV, súbelo o pega su contenido aquí abajo.",
+      "topic": "Tema",
+      "level": "Nivel de inglés",
+      "count": "Cantidad de tarjetas",
+      "focus": "Enfoque (opcional)",
+      "focusPlaceholder": "Equipamiento, reglas e inglés británico",
+      "copy": "Copiar prompt",
+      "chat": "Abrir ChatGPT",
+      "showPrompt": "Ver el prompt",
+      "copied": "Prompt copiado. Pégalo en ChatGPT.",
+      "manual": "No se pudo copiar automáticamente. Selecciona y copia el texto del prompt.",
+      "prompt": {
+        "goal": "Crea {count} tarjetas de inglés de nivel {level} sobre el tema {topic} para importarlas a Lexora.",
+        "vocabulary": "Pon una palabra o expresión en inglés en cada frente. En el reverso da su significado y un ejemplo natural en inglés.",
+        "grammar": "Pon una pregunta, una frase para completar o una corrección en inglés en cada frente. En el reverso da la solución y explica brevemente la regla. Reparte las tarjetas entre usos, formas, ejemplos y errores frecuentes del tema.",
+        "phrases": "Pon una frase útil en inglés en cada frente. En el reverso explica su significado y cuándo usarla, con un contexto breve si ayuda.",
+        "coverage": "Reparte las tarjetas entre los subtemas más útiles para el nivel. Evita duplicar frentes o crear variantes que practiquen exactamente lo mismo.",
+        "language": "Redacta el significado o la explicación del reverso en {language}, manteniendo en inglés las frases de ejemplo y las soluciones que correspondan.",
+        "focus": "Prioriza {focus} dentro del tema si encaja con el formato.",
+        "format": "Devuelve un CSV en UTF-8 separado por comas. Escribe {directive} como primera línea exacta. Empieza los datos en la segunda línea, sin fila de títulos. Cada línea lleva exactamente tres campos. Escribe el frente, el reverso y las etiquetas en ese orden. Pon comillas dobles alrededor de cada campo y duplica las comillas dobles que aparezcan dentro.",
+        "fields": "Usa una tarjeta por línea, sin líneas vacías ni saltos dentro de los campos. Limita el frente a {front} caracteres y el reverso a {back}. Usa texto plano.",
+        "tags": "Separa las etiquetas con espacios. Usa :: para jerarquías, como sports::equipment, y guiones dentro de los nombres. Si una tarjeta no tiene etiquetas, conserva la tercera columna con un campo vacío entre comillas.",
+        "delivery": "Entrega un archivo lexora.csv para descargar si puedes crearlo. Si no, devuelve solo un bloque de código CSV con el contenido completo, sin texto adicional ni tablas de Markdown."
+      }
+    },
+    "source": {
+      "title": "Añadir contenido",
+      "file": "Desde el dispositivo",
+      "paste": "Pegar contenido",
+      "textLabel": "Contenido del CSV o TSV",
+      "textHint": "Pega el contenido del archivo o el bloque de código de ChatGPT y pulsa Previsualizar."
+    },
     "transfer": {
       "heading": "Estado de la importación",
       "progressLabel": "Filas confirmadas",
       "progress": "{done} de {total} filas confirmadas",
-      "resumeHint": "Puedes pausar y continuar. Si recargas o cambias de dispositivo, selecciona el mismo archivo y conserva el mapeo y las opciones. El archivo original no se almacena.",
+      "resumeHint": "Puedes pausar y continuar. Si recargas o cambias de dispositivo, selecciona el mismo archivo o vuelve a pegar el mismo texto y conserva las opciones.",
       "pause": "Pausar importación",
       "resume": "Comprobar y continuar",
       "stop": "Finalizar este intento",
@@ -591,11 +651,11 @@
       "another": "Importar otro archivo"
     },
     "fileLabel": "Archivo",
-    "fileHint": "Hasta 5 MB, 10.000 filas y 200 columnas. El HTML se convierte en texto plano.",
+    "fileHint": "CSV, TSV o TXT en UTF-8. Hasta 5 MB, 10.000 filas y 200 columnas.",
     "submit": "Previsualizar",
     "resubmit": "Actualizar vista previa",
     "submitting": "Leyendo…",
-    "resubmitHint": "Para previsualizar otro archivo, elígelo arriba y vuelve a pulsar.",
+    "resubmitHint": "Para revisar otro contenido, elígelo o pégalo arriba y vuelve a pulsar.",
     "separatorDetected": "Separador detectado: {separator}",
     "separatorFromDirective": "(declarado en el archivo)",
     "counts": "{valid, plural, one {# fila válida} other {# filas válidas}} · {issues, plural, =0 {sin problemas} one {# con problemas} other {# con problemas}}",
@@ -646,7 +706,7 @@
     },
     "errors": {
       "no-file": "Elige un archivo.",
-      "empty-file": "El archivo está vacío.",
+      "empty-file": "El contenido está vacío.",
       "read-failed": "No hemos podido leer el archivo.",
       "too-large": "El archivo supera los 5 MB.",
       "too-many-rows": "El archivo tiene más de 10.000 filas.",

@@ -12,6 +12,21 @@ saneamiento: LEX-4.5, [`SECURITY.md`](SECURITY.md). Esta página describe la
 > de las tarjetas **no** se versiona. Hallazgos de estructura abajo; si el
 > dataset cambia, se vuelve a medir.
 
+## Plantilla y preparación de un tema
+
+En **Importar** se pueden consultar dos ejemplos de frente, reverso y
+etiquetas para vocabulario, gramática o frases, ver el CSV de ejemplo y
+descargarlo en UTF-8. Cada fila es una tarjeta. La plantilla empieza con
+`#separator:comma` y los datos siguen directamente, sin fila de títulos.
+
+**Preparar un tema con ChatGPT** permite elegir tema, nivel A1–C1, número de
+tarjetas, idioma de las respuestas y un enfoque opcional. Se copia el prompt
+y se pega en ChatGPT. La respuesta se puede subir como archivo o pegar
+directamente como CSV o TSV, incluso dentro de un bloque de código de Markdown.
+La gramática se importa como preguntas y respuestas y se organiza con etiquetas
+como `grammar::present-perfect`. La vista previa permite revisar columnas,
+filas y duplicados antes de guardar las tarjetas en el mazo elegido.
+
 ## Encoding
 
 UTF-8. Un BOM (`EF BB BF`) al inicio del archivo es opcional y debe

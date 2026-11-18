@@ -15,6 +15,8 @@ import type { ImportProgress } from "@/modules/importing/application/import-tran
 import { useImportTransfer } from "./use-import-transfer";
 import type { DeckOptions } from "@/modules/library/application/library-options";
 import { ImportDeckPicker } from "./import-deck-picker";
+import { ImportPreparation } from "./import-preparation";
+import { ImportSource } from "./import-source";
 import {
   IMPORT_WIZARD_STEPS,
   canJumpToWizardStep,
@@ -321,18 +323,12 @@ function ImportPreviewFormSession({
             {stepHeading}
           </h2>
 
-          <section {...stepSectionProps(step === "file", "gap-2")}>
-            <Label htmlFor="import-file">{t("fileLabel")}</Label>
-            <input
-              id="import-file"
-              name="file"
-              type="file"
-              accept=".txt,.csv,text/plain,text/csv"
-              className="text-sm"
-              aria-invalid={state.error && FILE_ERRORS.has(state.error) ? true : undefined}
-              aria-describedby={state.error && FILE_ERRORS.has(state.error) ? ERROR_ID : undefined}
+          <section {...stepSectionProps(step === "file", "gap-6")}>
+            {!job && <ImportPreparation />}
+            <ImportSource
+              active={step === "file"}
+              errorId={state.error && FILE_ERRORS.has(state.error) ? ERROR_ID : undefined}
             />
-            <p className="text-xs text-(--color-ink-subtle)">{t("fileHint")}</p>
           </section>
 
           {hasPreview ? (

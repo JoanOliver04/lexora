@@ -1,5 +1,12 @@
 # Lexora — Estado actual
 
+**LEX-22.1 · Plantillas y preparación de temas para importar.** Ejemplos
+previos y CSV descargable para vocabulario, gramática y frases. El prompt
+configurable para ChatGPT admite nivel A1–C1, cantidad, idioma de las respuestas
+y enfoque. Se puede pegar CSV o TSV directamente y usar la misma revisión de
+columnas, duplicados y mazo que con archivos. Disponible en ES y EN, con la
+guía de importación actualizada. [Formato y flujo](IMPORT_FORMAT.md).
+
 **LEX-20.1 · Refuerzo previo a la apertura pública.** Cookies de sesión y PKCE
 HttpOnly, nueva política de contraseñas en altas y recuperación, coste acotado
 de la sonda de salud y saneamiento de importación sin búsquedas repetidas sobre
