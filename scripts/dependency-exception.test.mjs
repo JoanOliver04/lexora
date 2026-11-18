@@ -27,7 +27,7 @@ const policy = {
 };
 const now = new Date("2026-11-18T00:00:00Z");
 
-test("the build policy accepts Vercel's JSON rewrite while rejecting changed configuration", async (t) => {
+async function policyFixture(t) {
   const root = fileURLToPath(new URL("../", import.meta.url));
   const fixture = await mkdtemp(path.join(os.tmpdir(), "lexora-policy-"));
   assert.equal(path.dirname(fixture), path.resolve(os.tmpdir()));
@@ -41,16 +41,21 @@ test("the build policy accepts Vercel's JSON rewrite while rejecting changed con
     "scripts/dependency-exception.json",
   ])
     await copyFile(path.join(root, file), path.join(fixture, file));
-  const configPath = path.join(fixture, "vercel.json");
-  const config = JSON.parse(await readFile(configPath, "utf8"));
-  const run = () =>
+  const run = (...args) =>
     promisify(execFile)(
       process.execPath,
-      [path.join(fixture, "scripts/check-dependency-exception.mjs")],
+      [path.join(fixture, "scripts/check-dependency-exception.mjs"), ...args],
       {
         timeout: 10000,
       },
     );
+  return { fixture, run };
+}
+
+test("the build policy accepts Vercel's JSON rewrite while rejecting changed configuration", async (t) => {
+  const { fixture, run } = await policyFixture(t);
+  const configPath = path.join(fixture, "vercel.json");
+  const config = JSON.parse(await readFile(configPath, "utf8"));
   // Replay the exact compact-plus-newline serialization identified by the build log.
   await writeFile(configPath, JSON.stringify(config) + "\n");
   const { stdout } = await run();
@@ -77,6 +82,99 @@ test("the build policy accepts Vercel's JSON rewrite while rejecting changed con
     assert.equal(error.stdout, "");
     return true;
   });
+});
+
+test("the CLI validates Vercel adapter artifacts instead of requiring an NFT", async (t) => {
+  const { fixture, run } = await policyFixture(t);
+  const next = path.join(fixture, ".next");
+  const output = path.join(next, "output");
+  await mkdir(output, { recursive: true });
+  await writeFile(
+    path.join(next, "required-server-files.json"),
+    JSON.stringify({
+      version: 1,
+      config: { adapterPath: "/builder/adapter/index.js" },
+    }),
+  );
+  const outputConfig = { version: 3, routes: [{ handle: "filesystem" }] };
+  const configPath = path.join(output, "config.json");
+  await writeFile(configPath, JSON.stringify(outputConfig));
+  const functions = [
+    "api/health",
+    "api/account/export",
+    "api/account/delete",
+    "api/auth/callback",
+    "api/study/reviews",
+  ];
+  const functionConfig = {
+    framework: { slug: "nextjs", version: "16.4.6" },
+    runtime: "nodejs24.x",
+    handler: "___next_launcher.cjs",
+    filePathMap: { "node_modules/server-only/index.js": "node_modules/server-only/index.js" },
+  };
+  for (const name of functions) {
+    const dir = path.join(output, "functions", name + ".func");
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, ".vc-config.json"), JSON.stringify(functionConfig));
+    await writeFile(path.join(dir, functionConfig.handler), "// Fixture; never executed.\n");
+  }
+  const result = JSON.parse((await run("--trace")).stdout);
+  assert.equal(result.productionArtifactsChecked, true);
+  assert.equal(result.productionTracesChecked, false);
+  assert.equal(result.productionArtifactKind, "vercel-build-output-v3");
+  assert.equal(result.functionsChecked, 5);
+  assert.equal(result.assetReferencesChecked, 10);
+  const target = path.join(output, "functions/api/health.func/.vc-config.json");
+  async function rejected(config, message) {
+    await writeFile(target, JSON.stringify(config));
+    await assert.rejects(
+      () => run("--trace"),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, message);
+        assert.equal(error.stdout, "");
+        return true;
+      },
+    );
+  }
+  await rejected({ ...functionConfig, filePathMap: {} }, /Empty Vercel asset map/);
+  await rejected({ ...functionConfig, filePathMap: { safe: 42 } }, /Invalid runtime reference/);
+  await rejected(
+    { ...functionConfig, filePathMap: { "node_modules/picomatch/index.js": "safe.js" } },
+    /New glob dependency/,
+  );
+  await rejected(
+    { ...functionConfig, filePathMap: { "safe.js": "node_modules/picomatch/index.js" } },
+    /New glob dependency/,
+  );
+  await rejected({ ...functionConfig, runtime: "edge" }, /Unsupported Vercel runtime/);
+  await rejected({ ...functionConfig, handler: "../escape.js" }, /Unsafe Vercel handler/);
+  await rejected({ ...functionConfig, handler: "missing.js" }, /Missing Vercel handler/);
+  await rejected(
+    { ...functionConfig, framework: { slug: "nextjs", version: "other" } },
+    /Unexpected Vercel Next version/,
+  );
+  await rejected(
+    { ...functionConfig, framework: { slug: "other", version: "16.4.6" } },
+    /Unexpected Vercel framework/,
+  );
+  await writeFile(target, JSON.stringify(functionConfig));
+  await writeFile(configPath, JSON.stringify({ ...outputConfig, version: 4 }));
+  await assert.rejects(() => run("--trace"), /Unsupported Vercel output version/);
+  await writeFile(configPath, JSON.stringify(outputConfig));
+  await writeFile(target, "{");
+  await assert.rejects(() => run("--trace"));
+  await writeFile(target, JSON.stringify(functionConfig));
+  const missing = path.join(output, "functions/api/account/delete.func/.vc-config.json");
+  await rm(missing);
+  await assert.rejects(() => run("--trace"), /Missing required Vercel function/);
+  await writeFile(missing, JSON.stringify(functionConfig));
+  // Valid old adapter output cannot satisfy a later build without an adapter.
+  await writeFile(
+    path.join(next, "required-server-files.json"),
+    JSON.stringify({ version: 1, config: {} }),
+  );
+  await assert.rejects(() => run("--trace"), /Missing production server trace/);
 });
 
 test("direct and Vercel builds cannot omit the policy checkpoints", () => {

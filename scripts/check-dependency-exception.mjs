@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -15,6 +15,15 @@ export const REVIEW_FILES = [
   "vercel.json",
 ];
 const GLOB_PACKAGE = /picomatch|micromatch|tinyglobby|fast-glob|@parcel\/watcher/;
+
+function reviewRuntimeReference(value, context) {
+  assert.equal(typeof value, "string", `Invalid runtime reference: ${context}`);
+  const file = value.replaceAll("\\", "/");
+  // This separate Next copy remains bound to the reviewed lock and configuration.
+  if (file.includes("/next/dist/compiled/picomatch/")) return 1;
+  assert.ok(!GLOB_PACKAGE.test(file), `New glob dependency in ${context}; retriage required`);
+  return 0;
+}
 
 export function assertExceptionScope(policy, hashes, now = new Date()) {
   assert.equal(
@@ -91,31 +100,129 @@ export function assertReviewedTraces(traces, serverTrace = "next-server.js.nft.j
   for (const trace of traces) {
     assert.ok(Array.isArray(trace.files), `Invalid trace: ${trace.name}`);
     for (const value of trace.files) {
-      assert.equal(typeof value, "string");
-      const file = value.replaceAll("\\", "/");
-      // This separate Next copy was reviewed with static/default image patterns.
-      if (file.includes("/next/dist/compiled/picomatch/")) {
-        compiledNextFiles++;
-        continue;
-      }
-      assert.ok(
-        !GLOB_PACKAGE.test(file),
-        `New glob dependency in production trace ${trace.name}; retriage required`,
-      );
+      compiledNextFiles += reviewRuntimeReference(value, `production trace ${trace.name}`);
     }
   }
   return compiledNextFiles;
 }
 
-async function filesUnder(directory) {
+export function assertReviewedVercelOutput(output, functions, { nextVersion, runtime }) {
+  assert.equal(output.version, 3, "Unsupported Vercel output version");
+  assert.ok(Array.isArray(output.routes) && output.routes.length > 0, "Missing Vercel routes");
+  assert.ok(functions.length > 0, "Missing Vercel functions");
+  for (const route of [
+    "api/health",
+    "api/account/export",
+    "api/account/delete",
+    "api/auth/callback",
+    "api/study/reviews",
+  ])
+    assert.ok(
+      functions.some((fn) => fn.name === `${route}.func/.vc-config.json`),
+      `Missing required Vercel function: ${route}`,
+    );
+  let assetReferencesChecked = 0,
+    compiledNextReferences = 0;
+  for (const fn of functions) {
+    assert.equal(fn.config.runtime, runtime, `Unsupported Vercel runtime: ${fn.name}`);
+    assert.equal(fn.config.framework?.slug, "nextjs", `Unexpected Vercel framework: ${fn.name}`);
+    assert.equal(
+      fn.config.framework?.version,
+      nextVersion,
+      `Unexpected Vercel Next version: ${fn.name}`,
+    );
+    assert.ok(fn.handlerExists, `Missing Vercel handler: ${fn.name}`);
+    const map = fn.config.filePathMap;
+    assert.ok(
+      map && typeof map === "object" && !Array.isArray(map),
+      `Invalid Vercel asset map: ${fn.name}`,
+    );
+    assert.ok(Object.keys(map).length > 0, `Empty Vercel asset map: ${fn.name}`);
+    for (const [destination, source] of Object.entries(map)) {
+      compiledNextReferences += reviewRuntimeReference(destination, fn.name);
+      compiledNextReferences += reviewRuntimeReference(source, fn.name);
+      assetReferencesChecked += 2;
+    }
+  }
+  return { functionsChecked: functions.length, assetReferencesChecked, compiledNextReferences };
+}
+
+async function filesUnder(directory, ignoredNames = ["cache", "static"]) {
   const result = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
-    if (["cache", "static"].includes(entry.name)) continue;
+    if (ignoredNames.includes(entry.name)) continue;
     const file = path.join(directory, entry.name);
-    if (entry.isDirectory()) result.push(...(await filesUnder(file)));
+    if (entry.isDirectory()) result.push(...(await filesUnder(file, ignoredNames)));
     else if (entry.isFile()) result.push(file);
   }
   return result;
+}
+
+async function reviewProductionArtifacts(manifest) {
+  const dist = path.join(ROOT, ".next");
+  const required = JSON.parse(
+    await readFile(path.join(dist, "required-server-files.json"), "utf8"),
+  );
+  assert.equal(required.version, 1, "Unsupported Next server manifest");
+  assert.ok(
+    required.config && typeof required.config === "object" && !Array.isArray(required.config),
+    "Invalid Next server manifest",
+  );
+  // The adapter consumes Next's assets and emits Build Output API functions.
+  // Use the effective build metadata, not environment guesses or stale output.
+  if (required.config.adapterPath !== undefined) {
+    assert.ok(
+      typeof required.config.adapterPath === "string" && required.config.adapterPath.length > 0,
+      "Invalid Next adapter metadata",
+    );
+    const outputRoot = path.join(dist, "output");
+    const output = JSON.parse(await readFile(path.join(outputRoot, "config.json"), "utf8"));
+    const functionsRoot = path.join(outputRoot, "functions");
+    const functions = [];
+    for (const file of await filesUnder(functionsRoot, [])) {
+      if (path.basename(file) !== ".vc-config.json") continue;
+      const config = JSON.parse(await readFile(file, "utf8"));
+      const directory = path.dirname(file);
+      assert.ok(
+        typeof config.handler === "string" &&
+          config.handler.length > 0 &&
+          !path.isAbsolute(config.handler),
+        "Unsafe Vercel handler",
+      );
+      const handler = path.resolve(directory, config.handler);
+      assert.ok(handler.startsWith(directory + path.sep), "Unsafe Vercel handler");
+      const handlerExists = await stat(handler)
+        .then((entry) => entry.isFile())
+        .catch((error) => {
+          if (error.code === "ENOENT") return false;
+          throw error;
+        });
+      functions.push({
+        name: path.relative(functionsRoot, file).replaceAll("\\", "/"),
+        config,
+        handlerExists,
+      });
+    }
+    return {
+      productionArtifactKind: "vercel-build-output-v3",
+      ...assertReviewedVercelOutput(output, functions, {
+        nextVersion: manifest.dependencies.next,
+        runtime: `nodejs${manifest.engines.node}`,
+      }),
+    };
+  }
+  const traces = [];
+  for (const file of await filesUnder(dist))
+    if (file.endsWith(".nft.json"))
+      traces.push({ name: path.basename(file), ...JSON.parse(await readFile(file, "utf8")) });
+  const productionServerTrace = process.env.NOW_BUILDER
+    ? "next-minimal-server.js.nft.json"
+    : "next-server.js.nft.json";
+  return {
+    productionArtifactKind: "next-nft",
+    productionServerTrace,
+    compiledNextFiles: assertReviewedTraces(traces, productionServerTrace),
+  };
 }
 
 export async function verifyDependencyException({ registry = false, trace = false } = {}) {
@@ -133,10 +240,8 @@ export async function verifyDependencyException({ registry = false, trace = fals
     hashes[file] = createHash("sha256").update(normalized).digest("hex");
   }
   assertExceptionScope(policy, hashes);
-  assertBuildCommands(
-    JSON.parse(await readFile(path.join(ROOT, "package.json"), "utf8")),
-    JSON.parse(await readFile(path.join(ROOT, "vercel.json"), "utf8")),
-  );
+  const manifest = JSON.parse(await readFile(path.join(ROOT, "package.json"), "utf8"));
+  assertBuildCommands(manifest, JSON.parse(await readFile(path.join(ROOT, "vercel.json"), "utf8")));
   const sources = [];
   for (const file of await filesUnder(path.join(ROOT, "src")))
     if (/\.tsx?$/.test(file))
@@ -149,25 +254,15 @@ export async function verifyDependencyException({ registry = false, trace = fals
     assert.ok(response.ok, `Registry check failed: HTTP ${response.status}`);
     assertReviewedRegistry(await response.json(), policy);
   }
-  let compiledNextFiles;
-  // Match Next's hasNextSupport flag: the provider runs its minimal server.
-  const productionServerTrace = process.env.NOW_BUILDER
-    ? "next-minimal-server.js.nft.json"
-    : "next-server.js.nft.json";
-  if (trace) {
-    const traces = [];
-    for (const file of await filesUnder(path.join(ROOT, ".next")))
-      if (file.endsWith(".nft.json"))
-        traces.push({ name: path.basename(file), ...JSON.parse(await readFile(file, "utf8")) });
-    compiledNextFiles = assertReviewedTraces(traces, productionServerTrace);
-  }
+  const artifacts = trace ? await reviewProductionArtifacts(manifest) : {};
   return {
     advisory: policy.advisory,
     expiresAt: policy.expiresAt,
     scopeMatched: true,
     registryChecked: registry,
-    productionTracesChecked: trace,
-    ...(trace ? { compiledNextFiles, productionServerTrace } : {}),
+    productionTracesChecked: trace && artifacts.productionArtifactKind === "next-nft",
+    productionArtifactsChecked: trace,
+    ...artifacts,
   };
 }
 

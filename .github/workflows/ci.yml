@@ -94,7 +94,7 @@ jobs:
       - name: Build de produccion
         run: pnpm build
 
-      - name: Build con servidor de plataforma Vercel
+      - name: Build Next con servidor minimo
         env:
           NOW_BUILDER: "1"
         run: pnpm build

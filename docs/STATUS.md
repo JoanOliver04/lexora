@@ -1,5 +1,25 @@
 # Lexora — Estado actual
 
+**Salida del adaptador de Vercel — 2026-11-18:** el tercer log identifica
+modifyConfig/onBuildComplete, una vía distinta de Next sin adaptador. Se
+reprodujo con @vercel/next27.0.0 en Linux aislado: compila, entrega55 funciones
+mediante Build Output API3 y no emite ninguna traza raíz NFT. El guard antiguo
+fallaba después de compilar. La validación ahora usa los metadatos efectivos
+del build: NFT para Next normal/mínimo, o config.json y los filePathMap de
+todas las funciones para el adaptador. Exige rutas críticas, versión de Next,
+runtime, handlers existentes y referencias válidas, sin admitir salida vacía.
+No usa un flag para omitir la comprobación ni acepta restos de otro build.
+
+Regresión CLI:1 FAIL antes del arreglo;12 pruebas del guard PASS después.
+Repetición del build con el adaptador oficial en Linux: exit0,55 funciones y
+18684 referencias comprobadas. No hay dependencias nuevas de app, SQL, Auth,
+datos ni cambio de caducidad. Gate general exit0:970 PASS+1 omisión privada,
+Nodebackup12/política12, formato/lint/tipos/28 contrastes/build/NFT PASS.
+Revisión DEEP y pasiva de seguridad de los cinco archivos sin hallazgos
+accionables; build mínimo posterior PASS y Gitleaks8.30.1 del diff sin fugas.
+Faltan CI y Production; los resultados remotos se registran en
+la PR de corrección.
+
 **Build de plataforma Vercel — 2026-11-18:** PR119 corrigió y verificó el
 formato JSON (CI44275571017 SUCCESS; merge7aa853d), pero Production7879557579
 volvió a fallar. Una prueba independiente con NOW_BUILDER=1 reprodujo un segundo
