@@ -756,8 +756,6 @@
       "createDeck": "Crear un mazo",
       "creatingDeck": "Creando mazo…",
       "deckTitle": "Nombre del mazo",
-      "deckTitleRequired": "Escribe un nombre para el mazo.",
-      "deckTitleLong": "Acorta el nombre del mazo.",
       "deckCreateFailed": "No se pudo crear el mazo. Inténtalo de nuevo.",
       "cancelDeck": "Cancelar",
       "reverse": "Crear también la dirección inversa (reverso → frente)",

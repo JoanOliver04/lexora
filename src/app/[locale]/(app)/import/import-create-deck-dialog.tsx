@@ -1,15 +1,24 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState, useRef, useState, type RefObject } from "react";
+import { useActionState, useRef, type RefObject } from "react";
 
-import { TITLE_MAX_LENGTH } from "@/modules/library/domain/taxonomy";
-import { Button, FormError, Input, Label } from "@/shared/presentation/components";
+import type { DeckIssue } from "@/modules/library/domain/deck";
+import { Button, FormError } from "@/shared/presentation/components";
 import { useFocusFirstInvalid } from "@/shared/presentation/hooks/use-focus-first-invalid";
 
+import { DeckFields, type DeckFieldDefaults } from "../decks/deck-fields";
+import { fieldValuesFromForm } from "../decks/deck-form-data";
+import { deckIssueKey } from "../decks/message-key";
 import { createImportDeck } from "./deck-options-action";
 
-type DeckCreationState = { error?: "deckTitleRequired" | "deckTitleLong" | "deckCreateFailed" };
+const ERROR_ID = "import-new-deck-error";
+
+type DeckCreationState = {
+  issues?: DeckIssue[];
+  error?: "deckCreateFailed";
+  values?: DeckFieldDefaults;
+};
 
 export function ImportCreateDeckDialog({
   courseId,
@@ -21,22 +30,27 @@ export function ImportCreateDeckDialog({
   onCreated: (deck: { id: string; title: string }) => void;
 }) {
   const t = useTranslations("Import.execute");
+  const tDeckErrors = useTranslations("Library.errors");
   const form = useRef<HTMLFormElement>(null);
-  const [title, setTitle] = useState("");
   const [state, submit, pending] = useActionState<DeckCreationState, FormData>(async (_, data) => {
+    const values = fieldValuesFromForm(data);
     try {
-      const result = await createImportDeck(courseId, data.get("title"));
-      if (!result.ok) return { error: result.error };
+      const result = await createImportDeck(courseId, data);
+      if (!result.ok) {
+        return result.issues
+          ? { issues: result.issues, values }
+          : { error: "deckCreateFailed", values };
+      }
 
       dialog.current?.close();
       onCreated(result.deck);
       return {};
     } catch {
-      return { error: "deckCreateFailed" };
+      return { error: "deckCreateFailed", values };
     }
   }, {});
   useFocusFirstInvalid(form, state);
-  const invalidTitle = state.error === "deckTitleRequired" || state.error === "deckTitleLong";
+  const issues = state.issues ?? [];
 
   return (
     <dialog
@@ -51,25 +65,26 @@ export function ImportCreateDeckDialog({
         <h2 id="import-create-deck-title" className="text-lg font-semibold">
           {t("createDeck")}
         </h2>
-        <div className="flex min-w-0 flex-col gap-2">
-          <Label htmlFor="import-new-deck-name">{t("deckTitle")}</Label>
-          <Input
-            id="import-new-deck-name"
-            name="title"
-            required
-            maxLength={TITLE_MAX_LENGTH}
-            value={title}
-            readOnly={pending}
-            onChange={(event) => setTitle(event.target.value)}
-            aria-invalid={invalidTitle || undefined}
-            aria-describedby={invalidTitle ? "import-new-deck-error" : undefined}
-          />
-          {state.error ? (
-            <FormError id="import-new-deck-error">
-              <p>{t(state.error)}</p>
+        <fieldset
+          aria-labelledby="import-create-deck-title"
+          disabled={pending}
+          className="flex min-w-0 flex-col gap-4"
+        >
+          {issues.length > 0 || state.error ? (
+            <FormError id={ERROR_ID}>
+              {state.error ? <p>{t(state.error)}</p> : null}
+              {issues.map((issue) => (
+                <p key={issue}>{tDeckErrors(deckIssueKey(issue))}</p>
+              ))}
             </FormError>
           ) : null}
-        </div>
+          <DeckFields
+            titleLabel={t("deckTitle")}
+            issues={issues}
+            errorId={ERROR_ID}
+            {...(state.values ? { defaults: state.values } : {})}
+          />
+        </fieldset>
         <div className="flex flex-wrap gap-2">
           <Button type="submit" disabled={pending} aria-busy={pending}>
             {t(pending ? "creatingDeck" : "createDeck")}

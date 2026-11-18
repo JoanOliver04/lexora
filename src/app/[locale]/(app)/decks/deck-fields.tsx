@@ -9,7 +9,7 @@ import { CEFR_LEVELS, DECK_CATEGORIES } from "@/modules/library/domain/taxonomy"
 import { deckIssueKey } from "./message-key";
 
 /**
- * Campos de un mazo, compartidos entre el alta y la edición. La `<textarea>` y
+ * Campos de un mazo, compartidos entre el alta, la edición y la importación. La `<textarea>` y
  * los `<select>` no tienen componente en `shared/` todavía; se estilan aquí con
  * los mismos tokens que `Input` para no adelantar una librería de formularios
  * que aún no hace falta.
@@ -40,10 +40,12 @@ export function DeckFields({
   issues,
   errorId,
   defaults = {},
+  titleLabel,
 }: {
   issues: DeckIssue[];
   errorId: string;
   defaults?: DeckFieldDefaults;
+  titleLabel?: string;
 }) {
   const t = useTranslations("Library");
   const keys = issues.map(deckIssueKey);
@@ -55,7 +57,7 @@ export function DeckFields({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="deck-title">{t("fields.titleLabel")}</Label>
+        <Label htmlFor="deck-title">{titleLabel ?? t("fields.titleLabel")}</Label>
         <Input
           id="deck-title"
           name="title"

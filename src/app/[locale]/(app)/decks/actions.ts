@@ -20,6 +20,7 @@ import { LibraryError } from "@/modules/library/application/library-error";
 import type { DeckIssue } from "@/modules/library/domain/deck";
 import { deckDetailReturnPath } from "./deck-detail-query";
 import type { DeckFieldDefaults } from "./deck-fields";
+import { draftFromForm, fieldValuesFromForm } from "./deck-form-data";
 
 /**
  * Server Actions de mazos. Delgadas (ADR-001): leen el formulario, resuelven la
@@ -42,35 +43,11 @@ export interface DeckFormState {
   values?: DeckFieldDefaults;
 }
 
-function fieldValuesFromForm(formData: FormData): DeckFieldDefaults {
-  const text = (key: string) => {
-    const value = formData.get(key);
-    return typeof value === "string" ? value : "";
-  };
-  return {
-    title: text("title"),
-    description: text("description"),
-    cefrLevel: text("cefrLevel"),
-    category: text("category"),
-  };
-}
-
 function safeLocale(formData: FormData): string {
   const raw = String(formData.get("locale") ?? "");
   return routing.locales.includes(raw as (typeof routing.locales)[number])
     ? raw
     : routing.defaultLocale;
-}
-
-function draftFromForm(formData: FormData): unknown {
-  // Se pasan los valores en crudo: el dominio trata `""` como ausente
-  // (`readOptionalText` / `readOptionalEnum`) y normaliza el título.
-  return {
-    title: formData.get("title"),
-    description: formData.get("description"),
-    cefrLevel: formData.get("cefrLevel"),
-    category: formData.get("category"),
-  };
 }
 
 async function decksContext() {
