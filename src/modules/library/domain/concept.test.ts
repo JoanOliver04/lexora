@@ -72,7 +72,7 @@ describe("validateConceptDraft", () => {
   });
 
   it("rechaza un nivel que no es MCER", () => {
-    const result = validateConceptDraft({ ...valid, cefrLevel: "C2" });
+    const result = validateConceptDraft({ ...valid, cefrLevel: "C3" });
     expect(result).toEqual({ ok: false, issues: ["concept.cefrLevel.invalid"] });
   });
 });

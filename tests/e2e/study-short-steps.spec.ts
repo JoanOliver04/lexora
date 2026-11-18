@@ -103,7 +103,7 @@ for (const phase of ["learning", "relearning"] as const) {
       );
       const wait = page.getByTestId("study-step-wait");
       await expect(wait).toBeVisible();
-      await expect(wait).toContainText(phase === "learning" ? "1 minuto" : "10 minutos");
+      await expect(wait).toContainText(phase === "learning" ? /segundos?|1 minuto/ : "10 minutos");
       await expect(page.getByTestId("study-card")).toHaveCount(0);
       await expect(wait.getByRole("button", { name: "Comprobar pendientes" })).toBeEnabled();
       await expect(wait.getByRole("link", { name: "Volver a Hoy" })).toHaveAttribute(
@@ -128,15 +128,10 @@ for (const phase of ["learning", "relearning"] as const) {
 
       // Only the browser clock moves; the server must still reject early admission.
       await page.clock.setFixedTime(new Date(Date.now() + 86_400_000));
-      const responsePromise = page.waitForResponse(
-        (response) =>
-          new URL(response.url()).pathname === new URL(page.url()).pathname &&
-          response.request().headers()["rsc"] === "1",
-      );
       await wait.getByRole("button", { name: "Comprobar pendientes" }).click();
-      await responsePromise;
-      // RSC headers are not a UI commit. Wait for the refresh transition to settle
-      // before changing the synthetic deadline; the stream itself may stay open.
+      await expect(wait.getByRole("status")).toContainText(
+        "Aún no hay tarjetas pendientes disponibles",
+      );
       await expect(wait.getByRole("button", { name: "Comprobar pendientes" })).toBeEnabled();
       await expect(wait).toBeVisible();
       await expect(page.getByTestId("study-card")).toHaveCount(0);

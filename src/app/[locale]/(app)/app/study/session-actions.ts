@@ -5,12 +5,34 @@ import { getStudyContextForCurrentUser } from "@/composition/study";
 import { routing } from "@/i18n/routing";
 import {
   changeStudySession,
+  getStudySession,
   type ChangeSessionReason,
 } from "@/modules/study/application/study-session";
 import { StudyError } from "@/modules/study/application/study-error";
 
 export interface SessionChangeState {
   error?: ChangeSessionReason | "generic" | "unauthenticated";
+}
+
+export async function checkStudyStepsAction(sessionId: string) {
+  const context = await getStudyContextForCurrentUser();
+  if (!context) return { status: "error" } as const;
+  const now = context.clock.now();
+  const result = await getStudySession(context.sessions, context.dailyQueue, {
+    ownerId: context.ownerId,
+    sessionId,
+    now,
+    timeZone: context.timeZone,
+  });
+  if (!result.ok) return { status: "error" } as const;
+  const queue = result.queue;
+  if (!queue || queue.entries.length > 0 || !queue.nextLearningDueAt) {
+    return { status: "refresh" } as const;
+  }
+  return {
+    status: "waiting",
+    remainingMs: queue.nextLearningDueAt.getTime() - now.getTime(),
+  } as const;
 }
 
 export async function changeStudySessionAction(

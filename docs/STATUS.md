@@ -1,5 +1,15 @@
 # Lexora — Estado actual
 
+**LEX-22.3 · Estudio libre, C2 e importación.** Hoy y Estudio enlazan a un modo
+para recorrer las tarjetas de uno, varios o todos los mazos activos. Las
+tarjetas se barajan al empezar cada vuelta. Se puede volver por el recorrido y el
+resumen muestra tarjetas recorridas, tarjetas distintas y tiempo. Los datos de
+esta sesión duran hasta salir de la página o recargarla. C2 es seleccionable
+en el alta del curso, la biblioteca, filtros y preparación de importaciones.
+El asistente destaca el botón de archivo y ofrece crear un mazo incluso si hay
+destinos existentes. Comprobar pendientes consulta la cola con el reloj del
+servidor y anuncia el resultado.
+
 **LEX-22.2 · Confirmación de importación sin mazo previo.** El asistente permite
 crear el primer mazo del curso desde el paso de destino o el resumen en ES y EN.
 El mazo creado queda seleccionado y la vista previa permanece disponible para

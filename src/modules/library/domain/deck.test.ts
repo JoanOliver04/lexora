@@ -57,7 +57,7 @@ describe("validateDeckDraft", () => {
   });
 
   it("rechaza nivel y categoría fuera del vocabulario, y acumula las dos pegas", () => {
-    const result = validateDeckDraft({ title: "x", cefrLevel: "C2", category: "slang" });
+    const result = validateDeckDraft({ title: "x", cefrLevel: "C3", category: "slang" });
     expect(result).toEqual({
       ok: false,
       issues: ["deck.cefrLevel.invalid", "deck.category.invalid"],

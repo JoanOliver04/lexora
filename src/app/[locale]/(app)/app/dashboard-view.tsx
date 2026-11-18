@@ -141,9 +141,14 @@ export function DashboardView({
                 {t("emptyAction")}
               </Link>
             )}
-            <Link href="/app/study" prefetch={false} className={textLink}>
-              {t("openSessions")}
-            </Link>
+            <div className="flex flex-wrap gap-x-5">
+              <Link href="/app/study" prefetch={false} className={textLink}>
+                {t("openSessions")}
+              </Link>
+              <Link href="/app/study/free" prefetch={false} className={textLink}>
+                {t("freeStudy")}
+              </Link>
+            </div>
           </div>
         </section>
 

@@ -123,7 +123,9 @@ function ImportPreviewFormSession({
   );
   const [createReverse, setCreateReverse] = useState(pending?.mapping.createReverse === true);
   const [strategy, setStrategy] = useState(pending?.mapping.strategy ?? "skip");
-  const canCreateDeck = !selectedDeck && !job && deckOptions.total === 0;
+  const [newDeckOptions, setNewDeckOptions] = useState<DeckOptions | null>(null);
+  const availableDecks = newDeckOptions ?? deckOptions;
+  const canCreateDeck = !job && (step === "destination" || (step === "confirm" && !selectedDeck));
 
   useFocusFirstInvalid(formRef, state);
 
@@ -469,13 +471,10 @@ function ImportPreviewFormSession({
               </section>
 
               <section {...stepSectionProps(step === "destination", "gap-3")}>
-                {selectedDeck || deckOptions.total > 0 ? (
+                {selectedDeck || availableDecks.total > 0 ? (
                   <ImportDeckPicker
-                    initial={
-                      deckOptions.total === 0 && selectedDeck
-                        ? { items: [selectedDeck], selected: selectedDeck, total: 1, offset: 0 }
-                        : deckOptions
-                    }
+                    key={newDeckOptions?.selected?.id}
+                    initial={availableDecks}
                     selected={selectedDeck}
                     onSelect={setSelectedDeck}
                   />
@@ -596,15 +595,19 @@ function ImportPreviewFormSession({
                 pending={t("execute.submitting")}
               />
             ) : null}
-            {canCreateDeck && (step === "destination" || step === "confirm") && (
-              <Button aria-haspopup="dialog" onClick={() => createDeckDialog.current?.showModal()}>
-                {t("execute.createDeck")}
-              </Button>
-            )}
-            {step === "confirm" && !selectedDeck && deckOptions.total > 0 && (
+            {step === "confirm" && !selectedDeck && availableDecks.total > 0 && (
               <Button onClick={() => goTo("destination")}>{t("deckChoose")}</Button>
             )}
             <div className="flex flex-wrap gap-2">
+              {canCreateDeck && (
+                <Button
+                  variant={selectedDeck ? "secondary" : "primary"}
+                  aria-haspopup="dialog"
+                  onClick={() => createDeckDialog.current?.showModal()}
+                >
+                  {t("execute.createDeck")}
+                </Button>
+              )}
               {previousWizardStep(step) ? (
                 <Button
                   type="button"
@@ -622,7 +625,9 @@ function ImportPreviewFormSession({
               {hasPreview && nextWizardStep(step) ? (
                 <Button
                   type="button"
-                  variant={step === "mapping" || canCreateDeck ? "secondary" : "primary"}
+                  variant={
+                    step === "mapping" || (canCreateDeck && !selectedDeck) ? "secondary" : "primary"
+                  }
                   onClick={() => {
                     const next = nextWizardStep(step);
                     if (next) {
@@ -643,6 +648,15 @@ function ImportPreviewFormSession({
           dialog={createDeckDialog}
           onCreated={(deck) => {
             setSelectedDeck(deck);
+            setNewDeckOptions((previous) => {
+              const options = previous ?? deckOptions;
+              return {
+                offset: 0,
+                selected: deck,
+                total: options.total + 1,
+                items: [...options.items, deck].slice(0, 20),
+              };
+            });
             stepHeadingRef.current?.focus();
           }}
         />

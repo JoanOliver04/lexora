@@ -41,7 +41,7 @@ on conflict (code, locale) do nothing;
 --   source_language_id  → el id de la fila es / es
 --   target_language_id  → el id de la fila en / en
 --   target_locale       → 'en-GB'
---   declared_level      → lo elige la persona en el onboarding (A1–C1)
+--   declared_level      → lo elige la persona en el onboarding (A1–C2)
 --   start_level         → 'A1' recomendado (repaso acelerado)
 --   daily_new_limit     → 5 (por defecto en course_settings)
 -- ---------------------------------------------------------------------------

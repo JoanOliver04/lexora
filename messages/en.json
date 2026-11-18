@@ -171,7 +171,7 @@
   },
   "Metadata": {
     "title": "Lexora",
-    "description": "Learn and keep your A1–C1 English with active recall and spaced repetition."
+    "description": "Learn and keep your A1–C2 English with active recall and spaced repetition."
   },
   "Home": {
     "title": "Lexora",
@@ -298,6 +298,7 @@
     }
   },
   "Today": {
+    "freeStudy": "Free study",
     "libraryHeading": "Grow your library",
     "addConcept": "Add a concept",
     "addConceptHint": "Save a word, an expression or an idea.",
@@ -356,6 +357,32 @@
     "errorDescription": "Your data is still saved. Try again to see your reviews and activity.",
     "invalidFilter": "That filter can't be applied. Return to all decks to continue.",
     "retry": "Try again"
+  },
+  "FreeStudy": {
+    "title": "Free study",
+    "intro": "Browse cards from your decks in a random order with the answers visible. Finish whenever you want.",
+    "back": "Back to Study",
+    "scope": "Decks for this session",
+    "all": "All decks",
+    "selected": "Choose decks",
+    "emptyDecks": "Add a deck with cards to get started.",
+    "manageDecks": "Go to My decks",
+    "start": "Start free study",
+    "loading": "Loading cards…",
+    "position": "Card {count}",
+    "previous": "Previous",
+    "next": "Next",
+    "finish": "Finish session",
+    "summary": "Free study summary",
+    "total": "Cards browsed",
+    "distinct": "Distinct cards",
+    "duration": "Study time",
+    "elapsed": "{minutes} min {seconds} s",
+    "restart": "New free study session",
+    "errors": {
+      "empty": "There are no available cards in this selection.",
+      "unavailable": "The cards could not be loaded. Try again."
+    }
   },
   "PracticeCard": {
     "shortcuts": "With focus in the card: Space reveals; 1 Again, 2 Hard, 3 Good and 4 Easy save after reveal. On buttons and checkboxes, use Tab, Shift+Tab, Enter or Space as usual.",
@@ -457,6 +484,7 @@
     "refreshing": "Refreshing summary…"
   },
   "StudySession": {
+    "freeStudy": "Free study",
     "setupTitle": "Prepare your session",
     "setupIntro": "Review all your decks or choose a few. Your session will respect your daily limits.",
     "backToToday": "Back to Today",
@@ -482,9 +510,15 @@
     "changedAvailability": "Your selection is still saved, but no items are available right now. Return to Today to see what's pending.",
     "stepWaitTitle": "A learning step is still pending",
     "stepWaitTime": "At the last check, the next step was due in approximately {minutes, plural, one {# minute} other {# minutes}}.",
-    "stepWaitHint": "You do not need to wait here. You can return to Today without losing saved reviews. Check pending items to load what is now due; this notice is not a countdown.",
+    "stepWaitSeconds": "At the last check, the next step was due in {seconds, plural, one {# second} other {# seconds}}.",
+    "stepWaitHint": "You can return to Today and resume whenever you want. Select Check pending items to update the wait or load available cards.",
     "checkSteps": "Check pending items",
     "checkingSteps": "Checking pending items…",
+    "stepCheck": {
+      "waiting": "No pending cards are available yet. The wait has been updated.",
+      "refresh": "The session has changed since the last check.",
+      "error": "The session could not be checked. Try again."
+    },
     "sessionStatuses": {
       "active": "Active session",
       "paused": "Paused session",
@@ -765,6 +799,7 @@
     "levelB1": "B1 — Intermediate",
     "levelB2": "B2 — Upper intermediate",
     "levelC1": "C1 — Advanced",
+    "levelC2": "C2 — Proficiency",
     "submit": "Create my course",
     "submitting": "Creating…",
     "genericError": "We couldn't create the course. Check the details and try again.",

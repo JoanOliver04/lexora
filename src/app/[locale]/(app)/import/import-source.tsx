@@ -49,7 +49,7 @@ export function ImportSource({
           name="file"
           type="file"
           accept=".txt,.csv,.tsv,text/plain,text/csv,text/tab-separated-values"
-          className="min-h-11 w-full min-w-0 text-sm"
+          className="min-h-11 w-full min-w-0 text-sm file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-(--radius-control) file:border-0 file:bg-(--color-accent) file:px-4 file:text-sm file:font-semibold file:text-(--color-on-accent) hover:file:bg-(--color-accent-hover) disabled:file:cursor-not-allowed disabled:file:opacity-50"
           disabled={!usingFile}
           aria-invalid={usingFile && Boolean(errorId) ? true : undefined}
           aria-describedby={

@@ -256,21 +256,41 @@ test.describe("importación — vista previa", () => {
     await expect(page.getByText("Omitidas: 2")).toBeVisible();
   });
 
-  test("a destination deck can be created before confirmation in English", async ({ page }) => {
+  test("a new import deck can be created alongside an existing one", async ({ page }) => {
     await signUp(page);
     await completeOnboarding(page, { uiLocale: "en" });
+    await page.goto("/en/decks");
+    await page.getByLabel("Name", { exact: true }).fill("Existing deck");
+    await page.getByRole("button", { name: "Create deck", exact: true }).click();
+    await expect(page.getByRole("link", { name: "Existing deck", exact: true })).toBeVisible();
     await page.goto("/en/import");
-    await page.getByLabel("File", { exact: true }).setInputFiles("tests/fixtures/import/comma.csv");
+    const file = page.getByLabel("File", { exact: true });
+    const style = await file.evaluate((input) => {
+      const button = getComputedStyle(input, "::file-selector-button");
+      return {
+        background: button.backgroundColor,
+        cursor: button.cursor,
+        height: button.minHeight,
+      };
+    });
+    expect(style.cursor).toBe("pointer");
+    expect(style.background).not.toBe("rgba(0, 0, 0, 0)");
+    expect(parseFloat(style.height)).toBeGreaterThanOrEqual(44);
+    const chooser = page.waitForEvent("filechooser");
+    await file.click({ position: { x: 50, y: 20 } });
+    await (await chooser).setFiles("tests/fixtures/import/comma.csv");
     await page.getByRole("button", { name: "Preview", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Column mapping" })).toBeVisible();
     const next = page.getByRole("button", { name: "Continue", exact: true });
     await next.click();
+    const picker = page.getByLabel("Destination deck");
+    await expect(picker.locator("option:checked")).toHaveText("Existing deck");
     await page.getByRole("button", { name: "Create a deck" }).click();
     const dialog = page.getByRole("dialog", { name: "Create a deck" });
     await dialog.getByLabel("Deck name").fill("Imported cards");
     await dialog.getByLabel("Deck name").press("Enter");
-    const picker = page.getByLabel("Destination deck");
     await expect(picker.locator("option:checked")).toHaveText("Imported cards");
+    await expect(picker.locator("option")).toHaveText(["Existing deck", "Imported cards"]);
     await next.click();
     await expect(page.getByRole("heading", { name: "Duplicates", exact: true })).toBeVisible();
     await next.click();

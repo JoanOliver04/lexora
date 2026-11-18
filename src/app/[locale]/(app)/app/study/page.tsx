@@ -45,6 +45,13 @@ export default async function StudySetupPage({
         <p className="mt-2 text-sm leading-relaxed text-(--color-ink-muted)">{t("setupIntro")}</p>
         <p className="mt-2 text-sm font-medium break-words">{course.title}</p>
       </header>
+      <Link
+        href="/app/study/free"
+        prefetch={false}
+        className="inline-flex min-h-11 w-fit items-center rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-4 text-sm font-semibold hover:bg-(--color-surface-sunken)"
+      >
+        {t("freeStudy")}
+      </Link>
       <TutorialHint topic="study" />
       <Suspense
         fallback={
