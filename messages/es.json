@@ -7,6 +7,7 @@
     "settings": "Ajustes",
     "import": "Importar",
     "history": "Historial",
+    "help": "Ayuda",
     "primary": "Navegación principal",
     "tools": "Herramientas de estudio",
     "skip": "Ir al contenido",
@@ -34,7 +35,112 @@
       "statistics": "Consultar tu actividad y evolución",
       "settings": "Cambiar preferencias, idioma y aspecto",
       "import": "Añadir contenido desde archivos CSV o TSV",
-      "history": "Consultar los repasos guardados"
+      "history": "Consultar los repasos guardados",
+      "help": "Tutoriales, primeros pasos y ejemplos para usar Lexora"
+    }
+  },
+  "Tutorials": {
+    "title": "Aprende a usar Lexora",
+    "intro": "Sigue los pasos de tu primera sesión o ve directamente al tema que necesites.",
+    "todayLink": "Guía rápida de Lexora",
+    "firstTitle": "Tu primera sesión",
+    "topicsLabel": "Temas de ayuda",
+    "first": {
+      "library": {
+        "label": "Prepara una tarjeta",
+        "description": "Crea un mazo, añade una palabra y prepara una pregunta."
+      },
+      "study": {
+        "label": "Haz un repaso",
+        "description": "Intenta responder antes de revelar la solución."
+      },
+      "progress": {
+        "label": "Consulta tu progreso",
+        "description": "Mira lo que has practicado y vuelve a Hoy para ver tus pendientes."
+      }
+    },
+    "example": {
+      "title": "Prueba una tarjeta de ejemplo",
+      "note": "Puedes practicar aquí sin guardar un repaso.",
+      "prompt": "¿Cómo se dice «tomar prestado» en inglés?",
+      "answer": "Tomar prestado"
+    },
+    "topics": {
+      "library": {
+        "label": "Biblioteca",
+        "title": "Crea tu primera tarjeta",
+        "intro": "Un mazo agrupa conceptos. Un concepto guarda lo que quieres aprender y cada ítem de práctica te hace una pregunta.",
+        "steps": {
+          "1": "En Mis mazos, abre Nuevo mazo. Ponle un nombre, como Viajes, y pulsa Crear mazo.",
+          "2": "En Mis conceptos, abre Nuevo concepto. Usa «borrow» como título y «tomar prestado» como resumen. Pulsa Crear concepto.",
+          "3": "Abre el concepto y busca Nuevo ítem. Elige Recuperación básica, escribe «¿Cómo se dice tomar prestado?» y «borrow», y pulsa Crear ítem.",
+          "4": "Abre el mazo Viajes. En Añadir conceptos, busca «borrow» y pulsa Añadir al mazo."
+        },
+        "tip": "Un concepto puede estar en varios mazos y compartir su progreso. Usa Ver archivados para encontrar y restaurar contenido.",
+        "action": "Crear un mazo"
+      },
+      "study": {
+        "label": "Repaso",
+        "title": "Cómo hacer un repaso",
+        "intro": "Hoy te muestra cuántas tarjetas puedes practicar. Lexora programa la próxima aparición de cada tarjeta según tu respuesta.",
+        "steps": {
+          "1": "Pulsa Empezar sesión en Hoy cuando tengas tarjetas disponibles.",
+          "2": "Elige los mazos que quieres practicar y pulsa Crear sesión.",
+          "3": "Intenta recordar la respuesta y pulsa Revelar respuesta.",
+          "4": "Elige cómo la recordaste. Espera a que Lexora guarde el repaso antes de cerrar."
+        },
+        "tip": "Si necesitas parar, pulsa Pausar sesión. En Hoy, pulsa Ver sesiones abiertas para retomarla.",
+        "action": "Preparar una sesión"
+      },
+      "import": {
+        "label": "Importación",
+        "title": "Cómo importar vocabulario",
+        "intro": "Si ya tienes tarjetas en Anki, puedes traerlas a Lexora desde un archivo de texto o CSV.",
+        "steps": {
+          "1": "Crea o elige el mazo donde quieres guardar las tarjetas.",
+          "2": "En Importar, selecciona tu archivo TXT o CSV.",
+          "3": "Asigna las columnas del frente y del reverso. Usa la vista previa para comprobar que coinciden.",
+          "4": "Elige el mazo y qué hacer con los duplicados. Revisa el resumen y pulsa Importar al curso."
+        },
+        "tip": "La vista previa te permite corregir columnas y filas antes de guardar. Puedes omitir duplicados o copiarlos como conceptos nuevos.",
+        "action": "Abrir Importar"
+      },
+      "progress": {
+        "label": "Progreso",
+        "title": "Consulta lo que has practicado",
+        "intro": "Estadísticas resume tus repasos guardados. Historial te permite verlos uno por uno.",
+        "steps": {
+          "1": "Abre Estadísticas y elige el periodo que quieras consultar.",
+          "2": "Abre Historial para buscar por fecha, mazo o valoración.",
+          "3": "Vuelve a Hoy para saber si hay más tarjetas disponibles."
+        },
+        "tip": "Si aún no ves actividad, completa una tarjeta y espera la confirmación del guardado.",
+        "action": "Ver Estadísticas"
+      },
+      "preferences": {
+        "label": "Ajustes",
+        "title": "Estudia a tu ritmo",
+        "intro": "Elige cuánto practicar y cómo quieres ver Lexora.",
+        "steps": {
+          "1": "En Ajustes, elige el idioma, el tema y la zona horaria. La zona horaria marca cuándo empieza un nuevo día de estudio.",
+          "2": "Cambia el límite de tarjetas nuevas o el máximo de repasos y guarda tus preferencias.",
+          "3": "Para tener Lexora en la pantalla de inicio, usa Instalar Lexora si aparece o abre el menú de tu navegador."
+        },
+        "tip": "Si hoy llegaste al límite que elegiste, podrás continuar cuando cambie el día de estudio.",
+        "action": "Abrir Ajustes"
+      },
+      "data": {
+        "label": "Datos",
+        "title": "Descarga tus datos",
+        "intro": "Puedes descargar tus cursos, contenido y actividad guardada, incluido lo archivado.",
+        "steps": {
+          "1": "En Ajustes, busca Tus datos, contigo.",
+          "2": "Elige Descargar CSV para usar una hoja de cálculo o Descargar JSON para conservar los datos estructurados.",
+          "3": "Guarda el archivo en un lugar privado. La descarga contiene tus datos sin cifrar."
+        },
+        "tip": "La exportación sirve para consultar y conservar tus datos. Lexora no la restaura automáticamente.",
+        "action": "Ver información sobre tus datos"
+      }
     }
   },
   "Collection": {

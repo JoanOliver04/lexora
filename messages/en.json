@@ -7,6 +7,7 @@
     "settings": "Settings",
     "import": "Import",
     "history": "History",
+    "help": "Help",
     "primary": "Main navigation",
     "tools": "Study tools",
     "skip": "Skip to content",
@@ -34,7 +35,112 @@
       "statistics": "Explore your activity and progress",
       "settings": "Change preferences, language and appearance",
       "import": "Add content from CSV or TSV files",
-      "history": "Explore your saved reviews"
+      "history": "Explore your saved reviews",
+      "help": "Tutorials, first steps and examples for using Lexora"
+    }
+  },
+  "Tutorials": {
+    "title": "Learn to use Lexora",
+    "intro": "Follow the steps for your first session or jump to the topic you need.",
+    "todayLink": "Quick guide to Lexora",
+    "firstTitle": "Your first session",
+    "topicsLabel": "Help topics",
+    "first": {
+      "library": {
+        "label": "Set up a card",
+        "description": "Create a deck, add a word and write a question."
+      },
+      "study": {
+        "label": "Review a card",
+        "description": "Try to answer before revealing the solution."
+      },
+      "progress": {
+        "label": "Check your progress",
+        "description": "See what you practised and go back to Today to see what's due."
+      }
+    },
+    "example": {
+      "title": "Try a sample card",
+      "note": "You can practise here without saving a review.",
+      "prompt": "Which word means to take something you plan to return?",
+      "answer": "Take something and return it later"
+    },
+    "topics": {
+      "library": {
+        "label": "Library",
+        "title": "Create your first card",
+        "intro": "A deck groups concepts. A concept holds what you want to learn, and each practice item asks you a question.",
+        "steps": {
+          "1": "In My decks, open New deck. Give it a name, such as Travel, and select Create deck.",
+          "2": "In My concepts, open New concept. Use “borrow” as the title and “take and return later” as the summary. Select Create concept.",
+          "3": "Open the concept and find New item. Choose Basic recall, enter “Take and return later” and “borrow”, then select Create item.",
+          "4": "Open the Travel deck. Under Add concepts, find “borrow” and select Add to deck."
+        },
+        "tip": "A concept can belong to several decks and share its progress. Use Show archived to find and restore content.",
+        "action": "Create a deck"
+      },
+      "study": {
+        "label": "Review",
+        "title": "How to review a card",
+        "intro": "Today shows how many cards you can practise. Lexora uses your answer to plan when each card will appear again.",
+        "steps": {
+          "1": "Select Start session on Today when you have cards available.",
+          "2": "Choose the decks you want to practise and select Create session.",
+          "3": "Try to remember the answer, then select Reveal answer.",
+          "4": "Choose how well you remembered. Wait for Lexora to save the review before closing."
+        },
+        "tip": "To take a break, select Pause session. On Today, select View open sessions to resume.",
+        "action": "Prepare a session"
+      },
+      "import": {
+        "label": "Import",
+        "title": "How to import vocabulary",
+        "intro": "If you already have Anki cards, you can bring them into Lexora from a text or CSV file.",
+        "steps": {
+          "1": "Create or choose the deck where you want to put the cards.",
+          "2": "Open Import and select your TXT or CSV file.",
+          "3": "Set the front and back columns. Check the preview to make sure they line up.",
+          "4": "Choose the deck and what to do with duplicates. Check the summary and select Import into the course."
+        },
+        "tip": "The preview lets you check columns and rows before saving. You can skip duplicates or copy them as new concepts.",
+        "action": "Open Import"
+      },
+      "progress": {
+        "label": "Progress",
+        "title": "See what you have practised",
+        "intro": "Statistics summarises your saved reviews. History shows them one by one.",
+        "steps": {
+          "1": "Open Statistics and select the period you want to see.",
+          "2": "Open History to filter by date, deck or rating.",
+          "3": "Return to Today to see whether more cards are available."
+        },
+        "tip": "If you have no activity yet, review one card and wait for it to save.",
+        "action": "View Statistics"
+      },
+      "preferences": {
+        "label": "Settings",
+        "title": "Study at your own pace",
+        "intro": "Choose how much to practise and how Lexora looks.",
+        "steps": {
+          "1": "In Settings, choose your language, theme and time zone. The time zone sets when your study day begins.",
+          "2": "Change the new card limit or the maximum reviews and save your preferences.",
+          "3": "To put Lexora on your home screen, use Install Lexora if it appears or open your browser menu."
+        },
+        "tip": "If you reach your limit today, you can carry on when the next study day begins.",
+        "action": "Open Settings"
+      },
+      "data": {
+        "label": "Data",
+        "title": "Download your data",
+        "intro": "You can download your courses, content and saved activity, including archived items.",
+        "steps": {
+          "1": "In Settings, find Keep your data with you.",
+          "2": "Choose Download CSV for a spreadsheet or Download JSON to keep the data in a structured format.",
+          "3": "Keep the file somewhere private. The download contains your data in plain text."
+        },
+        "tip": "Use the export to keep a copy of your data. Lexora does not restore it automatically.",
+        "action": "See information about your data"
+      }
     }
   },
   "Collection": {

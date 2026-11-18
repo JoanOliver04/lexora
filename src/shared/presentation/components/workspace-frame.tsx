@@ -62,6 +62,9 @@ export function WorkspaceFrame({ children, logout }: { children: ReactNode; logo
           <nav className="workspace-tools" aria-label={t("tools")}>
             <Link href="/import">{t("import")}</Link>
             <Link href="/app/history">{t("history")}</Link>
+            <Link href="/app/help" aria-current={pathname === "/app/help" ? "page" : undefined}>
+              {t("help")}
+            </Link>
           </nav>
         </header>
         <div id="workspace-content" className="workspace-content" tabIndex={-1}>

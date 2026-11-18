@@ -27,7 +27,7 @@ async function walkToConfirm(page: Page) {
 async function prepareImport(page: Page, deckTitle: string) {
   await signUp(page);
   await completeOnboarding(page);
-  await page.getByRole("link", { name: "Mis mazos" }).click();
+  await page.getByRole("link", { name: "Mis mazos", exact: true }).click();
   await page.getByLabel("Nombre").fill(deckTitle);
   await page.getByRole("button", { name: "Crear mazo" }).click();
   await expect(page.getByRole("link", { name: deckTitle })).toBeVisible();

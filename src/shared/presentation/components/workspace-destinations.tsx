@@ -14,6 +14,11 @@ export const workspaceDestinations = [
   { href: "/app/settings", key: "settings", path: "M4 7h16M4 17h16M8 4v6m8 4v6" },
   { href: "/import", key: "import", path: "M12 3v12m-4-4 4 4 4-4M4 15v5h16v-5" },
   { href: "/app/history", key: "history", path: "M4 8a9 9 0 1 1-1 7M3 3v6h6m3-3v6l4 2" },
+  {
+    href: "/app/help",
+    key: "help",
+    path: "M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0ZM9 9a3 3 0 1 1 4 2.8c-.7.3-1 1-1 1.7m0 3h.01",
+  },
 ] as const;
 
 export function isWorkspaceDestinationActive(pathname: string, href: string) {

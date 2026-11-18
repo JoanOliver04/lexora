@@ -186,7 +186,7 @@ test.describe("importación — vista previa", () => {
     await expect(page.getByRole("button", { name: "Importar al curso" })).toHaveCount(0);
 
     await page.getByRole("link", { name: "Volver al inicio" }).click();
-    await page.getByRole("link", { name: "Mis mazos" }).click();
+    await page.getByRole("link", { name: "Mis mazos", exact: true }).click();
     await page.getByLabel("Nombre").fill("Importados");
     await page.getByRole("button", { name: "Crear mazo" }).click();
     await expect(page.getByRole("link", { name: "Importados" })).toBeVisible();
@@ -252,7 +252,7 @@ test.describe("importación — vista previa", () => {
   test("con inversa se crean dos ítems del mismo concepto", async ({ page }) => {
     await signUp(page);
     await completeOnboarding(page);
-    await page.getByRole("link", { name: "Mis mazos" }).click();
+    await page.getByRole("link", { name: "Mis mazos", exact: true }).click();
     await page.getByLabel("Nombre").fill("Con inversa");
     await page.getByRole("button", { name: "Crear mazo" }).click();
     await expect(page.getByRole("link", { name: "Con inversa" })).toBeVisible();
@@ -286,7 +286,7 @@ test.describe("importación — vista previa", () => {
   test("un lote con filas inválidas lista los errores y permite descargarlos", async ({ page }) => {
     await signUp(page);
     await completeOnboarding(page);
-    await page.getByRole("link", { name: "Mis mazos" }).click();
+    await page.getByRole("link", { name: "Mis mazos", exact: true }).click();
     await page.getByLabel("Nombre").fill("Importados");
     await page.getByRole("button", { name: "Crear mazo" }).click();
     await expect(page.getByRole("link", { name: "Importados" })).toBeVisible();

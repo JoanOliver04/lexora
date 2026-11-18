@@ -15,7 +15,7 @@ test.describe("mazos", () => {
     await completeOnboarding(page);
 
     // Se llega a los mazos desde el shell, como haría una persona.
-    await page.getByRole("link", { name: "Mis mazos" }).click();
+    await page.getByRole("link", { name: "Mis mazos", exact: true }).click();
     await expect(page).toHaveURL("/es/decks");
     await expect(page.getByRole("heading", { name: "Mazos", level: 1 })).toBeVisible();
     await expect(page.getByText("Todavía no tienes mazos en este curso")).toBeVisible();
