@@ -1,5 +1,12 @@
 # Lexora — Estado actual
 
+**LEX-19.1 · Tutoriales integrados.** Ayuda se abre desde Hoy, la navegación
+y los accesos rápidos. Incluye una ruta para la primera sesión, seis guías por
+tarea, una tarjeta de ejemplo sin persistencia y ayuda contextual desplegable
+en Estudio e Importar. Las guías se sirven en español e inglés en el área
+autenticada y enlazan a las pantallas reales. Sin migraciones ni dependencias.
+Las comprobaciones de CI y publicación se registran en la PR.
+
 **LEX-18.1 · Logotipo definitivo.** El PNG de 1254 × 1254 px aprobado se guarda
 intacto en `assets/brand/logo-lexora.png`. El generador existente usa Chromium
 para producir el favicon 16/32/48, los iconos de instalación 192/512, Apple 180

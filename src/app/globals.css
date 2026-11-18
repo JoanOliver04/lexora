@@ -202,6 +202,7 @@
 }
 .workspace-tools {
   display: flex;
+  flex-wrap: wrap;
   width: 100%;
   gap: 1.5rem;
   font-size: 0.875rem;
@@ -212,6 +213,10 @@
   align-items: center;
   min-height: 2.75rem;
   font-weight: 600;
+}
+.workspace-tools a[aria-current="page"] {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
 }
 .workspace-content {
   min-width: 0;

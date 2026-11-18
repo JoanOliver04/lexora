@@ -6,6 +6,7 @@ import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
 import { readDeckOptions } from "@/modules/library/application/library-options";
+import { TutorialHint } from "@/shared/presentation/components/tutorial-guides";
 
 import { ImportPreviewForm } from "./import-preview-form";
 import { pendingImportForCurrentUser } from "@/composition/import-transfer";
@@ -62,6 +63,7 @@ export default async function ImportPage({
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <p className="text-sm text-(--color-ink-muted)">{t("intro")}</p>
       </header>
+      <TutorialHint topic="import" />
 
       <ImportPreviewForm
         locale={locale}

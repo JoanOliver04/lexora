@@ -12,6 +12,7 @@ import {
 import { Link } from "@/i18n/navigation";
 import { getStudySetup, listOpenStudySessions } from "@/modules/study/application/study-session";
 import { FormError } from "@/shared/presentation/components";
+import { TutorialHint } from "@/shared/presentation/components/tutorial-guides";
 
 import { ScopeForm } from "./scope-form";
 
@@ -44,6 +45,7 @@ export default async function StudySetupPage({
         <p className="mt-2 text-sm leading-relaxed text-(--color-ink-muted)">{t("setupIntro")}</p>
         <p className="mt-2 text-sm font-medium break-words">{course.title}</p>
       </header>
+      <TutorialHint topic="study" />
       <Suspense
         fallback={
           <p role="status" aria-live="polite">

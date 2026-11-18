@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { getActiveCourseForCurrentUser } from "@/composition/courses";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
+import { Link } from "@/i18n/navigation";
 import { DashboardContent } from "./dashboard-content";
 
 export default async function AppHome({
@@ -19,6 +20,7 @@ export default async function AppHome({
   if (!activeCourse) redirect(`/${locale}/onboarding`);
   const t = await getTranslations("App");
   const today = await getTranslations("Today");
+  const tutorials = await getTranslations("Tutorials");
   const { deck } = await searchParams;
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 py-7 sm:px-8 sm:py-10">
@@ -28,6 +30,12 @@ export default async function AppHome({
           <p>{t("courseLabel")}</p>
           <h2 className="font-medium break-words text-(--color-ink)">{activeCourse.title}</h2>
         </div>
+        <Link
+          href="/app/help"
+          className="inline-flex min-h-11 items-center self-start text-sm font-semibold text-(--color-accent) underline underline-offset-4"
+        >
+          {tutorials("todayLink")}
+        </Link>
       </header>
       <Suspense
         fallback={
