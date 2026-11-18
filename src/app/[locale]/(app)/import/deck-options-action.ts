@@ -1,7 +1,10 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import { getActiveCourseForCurrentUser } from "@/composition/courses";
 import { getLibraryContextForCurrentUser } from "@/composition/library";
+import { createDeck } from "@/modules/library/application/deck";
 import {
   deckOptionQuerySchema,
   readDeckOptions,
@@ -26,4 +29,25 @@ export async function searchImportDeckOptions(
   } catch {
     return { ok: false };
   }
+}
+
+export async function createImportDeck(courseId: string, title: FormDataEntryValue | null) {
+  const [course, context] = await Promise.all([
+    getActiveCourseForCurrentUser(),
+    getLibraryContextForCurrentUser(),
+  ]);
+  if (!course || !context || course.id !== courseId) {
+    return { ok: false, error: "deckCreateFailed" } as const;
+  }
+
+  const result = await createDeck(context.decks, context.ownerId, course.id, { title });
+  if (!result.ok) {
+    const error = result.issues.includes("deck.title.empty")
+      ? "deckTitleRequired"
+      : "deckTitleLong";
+    return { ok: false, error } as const;
+  }
+
+  revalidatePath("/[locale]/decks", "page");
+  return { ok: true, deck: { id: result.deck.id, title: result.deck.title } } as const;
 }

@@ -1,5 +1,10 @@
 # Lexora — Estado actual
 
+**LEX-22.2 · Confirmación de importación sin mazo previo.** El asistente permite
+crear el primer mazo del curso desde el paso de destino o el resumen en ES y EN.
+El mazo creado queda seleccionado y la vista previa permanece disponible para
+confirmar las tarjetas. Se reutiliza la creación de mazos del curso activo.
+
 **LEX-22.1 · Plantillas y preparación de temas para importar.** Ejemplos
 previos y CSV descargable para vocabulario, gramática y frases. El prompt
 configurable para ChatGPT admite nivel A1–C1, cantidad, idioma de las respuestas

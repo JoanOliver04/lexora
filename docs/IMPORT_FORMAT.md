@@ -25,7 +25,9 @@ y se pega en ChatGPT. La respuesta se puede subir como archivo o pegar
 directamente como CSV o TSV, incluso dentro de un bloque de código de Markdown.
 La gramática se importa como preguntas y respuestas y se organiza con etiquetas
 como `grammar::present-perfect`. La vista previa permite revisar columnas,
-filas y duplicados antes de guardar las tarjetas en el mazo elegido.
+filas y duplicados antes de guardar las tarjetas. Si el curso aún no tiene
+mazos, se puede crear uno en el paso de destino o en el resumen y conservar la
+previsualización. Lexora selecciona ese mazo para confirmar la importación.
 
 ## Encoding
 

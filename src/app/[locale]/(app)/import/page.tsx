@@ -13,7 +13,7 @@ import { pendingImportForCurrentUser } from "@/composition/import-transfer";
 
 /**
  * Wizard de importación (LEX-4.8) sobre preview, duplicados y lote
- * (LEX-4.4…4.7). El mazo de destino tiene que existir ya en el curso.
+ * (LEX-4.4…4.7). El asistente permite crear el mazo antes de guardar las tarjetas.
  *
  * Puerta de onboarding repetida por página, como el resto de `(app)` (deuda
  * anotada desde LEX-2.9). Un import sin curso al que importar no tiene

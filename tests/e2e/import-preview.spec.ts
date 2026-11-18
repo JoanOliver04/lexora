@@ -172,7 +172,7 @@ test.describe("importación — vista previa", () => {
     await expect(page.getByText("(también en filas 1)")).toBeVisible();
   });
 
-  test("sin mazo no se puede confirmar; con mazo, importar crea los conceptos", async ({
+  test("crear un mazo desde el resumen conserva el archivo y permite importar", async ({
     page,
   }) => {
     await signUp(page);
@@ -181,23 +181,30 @@ test.describe("importación — vista previa", () => {
     await page.getByLabel("Archivo").setInputFiles("tests/fixtures/import/basic-tab.txt");
     await page.getByRole("button", { name: "Previsualizar" }).click();
     await expect(page.getByText("2 nuevas · sin duplicados")).toBeVisible();
-    await walkToConfirm(page);
-    await expect(page.getByText("Sin mazo de destino: créalo antes de importar.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Importar al curso" })).toHaveCount(0);
-
-    await page.getByRole("link", { name: "Volver al inicio" }).click();
-    await page.getByRole("link", { name: "Mis mazos", exact: true }).click();
-    await page.getByLabel("Nombre").fill("Importados");
-    await page.getByRole("button", { name: "Crear mazo" }).click();
-    await expect(page.getByRole("link", { name: "Importados" })).toBeVisible();
-
-    await page.goto("/es/import");
-    await page.getByLabel("Archivo").setInputFiles("tests/fixtures/import/basic-tab.txt");
-    await page.getByRole("button", { name: "Previsualizar" }).click();
     await continueTo(page, "Mazo e inversa");
-    await expect(page.getByLabel("Mazo de destino")).toBeVisible();
+    await page.getByRole("button", { name: "Crear un mazo" }).click();
+    const dialog = page.getByRole("dialog", { name: "Crear un mazo" });
+    const name = dialog.getByLabel("Nombre del mazo");
+    await expect(name).toBeFocused();
+    await dialog.getByRole("button", { name: "Cancelar" }).click();
+    await expect(dialog).toBeHidden();
     await continueTo(page, "Duplicados");
     await continueTo(page, "Confirmar importación");
+    await expect(
+      page.getByText("Falta un mazo de destino para guardar las tarjetas."),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Importar al curso" })).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Crear un mazo" }).click();
+    const create = dialog.getByRole("button", { name: "Crear un mazo" });
+    await create.click();
+    await expect(dialog.getByRole("alert")).toContainText("Escribe un nombre para el mazo.");
+    await expect(name).toBeFocused();
+    await name.fill("Importados");
+    await create.click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole("heading", { name: "Confirmar importación" })).toBeFocused();
+    await expect(page.getByText("Archivo: basic-tab.txt", { exact: true })).toBeVisible();
     await expect(page.getByText("Mazo: Importados")).toBeVisible();
     await page.getByRole("button", { name: "Importar al curso" }).click();
     await expect(page.getByRole("heading", { name: "Importación terminada" })).toBeVisible({
@@ -247,6 +254,29 @@ test.describe("importación — vista previa", () => {
     }
     await expect(page.getByText("Creadas: 0")).toBeVisible();
     await expect(page.getByText("Omitidas: 2")).toBeVisible();
+  });
+
+  test("a destination deck can be created before confirmation in English", async ({ page }) => {
+    await signUp(page);
+    await completeOnboarding(page, { uiLocale: "en" });
+    await page.goto("/en/import");
+    await page.getByLabel("File", { exact: true }).setInputFiles("tests/fixtures/import/comma.csv");
+    await page.getByRole("button", { name: "Preview", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Column mapping" })).toBeVisible();
+    const next = page.getByRole("button", { name: "Continue", exact: true });
+    await next.click();
+    await page.getByRole("button", { name: "Create a deck" }).click();
+    const dialog = page.getByRole("dialog", { name: "Create a deck" });
+    await dialog.getByLabel("Deck name").fill("Imported cards");
+    await dialog.getByLabel("Deck name").press("Enter");
+    const picker = page.getByLabel("Destination deck");
+    await expect(picker.locator("option:checked")).toHaveText("Imported cards");
+    await next.click();
+    await expect(page.getByRole("heading", { name: "Duplicates", exact: true })).toBeVisible();
+    await next.click();
+    await expect(page.getByText("Deck: Imported cards", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Import into the course" }).click();
+    await expect(page.getByText("Created: 2", { exact: true })).toBeVisible({ timeout: 15_000 });
   });
 
   test("con inversa se crean dos ítems del mismo concepto", async ({ page }) => {
