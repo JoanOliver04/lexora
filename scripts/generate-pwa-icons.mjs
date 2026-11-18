@@ -1,32 +1,82 @@
 import { chromium } from "@playwright/test";
-import { readFileSync, writeFileSync, copyFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
-// Render our vector source with the existing test browser; no image service.
+const master = readFileSync("assets/brand/logo-lexora.png");
+const output = "public/icons/lexora-v2";
 const browser = await chromium.launch({ headless: true });
 try {
-  const page = await browser.newPage({ deviceScaleFactor: 1 });
-  const svg = readFileSync("public/icons/lexora.svg", "utf8");
-  for (const size of [32, 180, 192, 512]) {
-    await page.setViewportSize({ width: size, height: size });
-    await page.setContent(
-      `<style>html,body{margin:0;width:100%;height:100%}svg{display:block;width:100%;height:100%;border-radius:${size === 32 ? "20%" : "0"}}</style>${svg}`,
-    );
-    await page.screenshot({ path: `public/icons/icon-${size}.png`, omitBackground: size === 32 });
+  const page = await browser.newPage();
+  const renders = await page.evaluate(async (source) => {
+    const image = new Image();
+    image.src = `data:image/png;base64,${source}`;
+    await image.decode();
+    if (image.naturalWidth !== image.naturalHeight || image.naturalWidth < 512) {
+      throw new Error("Expected a square master of at least 512 pixels");
+    }
+
+    function render(size, inset = 0) {
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      const extent = size - 2 * inset;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(image, inset, inset, extent, extent);
+
+      if (inset > 0) {
+        // Extend the blue edge pixels so the adaptive icon has an opaque border
+        // without a hard color change around the original square.
+        const rendered = ctx.getImageData(0, 0, size, size);
+        const edge = size - inset - 1;
+        const clamp = (position) => Math.min(edge, Math.max(inset, position));
+        for (let y = 0; y < size; y++) {
+          for (let x = 0; x < size; x++) {
+            const sourceIndex = (clamp(y) * size + clamp(x)) * 4;
+            const targetIndex = (y * size + x) * 4;
+            if (sourceIndex !== targetIndex) {
+              rendered.data.copyWithin(targetIndex, sourceIndex, sourceIndex + 4);
+            }
+          }
+        }
+        ctx.putImageData(rendered, 0, 0);
+      }
+
+      return canvas.toDataURL("image/png").split(",")[1];
+    }
+
+    return {
+      icons: [16, 32, 48].map((size) => ({ size, png: render(size) })),
+      files: {
+        "brand-128.png": render(128),
+        "apple-touch-icon.png": render(180),
+        "icon-192.png": render(192),
+        "icon-512.png": render(512),
+        "maskable-512.png": render(512, 16),
+      },
+    };
+  }, master.toString("base64"));
+
+  mkdirSync(output, { recursive: true });
+  for (const [name, png] of Object.entries(renders.files)) {
+    writeFileSync(`${output}/${name}`, Buffer.from(png, "base64"));
   }
-  copyFileSync("public/icons/icon-512.png", "public/icons/maskable-512.png");
-  copyFileSync("public/icons/icon-180.png", "public/icons/apple-touch-icon.png");
-  const png = readFileSync("public/icons/icon-32.png"),
-    header = Buffer.alloc(22);
-  if (png[25] !== 6) throw new Error("ICO requires an RGBA PNG");
+
+  const header = Buffer.alloc(6 + 16 * renders.icons.length);
   header.writeUInt16LE(1, 2);
-  header.writeUInt16LE(1, 4);
-  header[6] = 32;
-  header[7] = 32;
-  header.writeUInt16LE(1, 10);
-  header.writeUInt16LE(32, 12);
-  header.writeUInt32LE(png.length, 14);
-  header.writeUInt32LE(22, 18);
-  writeFileSync("src/app/favicon.ico", Buffer.concat([header, png]));
+  header.writeUInt16LE(renders.icons.length, 4);
+  let offset = header.length;
+  const frames = renders.icons.map(({ size, png }, index) => {
+    const frame = Buffer.from(png, "base64");
+    const entry = 6 + index * 16;
+    header[entry] = size;
+    header[entry + 1] = size;
+    header.writeUInt16LE(1, entry + 4);
+    header.writeUInt16LE(32, entry + 6);
+    header.writeUInt32LE(frame.length, entry + 8);
+    header.writeUInt32LE(offset, entry + 12);
+    offset += frame.length;
+    return frame;
+  });
+  writeFileSync("src/app/favicon.ico", Buffer.concat([header, ...frames]));
 } finally {
   await browser.close();
 }

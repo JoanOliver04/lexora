@@ -11,17 +11,23 @@ test("an existing v1 worker upgrades at the same URL and replaces cached respons
   // Immutable copy of the actual worker published in PR106. This test-only
   // loopback origin switches bytes/headers without adding a deployed test route.
   const oldWorker = readFileSync("tests/fixtures/pwa/legacy-sw-v1.js");
+  const oldIcon = readFileSync("tests/fixtures/pwa/legacy-lexora.svg");
   const paths = new Set([
     "/sw.js",
     "/offline.html",
     "/offline.css",
     "/offline.js",
     "/icons/lexora.svg",
+    "/icons/lexora-v2/brand-128.png",
   ]);
   const server = createServer(async (req, res) => {
     const path = new URL(req.url ?? "/", "http://localhost").pathname;
     if (req.method !== "GET" || !paths.has(path)) {
       res.writeHead(404).end();
+      return;
+    }
+    if (path === "/icons/lexora.svg" && legacy) {
+      res.writeHead(200, { "Content-Type": "image/svg+xml" }).end(oldIcon);
       return;
     }
     if (path === "/sw.js" && legacy) {
@@ -86,20 +92,22 @@ test("an existing v1 worker upgrades at the same URL and replaces cached respons
     });
     await expect.poll(() => page.evaluate(() => caches.keys())).not.toContain("lexora-public-v1");
     const upgraded = await page.evaluate(async () => {
-      const cache = await caches.open("lexora-public-v2"),
+      const cache = await caches.open("lexora-public-v3"),
         response = await cache.match("/offline.html");
       return {
         names: await caches.keys(),
         csp: response?.headers.get("content-security-policy"),
         frame: response?.headers.get("x-frame-options"),
         type: response?.headers.get("x-content-type-options"),
+        logo: (await cache.match("/icons/lexora-v2/brand-128.png"))?.headers.get("content-type"),
       };
     });
-    expect(upgraded.names).toContain("lexora-public-v2");
+    expect(upgraded.names).toContain("lexora-public-v3");
     expect(upgraded.names).toContain("unrelated-upgrade-test");
     expect(upgraded.csp).toContain("script-src 'self'");
     expect(upgraded.frame).toBe("DENY");
     expect(upgraded.type).toBe("nosniff");
+    expect(upgraded.logo).toBe("image/png");
     // Close the real loopback origin too: a newly activated worker must not
     // race browser offline emulation and receive this fixture's network 404.
     server.closeAllConnections();
@@ -113,6 +121,11 @@ test("an existing v1 worker upgrades at the same URL and replaces cached respons
       "script-src 'self'",
     );
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Connect to carry on.");
+    await expect
+      .poll(() =>
+        page.locator("main img").evaluate((image: HTMLImageElement) => image.naturalWidth),
+      )
+      .toBe(128);
   } finally {
     await context.setOffline(false);
     server.closeAllConnections();

@@ -50,7 +50,7 @@ describe("Private entry redirects", () => {
     for (const url of [
       "/api/health",
       "/_next/static/chunk.js",
-      "/icons/lexora.svg",
+      "/icons/lexora-v2/brand-128.png",
       "/sw.js",
       "/sw.js?revision=2",
       "/offline.html",

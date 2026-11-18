@@ -5,9 +5,12 @@ perfil propio tras verificar la sesión y redirige al Hoy localizado; las URL co
 idioma explícito conservan su autoridad. Si no hay perfil/idioma válido se usa el
 routing habitual. No guarda una credencial en el
 manifest. El nombre y los iconos son propios. `manifest.ts` declara standalone,
-scope e ID estables, iconos PNG 192/512, maskable y Apple. El SVG es el origen
-reproducible de los PNG y el favicon: `node scripts/generate-pwa-icons.mjs` utiliza
-el navegador de pruebas ya existente, sin otro servicio o dependencia.
+scope e ID estables e iconos PNG de 192/512 px y maskable. El layout define el
+icono Apple de 180 px. Next.js sirve el favicon de 16/32/48 px por convención.
+El PNG maestro aprobado se conserva en `assets/brand/logo-lexora.png`, fuera de
+los archivos públicos. `node scripts/generate-pwa-icons.mjs` genera los iconos
+desde ese original con el Chromium de Playwright. La variante maskable añade
+margen extendiendo los píxeles azules del borde.
 
 ## Instalar
 
@@ -25,7 +28,7 @@ describe el manifest y el registro del service worker. Se mantiene el alcance de
 ## Frontera de caché
 
 `public/sw.js` precachea exactamente `/offline.html`, `/offline.css`, `/offline.js`
-y `/icons/lexora.svg`, con credenciales omitidas. Solo esos recursos públicos se
+y `/icons/lexora-v2/brand-128.png`, con credenciales omitidas. Solo esos recursos públicos se
 sirven desde Cache Storage. Las navegaciones usan red y, únicamente ante un fallo
 de red, devuelven la pantalla neutral. Una respuesta 4xx/5xx del servidor mantiene
 su resultado. El fallback no tiene tarjetas, formularios o información de cuenta.
@@ -54,6 +57,14 @@ la actualización. El ciclo corresponde al modelo de
 [instalación/activación de service workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers).
 Si el navegador elimina su almacenamiento, se necesita una visita con conexión
 para preparar de nuevo el fallback; no se promete disponibilidad offline ilimitada.
+
+El cambio de marca usa URL nuevas para los PNG y mantiene el manifest en
+`/manifest.webmanifest`. En Android, Chrome puede tardar en actualizar un icono
+ya instalado. Abre Lexora con conexión y vuelve a cerrarla. Si el icono sigue
+siendo el anterior después de un par de días, puedes quitar el acceso directo y
+crearlo de nuevo desde Chrome. Si Android muestra Lexora como app instalada,
+desinstálala y vuelve a instalarla desde el menú de Chrome. Conserva los datos
+del sitio de Chrome y, si Android te ofrece borrarlos, deja esa opción desmarcada.
 
 ## Accesibilidad de la entrada
 

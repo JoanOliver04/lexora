@@ -67,7 +67,7 @@ test("HTML nonces change between responses; static, API and dotted 404 routes ke
     "/api/health",
     "/offline.html",
     "/sw.js",
-    "/icons/lexora.svg",
+    "/icons/lexora-v2/brand-128.png",
     "/en/unknown.page",
   ]) {
     const response = await request.get(path);

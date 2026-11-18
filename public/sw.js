@@ -1,8 +1,12 @@
 /* Lexora online-first: only this public fallback is cached. No app/data shell. */
 const CACHE_PREFIX = "lexora-public-";
-// v2 also refreshes the security headers stored with the public fallback.
-const CACHE_NAME = `${CACHE_PREFIX}v2`;
-const PUBLIC_ASSETS = ["/offline.html", "/offline.css", "/offline.js", "/icons/lexora.svg"];
+const CACHE_NAME = `${CACHE_PREFIX}v3`;
+const PUBLIC_ASSETS = [
+  "/offline.html",
+  "/offline.css",
+  "/offline.js",
+  "/icons/lexora-v2/brand-128.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

@@ -1,5 +1,17 @@
 # Lexora — Estado actual
 
+**LEX-18.1 · Logotipo definitivo.** El PNG de 1254 × 1254 px aprobado se guarda
+intacto en `assets/brand/logo-lexora.png`. El generador existente usa Chromium
+para producir el favicon 16/32/48, los iconos de instalación 192/512, Apple 180
+y el PNG ligero de interfaz. El icono maskable de 512 px conserva el símbolo
+dentro del círculo de radio 40 %. Se actualizan portada, acceso, aplicación
+y pantalla sin conexión mediante el componente de marca y el fallback existentes.
+
+Next.js declara un solo favicon. El manifest conserva ID, ámbito y URL de
+inicio, y usa rutas versionadas para los PNG. El service worker cambia solo
+la lista y versión de su caché pública. Las comprobaciones de publicación se
+registran en la PR. [Regeneración de iconos y actualización en Android](PWA.md).
+
 **Salida del adaptador de Vercel — 2026-11-18:** el tercer log identifica
 modifyConfig/onBuildComplete, una vía distinta de Next sin adaptador. Se
 reprodujo con @vercel/next27.0.0 en Linux aislado: compila, entrega55 funciones
