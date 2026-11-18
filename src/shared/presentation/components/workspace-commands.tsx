@@ -53,6 +53,7 @@ export function WorkspaceCommands() {
   const pathname = usePathname();
   const id = useId();
   const dialog = useRef<HTMLDialogElement>(null);
+  const openedPath = useRef<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
   const firstLink = useRef<HTMLAnchorElement>(null);
   const [query, setQuery] = useState("");
@@ -74,6 +75,7 @@ export function WorkspaceCommands() {
   const open = useCallback(() => {
     if (!dialog.current || document.querySelector("dialog[open]")) return;
     setQuery("");
+    openedPath.current = window.location.pathname;
     dialog.current.showModal();
     setIsOpen(true);
     input.current?.focus();
@@ -91,7 +93,11 @@ export function WorkspaceCommands() {
   const ready = useSyncExternalStore(subscribe, shortcut.getSnapshot, serverReady);
 
   useEffect(() => {
-    dialog.current?.close();
+    // A shortcut may open the dialog after navigation but before this effect.
+    // Close only a dialog carried over from the previous URL.
+    if (dialog.current?.open && openedPath.current !== window.location.pathname) {
+      dialog.current.close();
+    }
   }, [pathname]);
 
   return (
