@@ -1,5 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
+import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import {
   assertExceptionScope,
   assertBuildCommands,
@@ -20,6 +26,58 @@ const policy = {
   fingerprints: hashes,
 };
 const now = new Date("2026-11-18T00:00:00Z");
+
+test("the build policy accepts Vercel's JSON rewrite while rejecting changed configuration", async (t) => {
+  const root = fileURLToPath(new URL("../", import.meta.url));
+  const fixture = await mkdtemp(path.join(os.tmpdir(), "lexora-policy-"));
+  assert.equal(path.dirname(fixture), path.resolve(os.tmpdir()));
+  assert.ok(path.basename(fixture).startsWith("lexora-policy-"));
+  t.after(() => rm(fixture, { recursive: true, force: true }));
+  await mkdir(path.join(fixture, "scripts"));
+  await mkdir(path.join(fixture, "src"));
+  for (const file of [
+    ...REVIEW_FILES,
+    "scripts/check-dependency-exception.mjs",
+    "scripts/dependency-exception.json",
+  ])
+    await copyFile(path.join(root, file), path.join(fixture, file));
+  const configPath = path.join(fixture, "vercel.json");
+  const config = JSON.parse(await readFile(configPath, "utf8"));
+  const run = () =>
+    promisify(execFile)(
+      process.execPath,
+      [path.join(fixture, "scripts/check-dependency-exception.mjs")],
+      {
+        timeout: 10000,
+      },
+    );
+  // Replay the exact compact-plus-newline serialization identified by the build log.
+  await writeFile(configPath, JSON.stringify(config) + "\n");
+  const { stdout } = await run();
+  assert.equal(JSON.parse(stdout).scopeMatched, true);
+  await writeFile(configPath, JSON.stringify(config, null, 4) + "\r\n");
+  assert.equal(JSON.parse((await run()).stdout).scopeMatched, true);
+  for (const changed of [
+    { ...config, buildCommand: "next build" },
+    { ...config, regions: ["iad1"] },
+    { ...config, git: { deploymentEnabled: { "**": true } } },
+    { ...config, newOption: true },
+  ]) {
+    await writeFile(configPath, JSON.stringify(changed) + "\n");
+    await assert.rejects(run, (error) => {
+      assert.equal(error.code, 1);
+      assert.match(error.stderr, /scope changed: vercel\.json/);
+      assert.equal(error.stdout, "");
+      return true;
+    });
+  }
+  await writeFile(configPath, "{invalid");
+  await assert.rejects(run, (error) => {
+    assert.equal(error.code, 1);
+    assert.equal(error.stdout, "");
+    return true;
+  });
+});
 
 test("direct and Vercel builds cannot omit the policy checkpoints", () => {
   const manifest = {

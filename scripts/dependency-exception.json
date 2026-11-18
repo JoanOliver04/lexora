@@ -12,6 +12,6 @@
     "vitest.config.mts": "999755fdd424444cf586660db1cc01f943b1dece36c4771991fbb007b7ccd34c",
     "eslint.config.mjs": "5636b120e93c1381fd0c8cfefea972ec59c444657c7efc8df4f0375e40cea1fb",
     "package.json": "272227837883deac5c760523b162ff7e95e1dfa63da9251ba3baec56be66cf21",
-    "vercel.json": "ea257745d131f54321b1ab01288d7f0f9aea46c66336be1fd69d5999e9e598c3"
+    "vercel.json": "9935a08fbd5f31eed21bffd348ea60a42e5d9d2e536a89e1a65557171e66eccd"
   }
 }
