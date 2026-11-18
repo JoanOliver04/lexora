@@ -11,7 +11,7 @@ const topics = Object.keys(tutorialTopics) as TutorialTopic[];
 const firstSession = ["library", "study", "progress"] as const;
 const ratings = ["again", "hard", "good", "easy"] as const;
 const textLink =
-  "inline-flex min-h-11 items-center font-semibold text-(--color-accent) underline underline-offset-4";
+  "inline-flex min-h-11 min-w-11 items-center font-semibold text-(--color-accent) underline underline-offset-4";
 
 export default async function HelpPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
