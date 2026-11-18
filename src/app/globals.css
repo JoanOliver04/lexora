@@ -147,18 +147,10 @@
   text-decoration: none;
 }
 .brand-symbol {
-  display: grid;
-  place-items: center;
   width: 2.5rem;
   height: 2.5rem;
   flex: none;
   border-radius: 0.8rem;
-  background: var(--color-accent);
-  color: var(--color-on-accent);
-}
-.brand-symbol svg {
-  width: 1.9rem;
-  height: 1.9rem;
 }
 .brand-dot {
   color: var(--color-accent);

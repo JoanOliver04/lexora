@@ -89,7 +89,7 @@ describe("Public-only service worker cache boundary", () => {
       "/offline.html",
       "/offline.css",
       "/offline.js",
-      "/icons/lexora.svg",
+      "/icons/lexora-v2/brand-128.png",
     ]);
     expect(w.precached.every((r) => r.credentials === "omit" && r.cache === "reload")).toBe(true);
     expect(w.skipWaiting).toHaveBeenCalledOnce();
@@ -120,9 +120,9 @@ describe("Public-only service worker cache boundary", () => {
     const w = worker();
     await w.lifecycle("install");
     w.buckets.set("unrelated-cache", new Map());
-    w.buckets.set("lexora-public-old", new Map());
+    w.buckets.set("lexora-public-v2", new Map());
     await w.lifecycle("activate");
-    expect([...w.buckets.keys()]).toEqual(["lexora-public-v2", "unrelated-cache"]);
+    expect([...w.buckets.keys()]).toEqual(["lexora-public-v3", "unrelated-cache"]);
     expect(w.claim).toHaveBeenCalledOnce();
     w.fetch.mockRejectedValue(new Error("Offline"));
     expect(await (await w.request("/es/app?private=ignored", "navigate"))!.text()).toBe(

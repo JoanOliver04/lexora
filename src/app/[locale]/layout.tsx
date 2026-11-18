@@ -45,11 +45,9 @@ export async function generateMetadata({
     applicationName: "Lexora",
     appleWebApp: { capable: true, title: "Lexora", statusBarStyle: "default" },
     icons: {
-      icon: [
-        { url: "/icons/lexora.svg", type: "image/svg+xml" },
-        { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      apple: [
+        { url: "/icons/lexora-v2/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
       ],
-      apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
     },
   };
 }

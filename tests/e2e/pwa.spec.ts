@@ -2,6 +2,51 @@ import { expect, test } from "@playwright/test";
 import { completeOnboarding, signUp } from "./helpers";
 import { assertStudyLayout } from "./study-layout";
 
+for (const locale of ["es", "en"] as const) {
+  test(`serves a single favicon and the approved install icons (${locale})`, async ({ page }) => {
+    await page.goto(`/${locale}/login`);
+    await expect(page.locator("html")).toHaveAttribute("lang", locale);
+    const brand = page.getByRole("link", { name: "Lexora", exact: true }).locator("img");
+    await expect(brand).toHaveAttribute("src", "/icons/lexora-v2/brand-128.png");
+    await expect.poll(() => brand.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(128);
+
+    const favicon = page.locator('head link[rel="icon"]');
+    await expect(favicon).toHaveCount(1);
+    await expect(favicon).toHaveAttribute("href", /^\/favicon\.ico(?:\?|$)/);
+    const faviconResponse = await page.request.get((await favicon.getAttribute("href"))!);
+    expect(faviconResponse.ok()).toBe(true);
+    expect((await faviconResponse.body()).readUInt16LE(4)).toBe(3);
+    const apple = page.locator('head link[rel="apple-touch-icon"]');
+    await expect(apple).toHaveCount(1);
+    await expect(apple).toHaveAttribute("sizes", "180x180");
+
+    const manifestLink = page.locator('head link[rel="manifest"]');
+    await expect(manifestLink).toHaveAttribute("href", "/manifest.webmanifest");
+    const response = await page.request.get("/manifest.webmanifest");
+    expect(response.ok()).toBe(true);
+    const manifest = await response.json();
+    expect(manifest).toMatchObject({
+      id: "/",
+      scope: "/",
+      start_url: "/app",
+      display: "standalone",
+    });
+    const icons = [
+      ...manifest.icons,
+      { src: await apple.getAttribute("href"), sizes: "180x180" },
+    ] as { src: string; sizes: string }[];
+    expect(icons).toHaveLength(4);
+    for (const icon of icons) {
+      expect(icon.src).toMatch(/^\/icons\/lexora-v2\//);
+      const png = await page.request.get(icon.src);
+      expect(png.ok()).toBe(true);
+      expect(png.headers()["content-type"]).toBe("image/png");
+      const body = await png.body();
+      expect(`${body.readUInt32BE(16)}x${body.readUInt32BE(20)}`).toBe(icon.sizes);
+    }
+  });
+}
+
 for (const locale of ["es", "en"] as const)
   test(`public-only offline fallback, update and explicit installation (${locale})`, async ({
     page,
@@ -106,7 +151,7 @@ for (const locale of ["es", "en"] as const)
     expect(cacheState.names).toContain("unrelated-test");
     expect(cacheState.names).not.toContain("lexora-public-before-update");
     expect(cacheState.entries.map((entry) => entry.url).sort()).toEqual([
-      "/icons/lexora.svg",
+      "/icons/lexora-v2/brand-128.png",
       "/offline.css",
       "/offline.html",
       "/offline.js",
@@ -130,6 +175,11 @@ for (const locale of ["es", "en"] as const)
       locale === "es" ? "Conecta para seguir." : "Connect to carry on.",
     );
     await expect(page.locator("html")).toHaveAttribute("lang", locale);
+    await expect
+      .poll(() =>
+        page.locator("main img").evaluate((image: HTMLImageElement) => image.naturalWidth),
+      )
+      .toBe(128);
     await expect(page.locator("input")).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText("access_token");
     const original = page.viewportSize()!;
