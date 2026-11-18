@@ -20,7 +20,7 @@ test("lo que A importa no existe para B", async ({ browser }) => {
   try {
     await signUp(pageA);
     await completeOnboarding(pageA);
-    await pageA.getByRole("link", { name: "Mis mazos" }).click();
+    await pageA.getByRole("link", { name: "Mis mazos", exact: true }).click();
     await pageA.getByLabel("Nombre").fill("Mazo importado de A");
     await pageA.getByRole("button", { name: "Crear mazo" }).click();
     await expect(pageA.getByRole("link", { name: "Mazo importado de A" })).toBeVisible();
