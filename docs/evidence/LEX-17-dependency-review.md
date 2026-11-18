@@ -60,8 +60,9 @@ El guard de Node verifica antes de auditar:
 - Que el registro aún anuncie4.0.7 como latest; otro valor o una respuesta
   fallida detienen la excepción para volver a revisar y actualizar.
 
-El propio pnpm build exige la política antes de compilar y revisa después las
-NFT: exige la traza del servidor correspondiente al modo de build, rechaza nuevos
+El propio pnpm build exige la política antes de compilar y revisa después los
+artefactos: NFT en Next sin adaptador, o mapas de assets de las funciones del
+adaptador Vercel. Exige el inventario correspondiente al build, rechaza nuevos
 paquetes de globbing y distingue la copia compilada de Next ya revisada. Esta
 distinción está vinculada al lock/config fijados, no es permiso general para
 futuros compiladores. Los controles no sustituyen la revisión de alcanzabilidad.
@@ -159,3 +160,63 @@ La nueva prueba pasó sin errores ni omisiones después del rojo observado.
 Revisión DEEP de los cinco archivos y pasiva de seguridad del delta, sin
 hallazgos accionables; Gitleaks8.30.1 del diff sin fugas. Resultados de CI y
 Production posteriores a esta instantánea se registran en la PR de corrección.
+
+## Build con adaptador real — 2026-11-18
+
+Production7880818648 (main4aea3c1) también falló. El nuevo log aportado por el
+propietario muestra Applying modifyConfig from Vercel y Running onBuildComplete
+from Vercel antes del error. La señal NOW_BUILDER por sí sola no reproducía
+esa vía: las dos correcciones anteriores cubrían formatos de JSON y builds
+Next sin adaptador, no la salida del adaptador real.
+
+Se inspeccionó el paquete oficial @vercel/next27.0.0, verificando la integridad
+SHA512 del tar publicado. Su hook escribe Build Output API3 en .next/output,
+incluidos config.json y .vc-config.json por función. El inventario de dependencias
+está en filePathMap; no hay que exigir una traza NFT que ese build no emite.
+Fuentes: [Build Output API](https://vercel.com/docs/build-output-api/configuration)
+y [paquete oficial27.0.0](https://www.npmjs.com/package/@vercel/next/v/27.0.0).
+
+La reproducción en Windows encontró una limitación de permisos de symlinks,
+por lo que se hizo en Node24.19.0/Linux con Docker y volúmenes desechables.
+Se usó un archivo del commit público4aea3c1, sin .env privados, claves ni datos
+reales. El backend se deshabilitó y no se publicaron puertos. La herramienta
+del proveedor se instaló solo en el entorno temporal, sin modificar dependencias
+ni lock de Lexora. No se desplegó desde ese contenedor.
+
+Antes del arreglo: el build real completó55 funciones Node24 y falló después
+con Missing production server trace. No existía ninguna de las dos NFT raíz.
+Después, repitiendo el mismo build con el guard corregido: exit0,55 funciones,
+18684 referencias de assets revisadas, compiledNextReferences0. El postcheck
+informa productionArtifactKind vercel-build-output-v3 y productionArtifactsChecked
+true; productionTracesChecked es false porque se comprobaron mapas, no NFT.
+
+El modo se obtiene de required-server-files.json, generado por Next, para no
+aceptar salida vieja de un build con otro modo. Con adaptador se exige versión3,
+rutas, funciones críticas de salud/cuenta/Auth/estudio, framework/version/runtime
+del proyecto, handlers existentes dentro de su función y mapas no vacíos.
+Se comprueban claves y valores de todos los mapas. Siguen bloqueándose nuevas
+referencias a paquetes de globbing, y se conserva la excepción estrecha de la
+copia compilada de Next vinculada al lock/config revisados. Next normal/mínimo
+siguen exigiendo sus NFT. No se añade un modo sin inventario.
+
+La CLI de regresión reproduce el error antes del arreglo. Después12 pruebas
+del guard pasan, sin omisiones, con casos de versión desconocida, handler
+inseguro/ausente, runtime/framework distintos, mapas vacíos o mal formados,
+dependencia nueva en clave o valor, función crítica ausente y artefacto viejo
+de adaptador que no puede satisfacer un build posterior sin adaptador.
+
+**Límites:** estos inventarios de nombres y referencias son señales de regresión,
+no un análisis exhaustivo de código inlined ni del servidor de imágenes que
+gestiona Vercel. No se leen contenidos de assets ni se afirma corregida la CVE.
+Las siete huellas, el plazo, la auditoría, los comandos y la revisión de src
+permanecen intactos. Resultados de gate, CI y Production de este arreglo se
+registran en la PR correspondiente.
+
+Gate general posterior al arreglo: LEXORA_DB_TESTS=1 pnpm check exit0,
+970 PASS+1 omisión privada; Nodebackup12/política12, formato/lint/tipos/
+28 contrastes/build/NFT PASS. Revisión DEEP y pasiva de seguridad de los cinco
+archivos modificados, sin hallazgos accionables en el alcance revisado.
+Build mínimo posterior también exit0, con sus NFT y compiledNextFiles0.
+Gitleaks8.30.1 del diff:23,16KB, exit0 y sin fugas. El paso de CI con
+NOW_BUILDER se renombra como Next mínimo para distinguirlo del adaptador real;
+la regresión de su formato se ejecuta por CLI dentro de las12 pruebas del guard.
