@@ -80,6 +80,13 @@ for (const locale of ["es", "en"] as const) {
       await expect(page.getByTestId("review-save-status")).toContainText(
         es ? "Último repaso guardado" : "Last review saved",
       );
+      await expect(page.getByTestId("session-summary")).toBeVisible();
+      const dock = page.locator(".workspace-bottom-nav");
+      if (await dock.isVisible()) {
+        const content = await page.locator("#workspace-content").boundingBox();
+        const navigation = await dock.boundingBox();
+        expect(navigation!.y).toBeGreaterThanOrEqual(content!.y + content!.height - 1);
+      }
       await audit(page, info, "study-summary");
       for (const path of ["/app/history", "/app/statistics"]) {
         await page.goto(`/${locale}${path}`);

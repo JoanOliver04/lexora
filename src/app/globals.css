@@ -243,6 +243,9 @@
   border-top: 1px solid var(--color-border);
   box-shadow: 0 -4px 24px rgb(0 0 0 / 0.04);
 }
+.workspace-frame[data-study-session] .workspace-bottom-nav {
+  position: static;
+}
 @container workspace (width < 17rem) {
   .workspace-bottom-nav {
     position: static;
