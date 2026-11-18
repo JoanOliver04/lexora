@@ -78,9 +78,13 @@ export function assertNoNewGlobUse(sources) {
     );
 }
 
-export function assertReviewedTraces(traces) {
+export function assertReviewedTraces(traces, serverTrace = "next-server.js.nft.json") {
   assert.ok(
-    traces.some((trace) => trace.name === "next-server.js.nft.json"),
+    ["next-server.js.nft.json", "next-minimal-server.js.nft.json"].includes(serverTrace),
+    "Unsupported production server trace",
+  );
+  assert.ok(
+    traces.some((trace) => trace.name === serverTrace),
     "Missing production server trace",
   );
   let compiledNextFiles = 0;
@@ -146,12 +150,16 @@ export async function verifyDependencyException({ registry = false, trace = fals
     assertReviewedRegistry(await response.json(), policy);
   }
   let compiledNextFiles;
+  // Match Next's hasNextSupport flag: the provider runs its minimal server.
+  const productionServerTrace = process.env.NOW_BUILDER
+    ? "next-minimal-server.js.nft.json"
+    : "next-server.js.nft.json";
   if (trace) {
     const traces = [];
     for (const file of await filesUnder(path.join(ROOT, ".next")))
       if (file.endsWith(".nft.json"))
         traces.push({ name: path.basename(file), ...JSON.parse(await readFile(file, "utf8")) });
-    compiledNextFiles = assertReviewedTraces(traces);
+    compiledNextFiles = assertReviewedTraces(traces, productionServerTrace);
   }
   return {
     advisory: policy.advisory,
@@ -159,7 +167,7 @@ export async function verifyDependencyException({ registry = false, trace = fals
     scopeMatched: true,
     registryChecked: registry,
     productionTracesChecked: trace,
-    ...(trace ? { compiledNextFiles } : {}),
+    ...(trace ? { compiledNextFiles, productionServerTrace } : {}),
   };
 }
 

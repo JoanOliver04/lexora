@@ -94,6 +94,11 @@ jobs:
       - name: Build de produccion
         run: pnpm build
 
+      - name: Build con servidor de plataforma Vercel
+        env:
+          NOW_BUILDER: "1"
+        run: pnpm build
+
   base-de-datos:
     name: Base de datos
     runs-on: ubuntu-24.04

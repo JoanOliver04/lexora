@@ -155,3 +155,20 @@ test("reviewed Next compiled copy is distinguished from new standalone runtime p
   assert.throws(() => assertReviewedTraces([]), /Missing production/);
   assert.throws(() => assertReviewedTraces([{ ...root, files: null }]), /Invalid trace/);
 });
+
+test("each build mode requires its own server trace and still rejects new glob dependencies", () => {
+  const full = { name: "next-server.js.nft.json", files: [] };
+  const minimal = { name: "next-minimal-server.js.nft.json", files: [] };
+  assert.equal(assertReviewedTraces([minimal], minimal.name), 0);
+  assert.throws(() => assertReviewedTraces([minimal]), /Missing production/);
+  assert.throws(() => assertReviewedTraces([full], minimal.name), /Missing production/);
+  assert.throws(() => assertReviewedTraces([minimal], "arbitrary.json"), /Unsupported/);
+  assert.throws(
+    () =>
+      assertReviewedTraces(
+        [{ ...minimal, files: ["../node_modules/picomatch/index.js"] }],
+        minimal.name,
+      ),
+    /New glob dependency/,
+  );
+});

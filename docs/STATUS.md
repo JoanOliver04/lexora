@@ -1,5 +1,24 @@
 # Lexora — Estado actual
 
+**Build de plataforma Vercel — 2026-11-18:** PR119 corrigió y verificó el
+formato JSON (CI44275571017 SUCCESS; merge7aa853d), pero Production7879557579
+volvió a fallar. Una prueba independiente con NOW_BUILDER=1 reprodujo un segundo
+defecto del guard, confirmado después por el nuevo log del propietario:
+Next genera next-minimal-server.js.nft.json en vez de next-server.js.nft.json.
+La compilación terminó y el guard falló con Missing production server trace.
+Ahora exige la traza del modo correspondiente y sigue revisando todas las NFT;
+no se acepta un nombre arbitrario ni se omiten controles. Nueva regresión:
+1 FAIL antes del arreglo; después11 pruebas del guard PASS y registro/trazas
+del build de plataforma PASS. La CI añade también el build real con esa señal,
+además del build normal. Gate final exit0:970 PASS+1 omisión privada,
+Nodebackup12/política11, formato/lint/tipos/28 contrastes y ambos builds PASS;
+traza completa2 archivos compilados y mínima0, con los límites documentados.
+Revisión DEEP y pasiva de seguridad de los cinco archivos sin hallazgos
+accionables; diff sin fugas con Gitleaks8.30.1. Rama
+fix/lex-17-vercel-server-trace; faltan CI del nuevo head y Production verificada,
+que se registran en la PR de corrección. No hay cambios de app,
+Auth/RLS, datos, SQL, paquetes ni caducidad de la excepción.
+
 **Corrección de publicación1.3.0 — 2026-11-18:** el log aportado por el
 propietario permitió reproducir el fallo de Production7867388849: Vercel
 reescribe vercel.json como JSON compacto con salto final. El guard comparaba
