@@ -304,8 +304,7 @@
   width: 1.15rem;
   height: 1.15rem;
 }
-.workspace-logout span,
-.command-trigger-full {
+.workspace-logout span {
   display: none;
 }
 .command-trigger {
@@ -329,9 +328,19 @@
   height: 1.15rem;
   flex: none;
 }
-@media (min-width: 40rem) {
-  .workspace-logout span,
+@media (width < 40rem) {
   .command-trigger-full {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+@media (min-width: 40rem) {
+  .workspace-logout span {
     display: inline;
   }
   .command-trigger-short {

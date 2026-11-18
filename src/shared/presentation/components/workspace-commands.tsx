@@ -73,6 +73,7 @@ export function WorkspaceCommands() {
 
   const open = useCallback(() => {
     if (!dialog.current || document.querySelector("dialog[open]")) return;
+    setQuery("");
     dialog.current.showModal();
     setIsOpen(true);
     input.current?.focus();
@@ -98,7 +99,6 @@ export function WorkspaceCommands() {
       <button
         type="button"
         className="command-trigger"
-        aria-label={t("trigger")}
         title={t("trigger")}
         aria-keyshortcuts="Control+K Meta+K"
         aria-haspopup="dialog"
@@ -108,7 +108,9 @@ export function WorkspaceCommands() {
       >
         <WorkspaceIcon path="m21 21-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" />
         <span className="command-trigger-full">{t("trigger")}</span>
-        <span className="command-trigger-short">{t("triggerShort")}</span>
+        <span className="command-trigger-short" aria-hidden="true">
+          {t("triggerShort")}
+        </span>
         <kbd aria-hidden="true">Ctrl/⌘ K</kbd>
       </button>
       <dialog
