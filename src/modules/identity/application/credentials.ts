@@ -4,16 +4,13 @@ import { z } from "zod";
  * Validación de las credenciales de correo y contraseña.
  *
  * Se valida en el borde (MASTER_SPEC §16.2) y con límites de longitud
- * explícitos. La contraseña se comprueba solo por longitud: la política de
- * fortaleza vive en Supabase Auth (`minimum_password_length`), y duplicar reglas
- * aquí las dejaría desincronizadas. El tope de 72 es el límite real de bcrypt;
- * por encima, los bytes sobrantes se ignoran en silencio, lo que sería una
- * contraseña «más larga» que en realidad no lo es.
+ * explícitos. La política de altas y cambios se mantiene alineada con Supabase
+ * Auth. Se conserva la validación histórica al entrar con contraseñas existentes.
  */
 
 const MAX_EMAIL_LENGTH = 254;
-export const MIN_PASSWORD_LENGTH = 8;
-export const MAX_PASSWORD_LENGTH = 72;
+export const MIN_NEW_PASSWORD_LENGTH = 12;
+const MAX_PASSWORD_BYTES = 72;
 
 export const emailSchema = z
   .string()
@@ -25,13 +22,25 @@ export const emailSchema = z
 
 export const passwordSchema = z
   .string()
-  .min(MIN_PASSWORD_LENGTH, { message: "password-too-short" })
-  .max(MAX_PASSWORD_LENGTH, { message: "password-too-long" });
+  .min(8, { message: "password-too-short" })
+  .max(72, { message: "password-too-long" });
+
+export const newPasswordSchema = z.string().superRefine((value, context) => {
+  if (
+    value.length > MAX_PASSWORD_BYTES ||
+    new TextEncoder().encode(value).byteLength > MAX_PASSWORD_BYTES
+  ) {
+    context.addIssue({ code: "custom", message: "password-too-long" });
+  } else if ([...value].length < MIN_NEW_PASSWORD_LENGTH) {
+    context.addIssue({ code: "custom", message: "password-too-short" });
+  }
+});
 
 export const credentialsSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
 });
+const newCredentialsSchema = credentialsSchema.extend({ password: newPasswordSchema });
 
 export type Credentials = z.infer<typeof credentialsSchema>;
 
@@ -49,8 +58,12 @@ export interface ParsedCredentials {
  * Analiza `email` + `password` y devuelve el primer motivo de rechazo como
  * clave, nunca el detalle de Zod: la capa de aplicación no habla ningún idioma.
  */
-export function parseCredentials(input: { email: unknown; password: unknown }): ParsedCredentials {
-  const result = credentialsSchema.safeParse(input);
+export function parseCredentials(
+  input: { email: unknown; password: unknown },
+  purpose: "login" | "registration" = "login",
+): ParsedCredentials {
+  const schema = purpose === "registration" ? newCredentialsSchema : credentialsSchema;
+  const result = schema.safeParse(input);
   if (result.success) {
     return { ok: true, data: result.data };
   }

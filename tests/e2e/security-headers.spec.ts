@@ -94,6 +94,9 @@ test("an expired cookie session refreshes and persists without losing the authen
     /^sb-.+-auth-token(?:\.\d+)?$/.test(cookie.name),
   );
   expect(authCookies.length).toBeGreaterThan(0);
+  expect(authCookies.every((cookie) => cookie.httpOnly)).toBe(true);
+  expect(await page.evaluate(() => document.cookie)).not.toMatch(/sb-[^=;]+-auth-token/);
+  expect(authCookies.length).toBeGreaterThan(0);
   const sorted = authCookies.sort((a, b) =>
     a.name.localeCompare(b.name, undefined, { numeric: true }),
   );

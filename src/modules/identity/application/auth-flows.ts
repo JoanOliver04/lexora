@@ -5,7 +5,12 @@ import {
   type RegistrationResult,
   WeakPasswordError,
 } from "./auth-gateway";
-import { type CredentialsIssue, parseCredentials, parseEmail, passwordSchema } from "./credentials";
+import {
+  type CredentialsIssue,
+  newPasswordSchema,
+  parseCredentials,
+  parseEmail,
+} from "./credentials";
 
 /**
  * Casos de uso de autenticación. Cada uno valida su entrada, llama al puerto y
@@ -40,7 +45,7 @@ export async function registerUser(
   input: { email: unknown; password: unknown },
   emailRedirectTo: string,
 ): Promise<AuthResult<{ result: RegistrationResult }>> {
-  const parsed = parseCredentials(input);
+  const parsed = parseCredentials(input, "registration");
   if (!parsed.ok || !parsed.data) {
     return failure(parsed.issue ?? "email-invalid");
   }
@@ -100,7 +105,7 @@ export async function updatePassword(
   gateway: AuthGateway,
   input: { password: unknown },
 ): Promise<AuthResult> {
-  const result = passwordSchema.safeParse(input.password);
+  const result = newPasswordSchema.safeParse(input.password);
   if (!result.success) {
     const issue = result.error.issues[0]?.message as CredentialsIssue | undefined;
     return failure(issue ?? "password-too-short");

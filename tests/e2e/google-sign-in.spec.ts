@@ -32,7 +32,10 @@ for (const locale of ["es", "en"] as const) {
       // Verify persistence without writing the verifier or cookies to a report.
       const cookies = await context.cookies(baseURL!);
       expect(
-        cookies.some((cookie) => cookie.name.includes("code-verifier") && cookie.value.length > 20),
+        cookies.some(
+          (cookie) =>
+            cookie.name.includes("code-verifier") && cookie.value.length > 20 && cookie.httpOnly,
+        ),
       ).toBe(true);
       callback.searchParams.set("error", "access_denied");
       callback.searchParams.set("error_description", "synthetic-private-provider-message");

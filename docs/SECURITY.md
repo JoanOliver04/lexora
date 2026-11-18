@@ -25,6 +25,7 @@ navegador. Una sola defensa no basta.
 | Tamaño y filas | File.size ≤ 5 MiB antes de leer, UTF-8 estricto y tokenización acotada. Hasta 10.000 filas de datos y 200 columnas, sin confundir directivas o saltos entre comillas con filas. | `browser-import.ts`, parser y límites del dominio |
 | Nombre de archivo | Se queda el último segmento, se quitan controles y `..`, se recorta a 255. | `importing/domain/filename.ts` |
 | HTML → texto plano | Conversión una vez al preparar el archivo: etiquetas fuera y contenido de `script`/`style`/`iframe` descartado. El protocolo transporta texto, validado nuevamente en servidor. | `sanitize.ts`, `prepare-browser-import.ts`, `import-transfer.ts` |
+| Trabajo de saneamiento | Los comentarios avanzan con un cursor. Las búsquedas de etiquetas omiten los fragmentos finales sin cierre. | `sanitize.ts` |
 | React | El texto se interpola como hijos, nunca con `dangerouslySetInnerHTML`. El escape por defecto es la última red. | pantallas de importación y biblioteca |
 | Longitud de campo | Frente/reverso ≤ 4.000; campo de etiquetas ≤ 2.000. Códigos `front_too_long` / `back_too_long` / `tags_too_long`. | `classifyFields` |
 | Mensajes y muestras | `row_sample` sin controles, ≤ 200 caracteres. Ningún mensaje incluye la fila entera, una consulta o un secreto. | `sanitizeRowSample` |

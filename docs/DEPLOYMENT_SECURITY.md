@@ -34,9 +34,10 @@ la actualización del service worker renueva también sus respuestas cacheadas.
 No se cachean páginas privadas ni se encolan escrituras de estudio.
 
 Las cookies Supabase fijan path `/`, SameSite Lax y Secure cuando la URL canónica
-es HTTPS. Se conserva el contrato de cookies legibles del SDK SSR; no se afirma
-HttpOnly ni inmunidad ante XSS. Cambiar esa arquitectura exige revisar todos los
-consumidores de sesión. La renovación propaga cookies a petición y respuesta;
+es HTTPS. Son HttpOnly porque el intercambio PKCE, sesión y renovación ocurren
+en el servidor. Las cookies de una sesión anterior adoptan el atributo al
+reescribirse durante una renovación o un nuevo inicio. La renovación propaga
+cookies a petición y respuesta;
 una prueba de navegador marca caducado su expires_at local y comprueba
 la rotación persistida, la página autenticada y una recarga posterior.
 
@@ -44,6 +45,34 @@ Las APIs de escritura comparan Origin con el origen configurado y limitan el
 cuerpo. Server Actions conservan la comprobación Origin/Host de Next.
 RLS y los casos de uso siguen siendo las barreras de propiedad, con independencia
 de las redirecciones del proxy o del layout.
+
+El endpoint público de salud comparte una sonda pendiente por instancia y la
+reutiliza durante diez segundos tras completarla. La respuesta HTTP conserva
+`no-store`; la ventana acotada también aplica si la base está degradada. Este
+control limita el coste de las comprobaciones en cada instancia desplegada.
+
+## Antes de habilitar altas públicas
+
+App y Supabase deben seguir cerrados hasta verificar un alta de prueba con correo
+confirmado, recuperación y límites de Auth en el proyecto que recibirá público.
+La app exige doce caracteres y como máximo 72 bytes UTF-8 al crear o cambiar
+una contraseña. Configurar también el mínimo en Supabase Auth es necesario
+porque la API del proveedor aplica su propia política. El archivo local activa
+el cambio seguro de contraseña para exigir autenticación reciente. La
+configuración efectiva del proyecto alojado se revisa por separado.
+
+Supabase documenta la protección contra contraseñas filtradas para Pro y planes
+superiores. El asesor del proyecto gratuito la marca desactivada. La aceptación
+del riesgo o un cambio de plan requiere una decisión del propietario. Revisar
+también CAPTCHA, cuotas del proveedor, entrega de confirmaciones por SMTP,
+retornos de OAuth y recuperación, MFA de las cuentas de administración y la
+política de privacidad antes de cambiar el alcance. Ver la
+[lista de seguridad de Supabase](https://supabase.com/docs/guides/security/production-checklist)
+y su [política de contraseñas](https://supabase.com/docs/guides/auth/password-security).
+
+Si se ofrece MFA a usuarios de Lexora, completar antes el desafío al entrar
+y exigir AAL2 en las políticas del acceso a datos para cuentas con MFA. La
+comprobación de segundo factor existente se aplica al borrado de cuenta.
 
 ## Preview y claves
 

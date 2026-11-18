@@ -27,8 +27,7 @@ export async function GET() {
   return NextResponse.json(report, {
     status: report.status === "ok" ? 200 : 503,
     headers: {
-      // Una respuesta cacheada convierte el health check en un adorno: seguiría
-      // diciendo «ok» un cuarto de hora después de que todo se cayera.
+      // Browsers and CDNs must not extend the brief server-side probe window.
       "Cache-Control": "no-store, max-age=0",
     },
   });

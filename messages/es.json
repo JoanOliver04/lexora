@@ -944,8 +944,8 @@
     "errors": {
       "email-required": "Escribe tu correo.",
       "email-invalid": "Ese correo no parece válido.",
-      "password-too-short": "La contraseña necesita al menos 8 caracteres.",
-      "password-too-long": "La contraseña no puede pasar de 72 caracteres.",
+      "password-too-short": "Usa al menos 12 caracteres.",
+      "password-too-long": "La contraseña es demasiado larga. Prueba una más corta.",
       "invalid-credentials": "El correo o la contraseña no son correctos.",
       "weak-password": "Esa contraseña es demasiado débil. Prueba con una más larga.",
       "missing-recovery-session": "Este enlace de recuperación ha caducado. Pide uno nuevo.",
@@ -972,7 +972,7 @@
       "title": "Crear una cuenta",
       "emailLabel": "Correo",
       "passwordLabel": "Contraseña",
-      "passwordHint": "Al menos 8 caracteres.",
+      "passwordHint": "Al menos 12 caracteres.",
       "submit": "Crear cuenta",
       "submitting": "Creando…",
       "loginPrompt": "¿Ya tienes cuenta?",
@@ -993,7 +993,7 @@
     "reset": {
       "title": "Elegir una contraseña nueva",
       "passwordLabel": "Contraseña nueva",
-      "passwordHint": "Al menos 8 caracteres.",
+      "passwordHint": "Al menos 12 caracteres.",
       "submit": "Guardar la contraseña",
       "submitting": "Guardando…",
       "doneTitle": "Contraseña cambiada",

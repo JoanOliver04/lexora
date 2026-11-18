@@ -1,5 +1,13 @@
 # Lexora — Estado actual
 
+**LEX-20.1 · Refuerzo previo a la apertura pública.** Cookies de sesión y PKCE
+HttpOnly, nueva política de contraseñas en altas y recuperación, coste acotado
+de la sonda de salud y saneamiento de importación sin búsquedas repetidas sobre
+comentarios o etiquetas incompletos. La configuración de Auth local se refuerza
+para pruebas nuevas. Los ajustes de apertura pública del proyecto alojado
+tienen su propia comprobación en [Seguridad de despliegue](DEPLOYMENT_SECURITY.md).
+Registro privado vigente. Los resultados remotos se registran en la PR.
+
 **LEX-19.1 · Tutoriales integrados.** Ayuda se abre desde Hoy, la navegación
 y los accesos rápidos. Incluye una ruta para la primera sesión, seis guías por
 tarea, una tarjeta de ejemplo sin persistencia y ayuda contextual desplegable
