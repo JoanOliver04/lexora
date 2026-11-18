@@ -50,8 +50,11 @@ el lock revisado. No se modifica a mano el compilador sin un parche upstream.
 El guard de Node verifica antes de auditar:
 
 - Caducidad bloqueante de catorce días, sin renovación automática.
-- SHA256 con finales LF del lock, pnpm-workspace, next.config, Vitest, ESLint,
-  package.json y vercel.json, incluidos los comandos de compilación.
+- SHA256 con finales LF del lock, pnpm-workspace, next.config, Vitest, ESLint
+  y package.json, incluidos los comandos de compilación. Para vercel.json se
+  serializa el JSON parseado sin indentación y con salto LF final: Vercel
+  reescribe ese archivo antes de compilar. No se omiten propiedades ni se
+  ordenan arrays; cambios de valores, opciones nuevas o JSON inválido bloquean.
   Cualquier cambio requiere revisar y registrar otra vez el alcance.
 - Referencias nuevas a paquetes de globbing en src, como señal conservadora.
 - Que el registro aún anuncie4.0.7 como latest; otro valor o una respuesta
@@ -89,3 +92,36 @@ ambos puntos de control también fuera de la CI de GitHub.
 
 La nueva CI debe acreditar también este guard en Linux, la instalación congelada
 y la auditoría completa. No basta reutilizar los resultados anteriores de UX.
+
+## Corrección de formato en Vercel — 2026-11-18
+
+La CI44182145804 de PR118 pasó en Linux; Production7867388849 falló antes de
+Next. El log aportado por el propietario identifica una huella distinta solo
+para vercel.json. La reproducción local confirma que el valor observado
+`9935a08fbd5f31eed21bffd348ea60a42e5d9d2e536a89e1a65557171e66eccd`
+es exactamente SHA256 de JSON.stringify(config)+'\n'. Los valores y su orden
+coinciden con el archivo revisado: era un falso positivo por formato.
+
+Se normaliza únicamente la serialización de ese JSON antes del hash y se
+actualiza su huella documentada. No se retira la comprobación ni se acepta
+cualquier configuración: las seis huellas restantes, el build protegido, el
+GHSA exceptuado y la fecha de caducidad permanecen intactos.
+
+Regresión con la CLI real en una copia temporal aislada:1 FAIL antes del
+arreglo, con los mismos hashes del log. Después10 pruebas del guard PASS,
+sin omisiones. El caso nuevo acepta la reescritura compacta y otra indentación
+con CRLF; rechaza comando, región, configuración de Git y opción añadida
+modificados, además de JSON inválido. No accede a red, DB ni contenido privado.
+El guard adicional con registro y trazas también pasa; el despliegue requiere
+su propia CI y verificación de Production, registradas en la PR de corrección.
+
+Gate completo18nov: LEXORA_DB_TESTS=1 pnpm check exit0,970 PASS+1 omisión
+privada, Nodebackup12/política10, formato/lint/tipos/28 contrastes/build/trazas
+PASS. La prueba nueva pasa sin errores ni omisiones. Revisión DEEP de los seis
+archivos y revisión pasiva de seguridad del alcance modificado, sin hallazgos
+accionables; no se afirma una auditoría exhaustiva de toda la aplicación.
+Gitleaks8.30.1 del diff (12,91KB), exit0 y sin fugas.
+
+La CI anterior solo ejercitaba los bytes del checkout, de ahí que no detectara
+la reescritura del proveedor. La regresión ahora reproduce esa frontera antes
+de compilar, en vez de depender de que el formato sobreviva al despliegue.

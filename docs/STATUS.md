@@ -1,5 +1,31 @@
 # Lexora — Estado actual
 
+**Corrección de publicación1.3.0 — 2026-11-18:** el log aportado por el
+propietario permitió reproducir el fallo de Production7867388849: Vercel
+reescribe vercel.json como JSON compacto con salto final. El guard comparaba
+bytes y rechazaba ese cambio de formato. Ahora normaliza solo ese JSON antes
+de obtener su huella; siguen bloqueándose cambios en sus valores. Las otras
+seis huellas, los comandos, la caducidad y el resto de controles no cambian.
+Regresión CLI real:1 FAIL con la huella exacta antes del arreglo; después10 PASS
+en el conjunto del guard, incluidos formato alternativo, cambios reales y JSON
+inválido. Registro/trazas PASS. Q-012 cerrada por información recibida, sin
+atribuir a ese cierre una publicación todavía no verificada. Rama de trabajo:
+fix/lex-17-production-build. Gate completo exit0:970 PASS+1 omisión privada,
+Nodebackup12/política10, formato/lint/tipos/28 contrastes/build/trazas PASS.
+Revisión DEEP y pasiva de seguridad del delta sin hallazgos accionables;
+Gitleaks8.30.1 del diff sin fugas. Faltan CI del head exacto y Production;
+sus resultados se registran en la PR de corrección.
+
+**Contexto anterior a la corrección — 2026-11-17:** PR118 fusionada en `f130c9f`,
+con los tres checks SUCCESS en CI44182145804 sobre `c680aee`. E2E214 PASS+
+4 omisiones; compatibilidad8, acceso cerrado4, Preview4 y Google8 PASS.
+Production7867388849 falló. El canonical continúa sirviendo la versión anterior:
+HTTP200/healthok, Google activo, altas cerradas y CSP/nonces/no-store verificados.
+Falta consultar el error de build autenticado para corregir su causa; se ha
+solicitado la integración de Vercel o el texto del error, sin secretos.
+Se registra en [Q-012](OPEN_QUESTIONS.md#q-012--consultar-el-error-autenticado-del-despliegue130).
+La tarea sigue en proceso hasta publicar y verificar la versión nueva.
+
 **Entrega1.3.0 — 2026-11-17:** mejoras integradas de navegación y biblioteca.
 Panel de accesos rápidos con búsqueda local ES/EN, Ctrl/Cmd+K, diálogo nativo,
 foco restituido y uso móvil. Biblioteca con resultados, filtros removibles,

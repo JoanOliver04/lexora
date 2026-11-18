@@ -119,10 +119,15 @@ export async function verifyDependencyException({ registry = false, trace = fals
     await readFile(path.join(ROOT, "scripts/dependency-exception.json"), "utf8"),
   );
   const hashes = {};
-  for (const file of REVIEW_FILES)
-    hashes[file] = createHash("sha256")
-      .update((await readFile(path.join(ROOT, file), "utf8")).replaceAll("\r\n", "\n"))
-      .digest("hex");
+  for (const file of REVIEW_FILES) {
+    const source = await readFile(path.join(ROOT, file), "utf8");
+    // Vercel rewrites this JSON before build; compare its values, not indentation.
+    const normalized =
+      file === "vercel.json"
+        ? JSON.stringify(JSON.parse(source)) + "\n"
+        : source.replaceAll("\r\n", "\n");
+    hashes[file] = createHash("sha256").update(normalized).digest("hex");
+  }
   assertExceptionScope(policy, hashes);
   assertBuildCommands(
     JSON.parse(await readFile(path.join(ROOT, "package.json"), "utf8")),

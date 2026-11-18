@@ -4,7 +4,7 @@
 > Cada entrada tiene un ID estable `Q-nnn` que nunca se reutiliza.
 > Protocolo: `ROADMAP.md` §3.5 (documento privado y local).
 
-**Última actualización:** 2026-11-12
+**Última actualización:** 2026-11-18
 
 ## Índice de estado
 
@@ -21,10 +21,39 @@
 | Q-009 | Aceptación manual en dispositivo físico | `RESUELTA` | Aceptación personal acotada; evidencia LEX-9-installation |
 | Q-010 | Uso personal y servicios de correo | `RESUELTA` | Entrega actual; ADR-008 |
 | Q-011 | Activación externa y aceptación de Google | `RESUELTA` | Acceso adicional; ADR-011 |
+| Q-012 | Consultar el error autenticado del despliegue1.3.0 | `RESUELTA` | Publicación de LEX-17.1 |
 
 Q-005/Q-006 siguen abiertas como decisiones históricas de producto. Sus opciones
 actuales están implementadas y probadas; no bloquean la entrega personal ni se
 consideran aprobadas de nuevo por ausencia de respuesta.
+
+## Q-012 — Consultar el error autenticado del despliegue1.3.0
+
+**Estado:** `RESUELTA`. **Fecha:** 2026-11-17. **Cierre:** 2026-11-18.
+
+El propietario ha aportado el log del build, sin secretos. El fallo se reproduce
+con la huella exacta: Vercel compacta vercel.json y añade un salto final, sin
+cambiar sus valores. Se corrige la comparación de formato y se cubre mediante
+la CLI real en una copia temporal aislada. No hace falta conectar Vercel para
+diagnosticar este fallo. Este cierre acredita la información recibida; la
+publicación y sus comprobaciones siguen pendientes hasta registrarse en la PR.
+
+**Contexto anterior al cierre:**
+
+La implementación está fusionada en `f130c9f` mediante PR118, después de que
+CI44182145804 pasara Calidad, Base de datos y Extremo a extremo sobre `c680aee`.
+El despliegue Production7867388849 ha fallado; la API pública de Vercel no
+expone el error sin autenticación. No hay una sesión CLI disponible y el host
+de control del navegador devuelve «native pipe unavailable» (os error2).
+
+Se solicita instalar y conectar la integración de Vercel para que el agente
+lea el error y resuelva la causa, o pegar únicamente el mensaje de fallo del
+build. No se piden secretos ni variables de entorno. La publicación ya está
+autorizada; falta información de diagnóstico, no una nueva aprobación.
+
+Hasta resolverlo, el canonical sigue sirviendo la versión anterior con HTTP200,
+healthok, Google activo y altas cerradas. LEX-17.1 continúa en proceso. No se
+declara1.3.0 publicada ni se desactivan las guardas para forzar un despliegue.
 
 ## Q-011 — Activación externa y aceptación de Google
 
