@@ -618,8 +618,8 @@ html:has(.command-dialog[open]) {
   max-width: 100%;
   font-size: 1rem;
 }
-.collection-page select {
-  /* Keep long option labels inside the control at enlarged text sizes. */
+.workspace-content :is(select:not([multiple]):not([size]), input[type="date"]) {
+  /* WebKit's native control content can exceed the field at enlarged text sizes. */
   contain: paint;
   text-overflow: ellipsis;
 }
