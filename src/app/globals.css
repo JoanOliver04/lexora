@@ -243,7 +243,8 @@
   border-top: 1px solid var(--color-border);
   box-shadow: 0 -4px 24px rgb(0 0 0 / 0.04);
 }
-.workspace-frame:is([data-study-session], [data-import-flow]) .workspace-bottom-nav {
+.workspace-frame:is([data-study-session], [data-import-flow], [data-deck-detail])
+  .workspace-bottom-nav {
   position: static;
 }
 @container workspace (width < 17rem) {

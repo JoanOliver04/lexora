@@ -16,6 +16,12 @@ for (const mode of ["append", "replace"] as const) {
       const options = page.getByRole("region", { name: "Importar contenido" });
       await expect(options.getByRole("link", { name: "Añadir", exact: true })).toBeVisible();
       await expect(options.getByRole("link", { name: "Reemplazar", exact: true })).toBeVisible();
+      const dock = page.locator(".workspace-bottom-nav");
+      if (await dock.isVisible()) {
+        const content = await page.locator("#workspace-content").boundingBox();
+        const navigation = await dock.boundingBox();
+        expect(navigation!.y).toBeGreaterThanOrEqual(content!.y + content!.height - 1);
+      }
       await options
         .getByRole("link", { name: replace ? "Reemplazar" : "Añadir", exact: true })
         .click();
