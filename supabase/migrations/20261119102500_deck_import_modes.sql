@@ -175,7 +175,8 @@ begin
         '{"mode":"basic_recall"}'::jsonb from jsonb_array_elements(v_valid)
         where not (value->>'skip')::boolean;
   end if;
-  if jsonb_array_length(v_valid) > 0 then
+  if (v_mode = 'replace' and jsonb_array_length(v_valid) > 0) or
+     (v_mode is distinct from 'replace' and new.rows_created > 0) then
     select coalesce(max(position),-1) into v_position from public.deck_concepts
       where deck_id = v_job.deck_id and owner_id = v_uid;
     -- Preserve the old NULL-position ordering, then append the new file order.
