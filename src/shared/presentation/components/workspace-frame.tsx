@@ -70,7 +70,7 @@ export function WorkspaceFrame({
               )?.key ?? "space",
             )}
           </span>
-          <div className="workspace-header-actions">
+          <div className="workspace-course-and-tools">
             {courseTitle && (
               <Link
                 href="/app/courses"
@@ -83,22 +83,24 @@ export function WorkspaceFrame({
                 <WorkspaceIcon path="m6 9 6 6 6-6" />
               </Link>
             )}
+            <nav className="workspace-tools" aria-label={t("tools")}>
+              {workspaceDestinations.slice(5).map((item) => (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  aria-current={
+                    isWorkspaceDestinationActive(pathname, item.href) ? "page" : undefined
+                  }
+                >
+                  {t(item.key)}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="workspace-header-actions">
             <WorkspaceCommands />
             {logout}
           </div>
-          <nav className="workspace-tools" aria-label={t("tools")}>
-            {workspaceDestinations.slice(5).map((item) => (
-              <Link
-                key={item.key}
-                href={item.href}
-                aria-current={
-                  isWorkspaceDestinationActive(pathname, item.href) ? "page" : undefined
-                }
-              >
-                {t(item.key)}
-              </Link>
-            ))}
-          </nav>
         </header>
         <div id="workspace-content" className="workspace-content" tabIndex={-1}>
           {children}
