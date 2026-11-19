@@ -591,7 +591,7 @@ function ImportPreviewFormSession({
                 {...stepSectionProps(step === "confirm", "gap-3")}
                 className={step === "confirm" ? "flex flex-col gap-3 text-sm" : undefined}
               >
-                {selectedDeck && <p>{t("wizard.confirmIntro")}</p>}
+                {selectedDeck && !deckMode && <p>{t("wizard.confirmIntro")}</p>}
                 <ul className="flex flex-col gap-1 text-(--color-ink-muted)">
                   <li>
                     {t("wizard.recapFile", {
