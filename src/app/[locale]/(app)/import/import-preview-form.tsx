@@ -6,6 +6,7 @@ import { useFormStatus } from "react-dom";
 
 import { Button, FormError, FormStatus, Label } from "@/shared/presentation/components";
 import { useFocusFirstInvalid } from "@/shared/presentation/hooks/use-focus-first-invalid";
+import { Link } from "@/i18n/navigation";
 
 import { formatImportErrorReport } from "@/modules/importing/application/format-import-error-report";
 
@@ -17,6 +18,7 @@ import { ImportCreateDeckDialog } from "./import-create-deck-dialog";
 import { ImportDeckPicker } from "./import-deck-picker";
 import { ImportPreparation } from "./import-preparation";
 import { ImportSource } from "./import-source";
+import type { ImportDestination } from "./import-state";
 import {
   IMPORT_WIZARD_STEPS,
   canJumpToWizardStep,
@@ -66,11 +68,13 @@ export function ImportPreviewForm({
   deckOptions,
   courseId,
   pending,
+  target,
 }: {
   locale: string;
   deckOptions: DeckOptions;
   courseId: string;
   pending: ImportProgress | null;
+  target: ImportDestination | null;
 }) {
   const [session, setSession] = useState(0);
 
@@ -81,6 +85,7 @@ export function ImportPreviewForm({
       deckOptions={deckOptions}
       courseId={courseId}
       pending={session === 0 ? pending : null}
+      target={target}
       onAgain={() => {
         const url = new URL(window.location.href);
         url.searchParams.delete("job");
@@ -97,12 +102,14 @@ function ImportPreviewFormSession({
   onAgain,
   courseId,
   pending,
+  target,
 }: {
   locale: string;
   deckOptions: DeckOptions;
   onAgain: () => void;
   courseId: string;
   pending: ImportProgress | null;
+  target: ImportDestination | null;
 }) {
   const t = useTranslations("Import");
   const formRef = useRef<HTMLFormElement>(null);
@@ -113,19 +120,25 @@ function ImportPreviewFormSession({
     courseId,
     locale,
     pending,
+    target,
   );
   const [step, setStep] = useState<ImportWizardStep>("file");
   const [furthest, setFurthest] = useState<ImportWizardStep>("file");
   const [moved, setMoved] = useState(false);
   const [openedForHash, setOpenedForHash] = useState("");
   const [selectedDeck, setSelectedDeck] = useState(
-    deckOptions.selected ?? deckOptions.items[0] ?? null,
+    pending ? deckOptions.selected : (deckOptions.selected ?? deckOptions.items[0] ?? null),
   );
   const [createReverse, setCreateReverse] = useState(pending?.mapping.createReverse === true);
   const [strategy, setStrategy] = useState(pending?.mapping.strategy ?? "skip");
   const [newDeckOptions, setNewDeckOptions] = useState<DeckOptions | null>(null);
+  const [replaceConfirmed, setReplaceConfirmed] = useState(false);
   const availableDecks = newDeckOptions ?? deckOptions;
-  const canCreateDeck = !job && (step === "destination" || (step === "confirm" && !selectedDeck));
+  const deckMode = job?.mapping.deckMode ?? target?.mode;
+  const isReplacement = deckMode === "replace";
+  const needsValidRow = isReplacement && state.totalRows === 0;
+  const canCreateDeck =
+    !target && !job && (step === "destination" || (step === "confirm" && !selectedDeck));
 
   useFocusFirstInvalid(formRef, state);
 
@@ -135,6 +148,7 @@ function ImportPreviewFormSession({
 
   if (hasPreview && previewHash && previewHash !== openedForHash) {
     setOpenedForHash(previewHash);
+    setReplaceConfirmed(false);
     setStep("mapping");
     setFurthest((current) => furthestWizardStep(current, "mapping"));
     setMoved(true);
@@ -147,6 +161,7 @@ function ImportPreviewFormSession({
   }, [step, moved]);
 
   function goTo(next: ImportWizardStep) {
+    if (next !== "confirm") setReplaceConfirmed(false);
     setStep(next);
     setFurthest((current) => furthestWizardStep(current, next));
     setMoved(true);
@@ -199,7 +214,16 @@ function ImportPreviewFormSession({
             </Button>
           </section>
         ) : null}
-        <p className="text-xs text-(--color-ink-subtle)">{t("result.retryNote")}</p>
+        {target ? (
+          <Link
+            href={`/decks/${target.deckId}`}
+            className="inline-flex min-h-11 w-fit items-center text-sm text-(--color-accent) underline"
+          >
+            {t("target.back")}
+          </Link>
+        ) : (
+          <p className="text-xs text-(--color-ink-subtle)">{t("result.retryNote")}</p>
+        )}
         <Button type="button" variant="secondary" onClick={onAgain}>
           {t("wizard.another")}
         </Button>
@@ -239,7 +263,13 @@ function ImportPreviewFormSession({
             {t("transfer.progress", { done: job.processedRows, total: job.rowsTotal })}
           </p>
           <p className="text-xs text-(--color-ink-muted)">
-            {t(job.status === "failed" ? "transfer.stopped" : "transfer.resumeHint")}
+            {t(
+              job.status === "failed"
+                ? isReplacement
+                  ? "target.replaceStopped"
+                  : "transfer.stopped"
+                : "transfer.resumeHint",
+            )}
           </p>
           <div className="flex flex-wrap gap-2">
             {busy ? (
@@ -471,7 +501,13 @@ function ImportPreviewFormSession({
               </section>
 
               <section {...stepSectionProps(step === "destination", "gap-3")}>
-                {selectedDeck || availableDecks.total > 0 ? (
+                {target || job ? (
+                  <p className="text-sm text-(--color-ink-muted)">
+                    {selectedDeck
+                      ? t("wizard.recapDeck", { deck: selectedDeck.title })
+                      : t("target.unavailable")}
+                  </p>
+                ) : selectedDeck || availableDecks.total > 0 ? (
                   <ImportDeckPicker
                     key={newDeckOptions?.selected?.id}
                     initial={availableDecks}
@@ -494,33 +530,39 @@ function ImportPreviewFormSession({
               </section>
 
               <section {...stepSectionProps(step === "duplicates", "gap-3")}>
-                <fieldset className="flex flex-col gap-3">
-                  <legend className="sr-only">{t("plan.heading")}</legend>
-                  <p className="text-sm text-(--color-ink-muted)">{t("plan.intro")}</p>
-                  <div className="flex flex-col gap-2">
-                    <label className="flex min-h-11 items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        name="duplicateStrategy"
-                        value="skip"
-                        checked={strategy === "skip"}
-                        onChange={() => setStrategy("skip")}
-                      />
-                      {t("plan.skip")}
-                    </label>
-                    <label className="flex min-h-11 items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        name="duplicateStrategy"
-                        value="copy"
-                        checked={strategy === "copy"}
-                        onChange={() => setStrategy("copy")}
-                      />
-                      {t("plan.copy")}
-                    </label>
-                  </div>
-                  <p className="text-xs text-(--color-ink-subtle)">{t("plan.updateNote")}</p>
-                </fieldset>
+                {deckMode ? (
+                  <p className="text-sm text-(--color-ink-muted)">
+                    {t(`target.${deckMode}Duplicates`)}
+                  </p>
+                ) : (
+                  <fieldset className="flex flex-col gap-3">
+                    <legend className="sr-only">{t("plan.heading")}</legend>
+                    <p className="text-sm text-(--color-ink-muted)">{t("plan.intro")}</p>
+                    <div className="flex flex-col gap-2">
+                      <label className="flex min-h-11 items-center gap-2 text-sm">
+                        <input
+                          type="radio"
+                          name="duplicateStrategy"
+                          value="skip"
+                          checked={strategy === "skip"}
+                          onChange={() => setStrategy("skip")}
+                        />
+                        {t("plan.skip")}
+                      </label>
+                      <label className="flex min-h-11 items-center gap-2 text-sm">
+                        <input
+                          type="radio"
+                          name="duplicateStrategy"
+                          value="copy"
+                          checked={strategy === "copy"}
+                          onChange={() => setStrategy("copy")}
+                        />
+                        {t("plan.copy")}
+                      </label>
+                    </div>
+                    <p className="text-xs text-(--color-ink-subtle)">{t("plan.updateNote")}</p>
+                  </fieldset>
+                )}
 
                 {(state.duplicateHits ?? []).length > 0 ? (
                   <div className="flex flex-col gap-2">
@@ -572,9 +614,37 @@ function ImportPreviewFormSession({
                   <li>
                     {createReverse ? t("wizard.recapReverseOn") : t("wizard.recapReverseOff")}
                   </li>
-                  <li>{strategy === "copy" ? t("wizard.recapCopy") : t("wizard.recapSkip")}</li>
+                  <li>
+                    {deckMode
+                      ? t(`target.${deckMode}Duplicates`)
+                      : strategy === "copy"
+                        ? t("wizard.recapCopy")
+                        : t("wizard.recapSkip")}
+                  </li>
                 </ul>
                 <p className="text-xs text-(--color-ink-subtle)">{t("wizard.confirmHint")}</p>
+                {isReplacement && selectedDeck && (
+                  <div className="flex flex-col gap-2 rounded-(--radius-control) border border-(--color-border-strong) p-3">
+                    <p id="import-replace-note">{t("target.replaceNotice")}</p>
+                    {needsValidRow ? (
+                      <p role="status">{t("target.replaceEmpty")}</p>
+                    ) : (
+                      <label className="flex min-h-11 items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="shrink-0"
+                          name="replaceConfirmed"
+                          value="1"
+                          required
+                          checked={replaceConfirmed}
+                          aria-describedby="import-replace-note"
+                          onChange={(event) => setReplaceConfirmed(event.target.checked)}
+                        />
+                        {t("target.replaceConfirm", { deck: selectedDeck.title })}
+                      </label>
+                    )}
+                  </div>
+                )}
               </section>
             </>
           ) : null}
@@ -591,11 +661,18 @@ function ImportPreviewFormSession({
             ) : null}
             {step === "confirm" && selectedDeck ? (
               <ExecuteButton
-                idle={t(job ? "transfer.resume" : "execute.submit")}
+                idle={t(
+                  job
+                    ? "transfer.resume"
+                    : deckMode
+                      ? `target.${deckMode}Submit`
+                      : "execute.submit",
+                )}
                 pending={t("execute.submitting")}
+                disabled={isReplacement && (!replaceConfirmed || needsValidRow)}
               />
             ) : null}
-            {step === "confirm" && !selectedDeck && availableDecks.total > 0 && (
+            {step === "confirm" && !selectedDeck && !job && availableDecks.total > 0 && (
               <Button onClick={() => goTo("destination")}>{t("deckChoose")}</Button>
             )}
             <div className="flex flex-wrap gap-2">
@@ -677,7 +754,15 @@ function downloadErrorReport(text: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function ExecuteButton({ idle, pending }: { idle: string; pending: string }) {
+function ExecuteButton({
+  idle,
+  pending,
+  disabled,
+}: {
+  idle: string;
+  pending: string;
+  disabled: boolean;
+}) {
   const status = useFormStatus();
 
   return (
@@ -685,7 +770,7 @@ function ExecuteButton({ idle, pending }: { idle: string; pending: string }) {
       type="submit"
       name="intent"
       value="execute"
-      disabled={status.pending}
+      disabled={disabled || status.pending}
       aria-busy={status.pending}
     >
       {status.pending ? pending : idle}

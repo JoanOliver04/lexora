@@ -89,6 +89,32 @@ export default async function DeckDetailPage({
 
       <EditDeckForm locale={locale} deck={deck} />
 
+      {!deck.archivedAt && (
+        <section
+          aria-labelledby="deck-import-heading"
+          className="flex flex-col gap-3 border-t border-(--color-border) pt-8"
+        >
+          <h2 id="deck-import-heading" className="text-lg font-medium">
+            {t("import.heading")}
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(["append", "replace"] as const).map((mode) => (
+              <div key={mode} className="flex min-w-0 flex-col gap-1">
+                <Link
+                  href={{ pathname: "/import", query: { deck: deck.id, mode } }}
+                  className="inline-flex min-h-11 items-center justify-center rounded-(--radius-control) border border-(--color-border-strong) px-3 font-semibold text-(--color-accent)"
+                >
+                  {t(`import.${mode}`)}
+                </Link>
+                <p className="text-sm leading-relaxed text-(--color-ink-muted)">
+                  {t(`import.${mode}Hint`)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="flex flex-col gap-3 border-t border-(--color-border) pt-8">
         <h2 className="text-lg font-medium">{t("conceptsHeading")}</h2>
         <p className="text-sm text-(--color-ink-muted)">

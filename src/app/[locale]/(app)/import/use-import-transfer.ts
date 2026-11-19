@@ -12,7 +12,7 @@ import {
 import type { ImportJobError } from "@/modules/importing/application/import-job";
 import { unwrapPastedImport } from "@/modules/importing/application/import-template";
 import { MAX_FILE_BYTES } from "@/modules/importing/domain/limits";
-import { readImportMapping, type ImportPreviewState } from "./import-state";
+import { readImportMapping, type ImportDestination, type ImportPreviewState } from "./import-state";
 
 function rememberJob(job: ImportProgress) {
   const url = new URL(window.location.href);
@@ -24,6 +24,7 @@ export function useImportTransfer(
   courseId: string,
   locale: string,
   pending: ImportProgress | null,
+  target: ImportDestination | null,
 ) {
   const router = useRouter();
   const [job, setJob] = useState(pending);
@@ -93,6 +94,9 @@ export function useImportTransfer(
           previous.mapping?.front === mapping.front &&
           previous.mapping?.back === mapping.back &&
           previous.mapping?.tags === mapping.tags;
+        const existingJob = currentJob.current;
+        const deckMode = existingJob ? existingJob.mapping.deckMode : target?.mode;
+        const deckId = existingJob?.deckId ?? target?.deckId ?? String(form.get("deckId") ?? "");
         const prepared =
           previous.prepared && previous.carried === carried && sameMapping
             ? previous.prepared
@@ -100,13 +104,13 @@ export function useImportTransfer(
                 rawRows: carried.rawRows,
                 mapping,
                 courseId,
+                ...(deckMode && deckId ? { target: { deckId, mode: deckMode } } : {}),
                 locale,
                 transfer: transferBrowserImport,
                 yieldControl: yieldImportControl,
                 signal: abort.signal,
               });
-        const deckId = String(form.get("deckId") ?? pending?.deckId ?? "");
-        const strategy = form.get("duplicateStrategy") === "copy" ? "copy" : "skip";
+        const strategy = !deckMode && form.get("duplicateStrategy") === "copy" ? "copy" : "skip";
         const createReverse = form.get("createReverse") === "1";
         const next: ImportPreviewState = {
           carried,
@@ -129,6 +133,10 @@ export function useImportTransfer(
         };
         if (form.get("intent") !== "execute") return next;
         if (!deckId) return { ...next, error: "no-deck" };
+        if (deckMode === "replace") {
+          if (!prepared.validCount) return { ...next, error: "empty" };
+          if (form.get("replaceConfirmed") !== "1") return { ...next, error: "confirm-replace" };
+        }
         const descriptor: ImportDescriptor = {
           id:
             intent.current?.fileHash === carried.contentHash
@@ -139,7 +147,13 @@ export function useImportTransfer(
           filename: carried.filename,
           fileHash: carried.contentHash,
           rowsTotal: prepared.records.length,
-          mapping: { ...mapping, strategy, createReverse, originalBytes: carried.originalBytes },
+          mapping: {
+            ...mapping,
+            strategy,
+            createReverse,
+            originalBytes: carried.originalBytes,
+            ...(deckMode ? { deckMode } : {}),
+          },
         };
         intent.current = descriptor;
         // Keep newly prepared rows when an acknowledgement or error-report fetch is lost.

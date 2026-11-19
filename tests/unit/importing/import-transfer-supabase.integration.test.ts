@@ -6,6 +6,7 @@ import type { Database } from "@/shared/infrastructure/supabase/database.types";
 import { createSupabaseImportTransferRepository } from "@/modules/importing/infrastructure/supabase-import-transfer-repository";
 import {
   preparePersistenceRecords,
+  type ImportDeckMode,
   type ImportDescriptor,
   type ImportTransferRepository,
 } from "@/modules/importing/application/import-transfer";
@@ -40,6 +41,58 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
         originalBytes: 100000,
       },
     });
+    function targetedDescriptor(deckId: string, rowsTotal: number, mode: ImportDeckMode) {
+      const input = descriptor(rowsTotal);
+      return { ...input, deckId, mapping: { ...input.mapping, deckMode: mode } };
+    }
+
+    async function targetFixture(title: string) {
+      const target = randomUUID();
+      const original = randomUUID();
+      const other = randomUUID();
+      const decks = await a.from("decks").insert([
+        { id: target, owner_id: owner, course_id: course, title },
+        { id: other, owner_id: owner, course_id: course, title: `${title} sibling` },
+      ]);
+      expect(decks.error).toBeNull();
+      const concepts = await a.from("concepts").insert({
+        id: original,
+        owner_id: owner,
+        course_id: course,
+        kind: "vocabulary",
+        title: `${title} original`,
+        summary: "Original meaning",
+      });
+      expect(concepts.error).toBeNull();
+      const links = await a.from("deck_concepts").insert([
+        { owner_id: owner, concept_id: original, deck_id: target, position: 0 },
+        { owner_id: owner, concept_id: original, deck_id: other, position: 0 },
+      ]);
+      expect(links.error).toBeNull();
+      return { target, original, other };
+    }
+
+    const records = (start: number, ...fronts: string[]) =>
+      preparePersistenceRecords(
+        fronts.map((front, index) => ({
+          kind: "valid" as const,
+          rowNumber: start + index,
+          front,
+          back: "New meaning",
+          tags: ["Synthetic::Replacement"],
+        })),
+        "en",
+      );
+
+    async function members(deckId: string) {
+      const { data, error } = await a
+        .from("deck_concepts")
+        .select("concept_id, concepts!inner(title,summary)")
+        .eq("deck_id", deckId)
+        .order("position");
+      expect(error).toBeNull();
+      return data!;
+    }
     beforeAll(async () => {
       if (!process.env["NEXT_PUBLIC_SUPABASE_URL"]) process.loadEnvFile(".env.local");
       url = process.env["NEXT_PUBLIC_SUPABASE_URL"]!;
@@ -371,5 +424,184 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
       expect(finished).toMatchObject({ rowsCreated: 1, rowsFailed: 1, status: "completed" });
       expect((await port.errors(job.id, 0))[0]?.sample?.isWellFormed()).toBe(true);
     });
+
+    it("adds to a specific deck without same-front duplicates across batches", async () => {
+      await new Promise((resolve) => setTimeout(resolve, 2100));
+      const { target, original, other } = await targetFixture("Append probe");
+      const elsewhere = randomUUID();
+      expect(
+        (
+          await a.from("concepts").insert({
+            id: elsewhere,
+            course_id: course,
+            owner_id: owner,
+            kind: "vocabulary",
+            title: "Elsewhere only",
+            summary: "Sibling meaning",
+          })
+        ).error,
+      ).toBeNull();
+      expect(
+        (
+          await a.from("deck_concepts").insert({
+            deck_id: other,
+            concept_id: elsewhere,
+            owner_id: owner,
+            position: 1,
+          })
+        ).error,
+      ).toBeNull();
+
+      const scope = { deckId: target, mode: "append" as const };
+      const preview = [
+        { rowNumber: 1, front: "APPEND   probe original" },
+        { rowNumber: 2, front: "Elsewhere only" },
+      ];
+      expect(await port.duplicates(course, preview, scope)).toMatchObject([
+        { existingTitles: ["Append probe original"] },
+        { existingTitles: [] },
+      ]);
+      const foreign = createSupabaseImportTransferRepository(b, users[1]!);
+      await expect(foreign.duplicates(course, preview, scope)).rejects.toMatchObject({
+        kind: "not-found",
+      });
+      await expect(foreign.begin(targetedDescriptor(target, 1, "replace"))).rejects.toMatchObject({
+        kind: "not-found",
+      });
+
+      const job = await port.begin(targetedDescriptor(target, 4, "append"));
+      await port.append(job.id, 0, records(1, "APPEND probe original", "Elsewhere only"));
+      const done = await port.append(job.id, 2, records(3, "elsewhere  only", "New unique"));
+      expect(done).toMatchObject({
+        status: "completed",
+        rowsCreated: 2,
+        rowsSkipped: 2,
+        rowsDuplicate: 2,
+      });
+      expect(await members(target)).toMatchObject([
+        {
+          concept_id: original,
+          concepts: { title: "Append probe original", summary: "Original meaning" },
+        },
+        { concepts: { title: "Elsewhere only" } },
+        { concepts: { title: "New unique" } },
+      ]);
+      expect((await members(other)).map((row) => row.concept_id)).toEqual([original, elsewhere]);
+    });
+
+    it("publishes replacement once, rolls back a failed final batch, and retains shared cards", async () => {
+      await new Promise((resolve) => setTimeout(resolve, 2100));
+      const { target, original, other } = await targetFixture("Replacement probe");
+      const input = targetedDescriptor(target, 4, "replace");
+      const originalItems = await a
+        .from("practice_items")
+        .insert({
+          owner_id: owner,
+          concept_id: original,
+          mode: "basic_recognition",
+          prompt_text: "Replacement probe original",
+          answer_text: "Original meaning",
+          config: { mode: "basic_recognition" },
+        })
+        .select("id")
+        .single();
+      expect(originalItems.error).toBeNull();
+      const before = await members(target);
+      expect(
+        await port.duplicates(course, [{ rowNumber: 1, front: "Replacement probe original" }], {
+          deckId: target,
+          mode: "replace",
+        }),
+      ).toMatchObject([{ existingTitles: [] }]);
+
+      const job = await port.begin(input);
+      const draft = records(1, "Replacement probe original", "Replacement probe two");
+      expect(await port.append(job.id, 0, draft)).toMatchObject({
+        status: "importing",
+        processedRows: 2,
+      });
+      expect(await members(target)).toEqual(before);
+      expect(
+        (await a.from("concepts").select("id").eq("title", "Replacement probe two")).data,
+      ).toEqual([]);
+      expect((await port.begin(input)).processedRows).toBe(2);
+      const lateFailure = await a.rpc("commit_import_batch", {
+        p_job_id: job.id,
+        p_offset: 2,
+        p_records: [
+          {
+            kind: "valid",
+            rowNumber: 3,
+            front: "Uncommitted replacement",
+            back: "Meaning",
+            tags: [],
+          },
+          { kind: "error", rowNumber: 4, code: null, message: "Synthetic failure", sample: "" },
+        ],
+      });
+      expect(lateFailure.error?.code).toBe("23502");
+      expect(await members(target)).toEqual(before);
+      expect((await port.status(job.id)).processedRows).toBe(2);
+
+      const finish = records(3, "replacement probe two", "Replacement probe three");
+      const done = await port.append(job.id, 2, finish);
+      expect(done).toMatchObject({
+        status: "completed",
+        rowsCreated: 3,
+        rowsSkipped: 1,
+        rowsDuplicate: 1,
+      });
+      expect(await port.append(job.id, 2, finish)).toEqual(done);
+      expect((await members(target)).map((row) => row.concepts)).toEqual([
+        { title: "Replacement probe original", summary: "New meaning" },
+        { title: "Replacement probe two", summary: "New meaning" },
+        { title: "Replacement probe three", summary: "New meaning" },
+      ]);
+      expect(await members(other)).toEqual(before);
+      expect((await a.from("practice_items").select("id").eq("concept_id", original)).data).toEqual(
+        [{ id: originalItems.data!.id }],
+      );
+      expect(
+        (await a.from("import_job_batches").select("replacement_rows").eq("import_job_id", job.id))
+          .data,
+      ).toEqual([{ replacement_rows: null }, { replacement_rows: null }]);
+    });
+
+    it("cleans stopped staging and rejects a replacement with no valid rows", async () => {
+      await new Promise((resolve) => setTimeout(resolve, 2100));
+      const { target } = await targetFixture("Stop replacement");
+      const before = await members(target);
+      const job = await port.begin(targetedDescriptor(target, 2, "replace"));
+      await port.append(job.id, 0, records(1, "Discard this draft"));
+      expect(await port.stop(job.id)).toMatchObject({
+        status: "failed",
+        rowsCreated: 0,
+        rowsSkipped: 1,
+      });
+      expect(await members(target)).toEqual(before);
+      expect(
+        (await a.from("concepts").select("id").eq("title", "Discard this draft")).data,
+      ).toEqual([]);
+      expect(
+        (await a.from("import_job_batches").select("replacement_rows").eq("import_job_id", job.id))
+          .data,
+      ).toEqual([{ replacement_rows: null }, { replacement_rows: null }]);
+
+      await new Promise((resolve) => setTimeout(resolve, 2100));
+      const empty = await port.begin(targetedDescriptor(target, 1, "replace"));
+      await expect(
+        port.append(empty.id, 0, [
+          {
+            kind: "error",
+            rowNumber: 1,
+            code: "front_empty",
+            message: "Missing front",
+            sample: "",
+          },
+        ]),
+      ).rejects.toMatchObject({ kind: "invalid-input" });
+      expect(await members(target)).toEqual(before);
+      await port.stop(empty.id);
+    }, 12_000);
   },
 );

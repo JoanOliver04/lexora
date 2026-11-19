@@ -1,5 +1,5 @@
 begin;
-select plan(27);
+select plan(30);
 select has_table('public','import_job_batches','Batch receipts exist');
 select has_table('public','import_rate_limits','Import limits exist');
 select ok((select relrowsecurity from pg_class where oid='public.import_rate_limits'::regclass),'Limits use RLS');
@@ -12,6 +12,9 @@ select ok(not has_function_privilege('anon','private.advance_import_progress()',
 select is((select prosecdef from pg_proc where oid='public.begin_import_job(uuid,uuid,uuid,text,text,integer,jsonb)'::regprocedure),false,'Begin uses caller RLS');
 select is((select prosecdef from pg_proc where oid='public.commit_import_batch(uuid,integer,jsonb,boolean)'::regprocedure),false,'Commit uses caller RLS');
 select is((select prosecdef from pg_proc where oid='public.preview_import_duplicates(uuid,jsonb)'::regprocedure),false,'Preview uses caller RLS');
+select is((select prosecdef from pg_proc where oid='public.preview_deck_import_duplicates(uuid,uuid,text,jsonb)'::regprocedure),false,'Deck preview uses caller RLS');
+select ok(not has_function_privilege('anon','public.preview_deck_import_duplicates(uuid,uuid,text,jsonb)','execute'),'Only authenticated callers can preview deck duplicates');
+select has_column('public','import_job_batches','replacement_rows','Replacement staging is bound to a protected receipt');
 select is((select prosecdef from pg_proc where oid='private.advance_import_progress()'::regprocedure),true,'Protected metadata uses the private trigger');
 
 insert into auth.users(id) values('a11ce000-0000-4000-8000-000000000001');

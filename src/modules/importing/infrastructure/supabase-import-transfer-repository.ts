@@ -202,13 +202,16 @@ export function createSupabaseImportTransferRepository(
         sample: row.row_sample,
       }));
     },
-    async duplicates(courseId, rows) {
-      const { data, error } = await client
-        .rpc("preview_import_duplicates", {
-          p_course_id: courseId,
-          p_rows: rows.map((row) => ({ ...row })),
-        })
-        .abortSignal(abort());
+    async duplicates(courseId, rows, target) {
+      const args = { p_course_id: courseId, p_rows: rows.map((row) => ({ ...row })) };
+      const query = target
+        ? client.rpc("preview_deck_import_duplicates", {
+            ...args,
+            p_deck_id: target.deckId,
+            p_mode: target.mode,
+          })
+        : client.rpc("preview_import_duplicates", args);
+      const { data, error } = await query.abortSignal(abort());
       if (error) failed(error);
       const parsed = matchesSchema.safeParse(data);
       if (!parsed.success) throw new ImportTransferError("unavailable");

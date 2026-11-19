@@ -364,6 +364,7 @@ export type Database = {
           kind: string
           last_source_row: number
           owner_id: string
+          replacement_rows: Json | null
           request_payload: Json | null
           row_count: number
           rows_created: number
@@ -379,6 +380,7 @@ export type Database = {
           kind?: string
           last_source_row?: number
           owner_id: string
+          replacement_rows?: Json | null
           request_payload?: Json | null
           row_count?: number
           rows_created?: number
@@ -394,6 +396,7 @@ export type Database = {
           kind?: string
           last_source_row?: number
           owner_id?: string
+          replacement_rows?: Json | null
           request_payload?: Json | null
           row_count?: number
           rows_created?: number
@@ -1001,6 +1004,15 @@ export type Database = {
         Returns: boolean
       }
       export_account_data: { Args: never; Returns: Json }
+      preview_deck_import_duplicates: {
+        Args: {
+          p_course_id: string
+          p_deck_id: string
+          p_mode: string
+          p_rows: Json
+        }
+        Returns: Json
+      }
       preview_import_duplicates: {
         Args: { p_course_id: string; p_rows: Json }
         Returns: Json

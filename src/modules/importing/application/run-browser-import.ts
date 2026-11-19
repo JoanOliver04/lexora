@@ -34,6 +34,7 @@ export function descriptorMatches(job: ImportProgress, descriptor: ImportDescrip
     m.back === d.back &&
     m.tags === d.tags &&
     m.strategy === d.strategy &&
+    m.deckMode === d.deckMode &&
     m.createReverse === d.createReverse &&
     m.originalBytes === d.originalBytes
   );

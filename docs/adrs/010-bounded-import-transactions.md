@@ -63,6 +63,21 @@ Retirar la interfaz no pierde el contenido ya importado. Los metadatos y recibos
 se conservan para resolver reintentos y siguen la eliminación propia de cuenta.
 No se aplican limpiezas de contenido histórico ni restauraciones en producción.
 
+## Importación dirigida a un mazo
+
+Desde Editar mazo, la intención opcional forma parte del descriptor inmutable.
+Añadir compara claves canónicas con el mazo de destino y no ofrece copias.
+Reemplazar conserva las filas válidas y únicas junto a los recibos del intento
+confirmado. El último lote aplica el conjunto completo bajo RLS en una
+transacción: desvincula las tarjetas anteriores del destino y vincula las
+nuevas. Toda la biblioteca anterior y las demás pertenencias se conservan.
+
+Los recibos borran las filas preparadas al terminar o detener el reemplazo.
+La previsualización sigue siendo de solo lectura. Detener un reemplazo
+incompleto conserva el mazo y descarta las filas preparadas. El trigger de
+progreso sigue sin escrituras de contenido o Auth. Solo limpia los datos
+temporales del mismo intento al actualizar su estado.
+
 ## Verificación
 
 Pruebas con Supabase local y propietarios sintéticos cubren aislamiento,

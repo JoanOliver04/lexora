@@ -5,6 +5,7 @@ import type {
   ImportPersistErrorCode,
 } from "@/modules/importing/application/import-job";
 import type { PreparedBrowserImport } from "@/modules/importing/application/prepare-browser-import";
+import type { ImportDeckTarget } from "@/modules/importing/application/import-transfer";
 import type { ColumnMapping } from "@/modules/importing/domain/column-mapping";
 import type { DuplicateStrategy } from "@/modules/importing/domain/duplicates";
 import type { ParsedImportRow } from "@/modules/importing/domain/row";
@@ -15,6 +16,8 @@ export interface CarriedPreview extends TokenizedImport {
   contentHash: string;
   originalBytes: number;
 }
+export type ImportDestination = ImportDeckTarget & { title: string };
+
 export interface ImportPreviewState {
   error?:
     | "no-file"
@@ -25,6 +28,7 @@ export interface ImportPreviewState {
     | "too-many-columns"
     | "unavailable"
     | "no-deck"
+    | "confirm-replace"
     | "empty";
   filename?: string;
   separator?: Separator;
