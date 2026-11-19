@@ -363,6 +363,8 @@
     "intro": "Browse cards from your decks in random order. Try to recall each answer, then reveal it when you're ready.",
     "back": "Back to Study",
     "scope": "Decks for this session",
+    "deckSearch": "Search decks",
+    "deckNoResults": "No decks match your search.",
     "all": "All decks",
     "selected": "Choose decks",
     "emptyDecks": "Add a deck with cards to get started.",
@@ -494,6 +496,8 @@
     "allDecks": "All active decks",
     "selectedDecks": "Choose some decks",
     "deckList": "Course decks",
+    "deckSearch": "Search decks",
+    "deckNoResults": "No decks match your search.",
     "deckHint": "Select at least one when choosing some decks. You can select up to 100.",
     "emptyDecks": "There are no active decks in this course yet.",
     "manageDecks": "Go to my decks",
@@ -1140,8 +1144,8 @@
   "DataExport": {
     "title": "Keep your data with you",
     "description": "Download your courses, content and saved activity, including archived records. Passwords and credentials are excluded.",
-    "jsonNote": "Preserves fields, identifiers and relationships in a versioned technical format. The app does not automatically restore this file.",
-    "csvNote": "For a spreadsheet: each row identifies its source and includes its complete data. Cells that could be formulas are exported as text.",
+    "jsonNote": "Restorable backup of your decks, cards, progress, history and preferences.",
+    "csvNote": "Restorable backup you can also read in a spreadsheet. Keep the original file for restoration.",
     "privacy": "Files contain your unencrypted data. Keep them somewhere private. You can request an export once a minute; a failed download does not produce a partial file.",
     "format": "Download format",
     "json": "Download JSON",
@@ -1159,6 +1163,34 @@
       "unavailable": "The download could not be prepared. Your data is still saved; please try again.",
       "interrupted": "Download cancelled. No file has been downloaded.",
       "integrity": "The download did not pass its integrity check. No file has been saved; please try again."
+    }
+  },
+  "DataRestore": {
+    "title": "Restore a backup",
+    "description": "Select a JSON or CSV downloaded from Lexora for this account.",
+    "file": "Backup file",
+    "checking": "Checking the backup…",
+    "date": "Backup from {date}",
+    "counts": "{decks, plural, one {# deck} other {# decks}} · {cards, plural, one {# card} other {# cards}} · {reviews, plural, one {# review} other {# reviews}}",
+    "warning": "Restoring replaces your current courses, content, progress and preferences with the backup. Changes since it was downloaded will be lost. Download another backup first if you need to keep them.",
+    "confirm": "Type {phrase} to confirm",
+    "phrase": "RESTORE",
+    "restore": "Restore backup",
+    "discard": "Discard",
+    "uploading": "Preparing restoration, {percent}%",
+    "applying": "Restoring your data…",
+    "success": "Backup restored. You can continue studying.",
+    "errors": {
+      "unauthenticated": "Sign in to your account to restore the backup.",
+      "reauthenticate": "To confirm this operation, sign out and sign in again. Then select the backup again.",
+      "invalid": "This file is not a valid restorable backup. Select the original JSON or CSV downloaded from Lexora.",
+      "integrity": "The backup contents don't match the integrity check. Use the original file.",
+      "version": "This version of Lexora doesn't support the backup format.",
+      "wrongAccount": "This backup belongs to another account.",
+      "tooLarge": "The backup exceeds the supported size.",
+      "conflict": "The restore has changed or expired. Select the backup again.",
+      "cooldown": "Wait a few seconds before trying again.",
+      "unavailable": "We couldn't confirm the result. Select Restore backup again to recover the status."
     }
   },
   "Pwa": {
@@ -1188,7 +1220,7 @@
     },
     "exports": {
       "title": "Downloads you control",
-      "body": "JSON and CSV downloads are checked for completeness and integrity before being offered. They are unencrypted files on your device. Lexora keeps no server snapshot, only the last request time to limit repeated exports. Downloaded copies remain on your device after account deletion. These formats do not have automatic restoration."
+      "body": "JSON and CSV backups are checked before download and stored unencrypted on your device. You can restore them to the same account with a recent session. After confirmation, the server stages the data and replaces the contents in one transaction. Pending card imports are stopped. Downloaded copies remain on your device after account deletion."
     },
     "deletion": {
       "title": "Deleting an account",

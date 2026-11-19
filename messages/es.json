@@ -363,6 +363,8 @@
     "intro": "Recorre las tarjetas de tus mazos en orden aleatorio. Intenta recordar cada respuesta y revélala cuando quieras.",
     "back": "Volver a Estudio",
     "scope": "Mazos para esta sesión",
+    "deckSearch": "Buscar mazos",
+    "deckNoResults": "No hay mazos que coincidan con la búsqueda.",
     "all": "Todos los mazos",
     "selected": "Elegir mazos",
     "emptyDecks": "Añade un mazo con tarjetas para empezar.",
@@ -494,6 +496,8 @@
     "allDecks": "Todos los mazos activos",
     "selectedDecks": "Elegir algunos mazos",
     "deckList": "Mazos del curso",
+    "deckSearch": "Buscar mazos",
+    "deckNoResults": "No hay mazos que coincidan con la búsqueda.",
     "deckHint": "Selecciona al menos uno si eliges algunos mazos. Puedes seleccionar hasta 100.",
     "emptyDecks": "Todavía no hay mazos activos en este curso.",
     "manageDecks": "Ir a mis mazos",
@@ -1140,8 +1144,8 @@
   "DataExport": {
     "title": "Tus datos, contigo",
     "description": "Descarga tus cursos, contenido y actividad guardada, incluido lo archivado. No se incluyen contraseñas ni credenciales.",
-    "jsonNote": "Conserva campos, identificadores y relaciones en un formato técnico versionado. No hay restauración automática de este archivo en la app.",
-    "csvNote": "Para consultar en una hoja de cálculo: cada fila indica su origen e incluye sus datos completos. Las celdas que podrían ser fórmulas se exportan como texto.",
+    "jsonNote": "Copia restaurable con tus mazos, tarjetas, progreso, historial y preferencias.",
+    "csvNote": "Copia restaurable que también puedes consultar en una hoja de cálculo. Conserva el archivo original para restaurarlo.",
     "privacy": "Los archivos contienen tus datos sin cifrar. Guárdalos en un lugar privado. Puedes solicitar una exportación cada minuto; una descarga fallida no genera un archivo parcial.",
     "format": "Formato de descarga",
     "json": "Descargar JSON",
@@ -1159,6 +1163,34 @@
       "unavailable": "No se ha podido preparar la descarga. Tus datos siguen guardados; vuelve a intentarlo.",
       "interrupted": "Descarga cancelada. No se ha descargado ningún archivo.",
       "integrity": "La descarga no ha superado la comprobación de integridad. No se ha guardado ningún archivo; vuelve a intentarlo."
+    }
+  },
+  "DataRestore": {
+    "title": "Restaurar copia de seguridad",
+    "description": "Selecciona un JSON o CSV descargado de Lexora para esta misma cuenta.",
+    "file": "Archivo de la copia",
+    "checking": "Comprobando la copia…",
+    "date": "Copia del {date}",
+    "counts": "{decks, plural, one {# mazo} other {# mazos}} · {cards, plural, one {# tarjeta} other {# tarjetas}} · {reviews, plural, one {# repaso} other {# repasos}}",
+    "warning": "Al restaurar, los cursos, el contenido, el progreso y las preferencias actuales se sustituirán por los de la copia. Se perderán los cambios posteriores a la descarga. Si necesitas conservarlos, descarga otra copia primero.",
+    "confirm": "Escribe {phrase} para confirmar",
+    "phrase": "RESTAURAR",
+    "restore": "Restaurar copia",
+    "discard": "Descartar",
+    "uploading": "Preparando restauración, {percent} %",
+    "applying": "Restaurando los datos…",
+    "success": "Copia restaurada. Ya puedes continuar estudiando.",
+    "errors": {
+      "unauthenticated": "Entra en tu cuenta para restaurar la copia.",
+      "reauthenticate": "Para confirmar esta operación, cierra sesión y vuelve a entrar. Después selecciona la copia de nuevo.",
+      "invalid": "El archivo no es una copia restaurable válida. Selecciona el JSON o CSV original descargado de Lexora.",
+      "integrity": "El contenido de la copia no coincide con su comprobación de integridad. Usa el archivo original.",
+      "version": "Esta versión de Lexora no admite el formato de esta copia.",
+      "wrongAccount": "Esta copia pertenece a otra cuenta.",
+      "tooLarge": "La copia supera el tamaño admitido.",
+      "conflict": "La restauración ha cambiado o ha caducado. Selecciona la copia de nuevo.",
+      "cooldown": "Espera unos segundos antes de volver a intentarlo.",
+      "unavailable": "No se pudo confirmar el resultado. Vuelve a pulsar Restaurar copia para recuperar el estado."
     }
   },
   "Pwa": {
@@ -1188,7 +1220,7 @@
     },
     "exports": {
       "title": "Descargas bajo tu control",
-      "body": "Se comprueba que las descargas JSON y CSV estén completas y sean íntegras antes de ofrecerlas. Son archivos sin cifrar en tu dispositivo. Lexora no conserva un snapshot en el servidor, solo la última fecha de solicitud para limitar exportaciones repetidas. Las copias descargadas siguen en tu dispositivo tras borrar la cuenta. Estos formatos no tienen restauración automática."
+      "body": "Las copias JSON y CSV se verifican antes de la descarga y se guardan sin cifrar en tu dispositivo. Puedes restaurarlas en la misma cuenta con una sesión reciente. Tras confirmar, el servidor prepara temporalmente los datos y sustituye el contenido en una transacción. Las importaciones de tarjetas pendientes quedan detenidas. Las copias descargadas siguen en tu dispositivo tras borrar la cuenta."
     },
     "deletion": {
       "title": "Eliminar una cuenta",

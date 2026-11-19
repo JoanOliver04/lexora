@@ -68,13 +68,34 @@ runtime, se rechaza la operación en lugar de redondear silenciosamente.
 
 CSV es UTF-8 con BOM para hojas de cálculo, CRLF, columnas fijas y escape de Papa
 Parse con comillas. Cada fila tiene entidad, campos comunes y `raw_json` completo.
-No es un formato de restauración. Se neutralizan fórmulas al principio de una celda,
+La última fila contiene el mismo envelope versionado y el checksum del payload.
+Para restaurar se usan los objetos de `raw_json` en orden de entidad. Se neutralizan fórmulas al principio de una celda,
 incluidas precedidas por espacios, controles y marcas invisibles; también tab/CR/LF
 iniciales. El escape de fórmulas es independiente del escape de delimitadores,
 comillas y saltos de línea. Se comprueba con un parser real y fixtures hostiles,
 siguiendo [OWASP CSV Injection](https://community.owasp.org/attacks/CSV_Injection).
 
-Estos archivos son exportaciones de datos de aplicación. No incluyen usuarios,
-sesiones o configuración de Auth, y la app no ofrece restauración automática de
-este formato. El backup y la recuperación operativa del proyecto son otra operación;
-no se presenta el CSV como copia exacta ni se promete restaurarlo.
+## Restauración en Ajustes
+
+Se admite el JSON original y el CSV original que incluye el envelope en la última
+fila. El navegador comprueba la versión, el checksum y la cuenta, y muestra la
+fecha y los recuentos antes de pedir confirmación. La revisión del archivo se
+hace en el dispositivo. La subida empieza al confirmar.
+
+Las copias restauran el estado de la misma cuenta, incluidos los archivos
+archivados, las relaciones, el historial, las fechas de repaso y las preferencias.
+La operación sustituye los datos actuales. Una sesión reciente y, cuando
+corresponde, verificada con MFA es necesaria para iniciar y aplicar el cambio.
+Las transferencias de importación pendientes quedan detenidas y conservan
+los datos ya confirmados. Los metadatos de concurrencia del perfil y de
+trabajos de importación se actualizan.
+
+El servidor acepta fragmentos acotados de texto. Antes de aplicar vuelve a
+validar el tamaño, el hash, el esquema de datos y el propietario. PostgreSQL
+construye el estado en una sola transacción con sus restricciones activas.
+Una respuesta perdida admite reintentar el mismo identificador. Los fragmentos
+se eliminan cuando se aplica o descarta la copia, al iniciar una nueva
+restauración para esa cuenta y al eliminarla. Un intento caduca a los 30 minutos.
+
+La copia de aplicación deja la identidad de Auth, contraseñas, permisos y
+configuración del proveedor a la [recuperación operativa](BACKUP_RECOVERY.md).

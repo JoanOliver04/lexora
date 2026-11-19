@@ -17,6 +17,30 @@ export const EXPORT_ENTITIES = [
 ] as const;
 export type ExportEntity = (typeof EXPORT_ENTITIES)[number];
 export type ExportFormat = "json" | "csv";
+export const BACKUP_FORMAT = "lexora-account-export";
+export const BACKUP_FORMAT_VERSION = 1;
+export const BACKUP_SCHEMA_VERSION = 1;
+export const BACKUP_CSV_COLUMNS = [
+  "entity",
+  "id",
+  "course_id",
+  "concept_id",
+  "practice_item_id",
+  "deck_id",
+  "title",
+  "kind",
+  "mode",
+  "summary",
+  "prompt_text",
+  "answer_text",
+  "example_text",
+  "explanation_text",
+  "phase",
+  "rating",
+  "reviewed_at",
+  "due_at",
+  "raw_json",
+] as const;
 export type ExportValue =
   null | boolean | number | string | ExportValue[] | { [key: string]: ExportValue };
 export type ExportPayload = Record<ExportEntity, Record<string, ExportValue>[]>;

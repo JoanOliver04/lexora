@@ -17,6 +17,7 @@ import {
 import { Button, FormError } from "@/shared/presentation/components";
 
 import { loadFreeStudyCards, loadFreeStudyPool } from "./actions";
+import { DeckSearch, filterStudyDecks } from "../deck-search";
 
 type View =
   | { kind: "setup" }
@@ -38,6 +39,7 @@ export function FreeStudyView({
   const [view, setView] = useState<View>({ kind: "setup" });
   const [all, setAll] = useState(true);
   const [selection, setSelection] = useState<string[]>([]);
+  const [query, setQuery] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<"empty" | "unavailable" | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -137,6 +139,7 @@ export function FreeStudyView({
   );
 
   if (view.kind === "setup") {
+    const visibleDecks = filterStudyDecks(decks, query);
     return (
       <section className={`${panel} flex min-w-0 flex-col gap-5`}>
         <p className="text-sm leading-relaxed text-(--color-ink-muted)">{t("intro")}</p>
@@ -163,27 +166,36 @@ export function FreeStudyView({
             {t("selected")}
           </label>
           {!all && (
-            <ul className="grid min-w-0 gap-2 sm:grid-cols-2">
-              {decks.map((deck) => (
-                <li key={deck.id} className="min-w-0">
-                  <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-(--radius-control) border border-(--color-border) p-2.5 has-checked:border-(--color-accent)">
-                    <input
-                      type="checkbox"
-                      className="size-6 shrink-0"
-                      checked={selection.includes(deck.id)}
-                      onChange={(event) => {
-                        setSelection(
-                          event.target.checked
-                            ? [...selection, deck.id]
-                            : selection.filter((id) => id !== deck.id),
-                        );
-                      }}
-                    />
-                    <span className="min-w-0 [overflow-wrap:anywhere]">{deck.title}</span>
-                  </label>
-                </li>
-              ))}
-            </ul>
+            <>
+              <DeckSearch label={t("deckSearch")} value={query} onChange={setQuery} />
+              {visibleDecks.length === 0 ? (
+                <p role="status" className="text-sm text-(--color-ink-muted)">
+                  {t("deckNoResults")}
+                </p>
+              ) : (
+                <ul className="grid min-w-0 gap-2 sm:grid-cols-2">
+                  {visibleDecks.map((deck) => (
+                    <li key={deck.id} className="min-w-0">
+                      <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-(--radius-control) border border-(--color-border) p-2.5 has-checked:border-(--color-accent)">
+                        <input
+                          type="checkbox"
+                          className="size-6 shrink-0"
+                          checked={selection.includes(deck.id)}
+                          onChange={(event) => {
+                            setSelection(
+                              event.target.checked
+                                ? [...selection, deck.id]
+                                : selection.filter((id) => id !== deck.id),
+                            );
+                          }}
+                        />
+                        <span className="min-w-0 [overflow-wrap:anywhere]">{deck.title}</span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
         </fieldset>
         {decks.length > 0 ? (
