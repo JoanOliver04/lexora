@@ -78,21 +78,26 @@ for (const locale of ["es", "en"] as const)
       .toContain("/sw.js");
     const headers = await page.request.get("/sw.js");
     expect(headers.headers()["cache-control"]).toContain("no-store");
-    // The browser may expose its install event long before the settings route mounts.
-    await page.evaluate(() => {
-      const windowState = window as Window & { testInstallPrompts?: number };
-      windowState.testInstallPrompts = 0;
-      const event = new Event("beforeinstallprompt", { cancelable: true });
-      Object.defineProperties(event, {
-        prompt: {
-          value: async () => {
-            windowState.testInstallPrompts!++;
-          },
-        },
-        userChoice: { value: Promise.resolve({ outcome: "accepted" }) },
-      });
-      window.dispatchEvent(event);
-    });
+    // A controlling worker can survive the reload before the page listener is ready.
+    // Capture the prompt on Today, before the settings route mounts.
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const windowState = window as Window & { testInstallPrompts?: number };
+          windowState.testInstallPrompts = 0;
+          const event = new Event("beforeinstallprompt", { cancelable: true });
+          Object.defineProperties(event, {
+            prompt: {
+              value: async () => {
+                windowState.testInstallPrompts!++;
+              },
+            },
+            userChoice: { value: Promise.resolve({ outcome: "accepted" }) },
+          });
+          return !window.dispatchEvent(event);
+        }),
+      )
+      .toBe(true);
     await page
       .getByRole("link", { name: locale === "es" ? "Ajustes" : "Settings", exact: true })
       .click();
