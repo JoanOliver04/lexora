@@ -1,5 +1,10 @@
 # Lexora — Estado actual
 
+**LEX-22.8 · Importación en varios idiomas.** La plantilla y el prompt siguen
+el idioma del curso. Mis cursos muestra el idioma junto al nombre. Al entrar
+desde un mazo, el asistente conserva el destino y el modo seleccionados y
+enlaza cualquier importación pendiente que deba resolverse antes.
+
 **LEX-22.7 · Tiempo de estudio y varios cursos.** Hoy y Estadísticas muestran
 segundos para totales inferiores a un minuto y distinguen ausencia de medición.
 El guardado mantiene los milisegundos visibles por valoración durante los

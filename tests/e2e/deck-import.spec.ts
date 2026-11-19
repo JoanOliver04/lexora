@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { completeOnboarding, signUp } from "./helpers";
 import { checked, localLibraryFixture } from "./local-library-fixture";
@@ -102,3 +103,68 @@ for (const mode of ["append", "replace"] as const) {
     }
   });
 }
+
+test("the selected deck and mode survive an unrelated unfinished import", async ({ page }) => {
+  const email = await signUp(page);
+  await completeOnboarding(page);
+  const fixture = await localLibraryFixture(email);
+  const { client, courseId, ownerId, deckId, cleanup } = fixture;
+  try {
+    const destination = randomUUID();
+    await checked(
+      client.from("decks").insert({
+        id: destination,
+        owner_id: ownerId,
+        course_id: courseId,
+        title: "Chosen destination",
+      }),
+    );
+    const job = randomUUID();
+    await checked(
+      client.rpc("begin_import_job", {
+        p_id: job,
+        p_course_id: courseId,
+        p_deck_id: deckId,
+        p_filename: "pending-sample.tsv",
+        p_file_hash: "1".repeat(64),
+        p_total_rows: 1,
+        p_mapping: {
+          front: 0,
+          back: 1,
+          tags: null,
+          strategy: "skip",
+          createReverse: false,
+          originalBytes: 50,
+          deckMode: "append",
+        },
+      }),
+    );
+
+    await page.goto(`/es/import?deck=${deckId}&mode=replace`);
+    await expect(
+      page.getByRole("heading", { name: "Hay una importación pendiente en este curso" }),
+    ).toBeVisible();
+    await page.goto(`/es/import?deck=${destination}&mode=replace`);
+    await expect(
+      page.getByText("Reemplazar el contenido de Chosen destination", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByLabel("Archivo", { exact: true })).toHaveCount(0);
+    const pending = page.getByRole("link", { name: "Abrir importación pendiente" });
+    await expect(pending).toHaveAttribute("href", `/es/import?job=${job}`);
+    await pending.click();
+    await expect(page.getByText("pending-sample.tsv", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Finalizar este intento" }).click();
+    await expect(page.getByRole("button", { name: "Importar otro archivo" })).toBeVisible();
+    await page.goto(`/es/import?deck=${destination}&mode=replace`);
+    await expect(
+      page.getByText("Reemplazar el contenido de Chosen destination", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByLabel("Archivo", { exact: true })).toBeVisible();
+    const before = await checked(
+      client.from("deck_concepts").select("concept_id").eq("deck_id", deckId),
+    );
+    expect(before).toEqual([{ concept_id: fixture.conceptId }]);
+  } finally {
+    await cleanup();
+  }
+});

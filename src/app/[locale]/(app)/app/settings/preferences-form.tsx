@@ -13,11 +13,13 @@ export function PreferencesForm({
   snapshot,
   locale,
   courseOnly = false,
+  courseChoices = [],
   returnToToday = false,
 }: {
   snapshot: PreferencesSnapshot;
   locale: string;
   courseOnly?: boolean;
+  courseChoices?: readonly { id: string; label: string }[];
   returnToToday?: boolean;
 }) {
   const t = useTranslations("Settings");
@@ -65,9 +67,9 @@ export function PreferencesForm({
               className={selectClass}
               {...fieldProps("courseId")}
             >
-              {snapshot.courses.map((c) => (
+              {courseChoices.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.title}
+                  {c.label}
                 </option>
               ))}
             </select>

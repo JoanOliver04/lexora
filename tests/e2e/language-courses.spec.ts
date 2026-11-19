@@ -120,6 +120,18 @@ test("create and switch persistent courses with independent library, reviews, an
   ))!;
   expect(french.target_locale).toBe("fr");
   expect(await checked(client.from("decks").select("id").eq("course_id", french.id))).toEqual([]);
+  await page.goto("/es/import");
+  const template = page.getByRole("region", { name: "Plantilla de importación" });
+  await expect(template.getByText("le sifflet", { exact: true })).toBeVisible();
+  await template.getByLabel("Idioma del reverso").selectOption("target");
+  await expect(
+    template.locator("dd[lang=fr]").filter({ hasText: "Petit instrument qui produit un son aigu" }),
+  ).toBeVisible();
+  await template.getByText("Preparar un tema con ChatGPT", { exact: true }).click();
+  await template.getByText("Ver el prompt", { exact: true }).click();
+  await expect(template.getByRole("textbox", { name: "Ver el prompt" })).toHaveValue(
+    /Crea 60 tarjetas de francés[\s\S]*reverso en francés/,
+  );
   await stale.getByLabel("Nombre", { exact: true }).fill("Stale English draft");
   await stale.getByRole("button", { name: "Crear mazo", exact: true }).click();
   await expect(stale.getByRole("alert")).toBeVisible();
@@ -153,7 +165,9 @@ test("create and switch persistent courses with independent library, reviews, an
   await expect(page.getByRole("link", { name: "Synthetic French concept" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Original English concept" })).toHaveCount(0);
   await courseLink(page, frenchTitle).click();
-  await page.getByLabel("Curso activo", { exact: true }).selectOption(english.id);
+  const courseSelector = page.getByLabel("Curso activo", { exact: true });
+  await expect(courseSelector.locator("option:checked")).toHaveText(`${frenchTitle} · francés`);
+  await courseSelector.selectOption(english.id);
   await page.getByRole("button", { name: "Cambiar de curso", exact: true }).click();
   await expect(page).toHaveURL("/es/app");
   await page.reload();

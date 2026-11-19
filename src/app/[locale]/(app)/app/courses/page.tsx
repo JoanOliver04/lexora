@@ -4,6 +4,10 @@ import { getTargetCourseLocales } from "@/composition/courses";
 import { getPreferencesForCurrentUser } from "@/composition/preferences";
 import { ClientMessages } from "@/i18n/client-messages";
 import { Link } from "@/i18n/navigation";
+import {
+  courseChoiceLabels,
+  courseLanguageNames,
+} from "@/modules/courses/presentation/language-names";
 import { PreferencesForm } from "../settings/preferences-form";
 import { CreateCourseForm } from "./create-course-form";
 
@@ -16,10 +20,10 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
     getTranslations("Courses"),
   ]);
   if (!snapshot) redirect(`/${locale}/onboarding`);
-  const names = new Intl.DisplayNames(locale, { type: "language", languageDisplay: "standard" });
+  const displayLanguage = courseLanguageNames(locale);
   const order = new Intl.Collator(locale);
   const languages = locales
-    .map((tag) => ({ locale: tag, label: names.of(tag) ?? tag }))
+    .map((tag) => ({ locale: tag, label: displayLanguage(tag) }))
     .sort((a, b) => order.compare(a.label, b.label));
   const section =
     "flex min-w-0 flex-col gap-4 rounded-(--radius-surface) border border-(--color-border) bg-(--color-surface) p-[clamp(12px,4vw,28px)]";
@@ -42,6 +46,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
             snapshot={snapshot}
             locale={locale}
             courseOnly
+            courseChoices={courseChoiceLabels(locale, snapshot.courses)}
             returnToToday
           />
         </section>

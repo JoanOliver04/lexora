@@ -14,5 +14,5 @@ export interface PreferencesSnapshot extends Preferences {
   courseId: string;
   profileVersion: string;
   settingsVersion: string;
-  courses: { id: string; title: string }[];
+  courses: { id: string; title: string; targetLocale: string }[];
 }

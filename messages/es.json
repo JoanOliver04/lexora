@@ -582,6 +582,11 @@
     "backToApp": "Volver al inicio",
     "title": "Importar",
     "intro": "Importa vocabulario, gramática o frases de un tema. Revisa las tarjetas y elige el mazo antes de guardarlas.",
+    "otherImport": {
+      "title": "Hay una importación pendiente en este curso",
+      "description": "Abre la importación de {filename} para continuarla o finalizarla. Después podrás volver al mazo que elegiste.",
+      "open": "Abrir importación pendiente"
+    },
     "preparation": {
       "title": "Plantilla de importación",
       "intro": "Una tarjeta por fila. El frente y el reverso son obligatorios. Puedes dejar la tercera columna vacía si no usas etiquetas.",
@@ -597,9 +602,9 @@
         "en": "Inglés"
       },
       "topics": {
-        "vocabulary": "Sports",
-        "grammar": "Present perfect",
-        "phrases": "Shopping"
+        "vocabulary": "Deportes",
+        "grammar": "Formas de hablar del pasado",
+        "phrases": "Compras"
       },
       "columns": {
         "front": "Frente · columna 1",
@@ -607,27 +612,28 @@
         "tags": "Etiquetas · columna 3"
       },
       "download": "Descargar ejemplo CSV",
+      "sampleUnavailable": "El generador de prompts está disponible para este idioma. La plantilla de ejemplo está disponible en inglés, francés, alemán e italiano.",
       "raw": "Ver el CSV",
       "jumpToSource": "Ir a subir o pegar",
       "assistant": "Preparar un tema con ChatGPT",
       "instructions": "Personaliza el prompt y pégalo en ChatGPT. Cuando tengas el CSV, súbelo o pega su contenido aquí abajo.",
       "topic": "Tema",
-      "level": "Nivel de inglés",
+      "level": "Nivel de {targetLanguage}",
       "count": "Cantidad de tarjetas",
       "focus": "Enfoque (opcional)",
-      "focusPlaceholder": "Equipamiento, reglas e inglés británico",
+      "focusPlaceholder": "Equipamiento, reglas y expresiones de uso cotidiano",
       "copy": "Copiar prompt",
       "chat": "Abrir ChatGPT",
       "showPrompt": "Ver el prompt",
       "copied": "Prompt copiado. Pégalo en ChatGPT.",
       "manual": "No se pudo copiar automáticamente. Selecciona y copia el texto del prompt.",
       "prompt": {
-        "goal": "Crea {count} tarjetas de inglés de nivel {level} sobre el tema {topic} para importarlas a Lexora.",
-        "vocabulary": "Pon una palabra o expresión en inglés en cada frente. En el reverso da su significado y un ejemplo natural en inglés.",
-        "grammar": "Pon una pregunta, una frase para completar o una corrección en inglés en cada frente. En el reverso da la solución y explica brevemente la regla. Reparte las tarjetas entre usos, formas, ejemplos y errores frecuentes del tema.",
-        "phrases": "Pon una frase útil en inglés en cada frente. En el reverso explica su significado y cuándo usarla, con un contexto breve si ayuda.",
+        "goal": "Crea {count} tarjetas de {targetLanguage} de nivel {level} sobre el tema {topic} para importarlas a Lexora.",
+        "vocabulary": "Pon una palabra o expresión en {targetLanguage} en cada frente. En el reverso da su significado y un ejemplo natural en {targetLanguage}.",
+        "grammar": "Pon una pregunta, una frase para completar o una corrección en {targetLanguage} en cada frente. En el reverso da la solución y explica brevemente la regla. Reparte las tarjetas entre usos, formas, ejemplos y errores frecuentes del tema.",
+        "phrases": "Pon una frase útil en {targetLanguage} en cada frente. En el reverso explica su significado y cuándo usarla, con un contexto breve si ayuda.",
         "coverage": "Reparte las tarjetas entre los subtemas más útiles para el nivel. Evita duplicar frentes o crear variantes que practiquen exactamente lo mismo.",
-        "language": "Redacta el significado o la explicación del reverso en {language}, manteniendo en inglés las frases de ejemplo y las soluciones que correspondan.",
+        "language": "Redacta el significado o la explicación del reverso en {language}, manteniendo en {targetLanguage} las frases de ejemplo y las soluciones que correspondan.",
         "focus": "Prioriza {focus} dentro del tema si encaja con el formato.",
         "format": "Devuelve un CSV en UTF-8 separado por comas. Escribe {directive} como primera línea exacta. Empieza los datos en la segunda línea, sin fila de títulos. Cada línea lleva exactamente tres campos. Escribe el frente, el reverso y las etiquetas en ese orden. Pon comillas dobles alrededor de cada campo y duplica las comillas dobles que aparezcan dentro.",
         "fields": "Usa una tarjeta por línea, sin líneas vacías ni saltos dentro de los campos. Limita el frente a {front} caracteres y el reverso a {back}. Usa texto plano.",

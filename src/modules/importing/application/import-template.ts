@@ -1,8 +1,13 @@
 export const IMPORT_LESSON_TYPES = ["vocabulary", "grammar", "phrases"] as const;
 export type ImportLessonType = (typeof IMPORT_LESSON_TYPES)[number];
-export type ImportAnswerLanguage = "es" | "en";
+export type ImportAnswerLanguage = "es" | "en" | "target";
 
-const EXAMPLES = {
+type Examples = Record<
+  ImportLessonType,
+  readonly { front: string; es: string; en: string; target?: string; tags: string }[]
+>;
+
+const ENGLISH: Examples = {
   vocabulary: [
     {
       front: "referee",
@@ -45,17 +50,112 @@ const EXAMPLES = {
       tags: "shopping::sizes",
     },
   ],
-} satisfies Record<
-  ImportLessonType,
-  readonly { front: string; es: string; en: string; tags: string }[]
->;
+};
+
+const EXAMPLES: Record<string, Examples> = {
+  en: ENGLISH,
+  fr: {
+    vocabulary: [
+      {
+        front: "le sifflet",
+        es: "El silbato. L’arbitre souffle dans son sifflet.",
+        en: "The whistle. L’arbitre souffle dans son sifflet.",
+        target: "Petit instrument qui produit un son aigu. L’arbitre souffle dans son sifflet.",
+        tags: "sports::materiel",
+      },
+    ],
+    grammar: [
+      {
+        front: "Complétez au passé composé : J’___ (finir) mes devoirs.",
+        es: "J’ai fini mes devoirs. Usa avoir y el participio fini.",
+        en: "J’ai fini mes devoirs. Use avoir and the participle fini.",
+        target: "J’ai fini mes devoirs. On emploie avoir et le participe passé fini.",
+        tags: "grammaire::passe-compose",
+      },
+    ],
+    phrases: [
+      {
+        front: "Est-ce que je peux l’essayer ?",
+        es: "¿Puedo probármelo? Se usa al comprar ropa.",
+        en: "Can I try it on? Use this when shopping for clothes.",
+        target: "Pour demander à enfiler un vêtement avant de l’acheter.",
+        tags: "achats::vetements",
+      },
+    ],
+  },
+  de: {
+    vocabulary: [
+      {
+        front: "die Pfeife",
+        es: "El silbato. Die Schiedsrichterin bläst in die Pfeife.",
+        en: "The whistle. Die Schiedsrichterin bläst in die Pfeife.",
+        target:
+          "Kleines Instrument für ein akustisches Signal. Die Schiedsrichterin bläst in die Pfeife.",
+        tags: "sport::ausruestung",
+      },
+    ],
+    grammar: [
+      {
+        front: "Ergänze das Perfekt: Ich ___ meine Hausaufgaben ___ (machen).",
+        es: "Ich habe meine Hausaufgaben gemacht. Usa haben con el participio gemacht.",
+        en: "Ich habe meine Hausaufgaben gemacht. Use haben with the participle gemacht.",
+        target: "Ich habe meine Hausaufgaben gemacht. Das Perfekt von machen bildet man mit haben.",
+        tags: "grammatik::perfekt",
+      },
+    ],
+    phrases: [
+      {
+        front: "Kann ich das anprobieren?",
+        es: "¿Puedo probármelo? Se usa al comprar ropa.",
+        en: "Can I try it on? Use this when shopping for clothes.",
+        target: "So fragst du, ob du ein Kleidungsstück vor dem Kauf anziehen darfst.",
+        tags: "einkaufen::kleidung",
+      },
+    ],
+  },
+  it: {
+    vocabulary: [
+      {
+        front: "il fischietto",
+        es: "El silbato. L’arbitra usa il fischietto.",
+        en: "The whistle. L’arbitra usa il fischietto.",
+        target: "Uno strumento per dare un segnale sonoro. L’arbitra usa il fischietto.",
+        tags: "sport::attrezzatura",
+      },
+    ],
+    grammar: [
+      {
+        front: "Completa al passato prossimo: ___ (finire) i compiti.",
+        es: "Ho finito i compiti. Usa avere con el participio finito.",
+        en: "Ho finito i compiti. Use avere with the participle finito.",
+        target: "Ho finito i compiti. Con questo uso di finire si impiega l’ausiliare avere.",
+        tags: "grammatica::passato-prossimo",
+      },
+    ],
+    phrases: [
+      {
+        front: "Posso provarlo?",
+        es: "¿Puedo probármelo? Se usa al comprar ropa.",
+        en: "Can I try it on? Use this when shopping for clothes.",
+        target: "Per chiedere di indossare un vestito prima di comprarlo.",
+        tags: "acquisti::abbigliamento",
+      },
+    ],
+  },
+};
 
 export const IMPORT_TEMPLATE_DIRECTIVE = "#separator:comma";
 
-export function importTemplateRows(type: ImportLessonType, language: ImportAnswerLanguage) {
-  return EXAMPLES[type].map(({ front, tags, ...answers }) => ({
+export function importTemplateRows(
+  type: ImportLessonType,
+  language: ImportAnswerLanguage,
+  targetLocale = "en",
+) {
+  const target = targetLocale.split("-")[0] ?? "";
+  const examples = Object.hasOwn(EXAMPLES, target) ? EXAMPLES[target] : undefined;
+  return (examples?.[type] ?? []).map(({ front, tags, ...answers }) => ({
     front,
-    back: answers[language],
+    back: language === "target" ? (answers.target ?? answers.en) : answers[language],
     tags,
   }));
 }

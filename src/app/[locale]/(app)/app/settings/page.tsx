@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getPreferencesForCurrentUser } from "@/composition/preferences";
 import { getCurrentUserId } from "@/composition/identity";
 import { Link } from "@/i18n/navigation";
+import { courseChoiceLabels } from "@/modules/courses/presentation/language-names";
 import { FormStatus } from "@/shared/presentation/components";
 import { PreferencesForm } from "./preferences-form";
 import { ExportControls } from "./export-controls";
@@ -73,6 +74,7 @@ export default async function SettingsPage({
             snapshot={snapshot}
             locale={locale}
             courseOnly
+            courseChoices={courseChoiceLabels(locale, snapshot.courses)}
           />
         ) : (
           <p className="break-words">{snapshot.courses[0]?.title}</p>
