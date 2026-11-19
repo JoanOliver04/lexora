@@ -48,6 +48,9 @@ export async function POST(request: Request) {
       return reply({ error: "invalid-input", requestId: "" }, 400);
     data.set(name, params.get(name)!);
   }
+  const durations = params.getAll("durationMs");
+  if (durations.length > 1) return reply({ error: "invalid-input", requestId: "" }, 400);
+  if (durations[0] !== undefined) data.set("durationMs", durations[0]);
   const result = await saveStudyReviewRequest({}, data);
   return reply(
     result,

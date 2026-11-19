@@ -175,6 +175,8 @@ async function ScopeSelector({
         )}
       </section>
       <ScopeForm
+        key={courseId}
+        courseId={courseId}
         locale={locale}
         sessionId={createStudySessionId()}
         decks={result.setup.decks}

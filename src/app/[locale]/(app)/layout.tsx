@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { ensureProfileForCurrentUser, getCurrentUserId } from "@/composition/identity";
 import { getAccountThemeForCurrentUser } from "@/composition/preferences";
+import { getActiveCourseForCurrentUser } from "@/composition/courses";
 import { AccountTheme } from "@/shared/presentation/theme/account-theme";
 import { getTranslations } from "next-intl/server";
 import { WorkspaceFrame } from "@/shared/presentation/components/workspace-frame";
@@ -44,13 +45,17 @@ export default async function AppLayout({
 
   if (!(await ensureProfileForCurrentUser())) redirect(`/${locale}/login`);
 
-  const theme = await getAccountThemeForCurrentUser();
+  const [theme, course] = await Promise.all([
+    getAccountThemeForCurrentUser(),
+    getActiveCourseForCurrentUser(),
+  ]);
   const t = await getTranslations("Auth");
   return (
     <>
       {theme && <AccountTheme preference={theme} />}
       <ClientMessages namespaces={["Commands", "Navigation"]}>
         <WorkspaceFrame
+          courseTitle={course?.title}
           logout={
             <form action={logoutAction}>
               <input type="hidden" name="locale" value={locale} />

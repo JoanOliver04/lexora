@@ -12,6 +12,7 @@
     "help": "Ayuda",
     "primary": "Navegación principal",
     "tools": "Herramientas de estudio",
+    "courseSwitcher": "Cambiar de curso. Curso activo {course}",
     "skip": "Ir al contenido",
     "space": "Tu espacio de estudio"
   },
@@ -206,7 +207,7 @@
     "days": "Últimos {count} días",
     "periodSummary": "Resumen del periodo",
     "reviews": "Repasos guardados",
-    "recordedMinutes": "Minutos registrados",
+    "recordedTime": "Tiempo registrado",
     "coverage": "Duración disponible en {measured} de {total} repasos.",
     "observedRecall": "Recuerdo observado",
     "recallFormula": "Difícil + Bien + Fácil / total de repasos.",
@@ -349,7 +350,6 @@
     "reviewsDone": "Repasos realizados",
     "newIntroduced": "Nuevas practicadas",
     "recordedTime": "Tiempo registrado",
-    "recordedMinutes": "{minutes} min",
     "durationIncomplete": "Algunos repasos no tienen duración registrada; este tiempo sólo incluye los que la tienen.",
     "dayReviews": "{count, plural, one {# repaso} other {# repasos}}",
     "loading": "Cargando tu día de estudio…",
@@ -562,6 +562,7 @@
     "resetScope": "Elegir entre todos los mazos",
     "errors": {
       "invalid-scope": "Elige al menos un mazo activo de este curso, hasta un máximo de 100, o selecciona todos los mazos.",
+      "course-changed": "El curso activo ha cambiado. Vuelve a Hoy y prepara la sesión en el curso que quieras estudiar.",
       "invalid-session-id": "Esta solicitud no es válida. Recarga la página para preparar la sesión otra vez.",
       "not-found": "No se puede crear esa sesión. Vuelve a Hoy para comprobar tu curso.",
       "invalid-timezone": "No se puede calcular tu día de estudio con esa zona horaria.",
@@ -1264,6 +1265,25 @@
       "uncertain": "Se ha interrumpido la conexión. El borrado podría haberse completado. Comprueba si todavía puedes iniciar sesión antes de reintentarlo."
     }
   },
+  "Courses": {
+    "title": "Mis cursos",
+    "back": "Volver a Hoy",
+    "select": "Elegir curso",
+    "new": "Nuevo curso",
+    "empty": "Cada curso empieza vacío. Después podrás crear mazos o importar tu contenido.",
+    "name": "Nombre del curso",
+    "language": "Idioma que quieres estudiar",
+    "chooseLanguage": "Elige un idioma",
+    "create": "Crear curso",
+    "creating": "Creando curso…",
+    "reload": "Cargar la versión actual",
+    "errors": {
+      "invalid": "Revisa el nombre y el idioma del curso.",
+      "conflict": "El curso activo o las preferencias cambiaron. Carga la versión actual y vuelve a intentarlo.",
+      "limit": "Has alcanzado el límite de cursos activos.",
+      "unavailable": "No se ha podido crear el curso. Inténtalo de nuevo."
+    }
+  },
   "Settings": {
     "dataInformation": "Cómo se guardan y eliminan tus datos",
     "title": "Ajustes",
@@ -1279,6 +1299,7 @@
     "limitsNote": "Entre 0 y 100 tarjetas nuevas. Los pasos de aprendizaje pendientes siguen disponibles aunque se alcance un cupo; bajar un límite no deshace repasos guardados.",
     "showIntervals": "Mostrar una estimación del próximo intervalo al revelar la respuesta. Puedes cambiar su visibilidad durante la sesión.",
     "course": "Curso activo",
+    "manageCourses": "Gestionar cursos",
     "courseNote": "Cambiar de curso conserva su contenido y sus propios límites. Guarda primero cualquier cambio pendiente en tus preferencias.",
     "switchCourse": "Cambiar de curso",
     "save": "Guardar preferencias",

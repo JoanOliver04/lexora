@@ -1,5 +1,12 @@
 # Lexora — Estado actual
 
+**LEX-22.7 · Tiempo de estudio y varios cursos.** Hoy y Estadísticas muestran
+segundos para totales inferiores a un minuto y distinguen ausencia de medición.
+El guardado mantiene los milisegundos visibles por valoración durante los
+reintentos. La cabecera enlaza a Mis cursos, desde donde se puede cambiar de
+curso y crear uno vacío en inglés, francés, alemán o italiano. La migración
+añade idiomas y un RPC de alta sin reescribir el curso existente.
+
 **LEX-22.6 · Buscador de mazos y copias restaurables.** El selector de mazos
 filtra por título en Estudio libre y en el estudio programado sin perder las
 selecciones. Ajustes revisa y restaura el JSON o CSV de la misma cuenta con

@@ -20,6 +20,8 @@ export async function submitStudyReview(
   try {
     const body = new URLSearchParams();
     for (const name of REVIEW_FIELDS) body.set(name, String(data.get(name) ?? ""));
+    const duration = data.get("durationMs");
+    if (typeof duration === "string" && duration !== "") body.set("durationMs", duration);
     const response = await fetch("/api/study/reviews", {
       method: "POST",
       body,

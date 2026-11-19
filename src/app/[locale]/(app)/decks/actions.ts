@@ -65,7 +65,7 @@ export async function createDeckAction(
   const values = fieldValuesFromForm(formData);
   const locale = safeLocale(formData);
   const scope = await decksContext();
-  if (!scope) {
+  if (!scope || formData.get("expectedCourseId") !== scope.course.id) {
     return { error: "generic", values };
   }
 

@@ -25,6 +25,7 @@ function fromRow(row: Row): StudySession {
 
 export function createSupabaseStudySessionRepository(
   client: SupabaseClient<Database>,
+  activeCourseId?: string,
 ): StudySessionRepository {
   return {
     async listOpen({ ownerId, courseId }) {
@@ -41,24 +42,25 @@ export function createSupabaseStudySessionRepository(
       return data.map(fromRow);
     },
     async transition({ ownerId, sessionId, expectedStatus, status, endedAt }) {
-      const { data, error } = await client
+      const query = client
         .from("study_sessions")
         .update({ status, ended_at: endedAt?.toISOString() ?? null })
         .eq("owner_id", ownerId)
         .eq("id", sessionId)
-        .eq("status", expectedStatus)
-        .select("*")
-        .maybeSingle();
+        .eq("status", expectedStatus);
+      if (activeCourseId) query.eq("course_id", activeCourseId);
+      const { data, error } = await query.select("*").maybeSingle();
       if (error) throw studyErrorFrom(error, "no se pudo cambiar la sesión");
       return data ? fromRow(data) : null;
     },
     async get({ ownerId, sessionId }) {
-      const { data, error } = await client
+      const query = client
         .from("study_sessions")
         .select("*")
         .eq("owner_id", ownerId)
-        .eq("id", sessionId)
-        .maybeSingle();
+        .eq("id", sessionId);
+      if (activeCourseId) query.eq("course_id", activeCourseId);
+      const { data, error } = await query.maybeSingle();
       if (error) throw studyErrorFrom(error, "no se pudo leer la sesión de estudio");
       return data ? fromRow(data) : null;
     },

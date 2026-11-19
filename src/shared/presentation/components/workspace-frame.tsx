@@ -11,7 +11,15 @@ import {
   isWorkspaceDestinationActive,
 } from "./workspace-destinations";
 
-export function WorkspaceFrame({ children, logout }: { children: ReactNode; logout: ReactNode }) {
+export function WorkspaceFrame({
+  children,
+  logout,
+  courseTitle,
+}: {
+  children: ReactNode;
+  logout: ReactNode;
+  courseTitle?: string | undefined;
+}) {
   const t = useTranslations("Navigation");
   const pathname = usePathname();
   if (pathname === "/onboarding") return children;
@@ -63,6 +71,18 @@ export function WorkspaceFrame({ children, logout }: { children: ReactNode; logo
             )}
           </span>
           <div className="workspace-header-actions">
+            {courseTitle && (
+              <Link
+                href="/app/courses"
+                className="inline-flex min-h-11 min-w-0 max-w-full shrink-0 items-center gap-2 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-sm font-semibold text-(--color-ink) hover:bg-(--color-surface-sunken)"
+                aria-current={pathname === "/app/courses" ? "page" : undefined}
+                aria-label={t("courseSwitcher", { course: courseTitle })}
+                title={courseTitle}
+              >
+                <span className="max-w-[min(36vw,12rem)] truncate">{courseTitle}</span>
+                <WorkspaceIcon path="m6 9 6 6 6-6" />
+              </Link>
+            )}
             <WorkspaceCommands />
             {logout}
           </div>

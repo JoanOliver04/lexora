@@ -6,6 +6,7 @@ import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { Link } from "@/i18n/navigation";
 import { getStatistics } from "@/modules/study/application/statistics";
 import { MEMORY_PHASES, REVIEW_RATINGS } from "@/modules/study/domain/memory";
+import { formatRecordedStudyTime } from "@/modules/study/presentation/recorded-study-time";
 import { V1_PRACTICE_MODES } from "@/modules/library/domain/taxonomy";
 import { Button, Label } from "@/shared/presentation/components";
 import { StatisticsBreakdowns } from "./statistics-breakdowns";
@@ -128,9 +129,9 @@ export default async function StatisticsPage({
             </dd>
           </div>
           <div className="flex flex-col gap-2">
-            <dt className="text-sm text-(--color-ink-muted)">{t("recordedMinutes")}</dt>
+            <dt className="text-sm text-(--color-ink-muted)">{t("recordedTime")}</dt>
             <dd className="text-4xl font-semibold tracking-tight tabular-nums">
-              {s.totals.measured > 0 ? n.format(s.totals.durationMs / 60000) : "—"}
+              {formatRecordedStudyTime(locale, s.totals.durationMs, s.totals.measured)}
             </dd>
             <dd className="text-sm text-(--color-ink-muted)">
               {t("coverage", { measured: s.totals.measured, total: s.totals.reviews })}

@@ -98,7 +98,7 @@ columna `id` en la FK ata el curso activo al propio usuario igual que
 leer». **La lista de columnas en `set null` es obligatoria**: sin ella,
 `on delete set null` pondría a NULL también `id` —la PK— y el borrado del
 curso fallaría (sintaxis de PostgreSQL 15+). Lo fija el onboarding
-(`complete_onboarding`, vía `coalesce`) y, más adelante, un selector. Las
+(`complete_onboarding`, vía `coalesce`) y el selector de cursos. Las
 políticas RLS de `profiles` (LEX-2.3) ya cubren la columna; no hay política
 nueva. Aislamiento probado en `supabase/tests/database/070-active-course.sql`.
 
@@ -136,6 +136,14 @@ referencia. Conserva UUID, traducción, activación y timestamps de cualquier fi
 existente con la misma clave natural. No crea usuarios, cursos ni contenido de
 estudio. Una colisión de UUID con otro idioma falla, sin sobrescribir datos.
 No se eliminan filas como rollback: podrían estar referenciadas por cursos.
+
+`20261119130000_create_language_course.sql` añade `fr`, `de` e `it` a ese
+catálogo. El RPC `create_language_course` crea y activa el curso del usuario
+con sus propios `course_settings` en una transacción. Los datos ya vinculados
+al curso de inglés conservan sus identificadores. Mazos, conceptos, sesiones,
+repasos y límites se consultan en el ámbito del curso; los enlaces entre mazos y
+conceptos y entre repasos y sesiones se rechazan si cruzan cursos. Idioma de
+interfaz, tema y zona horaria siguen siendo preferencias de la cuenta.
 La aplicación remota está acreditada en el cierre de producción; véase
 [`evidence/LEX-6.6-production-preflight.md`](evidence/LEX-6.6-production-preflight.md).
 

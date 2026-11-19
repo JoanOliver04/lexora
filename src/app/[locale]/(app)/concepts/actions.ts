@@ -159,7 +159,7 @@ export async function createConceptAction(
 ): Promise<ConceptFormState> {
   const locale = safeLocale(formData);
   const scope = await libraryScope();
-  if (!scope) {
+  if (!scope || formData.get("expectedCourseId") !== scope.course.id) {
     return { error: "generic", values: fieldValuesFromForm(formData) };
   }
 

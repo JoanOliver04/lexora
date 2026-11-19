@@ -3,6 +3,7 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { WorkspaceIcon } from "@/shared/presentation/components/workspace-destinations";
 import type { TodayDashboard } from "@/modules/study/application/today-dashboard";
+import { formatRecordedStudyTime } from "@/modules/study/presentation/recorded-study-time";
 
 const textLink =
   "inline-flex min-h-11 items-center text-sm text-(--color-accent) underline underline-offset-4";
@@ -253,11 +254,11 @@ export function DashboardView({
           <div>
             <dt className="text-sm text-(--color-ink-muted)">{t("recordedTime")}</dt>
             <dd className="mt-1 text-2xl font-semibold tabular-nums">
-              {t("recordedMinutes", {
-                minutes: format.number(dashboard.week.durationMs / 60_000, {
-                  maximumFractionDigits: 1,
-                }),
-              })}
+              {formatRecordedStudyTime(
+                dateLocale,
+                dashboard.week.durationMs,
+                dashboard.week.measuredReviews,
+              )}
             </dd>
           </div>
         </dl>

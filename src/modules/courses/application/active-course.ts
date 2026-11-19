@@ -9,7 +9,6 @@ import type { CefrLevel } from "@/modules/courses/domain/onboarding";
  * curso del propio usuario). Aquí está la parte pura —elegir cuál mostrar— y
  * el puerto para leerlo.
  *
- * El **selector** entre varios cursos se pospone: hoy no hay entre qué elegir.
  */
 
 export interface ActiveCourse {

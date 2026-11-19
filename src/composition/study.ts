@@ -50,6 +50,7 @@ export function createReviewIdempotencyKey(): string {
 
 export interface StudyContext {
   ownerId: string;
+  courseId: string;
   timeZone: string;
   clock: Clock;
   learningStates: LearningStateRepository;
@@ -73,17 +74,23 @@ export async function getStudyContextForCurrentUser(): Promise<StudyContext | nu
   }
 
   const dailyQueue = createSupabaseDailyQueueRepository(client);
-  const timeZone = (await dailyQueue.getTimeZone({ ownerId })) ?? DEFAULT_STUDY_TIMEZONE;
+  const [course, storedTimeZone] = await Promise.all([
+    createSupabaseActiveCourseRepository(client).getActiveCourse(ownerId),
+    dailyQueue.getTimeZone({ ownerId }),
+  ]);
+  if (!course) return null;
+  const timeZone = storedTimeZone ?? DEFAULT_STUDY_TIMEZONE;
 
   return {
     ownerId,
+    courseId: course.id,
     timeZone,
     clock: createSystemClock(),
     learningStates: createSupabaseLearningStateRepository(client),
     dailyQueue,
     todayOverview: createSupabaseTodayOverviewRepository(client),
     todayDashboard: createSupabaseTodayDashboardRepository(client),
-    sessions: createSupabaseStudySessionRepository(client),
+    sessions: createSupabaseStudySessionRepository(client, course.id),
     cards: createSupabaseStudyCardRepository(client),
     scheduler: createTsFsrsScheduler(),
     reviewCommitter: createSupabaseReviewCommitter(client),

@@ -13,12 +13,14 @@ import { DeckSearch, filterStudyDecks } from "./deck-search";
 
 export function ScopeForm({
   locale,
+  courseId,
   sessionId,
   decks,
   initialScope,
   availableCount,
 }: {
   locale: string;
+  courseId: string;
   sessionId: string;
   decks: DashboardDeck[];
   initialScope: StudyScope;
@@ -48,6 +50,7 @@ export function ScopeForm({
   return (
     <form ref={ref} action={action} noValidate className="flex min-w-0 flex-col gap-6">
       <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="expectedCourseId" value={courseId} />
       <input type="hidden" name="sessionId" value={sessionId} />
       {selected.map((id) => (
         <input key={id} type="hidden" name="deckIds" value={id} />

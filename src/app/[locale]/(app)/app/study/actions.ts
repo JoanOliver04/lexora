@@ -13,7 +13,7 @@ import {
 import { StudyError } from "@/modules/study/application/study-error";
 
 export interface StudySessionFormState {
-  error?: CreateStudySessionReason | "generic";
+  error?: CreateStudySessionReason | "generic" | "course-changed";
 }
 
 export async function createStudySessionAction(
@@ -30,6 +30,8 @@ export async function createStudySessionAction(
   if (!context) redirect(`/${locale}/login`);
   const course = await getActiveCourseForCurrentUser();
   if (!course) redirect(`/${locale}/onboarding`);
+  if (formData.get("expectedCourseId") !== course.id || context.courseId !== course.id)
+    return { error: "course-changed" };
   let result;
   try {
     result = await createStudySession(

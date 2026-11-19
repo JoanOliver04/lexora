@@ -67,12 +67,15 @@ export default async function SettingsPage({
         <h2 id="course-title" className="text-xl font-semibold">
           {t("course")}
         </h2>
-        <PreferencesForm
-          key={`course:${snapshot.profileVersion}`}
-          snapshot={snapshot}
-          locale={locale}
-          courseOnly
-        />
+        <p className="break-words">
+          {snapshot.courses.find((course) => course.id === snapshot.courseId)?.title}
+        </p>
+        <Link
+          href="/app/courses"
+          className="inline-flex min-h-11 items-center self-start text-sm font-semibold text-(--color-accent) underline underline-offset-4"
+        >
+          {t("manageCourses")}
+        </Link>
       </section>
       <ExportControls />
       <RestoreControls ownerId={ownerId} />
