@@ -93,7 +93,13 @@ test("create and switch persistent courses with independent library, reviews, an
   const stale = await context.newPage();
   await stale.goto("/es/decks");
 
-  await courseLink(page, english.title).click();
+  const originalCourseLink = courseLink(page, english.title);
+  await expect(originalCourseLink).toBeVisible();
+  const name = originalCourseLink.getByText(english.title, { exact: true });
+  expect(await name.evaluate((label) => label.scrollWidth - label.clientWidth)).toBeLessThanOrEqual(
+    1,
+  );
+  await originalCourseLink.click();
   await expect(page.getByRole("heading", { name: "Mis cursos" })).toBeVisible();
   await assertStudyLayout(page, info, "course-picker");
   const language = page.getByLabel("Idioma que quieres estudiar");

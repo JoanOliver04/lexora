@@ -74,7 +74,7 @@ export function WorkspaceFrame({
             {courseTitle && (
               <Link
                 href="/app/courses"
-                className="inline-flex min-h-11 min-w-0 max-w-full shrink-0 items-center gap-2 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-sm font-semibold text-(--color-ink) hover:bg-(--color-surface-sunken)"
+                className="inline-flex min-h-11 min-w-0 max-w-full shrink-0 items-center gap-2 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-sm font-semibold text-(--color-ink) hover:bg-(--color-surface-sunken) [&>svg]:size-4 [&>svg]:shrink-0"
                 aria-current={pathname === "/app/courses" ? "page" : undefined}
                 aria-label={t("courseSwitcher", { course: courseTitle })}
                 title={courseTitle}
