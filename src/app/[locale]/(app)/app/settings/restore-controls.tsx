@@ -8,10 +8,11 @@ import {
   type RestoreFailure,
 } from "@/modules/data-management/application/restore-backup";
 import {
+  prepareBackup,
   requestRestore,
   restorePreparedBackup,
-} from "@/modules/data-management/infrastructure/browser-restore";
-import type { PreparedBackup } from "@/modules/data-management/infrastructure/portable-backup";
+  type PreparedBackup,
+} from "@/composition/data-restore-browser";
 import { Button, Input, Label } from "@/shared/presentation/components";
 
 export function RestoreControls({ ownerId }: { ownerId: string }) {
@@ -52,8 +53,6 @@ export function RestoreControls({ ownerId }: { ownerId: string }) {
     }
     setChecking(true);
     try {
-      const { prepareBackup } =
-        await import("@/modules/data-management/infrastructure/portable-backup");
       const data = await prepareBackup(file, ownerId);
       if (selection === version.current) setBackup({ id: crypto.randomUUID(), data });
     } catch (error) {
