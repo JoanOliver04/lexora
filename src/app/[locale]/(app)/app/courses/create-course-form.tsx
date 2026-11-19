@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, FormError, Input, Label } from "@/shared/presentation/components";
+import { useHydrated } from "@/shared/presentation/hooks/use-hydrated";
 import { createLanguageCourseAction } from "./actions";
 
 export function CreateCourseForm({
@@ -17,6 +18,7 @@ export function CreateCourseForm({
 }) {
   const t = useTranslations("Courses");
   const router = useRouter();
+  const ready = useHydrated();
   const [state, action, pending] = useActionState(createLanguageCourseAction, {});
   const [title, setTitle] = useState("");
   const [language, setLanguage] = useState("");
@@ -34,7 +36,7 @@ export function CreateCourseForm({
           )}
         </FormError>
       )}
-      <fieldset disabled={pending} className="flex min-w-0 flex-col gap-4 border-0 p-0">
+      <fieldset disabled={!ready || pending} className="flex min-w-0 flex-col gap-4 border-0 p-0">
         <div className="flex min-w-0 flex-col gap-2">
           <Label htmlFor="new-course-title">{t("name")}</Label>
           <Input

@@ -64,6 +64,7 @@ async function review(page: Page, deck: string, label: string) {
   await page.getByRole("button", { name: "Revelar respuesta" }).click();
   await page.getByRole("button", { name: "Bien", exact: true }).click();
   await expect(page.getByTestId("review-save-status")).toContainText("Último repaso guardado");
+  await expect(page.getByTestId("study-card")).toHaveCount(0);
   return new URL(page.url()).pathname;
 }
 
