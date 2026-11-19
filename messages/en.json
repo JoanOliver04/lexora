@@ -471,7 +471,6 @@
     "ratings": "Saved ratings",
     "duration": "Recorded time",
     "durationMissing": "Not recorded",
-    "durationSeconds": "{seconds, number} s",
     "durationCoverage": "Duration available for {measured, number} of {total, number} reviews.",
     "durationHint": "Only sums durations present in the records, rounded to the nearest second. It does not use time between start and finish, include pauses or estimate minutes studied.",
     "remainingTitle": "Current pending items for this selection",

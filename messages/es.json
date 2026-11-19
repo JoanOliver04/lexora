@@ -471,7 +471,6 @@
     "ratings": "Valoraciones guardadas",
     "duration": "Tiempo registrado",
     "durationMissing": "No registrado",
-    "durationSeconds": "{seconds, number} s",
     "durationCoverage": "Duración disponible en {measured, number} de {total, number} repasos.",
     "durationHint": "Solo suma duraciones presentes en los registros, redondeadas al segundo. No usa el tiempo entre inicio y cierre, no incluye pausas ni estima minutos estudiados.",
     "remainingTitle": "Pendientes actuales de esta selección",
