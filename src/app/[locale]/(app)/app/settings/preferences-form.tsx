@@ -13,10 +13,12 @@ export function PreferencesForm({
   snapshot,
   locale,
   courseOnly = false,
+  returnToToday = false,
 }: {
   snapshot: PreferencesSnapshot;
   locale: string;
   courseOnly?: boolean;
+  returnToToday?: boolean;
 }) {
   const t = useTranslations("Settings");
   const router = useRouter();
@@ -37,6 +39,7 @@ export function PreferencesForm({
   return (
     <form ref={ref} action={action} noValidate className="flex min-w-0 flex-col gap-5">
       <input type="hidden" name="operation" value={courseOnly ? "course" : "preferences"} />
+      {returnToToday && <input type="hidden" name="returnTo" value="today" />}
       <input type="hidden" name="profileVersion" value={snapshot.profileVersion} />
       <input type="hidden" name="settingsVersion" value={snapshot.settingsVersion} />
       <input type="hidden" name="locale" value={locale} />

@@ -36,5 +36,9 @@ export async function savePreferencesAction(
   if (!result.ok) return { error: result.error, fields: result.fields };
   const locale = result.locale ?? (data.get("locale") === "en" ? "en" : "es");
   revalidatePath("/[locale]/(app)", "layout");
-  redirect(courseOnly ? `/${locale}/app` : `/${locale}/app/settings?saved=1`);
+  redirect(
+    courseOnly && data.get("returnTo") === "today"
+      ? `/${locale}/app`
+      : `/${locale}/app/settings?saved=1`,
+  );
 }

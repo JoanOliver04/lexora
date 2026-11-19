@@ -42,6 +42,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
             snapshot={snapshot}
             locale={locale}
             courseOnly
+            returnToToday
           />
         </section>
         <section className={section} aria-labelledby="new-course-heading">
