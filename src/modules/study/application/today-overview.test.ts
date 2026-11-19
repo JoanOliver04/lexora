@@ -26,7 +26,6 @@ function repositories() {
     getCourseLimits: vi.fn().mockResolvedValue({ dailyNewLimit: 2, maximumReviewsPerDay: 2 }),
     listEligibleItems: vi.fn().mockResolvedValue([]),
     countTodayActivity: vi.fn().mockResolvedValue({ newIntroduced: 0, reviewsDone: 0 }),
-    getTimeZone: vi.fn().mockResolvedValue("Europe/Madrid"),
   };
   const history: TodayOverviewRepository = {
     getDifficultySignals: vi.fn().mockResolvedValue([]),

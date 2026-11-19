@@ -27,13 +27,6 @@ export type EnsureProfileOutcome = "created" | "already-existed";
  */
 export interface ProfileRepository {
   ensureExists(userId: string): Promise<EnsureProfileOutcome>;
-
-  /**
-   * ¿Ha terminado este usuario el onboarding? Se deriva de
-   * `profiles.onboarding_completed_at` (lo fija la operación de onboarding,
-   * LEX-2.7). `false` también si aún no hay fila de perfil.
-   */
-  hasCompletedOnboarding(userId: string): Promise<boolean>;
 }
 
 /**

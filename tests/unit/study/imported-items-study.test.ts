@@ -299,9 +299,6 @@ function createWorld(ownerId: string, dailyNewLimit = 5, bags: SharedBags = empt
       }
       return { newIntroduced: newIds.size, reviewsDone };
     },
-    async getTimeZone() {
-      return "Europe/Madrid";
-    },
   };
 
   const ownedItems = () => items.filter((item) => item.ownerId === ownerId);

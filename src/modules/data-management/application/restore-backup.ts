@@ -1,5 +1,8 @@
 import { z } from "zod";
 import { MAX_EXPORT_BYTES } from "../domain/data-export";
+import { RESTORE_FAILURES } from "./restore-error";
+
+export { RestoreError, type RestoreFailure } from "./restore-error";
 
 export const RESTORE_CHUNK_CHARS = 256 * 1024;
 export const RESTORE_HTTP_BYTES = 3 * 1024 * 1024;
@@ -32,19 +35,7 @@ export const restoreRequestSchema = z.discriminatedUnion("action", [
 ]);
 export type RestoreRequest = z.infer<typeof restoreRequestSchema>;
 
-export const restoreFailureSchema = z.enum([
-  "unauthenticated",
-  "reauthenticate",
-  "invalid",
-  "integrity",
-  "version",
-  "wrongAccount",
-  "tooLarge",
-  "conflict",
-  "cooldown",
-  "unavailable",
-]);
-export type RestoreFailure = z.infer<typeof restoreFailureSchema>;
+export const restoreFailureSchema = z.enum(RESTORE_FAILURES);
 export const restoreProgressSchema = z
   .object({
     state: z.enum(["uploading", "restored", "cancelled"]),
@@ -58,9 +49,3 @@ export const restoreResponseSchema = z.union([
   z.object({ ok: z.literal(false), error: restoreFailureSchema }).strict(),
 ]);
 export type RestoreResponse = z.infer<typeof restoreResponseSchema>;
-
-export class RestoreError extends Error {
-  constructor(readonly kind: RestoreFailure) {
-    super(kind);
-  }
-}

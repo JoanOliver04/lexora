@@ -1,3 +1,4 @@
+import { cache } from "react";
 import {
   type AuthErrorCode,
   type AuthResult,
@@ -98,14 +99,16 @@ export async function ensureProfileForCurrentUser(): Promise<EnsureProfileOutcom
  * Identificador del usuario **autenticado en la petición en curso**, o `null`.
  * Deriva de `getClaims()` (firma verificada), nunca de `getSession()`.
  */
-export async function getCurrentUserId(): Promise<string | null> {
+export const getAuthenticatedUser = cache(async () => {
   if (!privateBackendEnabled()) return null;
   const client = await createSupabaseServerClient();
   const { data, error } = await client.auth.getClaims();
-  if (error) {
-    return null;
-  }
-  return data?.claims.sub ?? null;
+  const ownerId = data?.claims.sub;
+  return error || !ownerId ? null : { client, ownerId };
+});
+
+export async function getCurrentUserId(): Promise<string | null> {
+  return (await getAuthenticatedUser())?.ownerId ?? null;
 }
 
 /**

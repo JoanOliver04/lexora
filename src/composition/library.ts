@@ -10,7 +10,7 @@ import { createSupabaseConceptRepository } from "@/modules/library/infrastructur
 import { createSupabaseDeckRepository } from "@/modules/library/infrastructure/supabase-deck-repository";
 import { createSupabasePracticeItemRepository } from "@/modules/library/infrastructure/supabase-practice-item-repository";
 import { createSupabaseTagRepository } from "@/modules/library/infrastructure/supabase-tag-repository";
-import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/server-client";
+import { getAuthenticatedUser } from "./identity";
 
 /**
  * Raíz de composición del módulo `library` (LEX-3.4).
@@ -44,13 +44,9 @@ export interface LibraryContext {
  * hasta aquí sin sesión lo decide la protección de rutas (LEX-2.6).
  */
 export async function getLibraryContextForCurrentUser(): Promise<LibraryContext | null> {
-  const client = await createSupabaseServerClient();
-
-  const { data, error } = await client.auth.getClaims();
-  const ownerId = data?.claims.sub;
-  if (error || !ownerId) {
-    return null;
-  }
+  const user = await getAuthenticatedUser();
+  if (!user) return null;
+  const { client, ownerId } = user;
 
   return {
     ownerId,

@@ -4,6 +4,7 @@ import { createCourse } from "@/modules/courses/application/create-course";
 import { createSupabaseActiveCourseRepository } from "@/modules/courses/infrastructure/supabase-active-course-repository";
 import { createSupabaseCourseCreationRepository } from "@/modules/courses/infrastructure/supabase-course-creation-repository";
 import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/server-client";
+import { getAuthenticatedUser } from "./identity";
 
 /**
  * Raíz de composición del módulo `courses` (LEX-2.9).
@@ -14,22 +15,16 @@ import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/ser
 
 export type { ActiveCourse };
 
-/**
- * Curso activo del usuario **autenticado en la petición en curso**, o `null`.
- * La identidad sale de `getClaims()` (firma verificada), nunca de un parámetro.
- * El shell de `(app)` lo usa para saber qué curso mostrar.
- */
-export const getActiveCourseForCurrentUser = cache(async (): Promise<ActiveCourse | null> => {
-  const client = await createSupabaseServerClient();
-
-  const { data, error } = await client.auth.getClaims();
-  const userId = data?.claims.sub;
-  if (error || !userId) {
-    return null;
-  }
-
-  return createSupabaseActiveCourseRepository(client).getActiveCourse(userId);
+/** Share the verified owner's profile between layouts and pages in this request. */
+export const getWorkspaceProfileForCurrentUser = cache(async () => {
+  const user = await getAuthenticatedUser();
+  if (!user) return null;
+  return createSupabaseActiveCourseRepository(user.client).readWorkspaceProfile(user.ownerId);
 });
+
+export async function getActiveCourseForCurrentUser(): Promise<ActiveCourse | null> {
+  return (await getWorkspaceProfileForCurrentUser())?.course ?? null;
+}
 
 export async function getTargetCourseLocales() {
   const client = await createSupabaseServerClient();

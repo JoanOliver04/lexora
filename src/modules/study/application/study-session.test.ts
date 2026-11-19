@@ -83,7 +83,6 @@ function repositories() {
       { practiceItemId: "new-2", phase: null, dueAt: null, learningStateId: null, revision: null },
     ]),
     countTodayActivity: vi.fn().mockResolvedValue({ newIntroduced: 0, reviewsDone: 0 }),
-    getTimeZone: vi.fn().mockResolvedValue("Europe/Madrid"),
   };
   const decks: Pick<TodayDashboardRepository, "listActiveDecks"> = {
     listActiveDecks: vi.fn().mockResolvedValue([

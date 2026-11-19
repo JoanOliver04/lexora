@@ -3,8 +3,8 @@ import {
   completeOnboarding,
 } from "@/modules/courses/application/complete-onboarding";
 import { createSupabaseOnboardingRepository } from "@/modules/courses/infrastructure/supabase-onboarding-repository";
-import { createSupabaseProfileRepository } from "@/modules/identity/infrastructure/supabase-profile-repository";
 import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/server-client";
+import { getWorkspaceProfileForCurrentUser } from "./courses";
 
 /**
  * Raíz de composición del onboarding (LEX-2.7).
@@ -49,13 +49,5 @@ export async function completeOnboardingForCurrentUser(
  * `(app)/layout.tsx` ya habrá redirigido a `login` antes de llegar aquí).
  */
 export async function hasCompletedOnboardingForCurrentUser(): Promise<boolean> {
-  const client = await createSupabaseServerClient();
-
-  const { data, error } = await client.auth.getClaims();
-  const userId = data?.claims.sub;
-  if (error || !userId) {
-    return false;
-  }
-
-  return createSupabaseProfileRepository(client).hasCompletedOnboarding(userId);
+  return (await getWorkspaceProfileForCurrentUser())?.onboardingComplete ?? false;
 }

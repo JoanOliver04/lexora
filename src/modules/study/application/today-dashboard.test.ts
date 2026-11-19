@@ -13,7 +13,6 @@ function repositories() {
     getCourseLimits: vi.fn().mockResolvedValue({ dailyNewLimit: 5, maximumReviewsPerDay: null }),
     listEligibleItems: vi.fn().mockResolvedValue([]),
     countTodayActivity: vi.fn().mockResolvedValue({ newIntroduced: 0, reviewsDone: 0 }),
-    getTimeZone: vi.fn().mockResolvedValue(input.timeZone),
   };
   const overview: TodayOverviewRepository = {
     getDifficultySignals: vi.fn().mockResolvedValue([]),
@@ -36,6 +35,18 @@ function repositories() {
 }
 
 describe("Today dashboard", () => {
+  it("starts the default activity and queue reads while deck metadata is pending", async () => {
+    const { queue, overview, dashboard } = repositories();
+    const decks = Promise.withResolvers<Awaited<ReturnType<typeof dashboard.listActiveDecks>>>();
+    vi.mocked(dashboard.listActiveDecks).mockReturnValue(decks.promise);
+    const result = getTodayDashboard(queue, overview, dashboard, input);
+
+    expect(dashboard.listReviewActivity).toHaveBeenCalled();
+    expect(queue.getCourseLimits).toHaveBeenCalled();
+    decks.resolve([{ id: DECK, title: "Vocab" }]);
+    await expect(result).resolves.toMatchObject({ ok: true });
+  });
+
   it("restores a valid filter while keeping activity scoped to the whole course", async () => {
     const { queue, overview, dashboard } = repositories();
     const result = await getTodayDashboard(queue, overview, dashboard, {

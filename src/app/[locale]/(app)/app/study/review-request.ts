@@ -1,4 +1,5 @@
-import { REVIEW_FIELDS, reviewResponseSchema, type ReviewFormState } from "./review-state";
+import { REVIEW_FIELDS } from "./review-fields";
+import type { ReviewFormState } from "./review-state";
 
 export const REVIEW_TIMEOUT_MS = 15_000;
 
@@ -18,18 +19,31 @@ export async function submitStudyReview(
   window.addEventListener("offline", offline);
   const timer = setTimeout(() => controller.abort(), REVIEW_TIMEOUT_MS);
   try {
+    const cancelled = new Promise<never>((_, reject) => {
+      controller.signal.addEventListener("abort", () => reject(controller.signal.reason), {
+        once: true,
+      });
+    });
     const body = new URLSearchParams();
     for (const name of REVIEW_FIELDS) body.set(name, String(data.get(name) ?? ""));
     const duration = data.get("durationMs");
     if (typeof duration === "string" && duration !== "") body.set("durationMs", duration);
-    const response = await fetch("/api/study/reviews", {
-      method: "POST",
-      body,
-      signal: controller.signal,
-      credentials: "same-origin",
-      cache: "no-store",
-      redirect: "error",
-    });
+    // Fetch and validate on demand. Start both together so loading the schema
+    // does not delay sending the first rating.
+    const [response, { reviewResponseSchema }] = await Promise.race([
+      Promise.all([
+        fetch("/api/study/reviews", {
+          method: "POST",
+          body,
+          signal: controller.signal,
+          credentials: "same-origin",
+          cache: "no-store",
+          redirect: "error",
+        }),
+        import("./review-state"),
+      ]),
+      cancelled,
+    ]);
     const parsed = reviewResponseSchema.safeParse(await response.json());
     if (controller.signal.aborted) return { error: abortedFor, requestId };
     if (!parsed.success || parsed.data.requestId !== requestId)
@@ -41,10 +55,13 @@ export async function submitStudyReview(
       return { error: "generic", requestId };
     return parsed.data;
   } catch {
-    return {
-      error: controller.signal.aborted ? abortedFor : !navigator.onLine ? "offline" : "generic",
-      requestId,
-    };
+    const error = controller.signal.aborted
+      ? abortedFor
+      : !navigator.onLine
+        ? "offline"
+        : "generic";
+    controller.abort();
+    return { error, requestId };
   } finally {
     clearTimeout(timer);
     window.removeEventListener("offline", offline);

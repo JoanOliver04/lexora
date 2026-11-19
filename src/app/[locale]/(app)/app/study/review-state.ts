@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import type { SaveSessionReviewReason } from "@/modules/study/application/save-session-review";
-import { REVIEW_RATINGS } from "@/modules/study/application/study-card";
+import { REVIEW_RATINGS } from "@/modules/study/domain/memory";
 
 const serverErrors = [
   "invalid-input",
@@ -31,12 +31,3 @@ export interface ReviewFormState {
   error?: (typeof serverErrors)[number] | "offline" | "timeout";
   requestId?: string;
 }
-
-export const REVIEW_FIELDS = [
-  "locale",
-  "sessionId",
-  "practiceItemId",
-  "idempotencyKey",
-  "rating",
-  "expectedRevision",
-] as const;

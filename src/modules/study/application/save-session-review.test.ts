@@ -67,7 +67,6 @@ function fixture() {
       },
     ]),
     countTodayActivity: vi.fn(async () => ({ newIntroduced: logs.size, reviewsDone: 0 })),
-    getTimeZone: vi.fn(),
   };
   const cards: StudyCardRepository = {
     findContent: vi.fn().mockResolvedValue({

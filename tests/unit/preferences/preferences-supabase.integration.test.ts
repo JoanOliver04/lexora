@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createSupabaseActiveCourseRepository } from "@/modules/courses/infrastructure/supabase-active-course-repository";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createSupabasePreferencesRepository } from "@/modules/preferences/infrastructure/supabase-preferences-repository";
 import {
@@ -168,6 +169,39 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
           },
         );
     });
+    it("reads the selected course with the profile and falls back to the oldest active course", async () => {
+      const initial = await current();
+      const workspace = createSupabaseActiveCourseRepository(a);
+      const select = (active_course_id: string | null) =>
+        checked(a.from("profiles").update({ active_course_id }).eq("id", owner));
+      await expect(workspace.readWorkspaceProfile(owner)).resolves.toMatchObject({
+        course: { id: initial.courseId },
+        onboardingComplete: true,
+        theme: initial.theme,
+        timeZone: initial.timeZone,
+      });
+      await expect(
+        createSupabaseActiveCourseRepository(b).readWorkspaceProfile(owner),
+      ).resolves.toBeNull();
+      try {
+        await select(otherCourse);
+        await expect(workspace.readWorkspaceProfile(owner)).resolves.toMatchObject({
+          course: { id: otherCourse, title: "Second original course" },
+        });
+        await checked(a.from("courses").update({ active: false }).eq("id", otherCourse));
+        await expect(workspace.readWorkspaceProfile(owner)).resolves.toMatchObject({
+          course: { id: initial.courseId },
+        });
+        await select(null);
+        await expect(workspace.readWorkspaceProfile(owner)).resolves.toMatchObject({
+          course: { id: initial.courseId },
+        });
+      } finally {
+        await checked(a.from("courses").update({ active: true }).eq("id", otherCourse));
+        await select(initial.courseId);
+      }
+    });
+
     it("persists all safe fields and leaves internal scheduler configuration alone", async () => {
       const before = await current();
       await repository().save(owner, {

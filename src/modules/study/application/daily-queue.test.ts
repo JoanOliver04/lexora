@@ -25,7 +25,6 @@ function fakeRepository(overrides: Partial<DailyQueueRepository> = {}): DailyQue
     }),
     listEligibleItems: vi.fn().mockResolvedValue([]),
     countTodayActivity: vi.fn().mockResolvedValue({ newIntroduced: 0, reviewsDone: 0 }),
-    getTimeZone: vi.fn().mockResolvedValue("Europe/Madrid"),
     ...overrides,
   };
 }

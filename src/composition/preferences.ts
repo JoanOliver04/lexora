@@ -19,19 +19,6 @@ export async function savePreferencesForCurrentUser(input: unknown, courseOnly =
   const ctx = await context();
   return ctx ? changePreferences(ctx.repository, ctx.ownerId, input, courseOnly) : null;
 }
-export async function getAccountThemeForCurrentUser() {
-  const client = await createSupabaseServerClient();
-  const { data, error } = await client.auth.getClaims();
-  if (error || !data?.claims.sub) return null;
-  const result = await client
-    .from("profiles")
-    .select("theme_preference")
-    .eq("id", data.claims.sub)
-    .maybeSingle();
-  if (result.error) throw new Error("Account appearance unavailable");
-  const theme = result.data?.theme_preference;
-  return theme === "light" || theme === "dark" || theme === "system" ? theme : null;
-}
 export async function getIntervalPreviewForCurrentUser(courseId: string) {
   const client = await createSupabaseServerClient();
   const { data, error } = await client.auth.getClaims();
