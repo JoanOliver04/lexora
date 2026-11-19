@@ -1,5 +1,10 @@
 # Lexora — Estado actual
 
+**LEX-22.9 · Idioma libre al crear un curso.** Mis cursos admite escribir
+cualquier idioma con sugerencias opcionales. Los idiomas del catálogo conservan
+su código y los demás guardan el nombre en el propio curso, disponible en el
+selector, en el prompt de importación y en las copias JSON y CSV.
+
 **LEX-22.8 · Importación en varios idiomas.** La plantilla y el prompt siguen
 el idioma del curso. Mis cursos muestra el idioma junto al nombre. Al entrar
 desde un mazo, el asistente conserva el destino y el modo seleccionados y

@@ -6,6 +6,7 @@ const course = (id: string): ActiveCourse => ({
   id,
   title: `Curso ${id}`,
   targetLocale: "en-GB",
+  targetLanguageName: null,
   declaredLevel: "B1",
   startLevel: "A1",
 });

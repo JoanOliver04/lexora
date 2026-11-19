@@ -44,7 +44,7 @@ export function createSupabaseActiveCourseRepository(
 
       const courses = await client
         .from("courses")
-        .select("id, title, target_locale, declared_level, start_level")
+        .select("id, title, target_locale, target_language_name, declared_level, start_level")
         .eq("owner_id", userId)
         .eq("active", true)
         // Mismo orden que `complete_onboarding` al elegir «el más antiguo»
@@ -65,6 +65,7 @@ export function createSupabaseActiveCourseRepository(
         id: row.id,
         title: row.title,
         targetLocale: row.target_locale,
+        targetLanguageName: row.target_language_name,
         declaredLevel: row.declared_level as CefrLevel | null,
         startLevel: row.start_level as CefrLevel | null,
       }));

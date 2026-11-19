@@ -24,10 +24,13 @@ export function createSupabaseCourseCreationRepository(
       return locales.includes("en-GB") ? locales.filter((locale) => locale !== "en") : locales;
     },
     async create(draft) {
-      const { error } = await client.rpc("create_language_course", {
+      const { error } = await client.rpc("create_study_course", {
         p_title: draft.title,
         p_target_locale: draft.targetLocale,
         p_profile_version: draft.profileVersion,
+        ...(draft.targetLanguageName === null
+          ? {}
+          : { p_target_language_name: draft.targetLanguageName }),
       });
       return error ? { ok: false, error: errors[error.code] ?? "unavailable" } : { ok: true };
     },

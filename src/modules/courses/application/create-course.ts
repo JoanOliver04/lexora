@@ -1,12 +1,20 @@
 import { z } from "zod";
+import { resolveCourseLanguage } from "../domain/course-language";
 
 const inputSchema = z.object({
   title: z.string().trim().min(1).max(120),
-  targetLocale: z.string().regex(/^[a-z]{2,3}(-[A-Za-z0-9]{2,8})?$/),
+  language: z
+    .string()
+    .trim()
+    .normalize()
+    .min(1)
+    .max(80)
+    .refine((name) => /\p{L}/u.test(name) && !/\p{Cc}/u.test(name)),
   profileVersion: z.iso.datetime({ offset: true }),
 });
 
-export type CourseDraft = z.infer<typeof inputSchema>;
+export type CourseDraft = Omit<z.infer<typeof inputSchema>, "language"> &
+  ReturnType<typeof resolveCourseLanguage>;
 export type CreateCourseError = "invalid" | "conflict" | "limit" | "unavailable";
 export type CreateCourseResult = { ok: true } | { ok: false; error: CreateCourseError };
 
@@ -20,5 +28,13 @@ export async function createCourse(
   input: unknown,
 ): Promise<CreateCourseResult> {
   const parsed = inputSchema.safeParse(input);
-  return parsed.success ? repository.create(parsed.data) : { ok: false, error: "invalid" };
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  const { language, ...draft } = parsed.data;
+  let catalogue: string[];
+  try {
+    catalogue = await repository.listTargetLocales();
+  } catch {
+    return { ok: false, error: "unavailable" };
+  }
+  return repository.create({ ...draft, ...resolveCourseLanguage(language, catalogue) });
 }

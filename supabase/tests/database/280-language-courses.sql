@@ -1,5 +1,5 @@
 begin;
-select plan(16);
+select plan(25);
 
 insert into auth.users (id) values
   ('ddef0000-0000-4000-8000-000000000001'), ('ddef0000-0000-4000-8000-000000000002');
@@ -8,6 +8,8 @@ insert into public.profiles (id) values
 
 select ok(not has_function_privilege('anon', 'public.create_language_course(text,text,timestamptz)', 'execute'),
   'course creation requires an authenticated account');
+select ok(not has_function_privilege('anon', 'public.create_study_course(text,text,timestamptz,text)', 'execute'),
+  'custom course creation requires an authenticated account');
 
 set local role authenticated;
 set local request.jwt.claims to '{"sub":"ddef0000-0000-4000-8000-000000000001","role":"authenticated"}';
@@ -67,7 +69,29 @@ select is((public.study_statistics(current_setting('lexora_test.english')::uuid,
 select is(jsonb_array_length(public.study_statistics(current_setting('lexora_test.french')::uuid, 7, now(), 'UTC')
   -> 'activity'), 0, 'the other course does not gain any recorded time');
 
+select throws_ok($$select public.create_study_course('Blank', 'und',
+  (select updated_at from public.profiles where id = auth.uid()), '    ')$$,
+  '22023', null, 'custom language names cannot be blank');
+select throws_ok($$select public.create_study_course('Mismatched', 'fr',
+  (select updated_at from public.profiles where id = auth.uid()), 'Japanese')$$,
+  '22023', null, 'a custom name cannot override an existing catalogue language');
+select throws_ok($$select public.create_study_course('No label', 'und',
+  (select updated_at from public.profiles where id = auth.uid()))$$,
+  '22023', null, 'a custom language needs a name');
+select lives_ok($$select set_config('lexora_test.custom', public.create_study_course('Japanese', 'und',
+  (select updated_at from public.profiles where id = auth.uid()), '  日本語  ')::text, true)$$,
+  'a free-form Unicode language name creates a course');
+select ok((select target_language_name = '日本語' and target_language_id is null and target_locale = 'und'
+  from public.courses where id = current_setting('lexora_test.custom')::uuid),
+  'the custom language belongs to this course');
+select is((select active_course_id from public.profiles where id = auth.uid()),
+  current_setting('lexora_test.custom')::uuid, 'custom courses activate on creation');
+select is((select count(*) from public.languages where locale = 'und'),
+  0::bigint, 'custom languages do not add entries to the shared catalogue');
+
 set local request.jwt.claims to '{"sub":"ddef0000-0000-4000-8000-000000000002","role":"authenticated"}';
+select is((select count(*) from public.courses where id = current_setting('lexora_test.custom')::uuid),
+  0::bigint, 'other users cannot read names of custom course languages');
 select throws_ok($$select public.set_active_course(current_setting('lexora_test.french')::uuid,
   (select updated_at from public.profiles where id = auth.uid()))$$,
   'P0002', null, 'another account cannot select the new course');

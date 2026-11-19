@@ -52,6 +52,7 @@ export function WorkspaceFrame({
       data-study-session={pathname.startsWith("/app/study/") || undefined}
       data-import-flow={pathname === "/import" || undefined}
       data-deck-detail={pathname.startsWith("/decks/") || undefined}
+      data-course-management={pathname === "/app/courses" || undefined}
     >
       <a className="skip-link" href="#workspace-content">
         {t("skip")}

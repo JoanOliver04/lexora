@@ -1,27 +1,17 @@
-export function courseLanguageNames(locale: string) {
-  const formatter = new Intl.DisplayNames(locale, {
-    type: "language",
-    languageDisplay: "standard",
-  });
-  return (tag: string) => {
-    let name: string;
-    try {
-      name = formatter.of(tag) ?? tag;
-    } catch (error) {
-      if (!(error instanceof RangeError)) throw error;
-      return tag;
-    }
-    return locale === "es" ? name.toLocaleLowerCase(locale) : name;
-  };
-}
+import { courseLanguageNames } from "../domain/course-language";
 
 export function courseChoiceLabels(
   locale: string,
-  courses: readonly { id: string; title: string; targetLocale: string }[],
+  courses: readonly {
+    id: string;
+    title: string;
+    targetLocale: string;
+    targetLanguageName: string | null;
+  }[],
 ) {
   const display = courseLanguageNames(locale);
-  return courses.map(({ id, title, targetLocale }) => ({
+  return courses.map(({ id, title, targetLocale, targetLanguageName }) => ({
     id,
-    label: `${title} · ${display(targetLocale)}`,
+    label: `${title} · ${targetLanguageName ?? display(targetLocale)}`,
   }));
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent } from "react";
+import { useHydrated } from "@/shared/presentation/hooks/use-hydrated";
 
 import {
   IMPORT_LESSON_TYPES,
@@ -29,8 +30,6 @@ function keepPromptInputFromSubmitting(event: KeyboardEvent<HTMLInputElement>) {
   if (event.key === "Enter" && !event.nativeEvent.isComposing) event.preventDefault();
 }
 
-const subscribeHydration = () => () => {};
-
 export function ImportPreparation({
   courseLanguage: { locale: targetLocale, name: targetLanguage },
 }: {
@@ -38,11 +37,7 @@ export function ImportPreparation({
 }) {
   const t = useTranslations("Import.preparation");
   const target = targetLocale.split("-")[0] ?? targetLocale;
-  const ready = useSyncExternalStore(
-    subscribeHydration,
-    () => true,
-    () => false,
-  );
+  const ready = useHydrated();
   const [type, setType] = useState<ImportLessonType>("vocabulary");
   const [language, setLanguage] = useState<ImportAnswerLanguage>("es");
   const [topic, setTopic] = useState("");

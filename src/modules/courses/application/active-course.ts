@@ -15,6 +15,7 @@ export interface ActiveCourse {
   id: string;
   title: string;
   targetLocale: string;
+  targetLanguageName: string | null;
   declaredLevel: CefrLevel | null;
   startLevel: CefrLevel | null;
 }

@@ -208,7 +208,8 @@ export type Database = {
           owner_id: string
           source_language_id: string
           start_level: Database["public"]["Enums"]["cefr_level"] | null
-          target_language_id: string
+          target_language_id: string | null
+          target_language_name: string | null
           target_locale: string
           title: string
           updated_at: string
@@ -221,7 +222,8 @@ export type Database = {
           owner_id: string
           source_language_id: string
           start_level?: Database["public"]["Enums"]["cefr_level"] | null
-          target_language_id: string
+          target_language_id?: string | null
+          target_language_name?: string | null
           target_locale?: string
           title: string
           updated_at?: string
@@ -234,7 +236,8 @@ export type Database = {
           owner_id?: string
           source_language_id?: string
           start_level?: Database["public"]["Enums"]["cefr_level"] | null
-          target_language_id?: string
+          target_language_id?: string | null
+          target_language_name?: string | null
           target_locale?: string
           title?: string
           updated_at?: string
@@ -1002,6 +1005,15 @@ export type Database = {
       create_language_course: {
         Args: {
           p_profile_version: string
+          p_target_locale: string
+          p_title: string
+        }
+        Returns: string
+      }
+      create_study_course: {
+        Args: {
+          p_profile_version: string
+          p_target_language_name?: string
           p_target_locale: string
           p_title: string
         }
