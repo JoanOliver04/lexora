@@ -1,7 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import { useRef, useState, type KeyboardEvent } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 
 import {
   IMPORT_LESSON_TYPES,
@@ -29,8 +29,14 @@ function keepPromptInputFromSubmitting(event: KeyboardEvent<HTMLInputElement>) {
   if (event.key === "Enter" && !event.nativeEvent.isComposing) event.preventDefault();
 }
 
-export function ImportPreparation() {
+export function ImportPreparation({ targetLocale }: { targetLocale: string }) {
   const t = useTranslations("Import.preparation");
+  const locale = useLocale();
+  const target = targetLocale.split("-")[0] ?? targetLocale;
+  const targetLanguage = useMemo(
+    () => new Intl.DisplayNames(locale, { type: "language" }).of(target) ?? target,
+    [locale, target],
+  );
   const [type, setType] = useState<ImportLessonType>("vocabulary");
   const [language, setLanguage] = useState<ImportAnswerLanguage>("es");
   const [topic, setTopic] = useState("");
@@ -41,17 +47,22 @@ export function ImportPreparation() {
   const promptDetails = useRef<HTMLDetailsElement>(null);
   const promptText = useRef<HTMLTextAreaElement>(null);
 
-  const rows = importTemplateRows(type, language);
+  const rows = importTemplateRows(type, language, targetLocale);
+  const hasSample = rows.length > 0;
   const csv = serializeImportTemplate(rows);
   const prompt = [
     t("prompt.goal", {
       topic: JSON.stringify(topic.trim() || t(`topics.${type}`)),
       level,
       count,
+      targetLanguage,
     }),
-    t(`prompt.${type}`),
+    t(`prompt.${type}`, { targetLanguage }),
     t("prompt.coverage"),
-    t("prompt.language", { language: t(`languages.${language}`) }),
+    t("prompt.language", {
+      language: language === "target" ? targetLanguage : t(`languages.${language}`),
+      targetLanguage,
+    }),
     focus.trim() ? t("prompt.focus", { focus: JSON.stringify(focus.trim()) }) : "",
     t("prompt.format", { directive: IMPORT_TEMPLATE_DIRECTIVE }),
     t("prompt.fields", { front: TITLE_MAX_LENGTH, back: SHORT_TEXT_MAX_LENGTH }),
@@ -113,53 +124,63 @@ export function ImportPreparation() {
             id="import-answer-language"
             className={selectClass}
             value={language}
-            onChange={(event) => setLanguage(event.target.value === "en" ? "en" : "es")}
+            onChange={(event) => {
+              const choice = event.target.value;
+              if (choice === "es" || choice === "en" || choice === "target") setLanguage(choice);
+            }}
           >
             <option value="es">{t("languages.es")}</option>
             <option value="en">{t("languages.en")}</option>
+            {target !== "en" && target !== "es" && <option value="target">{targetLanguage}</option>}
           </select>
         </div>
       </div>
-      <ul className="grid min-w-0 gap-3 sm:grid-cols-2">
-        {rows.map((row) => (
-          <li
-            key={row.front}
-            className="min-w-0 rounded-(--radius-control) border border-(--color-border) bg-(--color-surface-sunken) p-[clamp(10px,3vw,12px)]"
-          >
-            <dl className="flex min-w-0 flex-col gap-2.5 text-sm">
-              <div>
-                <dt className="text-xs text-(--color-ink-muted)">{t("columns.front")}</dt>
-                <dd className="font-semibold" lang="en">
-                  {row.front}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-(--color-ink-muted)">{t("columns.back")}</dt>
-                <dd lang={language}>{row.back}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-(--color-ink-muted)">{t("columns.tags")}</dt>
-                <dd className="text-xs">{row.tags}</dd>
-              </div>
-            </dl>
-          </li>
-        ))}
-      </ul>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-        <a
-          className={actionLink}
-          download={`lexora-${type}.csv`}
-          href={`data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`}
-        >
-          {t("download")}
-        </a>
-        <details>
-          <summary className="flex min-h-11 cursor-pointer items-center text-sm text-(--color-ink-muted) underline underline-offset-4">
-            {t("raw")}
-          </summary>
-          <pre className="text-xs whitespace-pre-wrap [overflow-wrap:anywhere]">{csv}</pre>
-        </details>
-      </div>
+      {hasSample ? (
+        <>
+          <ul className="grid min-w-0 gap-3 sm:grid-cols-2">
+            {rows.map((row) => (
+              <li
+                key={row.front}
+                className="min-w-0 rounded-(--radius-control) border border-(--color-border) bg-(--color-surface-sunken) p-[clamp(10px,3vw,12px)]"
+              >
+                <dl className="flex min-w-0 flex-col gap-2.5 text-sm">
+                  <div>
+                    <dt className="text-xs text-(--color-ink-muted)">{t("columns.front")}</dt>
+                    <dd className="font-semibold" lang={targetLocale}>
+                      {row.front}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-(--color-ink-muted)">{t("columns.back")}</dt>
+                    <dd lang={language === "target" ? targetLocale : language}>{row.back}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-(--color-ink-muted)">{t("columns.tags")}</dt>
+                    <dd className="text-xs">{row.tags}</dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <a
+              className={actionLink}
+              download={target === "en" ? `lexora-${type}.csv` : `lexora-${target}-${type}.csv`}
+              href={`data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`}
+            >
+              {t("download")}
+            </a>
+            <details>
+              <summary className="flex min-h-11 cursor-pointer items-center text-sm text-(--color-ink-muted) underline underline-offset-4">
+                {t("raw")}
+              </summary>
+              <pre className="text-xs whitespace-pre-wrap [overflow-wrap:anywhere]">{csv}</pre>
+            </details>
+          </div>
+        </>
+      ) : (
+        <p className="text-sm text-(--color-ink-muted)">{t("sampleUnavailable")}</p>
+      )}
       <details className="border-t border-(--color-border) pt-2">
         <summary className="min-h-11 cursor-pointer py-2.5 font-semibold">{t("assistant")}</summary>
         <div className="flex min-w-0 flex-col gap-4 pt-2">
@@ -177,7 +198,7 @@ export function ImportPreparation() {
           </div>
           <div className="grid min-w-0 gap-3 sm:grid-cols-2">
             <div className={fieldClass}>
-              <Label htmlFor="import-lesson-level">{t("level")}</Label>
+              <Label htmlFor="import-lesson-level">{t("level", { targetLanguage })}</Label>
               <select
                 id="import-lesson-level"
                 value={level}

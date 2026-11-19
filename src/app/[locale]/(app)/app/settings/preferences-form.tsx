@@ -21,6 +21,10 @@ export function PreferencesForm({
   returnToToday?: boolean;
 }) {
   const t = useTranslations("Settings");
+  const languageNames = new Intl.DisplayNames(locale, {
+    type: "language",
+    languageDisplay: "standard",
+  });
   const router = useRouter();
   const theme = useTranslations("Theme");
   const [state, action, pending] = useActionState<PreferencesFormState, FormData>(
@@ -67,7 +71,7 @@ export function PreferencesForm({
             >
               {snapshot.courses.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.title}
+                  {c.title} · {languageNames.of(c.targetLocale) ?? c.targetLocale}
                 </option>
               ))}
             </select>

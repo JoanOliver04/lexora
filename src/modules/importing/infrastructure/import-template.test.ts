@@ -11,22 +11,38 @@ import { createPapaParseDelimitedFileParser } from "./papaparse-delimited-file-p
 const parser = createPapaParseDelimitedFileParser();
 
 describe("import templates", () => {
-  it.each(IMPORT_LESSON_TYPES)("imports every %s example in both answer languages", (type) => {
-    for (const language of ["es", "en"] as const) {
-      const rows = importTemplateRows(type, language);
-      const result = parser.parse(serializeImportTemplate(rows));
+  it.each(IMPORT_LESSON_TYPES)("round-trips every %s example across course languages", (type) => {
+    for (const target of ["en-GB", "fr-FR", "de", "it"] as const) {
+      for (const language of ["es", "en", "target"] as const) {
+        const rows = importTemplateRows(type, language, target);
+        const result = parser.parse(serializeImportTemplate(rows));
 
-      expect(result.separatorFromDirective).toBe(true);
-      expect(result.issues).toEqual([]);
-      expect(result.rows).toEqual(
-        rows.map(({ front, back, tags }, index) => ({
-          rowNumber: index + 2,
-          front,
-          back,
-          tags: [tags],
-        })),
-      );
+        expect(rows.length).toBeGreaterThan(0);
+        expect(result.separatorFromDirective).toBe(true);
+        expect(result.issues).toEqual([]);
+        expect(result.rows).toEqual(
+          rows.map(({ front, back, tags }, index) => ({
+            rowNumber: index + 2,
+            front,
+            back,
+            tags: [tags],
+          })),
+        );
+      }
     }
+  });
+
+  it("keeps the active course's language and supports monolingual examples", () => {
+    expect(importTemplateRows("vocabulary", "es", "fr-FR")[0]).toMatchObject({
+      front: "le sifflet",
+      back: expect.stringContaining("El silbato."),
+    });
+    expect(importTemplateRows("vocabulary", "target", "de")[0]).toMatchObject({
+      front: "die Pfeife",
+      back: expect.stringContaining("akustisches Signal"),
+    });
+    expect(importTemplateRows("phrases", "en", "it")[0]?.front).toBe("Posso provarlo?");
+    expect(importTemplateRows("vocabulary", "es", "pt")).toEqual([]);
   });
 
   it("round-trips commas, quotes and tags through the CSV parser", () => {

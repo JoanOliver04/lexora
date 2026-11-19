@@ -47,14 +47,20 @@ export default async function ImportPage({
   const query = await searchParams;
   const requested = importDeckTargetSchema.safeParse({ deckId: query.deck, mode: query.mode });
   if ((query.deck !== undefined || query.mode !== undefined) && !requested.success) notFound();
-  const pending = await pendingImportForCurrentUser(
+  const candidate = await pendingImportForCurrentUser(
     activeCourse.id,
     typeof query.job === "string" ? query.job : undefined,
   );
   const library = await getLibraryContextForCurrentUser();
   if (!library) redirect(`/${locale}/login`);
-  const deckId = pending ? pending.deckId : requested.data?.deckId;
-  const deckMode = pending ? pending.mapping.deckMode : requested.data?.mode;
+  const destination = requested.data;
+  const differentTarget =
+    candidate &&
+    destination &&
+    (candidate.deckId !== destination.deckId || candidate.mapping.deckMode !== destination.mode);
+  const pending = differentTarget ? null : candidate;
+  const blockedBy = differentTarget && candidate.status === "importing" ? candidate : null;
+  const deckId = destination?.deckId ?? pending?.deckId;
   const deckOptions = await readDeckOptions(library.options, {
     ownerId: library.ownerId,
     courseId: activeCourse.id,
@@ -62,10 +68,10 @@ export default async function ImportPage({
     offset: 0,
     ...(deckId ? { selectedId: deckId } : {}),
   });
-  if (requested.success && !pending && !deckOptions.selected) notFound();
+  if (destination && !deckOptions.selected) notFound();
   const target =
-    deckMode && deckOptions.selected
-      ? { deckId: deckOptions.selected.id, title: deckOptions.selected.title, mode: deckMode }
+    destination && deckOptions.selected
+      ? { ...destination, title: deckOptions.selected.title }
       : null;
 
   return (
@@ -85,13 +91,35 @@ export default async function ImportPage({
       </header>
       <TutorialHint topic="import" />
 
-      <ImportPreviewForm
-        locale={locale}
-        deckOptions={deckOptions}
-        courseId={activeCourse.id}
-        pending={pending}
-        target={target}
-      />
+      {blockedBy ? (
+        <section
+          className="flex flex-col gap-2 rounded-(--radius-surface) border border-(--color-border) bg-(--color-surface) p-4"
+          aria-labelledby="other-import-title"
+        >
+          <h2 id="other-import-title" className="font-semibold">
+            {t("otherImport.title")}
+          </h2>
+          <p className="text-sm text-(--color-ink-muted)">
+            {t("otherImport.description", { filename: blockedBy.filename })}
+          </p>
+          <Link
+            href={{ pathname: "/import", query: { job: blockedBy.id } }}
+            className="inline-flex min-h-11 w-fit items-center text-sm font-semibold text-(--color-accent) underline underline-offset-4"
+          >
+            {t("otherImport.open")}
+          </Link>
+        </section>
+      ) : (
+        <ImportPreviewForm
+          key={`${activeCourse.id}:${target?.deckId ?? ""}:${target?.mode ?? ""}`}
+          locale={locale}
+          deckOptions={deckOptions}
+          courseId={activeCourse.id}
+          targetLocale={activeCourse.targetLocale}
+          pending={pending}
+          target={target}
+        />
+      )}
     </main>
   );
 }

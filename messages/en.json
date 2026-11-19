@@ -579,6 +579,11 @@
     "deckPages": "Destination deck pages",
     "deckPrevious": "Previous",
     "deckNext": "Next",
+    "otherImport": {
+      "title": "This course has an unfinished import",
+      "description": "Open the import of {filename} to continue or finish it. You can then return to the deck you chose.",
+      "open": "Open unfinished import"
+    },
     "transfer": {
       "heading": "Import progress",
       "progressLabel": "Confirmed rows",
@@ -618,7 +623,7 @@
       },
       "topics": {
         "vocabulary": "Sports",
-        "grammar": "Present perfect",
+        "grammar": "Past tenses",
         "phrases": "Shopping"
       },
       "columns": {
@@ -627,27 +632,28 @@
         "tags": "Tags · column 3"
       },
       "download": "Download sample CSV",
+      "sampleUnavailable": "You can generate a prompt for this language. Sample templates are available in English, French, German and Italian.",
       "raw": "View the CSV",
       "jumpToSource": "Go to upload or paste",
       "assistant": "Prepare a topic with ChatGPT",
       "instructions": "Customise the prompt and paste it into ChatGPT. Then upload the CSV or paste its contents below.",
       "topic": "Topic",
-      "level": "English level",
+      "level": "{targetLanguage} level",
       "count": "Number of cards",
       "focus": "Focus (optional)",
-      "focusPlaceholder": "Equipment, rules and British English",
+      "focusPlaceholder": "Equipment, rules and everyday expressions",
       "copy": "Copy prompt",
       "chat": "Open ChatGPT",
       "showPrompt": "View the prompt",
       "copied": "Prompt copied. Paste it into ChatGPT.",
       "manual": "The prompt could not be copied automatically. Select and copy the prompt text.",
       "prompt": {
-        "goal": "Create {count} level {level} English flashcards about {topic} for import into Lexora.",
-        "vocabulary": "Put an English word or expression on each front. Give its meaning and a natural English example on the back.",
-        "grammar": "Put a question, gap-fill sentence or correction task in English on each front. Give the solution and briefly explain the rule on the back. Cover the topic’s uses, forms, examples and common mistakes.",
-        "phrases": "Put a useful English phrase on each front. Explain its meaning and when to use it on the back, with a short context where helpful.",
+        "goal": "Create {count} level {level} {targetLanguage} flashcards about {topic} for import into Lexora.",
+        "vocabulary": "Put a word or expression in {targetLanguage} on each front. Give its meaning and a natural example in {targetLanguage} on the back.",
+        "grammar": "Put a question, gap-fill sentence or correction task in {targetLanguage} on each front. Give the solution and briefly explain the rule on the back. Cover the topic’s uses, forms, examples and common mistakes.",
+        "phrases": "Put a useful phrase in {targetLanguage} on each front. Explain its meaning and when to use it on the back, with a short context where helpful.",
         "coverage": "Cover the most useful subtopics for this level. Avoid duplicate fronts and variations that test exactly the same thing.",
-        "language": "Write the meaning or explanation on the back in {language}, keeping the examples and answers in English where appropriate.",
+        "language": "Write the meaning or explanation on the back in {language}, keeping the examples and answers in {targetLanguage} where appropriate.",
         "focus": "Prioritise {focus} within the topic where it fits the format.",
         "format": "Return a comma-separated CSV in UTF-8. Use {directive} as the exact first line. Start the data on the second line, with no header row. Each data row must have exactly three fields. Write the front, back and tags in that order. Put double quotes around every field and double any double quotes inside a field.",
         "fields": "Use one card per line, with no blank lines or line breaks within fields. Limit the front to {front} characters and the back to {back}. Use plain text.",
