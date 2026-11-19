@@ -52,6 +52,14 @@ export const transferRecordSchema = z.discriminatedUnion("kind", [
 ]);
 export type ImportTransferRecord = z.infer<typeof transferRecordSchema>;
 const uuid = z.uuid();
+export const importDeckModeSchema = z.enum(["append", "replace"]);
+export type ImportDeckMode = z.infer<typeof importDeckModeSchema>;
+
+export const importDeckTargetSchema = z
+  .object({ deckId: uuid, mode: importDeckModeSchema })
+  .strict();
+export type ImportDeckTarget = z.infer<typeof importDeckTargetSchema>;
+
 export const importMappingSchema = z
   .object({
     front: z.number().int().min(0).max(10000),
@@ -60,8 +68,10 @@ export const importMappingSchema = z
     strategy: z.enum(["skip", "copy"]),
     createReverse: z.boolean(),
     originalBytes: z.number().int().min(1).max(MAX_FILE_BYTES),
+    deckMode: importDeckModeSchema.optional(),
   })
-  .strict();
+  .strict()
+  .refine((mapping) => !mapping.deckMode || mapping.strategy === "skip");
 export const importDescriptorSchema = z
   .object({
     id: uuid,
@@ -94,6 +104,7 @@ export const importTransferSchema = z.discriminatedUnion("action", [
     .object({
       action: z.literal("duplicates"),
       courseId: uuid,
+      target: importDeckTargetSchema.optional(),
       rows: z.array(z.object({ rowNumber, front: text(200) }).strict()).max(IMPORT_BATCH_ROWS),
     })
     .strict(),
@@ -155,6 +166,7 @@ export interface ImportTransferRepository {
   duplicates(
     courseId: string,
     rows: { rowNumber: number; front: string }[],
+    target?: ImportDeckTarget,
   ): Promise<ImportDuplicateMatch[]>;
 }
 export type ImportTransferResponse =
@@ -338,7 +350,10 @@ export async function transferImport(
       case "errors":
         return { ok: true, errors: await repository.errors(request.jobId, request.after) };
       case "duplicates":
-        return { ok: true, matches: await repository.duplicates(request.courseId, request.rows) };
+        return {
+          ok: true,
+          matches: await repository.duplicates(request.courseId, request.rows, request.target),
+        };
     }
   } catch (error) {
     return { ok: false, error: error instanceof ImportTransferError ? error.kind : "unavailable" };

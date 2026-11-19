@@ -5,6 +5,7 @@ import {
   ImportTransferError,
   persistenceRecordBytes,
   preparePersistenceRecords,
+  type ImportDeckTarget,
   type ImportTransferRecord,
   type ImportTransferPort,
 } from "./import-transfer";
@@ -49,6 +50,7 @@ export async function prepareBrowserImport(input: {
   rawRows: RawImportRow[];
   mapping: ColumnMapping;
   courseId: string;
+  target?: ImportDeckTarget;
   locale: string;
   transfer: ImportTransferPort;
   yieldControl: () => Promise<void>;
@@ -104,6 +106,7 @@ export async function prepareBrowserImport(input: {
       {
         action: "duplicates",
         courseId: input.courseId,
+        ...(input.target ? { target: input.target } : {}),
         rows: valid
           .slice(start, start + IMPORT_BATCH_ROWS)
           .map(({ rowNumber, front }) => ({ rowNumber, front })),

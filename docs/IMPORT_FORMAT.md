@@ -29,6 +29,19 @@ filas y duplicados antes de guardar las tarjetas. En el paso de destino se
 puede elegir un mazo existente o crear uno nuevo para el tema conservando la
 previsualización. Lexora selecciona el mazo recién creado.
 
+## Importar en un mazo concreto
+
+En **Editar mazo**, **Añadir** conserva lo que hay e importa los frentes
+nuevos. Compara los frentes normalizados con el mazo de destino y con las
+filas anteriores del archivo. Coincidir con otro mazo del curso no impide
+añadir la tarjeta al destino.
+
+**Reemplazar** pide confirmar el destino y requiere al menos una fila válida.
+Al terminar, el mazo contiene las filas válidas y únicas del archivo. Las
+tarjetas anteriores se desvinculan del mazo y conservan su historial y sus
+vínculos con otros mazos. Si se interrumpe el proceso antes de terminar,
+el mazo conserva su contenido hasta que se complete el reemplazo.
+
 ## Encoding
 
 UTF-8. Un BOM (`EF BB BF`) al inicio del archivo es opcional y debe
@@ -102,7 +115,7 @@ separador es tab. Fixture `quotes-in-tab.txt`.
   LEX-4.5, [`SECURITY.md`](SECURITY.md). Neutralizar fórmulas al **exportar**
   CSV no es de esta fase.
 - Mapeo de columnas en pantalla y vista previa → LEX-4.4.
-- Clasificación de duplicados → LEX-4.6 (`canonical_key` de LEX-3.10).
+- Clasificación de duplicados desde **Importar** → LEX-4.6 (`canonical_key` de LEX-3.10).
   Una fila válida es **nueva** o **posible duplicada** si el frente normaliza
   a la misma clave que un concepto vivo del curso, o que otra fila anterior
   del archivo. Estrategias en la vista previa: omitir o crear copia. No se

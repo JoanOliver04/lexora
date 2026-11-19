@@ -20,7 +20,7 @@ import { loadFreeStudyCards, loadFreeStudyPool } from "./actions";
 
 type View =
   | { kind: "setup" }
-  | { kind: "card"; card: FreeStudyCard; index: number }
+  | { kind: "card"; card: FreeStudyCard; index: number; revealed: boolean }
   | { kind: "summary"; total: number; distinct: number; seconds: number };
 
 const panel =
@@ -41,13 +41,19 @@ export function FreeStudyView({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<"empty" | "unavailable" | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
+  const answer = useRef<HTMLDivElement>(null);
   const active = useRef<{ run: FreeStudyRun; startedAt: number } | null>(null);
   const operation = useRef<symbol | null>(null);
   const step = view.kind;
+  const revealed = view.kind === "card" && view.revealed;
 
   useEffect(() => {
     if (step !== "setup") heading.current?.focus();
   }, [step]);
+
+  useEffect(() => {
+    if (revealed) answer.current?.focus();
+  }, [revealed]);
 
   async function load(ids: string[]) {
     const result = await loadFreeStudyCards(courseId, ids);
@@ -86,7 +92,7 @@ export function FreeStudyView({
         return;
       }
       active.current = { run, startedAt: performance.now() };
-      setView({ kind: "card", card, index: run.cursor });
+      setView({ kind: "card", card, index: run.cursor, revealed: false });
     });
   }
 
@@ -96,7 +102,7 @@ export function FreeStudyView({
     return perform(async (current) => {
       const card = await nextFreeStudyCard(session.run, load);
       if (!current()) return;
-      if (card) setView({ kind: "card", card, index: session.run.cursor });
+      if (card) setView({ kind: "card", card, index: session.run.cursor, revealed: false });
       else setError("empty");
     });
   }
@@ -106,7 +112,7 @@ export function FreeStudyView({
     if (operation.current || !run || run.cursor <= 0) return;
     const card = run.trail[--run.cursor]!;
     setError(null);
-    setView({ kind: "card", card, index: run.cursor });
+    setView({ kind: "card", card, index: run.cursor, revealed: false });
   }
 
   function finish() {
@@ -242,12 +248,22 @@ export function FreeStudyView({
           {t("position", { count: view.index + 1 })}
         </h2>
         <PracticeItemPrompt content={view.card.content} hintLabel={cardMessages("hintLabel")} />
-        <div className="border-s-2 border-(--color-accent) ps-4">
-          <PracticeItemAnswer
-            content={view.card.content}
-            clozeAnswersLabel={cardMessages("clozeAnswersLabel")}
-          />
-        </div>
+        {view.revealed ? (
+          <div ref={answer} tabIndex={-1} className="border-s-2 border-(--color-accent) ps-4">
+            <PracticeItemAnswer
+              content={view.card.content}
+              clozeAnswersLabel={cardMessages("clozeAnswersLabel")}
+            />
+          </div>
+        ) : (
+          <Button
+            className="w-full sm:w-fit"
+            disabled={pending}
+            onClick={() => setView({ ...view, revealed: true })}
+          >
+            {cardMessages("reveal")}
+          </Button>
+        )}
       </div>
       {issue}
       <div className="flex min-w-0 flex-wrap gap-2">

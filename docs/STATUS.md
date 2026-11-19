@@ -1,5 +1,12 @@
 # Lexora — Estado actual
 
+**LEX-22.5 · Revelar respuesta e importar en un mazo existente.** Estudio libre
+muestra el frente y ofrece revelar el reverso en cada visita a una tarjeta.
+Editar mazo ofrece Añadir, que omite frentes repetidos en el archivo o en el
+destino, y Reemplazar, que actualiza solo la pertenencia al mazo al terminar.
+El reemplazo pide confirmación y conserva conceptos, tarjetas e historial
+anteriores en la biblioteca y en los demás mazos donde estén.
+
 **LEX-22.4 · Campos opcionales del mazo al importar.** Crear un mazo desde el
 asistente muestra descripción, nivel y categoría con los mismos campos y
 validaciones de Mis mazos. Se puede crear el mazo solo con un nombre. Los

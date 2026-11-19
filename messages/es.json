@@ -360,7 +360,7 @@
   },
   "FreeStudy": {
     "title": "Estudio libre",
-    "intro": "Recorre las tarjetas de tus mazos en orden aleatorio con sus respuestas a la vista. Puedes terminar cuando quieras.",
+    "intro": "Recorre las tarjetas de tus mazos en orden aleatorio. Intenta recordar cada respuesta y revélala cuando quieras.",
     "back": "Volver a Estudio",
     "scope": "Mazos para esta sesión",
     "all": "Todos los mazos",
@@ -747,7 +747,22 @@
       "too-many-columns": "El archivo tiene más de 200 columnas. Conserva solo las columnas que necesitas.",
       "unavailable": "No hemos podido leer tu curso. Recarga e inténtalo de nuevo.",
       "no-deck": "Elige un mazo de destino. Si no tienes ninguno, créalo antes.",
+      "confirm-replace": "Confirma que quieres reemplazar el contenido del mazo.",
       "empty": "No hay filas para importar con este mapeo."
+    },
+    "target": {
+      "back": "Volver al mazo",
+      "appendTitle": "Añadir contenido a {deck}",
+      "replaceTitle": "Reemplazar el contenido de {deck}",
+      "unavailable": "El mazo de esta importación ya no está disponible.",
+      "appendDuplicates": "Se omiten las filas con el mismo frente dentro del archivo o en este mazo.",
+      "replaceDuplicates": "Si varias filas del archivo tienen el mismo frente, se importa la primera.",
+      "appendSubmit": "Añadir al mazo",
+      "replaceSubmit": "Reemplazar contenido",
+      "replaceNotice": "Al terminar, las tarjetas válidas del archivo serán el contenido de este mazo. Las tarjetas anteriores y su historial seguirán en tu biblioteca y en los demás mazos donde ya estén.",
+      "replaceConfirm": "Quiero reemplazar el contenido de {deck}",
+      "replaceEmpty": "El archivo debe tener al menos una tarjeta válida para reemplazar el contenido.",
+      "replaceStopped": "Se detuvo el reemplazo. El contenido que tenía el mazo se conserva."
     },
     "execute": {
       "heading": "Importar al curso",
@@ -818,6 +833,13 @@
     "editHeading": "Editar mazo",
     "conceptsHeading": "Conceptos",
     "detailBack": "Volver a los mazos",
+    "import": {
+      "heading": "Importar contenido",
+      "append": "Añadir",
+      "appendHint": "Conserva el contenido del mazo y añade tarjetas sin duplicados.",
+      "replace": "Reemplazar",
+      "replaceHint": "Cambia el contenido del mazo por las tarjetas de un archivo."
+    },
     "fields": {
       "titleLabel": "Nombre",
       "descriptionLabel": "Descripción (opcional)",

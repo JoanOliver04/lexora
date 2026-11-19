@@ -360,7 +360,7 @@
   },
   "FreeStudy": {
     "title": "Free study",
-    "intro": "Browse cards from your decks in a random order with the answers visible. Finish whenever you want.",
+    "intro": "Browse cards from your decks in random order. Try to recall each answer, then reveal it when you're ready.",
     "back": "Back to Study",
     "scope": "Decks for this session",
     "all": "All decks",
@@ -747,7 +747,22 @@
       "too-many-columns": "The file has more than 200 columns. Keep only the columns you need.",
       "unavailable": "We couldn't read your course. Reload and try again.",
       "no-deck": "Choose a destination deck. If you don't have one, create it first.",
+      "confirm-replace": "Confirm that you want to replace the deck's contents.",
       "empty": "There are no rows to import with this mapping."
+    },
+    "target": {
+      "back": "Back to deck",
+      "appendTitle": "Add content to {deck}",
+      "replaceTitle": "Replace the contents of {deck}",
+      "unavailable": "The deck for this import is no longer available.",
+      "appendDuplicates": "Rows with the same front in the file or this deck are skipped.",
+      "replaceDuplicates": "If several rows in the file have the same front, only the first is imported.",
+      "appendSubmit": "Add to deck",
+      "replaceSubmit": "Replace contents",
+      "replaceNotice": "When the import finishes, this deck will contain the valid cards from the file. The previous cards and their review history will remain in your library and any other decks they are already in.",
+      "replaceConfirm": "I want to replace the contents of {deck}",
+      "replaceEmpty": "The file must contain at least one valid card to replace the contents.",
+      "replaceStopped": "Replacement was stopped. The deck's previous contents are still there."
     },
     "execute": {
       "heading": "Import into the course",
@@ -826,6 +841,13 @@
     "editHeading": "Edit deck",
     "conceptsHeading": "Concepts",
     "detailBack": "Back to decks",
+    "import": {
+      "heading": "Import content",
+      "append": "Add",
+      "appendHint": "Keep the deck's contents and add cards without duplicates.",
+      "replace": "Replace",
+      "replaceHint": "Replace the deck's contents with cards from a file."
+    },
     "fields": {
       "titleLabel": "Name",
       "descriptionLabel": "Description (optional)",
