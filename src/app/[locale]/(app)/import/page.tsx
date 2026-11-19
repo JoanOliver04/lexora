@@ -5,6 +5,7 @@ import { getActiveCourseForCurrentUser } from "@/composition/courses";
 import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
+import { courseLanguageNames } from "@/modules/courses/presentation/language-names";
 import { importDeckTargetSchema } from "@/modules/importing/application/import-transfer";
 import { readDeckOptions } from "@/modules/library/application/library-options";
 import { TutorialHint } from "@/shared/presentation/components/tutorial-guides";
@@ -73,6 +74,11 @@ export default async function ImportPage({
     destination && deckOptions.selected
       ? { ...destination, title: deckOptions.selected.title }
       : null;
+  const languageCode = activeCourse.targetLocale.split("-")[0] ?? activeCourse.targetLocale;
+  const courseLanguage = {
+    locale: activeCourse.targetLocale,
+    name: courseLanguageNames(locale)(languageCode),
+  };
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-[clamp(12px,4vw,24px)] py-12 [overflow-wrap:anywhere]">
@@ -115,7 +121,7 @@ export default async function ImportPage({
           locale={locale}
           deckOptions={deckOptions}
           courseId={activeCourse.id}
-          targetLocale={activeCourse.targetLocale}
+          courseLanguage={courseLanguage}
           pending={pending}
           target={target}
         />

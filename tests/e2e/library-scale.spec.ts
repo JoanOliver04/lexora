@@ -110,6 +110,7 @@ for (const locale of ["es", "en"] as const)
         })
         .click();
       await expect(page).toHaveURL(/members=01009.*available=02019/);
+      await expect(page.locator("#link-concept option")).toHaveCount(0);
       await page.getByRole("searchbox", { name: memberLabel, exact: true }).fill("02019");
       await page
         .getByRole("form", { name: memberLabel, exact: true })

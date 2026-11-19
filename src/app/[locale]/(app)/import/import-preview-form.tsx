@@ -67,14 +67,14 @@ export function ImportPreviewForm({
   locale,
   deckOptions,
   courseId,
-  targetLocale,
+  courseLanguage,
   pending,
   target,
 }: {
   locale: string;
   deckOptions: DeckOptions;
   courseId: string;
-  targetLocale: string;
+  courseLanguage: { locale: string; name: string };
   pending: ImportProgress | null;
   target: ImportDestination | null;
 }) {
@@ -86,7 +86,7 @@ export function ImportPreviewForm({
       locale={locale}
       deckOptions={deckOptions}
       courseId={courseId}
-      targetLocale={targetLocale}
+      courseLanguage={courseLanguage}
       pending={session === 0 ? pending : null}
       target={target}
       onAgain={() => {
@@ -104,7 +104,7 @@ function ImportPreviewFormSession({
   deckOptions,
   onAgain,
   courseId,
-  targetLocale,
+  courseLanguage,
   pending,
   target,
 }: {
@@ -112,7 +112,7 @@ function ImportPreviewFormSession({
   deckOptions: DeckOptions;
   onAgain: () => void;
   courseId: string;
-  targetLocale: string;
+  courseLanguage: { locale: string; name: string };
   pending: ImportProgress | null;
   target: ImportDestination | null;
 }) {
@@ -363,7 +363,7 @@ function ImportPreviewFormSession({
           </h2>
 
           <section {...stepSectionProps(step === "file", "gap-6")}>
-            {!job && <ImportPreparation targetLocale={targetLocale} />}
+            {!job && <ImportPreparation courseLanguage={courseLanguage} />}
             <ImportSource
               active={step === "file"}
               errorId={state.error && FILE_ERRORS.has(state.error) ? ERROR_ID : undefined}

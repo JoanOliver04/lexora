@@ -1,7 +1,7 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
-import { useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useTranslations } from "next-intl";
+import { useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 
 import {
   IMPORT_LESSON_TYPES,
@@ -29,13 +29,19 @@ function keepPromptInputFromSubmitting(event: KeyboardEvent<HTMLInputElement>) {
   if (event.key === "Enter" && !event.nativeEvent.isComposing) event.preventDefault();
 }
 
-export function ImportPreparation({ targetLocale }: { targetLocale: string }) {
+const subscribeHydration = () => () => {};
+
+export function ImportPreparation({
+  courseLanguage: { locale: targetLocale, name: targetLanguage },
+}: {
+  courseLanguage: { locale: string; name: string };
+}) {
   const t = useTranslations("Import.preparation");
-  const locale = useLocale();
   const target = targetLocale.split("-")[0] ?? targetLocale;
-  const targetLanguage = useMemo(
-    () => new Intl.DisplayNames(locale, { type: "language" }).of(target) ?? target,
-    [locale, target],
+  const ready = useSyncExternalStore(
+    subscribeHydration,
+    () => true,
+    () => false,
   );
   const [type, setType] = useState<ImportLessonType>("vocabulary");
   const [language, setLanguage] = useState<ImportAnswerLanguage>("es");
@@ -104,6 +110,7 @@ export function ImportPreparation({ targetLocale }: { targetLocale: string }) {
           <Label htmlFor="import-lesson-type">{t("type")}</Label>
           <select
             id="import-lesson-type"
+            disabled={!ready}
             className={selectClass}
             value={type}
             onChange={(event) => {
@@ -122,6 +129,7 @@ export function ImportPreparation({ targetLocale }: { targetLocale: string }) {
           <Label htmlFor="import-answer-language">{t("answerLanguage")}</Label>
           <select
             id="import-answer-language"
+            disabled={!ready}
             className={selectClass}
             value={language}
             onChange={(event) => {
@@ -189,6 +197,7 @@ export function ImportPreparation({ targetLocale }: { targetLocale: string }) {
             <Label htmlFor="import-lesson-topic">{t("topic")}</Label>
             <Input
               id="import-lesson-topic"
+              disabled={!ready}
               placeholder={t(`topics.${type}`)}
               value={topic}
               maxLength={160}
@@ -201,6 +210,7 @@ export function ImportPreparation({ targetLocale }: { targetLocale: string }) {
               <Label htmlFor="import-lesson-level">{t("level", { targetLanguage })}</Label>
               <select
                 id="import-lesson-level"
+                disabled={!ready}
                 value={level}
                 onChange={(event) => setLevel(event.target.value)}
                 className={selectClass}
@@ -214,6 +224,7 @@ export function ImportPreparation({ targetLocale }: { targetLocale: string }) {
               <Label htmlFor="import-lesson-count">{t("count")}</Label>
               <select
                 id="import-lesson-count"
+                disabled={!ready}
                 value={count}
                 onChange={(event) => setCount(Number(event.target.value))}
                 className={selectClass}
@@ -230,6 +241,7 @@ export function ImportPreparation({ targetLocale }: { targetLocale: string }) {
             <Label htmlFor="import-lesson-focus">{t("focus")}</Label>
             <Input
               id="import-lesson-focus"
+              disabled={!ready}
               placeholder={t("focusPlaceholder")}
               value={focus}
               maxLength={300}
@@ -238,7 +250,9 @@ export function ImportPreparation({ targetLocale }: { targetLocale: string }) {
             />
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <Button onClick={copyPrompt}>{t("copy")}</Button>
+            <Button disabled={!ready} onClick={copyPrompt}>
+              {t("copy")}
+            </Button>
             <a className={actionLink} href="https://chatgpt.com/" target="_blank" rel="noreferrer">
               {t("chat")}
             </a>
