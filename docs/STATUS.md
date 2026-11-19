@@ -1,5 +1,11 @@
 # Lexora — Estado actual
 
+**LEX-22.6 · Buscador de mazos y copias restaurables.** El selector de mazos
+filtra por título en Estudio libre y en el estudio programado sin perder las
+selecciones. Ajustes revisa y restaura el JSON o CSV de la misma cuenta con
+confirmación, sesión reciente y una reconstrucción atómica. Los CSV nuevos
+incluyen el checksum de su contenido. [Formatos y restauración](DATA_EXPORT.md).
+
 **LEX-22.5 · Revelar respuesta e importar en un mazo existente.** Estudio libre
 muestra el frente y ofrece revelar el reverso en cada visita a una tarjeta.
 Editar mazo ofrece Añadir, que omite frentes repetidos en el archivo o en el

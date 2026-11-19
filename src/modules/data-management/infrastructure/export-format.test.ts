@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { formatDataExport, safeSpreadsheetCell } from "./export-format";
 import { EXPORT_ENTITIES, type ExportPayload, type ExportSnapshot } from "../domain/data-export";
+import { prepareBackup } from "./portable-backup";
 function fixture(): ExportSnapshot & { payload: ExportPayload } {
   const payload = Object.fromEntries(
     EXPORT_ENTITIES.map((key) => [key, []]),
@@ -109,7 +110,8 @@ describe("Portable data artifacts", () => {
     expect(text.startsWith("\uFEFF")).toBe(true);
     const parsed = Papa.parse<Record<string, string>>(text, { header: true, skipEmptyLines: true });
     expect(parsed.errors).toEqual([]);
-    expect(parsed.data).toHaveLength(1);
+    expect(parsed.data).toHaveLength(2);
+    expect(parsed.data.at(-1)?.["entity"]).toBe("lexora-account-export");
     const row = parsed.data[0]!;
     expect(row["id"]).toBe("stable-id");
     expect(row["title"]).toBe("'" + snapshot.payload.concepts[0]!["title"]);
@@ -121,6 +123,37 @@ describe("Portable data artifacts", () => {
     });
     expect(text).toContain("\r\n");
   });
+  it.each(["json", "csv"] as const)(
+    "prepares the exact %s payload for restoration",
+    async (kind) => {
+      const owner = "f194227c-5f96-4d79-8bbc-44ed95238b16";
+      const data = fixture();
+      data.payload.profiles = [{ id: owner }];
+      data.payload.concepts[0]!["owner_id"] = owner;
+      const payloadText = data.payloadText.replace(
+        '"metadata":{',
+        '"metadata":{"integer":9007199254740993,"decimal":0.12345678901234567890123456789,',
+      );
+      const artifact = [...formatDataExport({ ...data, rows: 2, payloadText }, kind).chunks()].join(
+        "",
+      );
+      const backup = await prepareBackup(new Blob([artifact]), owner);
+      expect(backup.counts.concepts).toBe(1);
+      expect(backup.payloadText).toContain('"integer":9007199254740993');
+      expect(backup.payloadText).toContain('"decimal":0.12345678901234567890123456789');
+      expect(JSON.parse(backup.payloadText).concepts[0].summary).toBe(
+        data.payload.concepts[0]!["summary"],
+      );
+      expect(createHash("sha256").update(backup.payloadText).digest("hex")).toBe(backup.sha256);
+      await expect(prepareBackup(new Blob([artifact]), "another-user")).rejects.toMatchObject({
+        kind: "wrongAccount",
+      });
+      await expect(
+        prepareBackup(new Blob([artifact.replace("9007199254740993", "9007199254740994")]), owner),
+      ).rejects.toMatchObject({ kind: "integrity" });
+      await expect(prepareBackup(new Blob([artifact.slice(0, -10)]), owner)).rejects.toBeDefined();
+    },
+  );
   it.each([
     "=1+2",
     "+cmd()",

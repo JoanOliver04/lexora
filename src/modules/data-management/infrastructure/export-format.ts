@@ -4,6 +4,10 @@ import Papa from "papaparse";
 import packageMetadata from "../../../../package.json";
 import { DataExportError } from "../application/export-data";
 import {
+  BACKUP_CSV_COLUMNS,
+  BACKUP_FORMAT,
+  BACKUP_FORMAT_VERSION,
+  BACKUP_SCHEMA_VERSION,
   EXPORT_ENTITIES,
   MAX_ARTIFACT_BYTES,
   MAX_EXPORT_BYTES,
@@ -13,27 +17,6 @@ import {
 } from "../domain/data-export";
 import { parseExportPayload } from "./lossless-export-json";
 
-const CSV_COLUMNS = [
-  "entity",
-  "id",
-  "course_id",
-  "concept_id",
-  "practice_item_id",
-  "deck_id",
-  "title",
-  "kind",
-  "mode",
-  "summary",
-  "prompt_text",
-  "answer_text",
-  "example_text",
-  "explanation_text",
-  "phase",
-  "rating",
-  "reviewed_at",
-  "due_at",
-  "raw_json",
-] as const;
 /** Formula escaping is separate from CSV quoting. Preserve all other literal text. */
 export function safeSpreadsheetCell(value: string): string {
   return /^[\p{White_Space}\p{Cf}\u0000-\u001f\u007f]*[=+\-@]/u.test(value) ||
@@ -68,9 +51,9 @@ export function formatDataExport(snapshot: ExportSnapshot, format: ExportFormat)
     throw new DataExportError("too-large");
   const payloadSha256 = createHash("sha256").update(serialized).digest("hex");
   const header = {
-    format: "lexora-account-export",
-    formatVersion: 1,
-    schemaVersion: 1,
+    format: BACKUP_FORMAT,
+    formatVersion: BACKUP_FORMAT_VERSION,
+    schemaVersion: BACKUP_SCHEMA_VERSION,
     appVersion: packageMetadata.version,
     exportedAtUtc: snapshot.exportedAt,
     payloadSha256,
@@ -83,11 +66,11 @@ export function formatDataExport(snapshot: ExportSnapshot, format: ExportFormat)
       return;
     }
     yield "\uFEFF";
-    yield csvLine([...CSV_COLUMNS]);
+    yield csvLine([...BACKUP_CSV_COLUMNS]);
     for (const entity of EXPORT_ENTITIES)
       for (const row of payload[entity]!) {
         yield csvLine(
-          CSV_COLUMNS.map((key) => {
+          BACKUP_CSV_COLUMNS.map((key) => {
             if (key === "entity") return entity;
             if (key === "raw_json") return JSON.stringify(row);
             const value = row[key];
@@ -99,6 +82,11 @@ export function formatDataExport(snapshot: ExportSnapshot, format: ExportFormat)
           }),
         );
       }
+    yield csvLine(
+      BACKUP_CSV_COLUMNS.map((key) =>
+        key === "entity" ? BACKUP_FORMAT : key === "raw_json" ? JSON.stringify(header) : "",
+      ),
+    );
   }
   function* boundedChunks(): Generator<string> {
     for (const chunk of chunks())

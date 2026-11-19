@@ -1,10 +1,11 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { formatDataExport } from "@/modules/data-management/infrastructure/export-format";
 import { createSupabaseDataExportRepository } from "@/modules/data-management/infrastructure/supabase-data-export-repository";
+import { prepareBackup } from "@/modules/data-management/infrastructure/portable-backup";
 import type { ExportSnapshot, ExportPayload } from "@/modules/data-management/domain/data-export";
 import type { Database } from "@/shared/infrastructure/supabase/database.types";
 async function checked<T>(q: PromiseLike<{ data: T; error: { message: string } | null }>) {
@@ -25,6 +26,8 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
       concept = randomUUID(),
       item = randomUUID(),
       deck = randomUUID(),
+      importId = randomUUID(),
+      unfinishedId = randomUUID(),
       foreign = `Foreign-${randomUUID()}`;
     beforeAll(async () => {
       if (!process.env["NEXT_PUBLIC_SUPABASE_URL"]) process.loadEnvFile(".env.local");
@@ -99,6 +102,18 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
           config: { mode: "basic_recall" },
         }),
       );
+      await checked(
+        a.from("learning_states").insert({
+          owner_id: owner,
+          practice_item_id: item,
+          due_at: "2026-11-12T00:00:00Z",
+          scheduler_version: "fixture",
+          config_version: "fixture",
+          phase: "review",
+          reps: 42,
+          revision: 7,
+        }),
+      );
       execFileSync(
         "docker",
         [
@@ -116,7 +131,18 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
           "ON_ERROR_STOP=1",
         ],
         {
-          input: `insert into public.review_logs(owner_id,practice_item_id,idempotency_key,rating,reviewed_at,state_before,state_after,due_before,due_after,scheduler_version,config_version) select '${owner}','${item}',gen_random_uuid(),'good','2026-11-11T12:00:00Z','{"phase":"review"}','{"phase":"review"}','2026-11-10','2026-11-12','fixture','fixture' from generate_series(1,1003); update public.concepts set metadata='{"__proto__":{"kept":true},"integer":9007199254740993,"decimal":0.12345678901234567890123456789}'::jsonb where id='${concept}' and owner_id='${owner}';`,
+          input: `
+            insert into public.review_logs(owner_id,practice_item_id,idempotency_key,rating,reviewed_at,state_before,state_after,due_before,due_after,scheduler_version,config_version)
+            select '${owner}','${item}',gen_random_uuid(),'good','2026-11-11T12:00:00Z','{"phase":"review"}','{"phase":"review"}','2026-11-10','2026-11-12','fixture','fixture' from generate_series(1,1003);
+            update public.concepts set metadata='{"__proto__":{"kept":true},"integer":9007199254740993,"decimal":0.12345678901234567890123456789}'::jsonb
+            where id='${concept}' and owner_id='${owner}';
+            insert into public.import_jobs(id,course_id,deck_id,owner_id,original_filename,content_hash,rows_total,processed_rows,last_source_row,rows_created,rows_failed,status,mapping_config)
+            values ('${importId}','${course!.id}','${deck}','${owner}','fixture.csv',repeat('a',64),1,1,1,0,1,'completed','{"front":0,"back":1,"tags":null,"strategy":"skip","createReverse":false,"originalBytes":40}'),
+              ('${unfinishedId}','${course!.id}','${deck}','${owner}','pending.csv',repeat('b',64),2,1,1,1,0,'importing','{"front":0,"back":1,"tags":null,"strategy":"skip","createReverse":false,"originalBytes":40,"deckMode":"replace"}');
+            update public.import_jobs set request_fingerprint=repeat('f',64) where owner_id='${owner}' and id in ('${importId}','${unfinishedId}');
+            insert into public.import_job_errors(import_job_id,owner_id,row_number,code,message)
+            values ('${importId}','${owner}',1,'front_empty','Fixture diagnostic');
+          `,
           stdio: ["pipe", "pipe", "pipe"],
           timeout: 10000,
         },
@@ -247,5 +273,129 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
       expect(logs.error).toBeNull();
       expect(logs.count).toBe(1003);
     });
+
+    it("restores a checked backup atomically, preserves history and rejects other accounts", async () => {
+      const stage = async (client: SupabaseClient<Database>, text: string) => {
+        const id = randomUUID();
+        const parts = text.match(/[\s\S]{1,90000}/gu) ?? [];
+        await checked(
+          client.rpc("restore_account_backup", {
+            p_request: {
+              action: "begin",
+              id,
+              bytes: Buffer.byteLength(text),
+              sha256: createHash("sha256").update(text).digest("hex"),
+            },
+          }),
+        );
+        for (const [index, chunk] of parts.entries()) {
+          const append = { action: "append", id, index, text: chunk };
+          const first = await checked(client.rpc("restore_account_backup", { p_request: append }));
+          if (index === 0)
+            expect(
+              await checked(client.rpc("restore_account_backup", { p_request: append })),
+            ).toEqual(first);
+        }
+        return { action: "commit", id, confirmation: "RESTORE" };
+      };
+      const digest = await prepareBackup(
+        new Blob([[...formatDataExport(snapshot, "csv").chunks()].join("")]),
+        owner,
+      );
+      const invalid = JSON.parse(digest.payloadText) as ExportPayload;
+      invalid.deck_concepts[0]!["concept_id"] = randomUUID();
+      const damaged = await stage(a, JSON.stringify(invalid));
+      expect((await a.rpc("restore_account_backup", { p_request: damaged })).error?.code).toBe(
+        "23503",
+      );
+      expect(await checked(a.from("decks").select("title").eq("id", deck).single())).toEqual({
+        title: "Original fixture",
+      });
+      expect((await a.from("review_logs").select("id", { count: "exact", head: true })).count).toBe(
+        1003,
+      );
+      await checked(
+        a.rpc("restore_account_backup", { p_request: { action: "cancel", id: damaged.id } }),
+      );
+
+      const wrongOwner = await stage(b, digest.payloadText);
+      expect((await b.rpc("restore_account_backup", { p_request: wrongOwner })).error?.code).toBe(
+        "PT403",
+      );
+      expect(await checked(b.from("profiles").select("display_name").single())).toEqual({
+        display_name: foreign,
+      });
+      expect((await anon.rpc("restore_account_backup", { p_request: damaged })).error?.code).toBe(
+        "42501",
+      );
+
+      await checked(a.from("decks").update({ title: "Post-backup edit" }).eq("id", deck));
+      await new Promise((resolve) => setTimeout(resolve, 2100));
+      const restore = await stage(a, digest.payloadText);
+      expect((await b.rpc("restore_account_backup", { p_request: restore })).error?.code).toBe(
+        "PT409",
+      );
+      const result = await checked(a.rpc("restore_account_backup", { p_request: restore }));
+      expect(result).toMatchObject({ state: "restored" });
+      expect(await checked(a.rpc("restore_account_backup", { p_request: restore }))).toEqual(
+        result,
+      );
+      expect(
+        await checked(a.from("decks").select("title,archived_at").eq("id", deck).single()),
+      ).toEqual({
+        title: "Original fixture",
+        archived_at: "2026-11-01T00:00:00+00:00",
+      });
+      expect(
+        await checked(
+          a.from("learning_states").select("reps,revision").eq("practice_item_id", item).single(),
+        ),
+      ).toEqual({ reps: 42, revision: 7 });
+      const logs = await a.from("review_logs").select("id", { count: "exact", head: true });
+      expect(logs.error).toBeNull();
+      expect(logs.count).toBe(1003);
+      expect(
+        await checked(
+          a.from("import_jobs").select("status,rows_failed").eq("id", importId).single(),
+        ),
+      ).toEqual({ status: "completed", rows_failed: 1 });
+      expect(
+        await checked(
+          a.from("import_job_errors").select("code,message").eq("import_job_id", importId),
+        ),
+      ).toEqual([{ code: "front_empty", message: "Fixture diagnostic" }]);
+      expect(
+        await checked(
+          a
+            .from("import_jobs")
+            .select("status,rows_created,rows_skipped")
+            .eq("id", unfinishedId)
+            .single(),
+        ),
+      ).toEqual({ status: "failed", rows_created: 0, rows_skipped: 1 });
+      const actualMetadata = execFileSync(
+        "docker",
+        [
+          "exec",
+          "-i",
+          "supabase_db_lexora",
+          "psql",
+          "-XAt",
+          "-U",
+          "postgres",
+          "-d",
+          "postgres",
+          "-v",
+          "ON_ERROR_STOP=1",
+        ],
+        {
+          input: `select metadata::text from public.concepts where owner_id='${owner}' and id='${concept}';`,
+          encoding: "utf8",
+          timeout: 10000,
+        },
+      );
+      expect(actualMetadata).toContain('"integer": 9007199254740993');
+      expect(actualMetadata).toContain('"decimal": 0.12345678901234567890123456789');
+    }, 30000);
   },
 );

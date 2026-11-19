@@ -9,6 +9,7 @@ import { Button, FormError } from "@/shared/presentation/components";
 import { useFocusFirstInvalid } from "@/shared/presentation/hooks/use-focus-first-invalid";
 
 import { createStudySessionAction, type StudySessionFormState } from "./actions";
+import { DeckSearch, filterStudyDecks } from "./deck-search";
 
 export function ScopeForm({
   locale,
@@ -30,6 +31,8 @@ export function ScopeForm({
   );
   const [mode, setMode] = useState(initialScope.deckIds === null ? "all" : "selected");
   const [selected, setSelected] = useState(initialScope.deckIds ?? []);
+  const [query, setQuery] = useState("");
+  const visibleDecks = filterStudyDecks(decks, query);
   const ref = useRef<HTMLFormElement>(null);
   useEffect(() => {
     const form = ref.current;
@@ -46,6 +49,9 @@ export function ScopeForm({
     <form ref={ref} action={action} noValidate className="flex min-w-0 flex-col gap-6">
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="sessionId" value={sessionId} />
+      {selected.map((id) => (
+        <input key={id} type="hidden" name="deckIds" value={id} />
+      ))}
       {state.error && (
         <FormError id="study-scope-error">
           <p>{t(`errors.${state.error}`)}</p>
@@ -85,18 +91,24 @@ export function ScopeForm({
         <p id="study-deck-hint" className="mb-2 text-sm leading-relaxed text-(--color-ink-muted)">
           {t("deckHint")}
         </p>
+        {decks.length > 0 && (
+          <DeckSearch label={t("deckSearch")} value={query} onChange={setQuery} />
+        )}
         {decks.length === 0 && (
           <p className="text-sm text-(--color-ink-muted)">{t("emptyDecks")}</p>
         )}
-        {decks.map((deck) => (
+        {decks.length > 0 && visibleDecks.length === 0 && (
+          <p role="status" className="text-sm text-(--color-ink-muted)">
+            {t("deckNoResults")}
+          </p>
+        )}
+        {visibleDecks.map((deck) => (
           <label
             key={deck.id}
             className="flex min-h-11 min-w-0 items-center gap-3 rounded-(--radius-control) border border-(--color-border) bg-(--color-surface) p-3"
           >
             <input
               type="checkbox"
-              name="deckIds"
-              value={deck.id}
               className="shrink-0"
               checked={selected.includes(deck.id)}
               onChange={(event) => {

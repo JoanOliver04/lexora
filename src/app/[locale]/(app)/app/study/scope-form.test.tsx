@@ -14,6 +14,7 @@ const { create } = vi.hoisted(() => ({ create: vi.fn() }));
 vi.mock("./actions", () => ({ createStudySessionAction: create }));
 const SESSION = "50000000-0000-4000-8000-000000000001";
 const DECK = "d0000000-0000-4000-8000-000000000001";
+const GRAMMAR = "d0000000-0000-4000-8000-000000000002";
 function view(locale: "es" | "en" = "es", availableCount = 2, selected = false) {
   return (
     <NextIntlClientProvider
@@ -25,7 +26,10 @@ function view(locale: "es" | "en" = "es", availableCount = 2, selected = false) 
       <ScopeForm
         locale={locale}
         sessionId={SESSION}
-        decks={[{ id: DECK, title: "Vocabulario" }]}
+        decks={[
+          { id: DECK, title: "Vocabulario" },
+          { id: GRAMMAR, title: "Gramática" },
+        ]}
         initialScope={{ deckIds: selected ? [DECK] : null }}
         availableCount={availableCount}
       />
@@ -40,6 +44,16 @@ describe("scope form", () => {
     render(view("es", 2, true));
     expect(screen.getByRole("radio", { name: "Elegir algunos mazos" })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Vocabulario" })).toBeChecked();
+  });
+  it("matches accents and keeps the selected decks hidden by the filter", async () => {
+    render(view("es", 2, true));
+    const input = screen.getByRole("searchbox", { name: "Buscar mazos" });
+    await userEvent.type(input, "GRAMATICA");
+    expect(screen.queryByRole("checkbox", { name: "Vocabulario" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("checkbox", { name: "Gramática" }));
+    await userEvent.click(screen.getByRole("button", { name: "Crear sesión" }));
+    await screen.findByRole("alert");
+    expect(create.mock.calls[0]?.[1].getAll("deckIds")).toEqual([DECK, GRAMMAR]);
   });
   it("selecting a checkbox chooses the subset and retries retain the same request ID", async () => {
     render(view());

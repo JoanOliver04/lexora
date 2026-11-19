@@ -44,8 +44,8 @@ No se acepta un ID de propietario enviado por el navegador y no se añade una cl
 administrativa al entorno de la app. El registro sigue cerrado: borrar la cuenta
 personal no habilita crear otra desde la web.
 
-Antes de borrar, se recomienda descargar los datos que se quieran conservar. Esa
-exportación no es un backup completo de Auth ni tiene restauración automática.
+Antes de borrar, se recomienda descargar los datos que se quieran conservar.
+La restauración de la copia requiere acceso a la misma identidad de Auth.
 La comprobación destructiva se realiza exclusivamente sobre cuentas sintéticas
 locales, tras exportar y comprobar su contenido. No autoriza borrar la cuenta real.
 

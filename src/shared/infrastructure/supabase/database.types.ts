@@ -1054,6 +1054,7 @@ export type Database = {
         Args: { p_concept_ids: string[]; p_owner_id: string }
         Returns: Json
       }
+      restore_account_backup: { Args: { p_request: Json }; Returns: Json }
       save_preferences: {
         Args: {
           p_course_id: string

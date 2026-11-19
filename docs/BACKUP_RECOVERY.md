@@ -1,8 +1,8 @@
 # Copias operativas y recuperación
 
-La exportación JSON/CSV de la app es para portabilidad. No restaura Auth, SQL,
-permisos ni configuración del proveedor. La recuperación operativa utiliza un
-dump PostgreSQL, distinto de esas exportaciones.
+Las [copias JSON y CSV de la app](DATA_EXPORT.md) permiten restaurar los datos de
+una cuenta. La recuperación operativa de Auth, SQL, permisos y configuración del
+proveedor utiliza un dump PostgreSQL.
 
 ## Crear la copia en este equipo
 

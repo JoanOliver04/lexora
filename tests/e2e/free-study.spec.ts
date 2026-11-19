@@ -84,7 +84,14 @@ test("free study supports one deck, several or all and keeps the trail and summa
     const start = page.getByRole("button", { name: "Empezar estudio libre" });
     await expect(start).toBeDisabled();
     await expect(page.getByRole("checkbox", { name: "Archived deck" })).toHaveCount(0);
+    const search = page.getByRole("searchbox", { name: "Buscar mazos" });
+    await search.fill("FOOD");
+    await expect(page.getByRole("checkbox", { name: "Sports deck" })).toHaveCount(0);
     await page.getByRole("checkbox", { name: "Food deck" }).check();
+    await search.fill("no matching deck");
+    await expect(page.getByText("No hay mazos que coincidan con la búsqueda.")).toBeVisible();
+    await search.clear();
+    await expect(page.getByRole("checkbox", { name: "Food deck" })).toBeChecked();
     await start.click();
     const next = page.getByRole("button", { name: "Siguiente", exact: true });
     const prev = page.getByRole("button", { name: "Anterior", exact: true });

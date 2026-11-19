@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getPreferencesForCurrentUser } from "@/composition/preferences";
+import { getCurrentUserId } from "@/composition/identity";
 import { Link } from "@/i18n/navigation";
 import { FormStatus } from "@/shared/presentation/components";
 import { PreferencesForm } from "./preferences-form";
 import { ExportControls } from "./export-controls";
+import { RestoreControls } from "./restore-controls";
 import { DeleteAccountForm } from "./delete-account-form";
 import { getCurrentDeletionFactors } from "@/composition/account-deletion";
 import { InstallControls } from "@/shared/presentation/pwa/install-controls";
@@ -18,7 +20,11 @@ export default async function SettingsPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const snapshot = await getPreferencesForCurrentUser();
+  const [snapshot, ownerId] = await Promise.all([
+    getPreferencesForCurrentUser(),
+    getCurrentUserId(),
+  ]);
+  if (!ownerId) redirect(`/${locale}/login`);
   if (!snapshot) redirect(`/${locale}/onboarding`);
   const factors = await getCurrentDeletionFactors();
   const t = await getTranslations("Settings");
@@ -69,6 +75,7 @@ export default async function SettingsPage({
         />
       </section>
       <ExportControls />
+      <RestoreControls ownerId={ownerId} />
       <InstallControls />
       <Link
         href="/app/settings/data"
