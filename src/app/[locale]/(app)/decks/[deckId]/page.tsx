@@ -88,10 +88,7 @@ export default async function DeckDetailPage({
       </header>
 
       {!deck.archivedAt && (
-        <section
-          aria-labelledby="deck-import-heading"
-          className="flex flex-col gap-3"
-        >
+        <section aria-labelledby="deck-import-heading" className="flex flex-col gap-3">
           <h2 id="deck-import-heading" className="text-lg font-medium">
             {t("import.heading")}
           </h2>
