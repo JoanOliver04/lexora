@@ -87,12 +87,10 @@ export default async function DeckDetailPage({
         ) : null}
       </header>
 
-      <EditDeckForm locale={locale} deck={deck} />
-
       {!deck.archivedAt && (
         <section
           aria-labelledby="deck-import-heading"
-          className="flex flex-col gap-3 border-t border-(--color-border) pt-8"
+          className="flex flex-col gap-3"
         >
           <h2 id="deck-import-heading" className="text-lg font-medium">
             {t("import.heading")}
@@ -114,6 +112,8 @@ export default async function DeckDetailPage({
           </div>
         </section>
       )}
+
+      <EditDeckForm locale={locale} deck={deck} />
 
       <section className="flex flex-col gap-3 border-t border-(--color-border) pt-8">
         <h2 className="text-lg font-medium">{t("conceptsHeading")}</h2>
