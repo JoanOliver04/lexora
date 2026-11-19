@@ -44,6 +44,7 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
   const largeCourse = randomUUID();
   const mainDeck = randomUUID();
   const extraDeck = randomUUID();
+  const otherDeck = randomUUID();
   const archivedDeck = randomUUID();
   const activeConcept = randomUUID();
   const otherConcept = randomUUID();
@@ -127,6 +128,7 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
       clientA.from("decks").insert([
         { id: mainDeck, course_id: mainCourse, owner_id: ownerA, title: "Main" },
         { id: extraDeck, course_id: mainCourse, owner_id: ownerA, title: "Shared concept" },
+        { id: otherDeck, course_id: otherCourse, owner_id: ownerA, title: "Other course" },
         {
           id: archivedDeck,
           course_id: mainCourse,
@@ -163,10 +165,13 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
         { owner_id: ownerA, deck_id: extraDeck, concept_id: activeConcept },
         { owner_id: ownerA, deck_id: mainDeck, concept_id: archivedConcept },
         { owner_id: ownerA, deck_id: archivedDeck, concept_id: archivedDeckConcept },
-        // The schema allows same-owner cross-course links; eligibility must not.
-        { owner_id: ownerA, deck_id: mainDeck, concept_id: otherConcept },
+        { owner_id: ownerA, deck_id: otherDeck, concept_id: otherConcept },
       ]),
     );
+    const crossCourseLink = await clientA
+      .from("deck_concepts")
+      .insert({ owner_id: ownerA, deck_id: mainDeck, concept_id: otherConcept });
+    expect(crossCourseLink.error?.code).toBe("23514");
     const item = (id: string, conceptId: string): Insert<"practice_items"> => ({
       id,
       concept_id: conceptId,
