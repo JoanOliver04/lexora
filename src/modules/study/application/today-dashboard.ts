@@ -60,15 +60,17 @@ export async function getTodayDashboard(
   if (!isIanaTimeZone(input.timeZone)) return { ok: false, reason: "invalid-timezone" };
   const scope = studyScopeFromQuery(input.deckQuery);
   if (!scope) return { ok: false, reason: "invalid-filter" };
-  const [decks, lastScope] = await Promise.all([
-    dashboardRepository.listActiveDecks({ ownerId: input.ownerId, courseId: input.courseId }),
-    dashboardRepository.getLastStudyScope({ ownerId: input.ownerId, courseId: input.courseId }),
-  ]);
-  const activeIds = new Set(decks.map((deck) => deck.id));
-  if (scope.deckIds?.some((id) => !activeIds.has(id)))
-    return { ok: false, reason: "invalid-filter" };
+  const course = { ownerId: input.ownerId, courseId: input.courseId };
+  const deckRequest = dashboardRepository.listActiveDecks(course);
+  if (scope.deckIds !== null) {
+    const activeIds = new Set((await deckRequest).map((deck) => deck.id));
+    if (scope.deckIds.some((id) => !activeIds.has(id)))
+      return { ok: false, reason: "invalid-filter" };
+  }
   const windows = recentStudyDays(input.now, input.timeZone);
-  const [overviewResult, reviews] = await Promise.all([
+  const [decks, lastScope, overviewResult, reviews] = await Promise.all([
+    deckRequest,
+    dashboardRepository.getLastStudyScope(course),
     getTodayOverview(queue, overviewRepository, {
       ownerId: input.ownerId,
       courseId: input.courseId,
@@ -84,6 +86,7 @@ export async function getTodayDashboard(
     }),
   ]);
   if (!overviewResult.ok) return overviewResult;
+  const deckNames = new Map(decks.map(({ id, title }) => [id, title]));
   const { overview } = overviewResult;
   const activity = summarizeStudyActivity(windows, reviews, input.now);
   const status =
@@ -99,15 +102,12 @@ export async function getTodayDashboard(
     dashboard: {
       overview,
       scope,
-      scopeDeckNames:
-        scope.deckIds === null
-          ? []
-          : scope.deckIds.map((id) => decks.find((deck) => deck.id === id)!.title),
+      scopeDeckNames: scope.deckIds?.map((id) => deckNames.get(id)!) ?? [],
       lastScope,
       lastScopeAvailable:
         lastScope !== null &&
         (lastScope.deckIds === null ||
-          (lastScope.deckIds.length > 0 && lastScope.deckIds.every((id) => activeIds.has(id)))),
+          (lastScope.deckIds.length > 0 && lastScope.deckIds.every((id) => deckNames.has(id)))),
       status,
       days: activity.days,
       today: activity.days[6]!,

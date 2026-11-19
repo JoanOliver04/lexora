@@ -1,7 +1,8 @@
 import { clientEnv } from "@/env/client";
 import { isPrivateAccessEnabled } from "@/composition/deployment";
 import { saveStudyReviewRequest } from "@/app/[locale]/(app)/app/study/review-handler";
-import { REVIEW_FIELDS, type ReviewFormState } from "@/app/[locale]/(app)/app/study/review-state";
+import { REVIEW_FIELDS } from "@/app/[locale]/(app)/app/study/review-fields";
+import type { ReviewFormState } from "@/app/[locale]/(app)/app/study/review-state";
 
 const MAX_BYTES = 2048;
 function reply(body: ReviewFormState, status: number) {

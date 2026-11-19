@@ -2,7 +2,6 @@
 
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import { Google_Sans } from "next/font/google";
 import { FormError } from "@/shared/presentation/components";
 import { googleLoginAction, type AuthFormState } from "../actions";
@@ -32,13 +31,15 @@ export function GoogleSignIn({ locale, next }: { locale: string; next?: string |
           disabled={pending}
           className={`google-sign-in-button ${googleSans.className}`}
         >
-          <Image
+          {/* The provider mark is a pre-sized local asset. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/icons/google-g.png"
             alt=""
             width={20}
             height={20}
             style={{ objectFit: "contain" }}
-            unoptimized
+            decoding="async"
           />
           <span>{t(pending ? "google.pending" : "google.continue")}</span>
         </button>

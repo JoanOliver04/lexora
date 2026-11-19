@@ -6,11 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import {
   RestoreError,
   type RestoreFailure,
-} from "@/modules/data-management/application/restore-backup";
+} from "@/modules/data-management/application/restore-error";
 import {
+  loadRestoreTransfer,
   prepareBackup,
-  requestRestore,
-  restorePreparedBackup,
   type PreparedBackup,
 } from "@/composition/data-restore-browser";
 import { Button, Input, Label } from "@/shared/presentation/components";
@@ -71,20 +70,24 @@ export function RestoreControls({ ownerId }: { ownerId: string }) {
     setProgress(0);
     try {
       let outcome;
-      if (restore) {
-        started.current = true;
-        outcome = await restorePreparedBackup(
-          backup.id,
-          backup.data,
-          controller.signal,
-          setProgress,
-        );
-      } else if (started.current) {
-        try {
-          outcome = await requestRestore({ action: "cancel", id: backup.id }, controller.signal);
-        } catch (error) {
-          // An absent or expired upload does not prevent discarding the preview.
-          if (!(error instanceof RestoreError && error.kind === "conflict")) throw error;
+      if (restore || started.current) {
+        const { requestRestore, restorePreparedBackup } = await loadRestoreTransfer();
+        if (controller.signal.aborted) return;
+        if (restore) {
+          started.current = true;
+          outcome = await restorePreparedBackup(
+            backup.id,
+            backup.data,
+            controller.signal,
+            setProgress,
+          );
+        } else {
+          try {
+            outcome = await requestRestore({ action: "cancel", id: backup.id }, controller.signal);
+          } catch (error) {
+            // An absent or expired upload does not prevent discarding the preview.
+            if (!(error instanceof RestoreError && error.kind === "conflict")) throw error;
+          }
         }
       }
       if (controller.signal.aborted) return;

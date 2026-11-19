@@ -1,22 +1,25 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import {
-  type ActiveCourse,
-  type ActiveCourseRepository,
-  pickActiveCourse,
-} from "@/modules/courses/application/active-course";
-import type { CefrLevel } from "@/modules/courses/domain/onboarding";
+import type { ActiveCourse, ActiveCourseRepository } from "../application/active-course";
 import type { Database } from "@/shared/infrastructure/supabase/database.types";
 
-/**
- * Implementación de `ActiveCourseRepository` sobre Supabase.
- *
- * Dos lecturas y una decisión pura. Ambas consultas van bajo la identidad del
- * usuario: `courses_select_own` y `profiles_select_own` (LEX-2.3) garantizan
- * que solo ve lo suyo, así que aunque `active_course_id` señalara un curso
- * ajeno —cosa que la FK compuesta ya impide escribir— no aparecería aquí y
- * `pickActiveCourse` caería al más antiguo.
- */
+const courseColumns = "id,title,target_locale,target_language_name,declared_level,start_level";
+type CourseRow = Pick<
+  Database["public"]["Tables"]["courses"]["Row"],
+  "id" | "title" | "target_locale" | "target_language_name" | "declared_level" | "start_level"
+>;
+
+function mapCourse(row: CourseRow): ActiveCourse {
+  return {
+    id: row.id,
+    title: row.title,
+    targetLocale: row.target_locale,
+    targetLanguageName: row.target_language_name,
+    declaredLevel: row.declared_level,
+    startLevel: row.start_level,
+  };
+}
+
 export class ActiveCourseReadError extends Error {
   constructor(message: string, options?: { cause?: unknown }) {
     super(message, options);
@@ -28,11 +31,16 @@ export function createSupabaseActiveCourseRepository(
   client: SupabaseClient<Database>,
 ): ActiveCourseRepository {
   return {
-    async getActiveCourse(userId: string): Promise<ActiveCourse | null> {
+    async readWorkspaceProfile(userId) {
+      // The composite foreign key embeds precisely the selected course owned by
+      // this profile. RLS still applies to both records.
       const profile = await client
         .from("profiles")
-        .select("active_course_id")
+        .select(
+          `timezone,theme_preference,onboarding_completed_at,course:courses!profiles_active_course_fk(${courseColumns})`,
+        )
         .eq("id", userId)
+        .eq("course.active", true)
         .maybeSingle();
 
       if (profile.error) {
@@ -42,35 +50,35 @@ export function createSupabaseActiveCourseRepository(
         );
       }
 
-      const courses = await client
-        .from("courses")
-        .select("id, title, target_locale, target_language_name, declared_level, start_level")
-        .eq("owner_id", userId)
-        .eq("active", true)
-        // Mismo orden que `complete_onboarding` al elegir «el más antiguo»
-        // (`created_at asc, id asc`): con `created_at` empatado —dos cursos en
-        // la misma transacción— el desempate por `id` evita que el shell
-        // muestre un curso distinto del que actualizó el onboarding.
-        .order("created_at", { ascending: true })
-        .order("id", { ascending: true });
+      if (!profile.data) return null;
 
-      if (courses.error) {
-        throw new ActiveCourseReadError(
-          `no se pudieron leer los cursos (código ${courses.error.code ?? "desconocido"})`,
-          { cause: courses.error },
-        );
+      let course = profile.data.course;
+      if (!course) {
+        // Keep the original fallback for an unset or inactive selection.
+        const oldest = await client
+          .from("courses")
+          .select(courseColumns)
+          .eq("owner_id", userId)
+          .eq("active", true)
+          .order("created_at")
+          .order("id")
+          .limit(1)
+          .maybeSingle();
+        if (oldest.error) {
+          throw new ActiveCourseReadError(
+            `no se pudo leer el curso (código ${oldest.error.code ?? "desconocido"})`,
+            { cause: oldest.error },
+          );
+        }
+        course = oldest.data;
       }
 
-      const rows: ActiveCourse[] = (courses.data ?? []).map((row) => ({
-        id: row.id,
-        title: row.title,
-        targetLocale: row.target_locale,
-        targetLanguageName: row.target_language_name,
-        declaredLevel: row.declared_level as CefrLevel | null,
-        startLevel: row.start_level as CefrLevel | null,
-      }));
-
-      return pickActiveCourse(rows, profile.data?.active_course_id ?? null);
+      return {
+        course: course ? mapCourse(course) : null,
+        timeZone: profile.data.timezone,
+        theme: profile.data.theme_preference,
+        onboardingComplete: profile.data.onboarding_completed_at !== null,
+      };
     },
   };
 }

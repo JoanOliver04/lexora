@@ -61,7 +61,6 @@ function fixture(status: StudySession["status"] = "paused") {
       },
     ]),
     countTodayActivity: vi.fn().mockResolvedValue({ newIntroduced: 0, reviewsDone: 0 }),
-    getTimeZone: vi.fn(),
   };
   return { sessions, history, queue };
 }

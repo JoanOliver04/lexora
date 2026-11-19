@@ -1,5 +1,4 @@
 import type { ReviewCommitter } from "@/modules/study/application/confirm-review";
-import { createSupabaseActiveCourseRepository } from "@/modules/courses/infrastructure/supabase-active-course-repository";
 import type { DailyQueueRepository } from "@/modules/study/application/daily-queue";
 import type { LearningStateRepository } from "@/modules/study/application/learning-state";
 import type { SpacedRepetitionScheduler } from "@/modules/study/application/spaced-repetition-scheduler";
@@ -8,7 +7,6 @@ import type { TodayDashboardRepository } from "@/modules/study/application/today
 import type { StudySessionRepository } from "@/modules/study/application/study-session";
 import type { StudyCardRepository } from "@/modules/study/application/study-card";
 import type { SessionHistoryRepository } from "@/modules/study/application/session-summary";
-import { DEFAULT_STUDY_TIMEZONE } from "@/modules/study/domain/study-day";
 import { createSupabaseDailyQueueRepository } from "@/modules/study/infrastructure/supabase-daily-queue-repository";
 import { createSupabaseLearningStateRepository } from "@/modules/study/infrastructure/supabase-learning-state-repository";
 import { createSupabaseReviewCommitter } from "@/modules/study/infrastructure/supabase-review-committer";
@@ -23,8 +21,9 @@ import {
 import { listEligibleStudyItemIds } from "@/modules/study/infrastructure/supabase-eligible-study-items";
 import { createSupabaseSessionHistoryRepository } from "@/modules/study/infrastructure/supabase-session-history-repository";
 import type { Clock } from "@/shared/application/clock";
-import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/server-client";
 import { createSystemClock } from "@/shared/infrastructure/system-clock";
+import { getWorkspaceProfileForCurrentUser } from "./courses";
+import { getAuthenticatedUser } from "./identity";
 
 /**
  * Raíz de composición del módulo `study` (LEX-5.2, LEX-5.6, LEX-5.7,
@@ -65,21 +64,13 @@ export interface StudyContext {
 }
 
 export async function getStudyContextForCurrentUser(): Promise<StudyContext | null> {
-  const client = await createSupabaseServerClient();
-
-  const { data, error } = await client.auth.getClaims();
-  const ownerId = data?.claims.sub;
-  if (error || !ownerId) {
-    return null;
-  }
-
-  const dailyQueue = createSupabaseDailyQueueRepository(client);
-  const [course, storedTimeZone] = await Promise.all([
-    createSupabaseActiveCourseRepository(client).getActiveCourse(ownerId),
-    dailyQueue.getTimeZone({ ownerId }),
+  const [user, profile] = await Promise.all([
+    getAuthenticatedUser(),
+    getWorkspaceProfileForCurrentUser(),
   ]);
-  if (!course) return null;
-  const timeZone = storedTimeZone ?? DEFAULT_STUDY_TIMEZONE;
+  if (!user || !profile?.course) return null;
+  const { client, ownerId } = user;
+  const { course, timeZone } = profile;
 
   return {
     ownerId,
@@ -87,7 +78,7 @@ export async function getStudyContextForCurrentUser(): Promise<StudyContext | nu
     timeZone,
     clock: createSystemClock(),
     learningStates: createSupabaseLearningStateRepository(client),
-    dailyQueue,
+    dailyQueue: createSupabaseDailyQueueRepository(client),
     todayOverview: createSupabaseTodayOverviewRepository(client),
     todayDashboard: createSupabaseTodayDashboardRepository(client),
     sessions: createSupabaseStudySessionRepository(client, course.id),
@@ -99,15 +90,15 @@ export async function getStudyContextForCurrentUser(): Promise<StudyContext | nu
 }
 
 export async function getFreeStudyContextForCurrentUser() {
-  const client = await createSupabaseServerClient();
-  const { data, error } = await client.auth.getClaims();
-  const ownerId = data?.claims.sub;
-  if (error || !ownerId) return null;
-  const course = await createSupabaseActiveCourseRepository(client).getActiveCourse(ownerId);
-  if (!course) return null;
-  const scope = { ownerId, courseId: course.id };
+  const [user, profile] = await Promise.all([
+    getAuthenticatedUser(),
+    getWorkspaceProfileForCurrentUser(),
+  ]);
+  if (!user || !profile?.course) return null;
+  const { client, ownerId } = user;
+  const scope = { ownerId, courseId: profile.course.id };
   return {
-    courseId: course.id,
+    courseId: scope.courseId,
     listDecks: () => createSupabaseTodayDashboardRepository(client).listActiveDecks(scope),
     listItemIds: (deckIds: string[] | null) =>
       listEligibleStudyItemIds(client, { ...scope, deckIds }),

@@ -89,3 +89,45 @@ bloque de recuperación (seis repeticiones dirigidas PASS). Cerrado4 y Preview4.
 Merge `e45e3dc7d36ce52c6935746aa9b0a5d5e2a3a372`, deployment7723705717 Production
 SUCCESS; health200 app/database true. Sin SQL nuevo. No se declara esa pasada
 de CI libre de retries.
+
+## Rendimiento de carga y navegación LEX-22.10
+
+Base `a8fd973`. Build de producción con Supabase local, cuenta y mazos sintéticos,
+tres cargas por ruta y perfil, caché de navegador desactivada, CPU 4× y red de
+1,6 Mbps con 40 ms de latencia. Se añadieron 40 ms por petición del servidor al
+Supabase local para representar el coste de las rondas de red. Las cifras son
+medianas de laboratorio y corresponden a los perfiles medidos.
+
+| Pantalla | LCP móvil antes | LCP móvil después | Primera respuesta móvil antes | Primera respuesta móvil después |
+| --- | ---: | ---: | ---: | ---: |
+| Portada | 580 ms | 576 ms | 74 ms | 76 ms |
+| Hoy | 1.172 ms | 848 ms | 270 ms | 91 ms |
+| Mazos | 896 ms | 644 ms | 459 ms | 226 ms |
+| Conceptos | 1.072 ms | 676 ms | 533 ms | 215 ms |
+| Importar | 1.000 ms | 668 ms | 471 ms | 221 ms |
+| Estadísticas | 736 ms | 592 ms | 156 ms | 90 ms |
+
+En navegación móvil dentro de la sesión, abrir Mazos pasó de 456 a 294 ms,
+Conceptos de 447 a 276 ms y volver a Hoy de 264 a 120 ms. Estadísticas pasó de
+55 a 61 ms. La primera respuesta de las pantallas privadas también mejoró en
+escritorio. Las medianas de LCP de ciertas pantallas de escritorio variaron en
+sentido contrario, por ejemplo Hoy de 1.108 a 1.128 ms. CLS fue 0 en las 48
+cargas del candidato medido.
+
+Hoy pasó de 17 a 12 peticiones REST por carga y de seis a una para perfil y
+curso activo. Mazos, Conceptos, Importar y Estadísticas pasaron de siete a tres
+peticiones REST en el recorrido medido. La lectura de perfil tiene alcance de
+petición y se realiza con sesión verificada, usando la FK compuesta y RLS. Se
+verificaron el curso seleccionado, el fallback al más antiguo activo y el
+aislamiento entre cuentas. Una primera entrada sin perfil mantiene el alta
+idempotente. Las lecturas independientes de Hoy empiezan juntas.
+
+Los iconos locales ya preparados usan dimensiones fijas y cargan sin el código
+de optimización de imágenes. Resource Timing mostró 4.948 bytes codificados
+menos de JavaScript en la portada y 5.417 menos en las rutas privadas medidas
+antes del último ajuste de estudio. En el grafo de Next.js, los grupos de inicio
+y render de Ajustes bajaron de 252.416 a 209.592 bytes con la misma métrica de
+atribución comprimida. El parser y el cliente de restauración cargan al elegir
+la copia o iniciar su transferencia. En estudio, la validación de la respuesta
+empieza en paralelo al envío de la valoración y conserva los controles de
+acuerdo, desconexión, expiración e idempotencia.

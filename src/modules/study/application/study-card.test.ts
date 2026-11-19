@@ -40,7 +40,6 @@ function repositories() {
       },
     ]),
     countTodayActivity: vi.fn().mockResolvedValue({ newIntroduced: 0, reviewsDone: 0 }),
-    getTimeZone: vi.fn(),
   };
   const cards: StudyCardRepository = {
     findContent: vi.fn().mockResolvedValue({

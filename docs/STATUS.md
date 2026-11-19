@@ -1,5 +1,11 @@
 # Lexora — Estado actual
 
+**LEX-22.10 · Rendimiento de carga y navegación.** El perfil y el curso activo
+se leen juntos y se reutilizan durante la petición. Hoy solapa las lecturas
+independientes. El navegador carga los logotipos fijos directamente y reserva
+el código de restauración y validación del repaso para cuando se usa.
+[Mediciones de laboratorio](evidence/LEX-9-web-lab.md#rendimiento-de-carga-y-navegación-lex-2210).
+
 **LEX-22.9 · Idioma libre al crear un curso.** Mis cursos admite escribir
 cualquier idioma con sugerencias opcionales. Los idiomas del catálogo conservan
 su código y los demás guardan el nombre en el propio curso, disponible en el

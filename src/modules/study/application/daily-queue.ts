@@ -50,7 +50,6 @@ export interface DailyQueueRepository {
     dayStart: Date;
     dayEnd: Date;
   }): Promise<TodayStudyActivity>;
-  getTimeZone(input: { ownerId: string }): Promise<string | null>;
 }
 
 export type GetDailyQueueResult =

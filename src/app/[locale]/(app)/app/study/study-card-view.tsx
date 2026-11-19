@@ -15,11 +15,8 @@ import {
   PracticeItemAnswer,
   PracticeItemPrompt,
 } from "@/modules/library/presentation/practice-item-content";
-import {
-  REVIEW_RATINGS,
-  type ReviewRating,
-  type StudyCard,
-} from "@/modules/study/application/study-card";
+import type { StudyCard } from "@/modules/study/application/study-card";
+import { REVIEW_RATINGS, type ReviewRating } from "@/modules/study/domain/memory";
 import { MAX_REVIEW_DURATION_MS } from "@/modules/study/domain/study-time-estimate";
 import { Button, FormError } from "@/shared/presentation/components";
 import { revealStudyCardAction, type RevealFormState } from "./reveal-actions";
