@@ -77,7 +77,7 @@ export default async function SettingsPage({
             courseChoices={courseChoiceLabels(locale, snapshot.courses)}
           />
         ) : (
-          <p className="break-words">{snapshot.courses[0]?.title}</p>
+          <p className="break-words">{courseChoiceLabels(locale, snapshot.courses)[0]?.label}</p>
         )}
         <Link
           href="/app/courses"

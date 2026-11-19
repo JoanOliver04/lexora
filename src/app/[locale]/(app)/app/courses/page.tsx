@@ -4,10 +4,8 @@ import { getTargetCourseLocales } from "@/composition/courses";
 import { getPreferencesForCurrentUser } from "@/composition/preferences";
 import { ClientMessages } from "@/i18n/client-messages";
 import { Link } from "@/i18n/navigation";
-import {
-  courseChoiceLabels,
-  courseLanguageNames,
-} from "@/modules/courses/presentation/language-names";
+import { courseLanguageNames } from "@/modules/courses/domain/course-language";
+import { courseChoiceLabels } from "@/modules/courses/presentation/language-names";
 import { PreferencesForm } from "../settings/preferences-form";
 import { CreateCourseForm } from "./create-course-form";
 

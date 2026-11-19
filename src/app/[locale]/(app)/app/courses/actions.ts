@@ -16,7 +16,7 @@ export async function createLanguageCourseAction(
   const locale = formData.get("locale") === "en" ? "en" : "es";
   const result = await createCourseForCurrentUser({
     title: formData.get("title"),
-    targetLocale: formData.get("targetLocale"),
+    language: formData.get("language"),
     profileVersion: formData.get("profileVersion"),
   });
   if (!result) redirect(`/${locale}/login`);

@@ -9,27 +9,41 @@ for (const kind of ["JSON", "CSV"] as const) {
     await completeOnboarding(page);
     const fixture = await localLibraryFixture(email);
     const { client, deckId, ownerId, courseId, cleanup } = fixture;
-    let frenchCourseId: string | null = null;
+    let customCourseId: string | null = null;
     try {
-      const profile = await checked(
-        client.from("profiles").select("updated_at").eq("id", ownerId).single(),
+      await page.goto("/en/app/courses");
+      await page.getByLabel("Course name").fill("Learning Japanese");
+      await page.getByLabel("Language you want to study").fill("日本語");
+      await page.getByRole("button", { name: "Create course", exact: true }).click();
+      await expect(page).toHaveURL("/en/app");
+      const customCourse = await checked(
+        client
+          .from("courses")
+          .select("id,target_language_name,target_language_id")
+          .eq("title", "Learning Japanese")
+          .single(),
       );
-      if (!profile) throw new Error("Missing synthetic profile");
-      frenchCourseId = await checked(
-        client.rpc("create_language_course", {
-          p_title: "Backup French",
-          p_target_locale: "fr",
-          p_profile_version: profile.updated_at,
-        }),
+      if (!customCourse) throw new Error("Missing synthetic course");
+      customCourseId = customCourse.id;
+      expect(customCourse).toMatchObject({
+        target_language_name: "日本語",
+        target_language_id: null,
+      });
+      await page.goto("/es/import");
+      const template = page.getByRole("region", { name: "Plantilla de importación" });
+      await template.getByLabel("Idioma del reverso").selectOption("target");
+      await template.getByText("Preparar un tema con ChatGPT", { exact: true }).click();
+      await template.getByText("Ver el prompt", { exact: true }).click();
+      await expect(template.getByRole("textbox", { name: "Ver el prompt" })).toHaveValue(
+        /Crea 60 tarjetas de 日本語[\s\S]*reverso en 日本語/,
       );
-      if (!frenchCourseId) throw new Error("Missing synthetic course");
-      const frenchDeck = randomUUID();
+      const customDeck = randomUUID();
       await checked(
         client.from("decks").insert({
-          id: frenchDeck,
-          course_id: frenchCourseId,
+          id: customDeck,
+          course_id: customCourseId,
           owner_id: ownerId,
-          title: "Backup French deck",
+          title: "Backup Japanese deck",
         }),
       );
       await page.goto("/es/app/settings");
@@ -72,18 +86,27 @@ for (const kind of ["JSON", "CSV"] as const) {
         await checked(client.from("practice_items").select("id").eq("id", fixture.itemId)),
       ).toEqual([{ id: fixture.itemId }]);
       expect(
-        await checked(client.from("decks").select("id,title").eq("course_id", frenchCourseId)),
-      ).toEqual([{ id: frenchDeck, title: "Backup French deck" }]);
+        await checked(client.from("decks").select("id,title").eq("course_id", customCourseId)),
+      ).toEqual([{ id: customDeck, title: "Backup Japanese deck" }]);
+      expect(
+        await checked(
+          client.from("courses").select("target_language_name").eq("id", customCourseId).single(),
+        ),
+      ).toEqual({ target_language_name: "日本語" });
       expect(
         await checked(
           client.from("profiles").select("active_course_id").eq("id", ownerId).single(),
         ),
-      ).toEqual({ active_course_id: frenchCourseId });
+      ).toEqual({ active_course_id: customCourseId });
+      await page.goto("/es/app/courses");
+      await expect(
+        page.getByLabel("Curso activo", { exact: true }).locator("option:checked"),
+      ).toHaveText("Learning Japanese · 日本語");
     } finally {
       try {
-        if (frenchCourseId)
+        if (customCourseId)
           await checked(
-            client.from("courses").delete().eq("id", frenchCourseId).eq("owner_id", ownerId),
+            client.from("courses").delete().eq("id", customCourseId).eq("owner_id", ownerId),
           );
       } finally {
         await cleanup();

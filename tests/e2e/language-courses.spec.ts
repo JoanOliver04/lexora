@@ -103,12 +103,13 @@ test("create and switch persistent courses with independent library, reviews, an
   await expect(page.getByRole("heading", { name: "Mis cursos" })).toBeVisible();
   await assertStudyLayout(page, info, "course-picker");
   const language = page.getByLabel("Idioma que quieres estudiar");
-  for (const locale of ["en-GB", "fr", "de", "it"]) {
-    await expect(language.locator(`option[value="${locale}"]`)).toHaveCount(1);
-  }
+  const suggestions = page.getByRole("group", { name: "Idiomas sugeridos" });
+  await expect(suggestions.getByRole("button")).toHaveCount(4);
+  await suggestions.getByRole("button", { name: "francés", exact: true }).click();
+  await expect(language).toHaveValue("francés");
   const frenchTitle = "Francés de viaje";
   await page.getByLabel("Nombre del curso").fill(frenchTitle);
-  await language.selectOption("fr");
+  await language.fill("FRANCAIS");
   await page.getByRole("button", { name: "Crear curso" }).click();
   await expect(page).toHaveURL("/es/app");
   await expect(courseLink(page, frenchTitle)).toBeVisible();

@@ -22,7 +22,7 @@ export function createSupabasePreferencesRepository(
           .maybeSingle(),
         client
           .from("courses")
-          .select("id,title,target_locale")
+          .select("id,title,target_locale,target_language_name")
           .eq("owner_id", ownerId)
           .eq("active", true)
           .order("created_at")
@@ -50,10 +50,11 @@ export function createSupabasePreferencesRepository(
         courseId: course.id,
         profileVersion: p.updated_at,
         settingsVersion: s.updated_at,
-        courses: courses.data.map(({ id, title, target_locale }) => ({
+        courses: courses.data.map(({ id, title, target_locale, target_language_name }) => ({
           id,
           title,
           targetLocale: target_locale,
+          targetLanguageName: target_language_name,
         })),
         uiLocale: p.ui_locale,
         theme: p.theme_preference as AccountTheme,

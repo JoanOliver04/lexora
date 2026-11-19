@@ -5,7 +5,7 @@ import { getActiveCourseForCurrentUser } from "@/composition/courses";
 import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
-import { courseLanguageNames } from "@/modules/courses/presentation/language-names";
+import { courseLanguageNames } from "@/modules/courses/domain/course-language";
 import { importDeckTargetSchema } from "@/modules/importing/application/import-transfer";
 import { readDeckOptions } from "@/modules/library/application/library-options";
 import { TutorialHint } from "@/shared/presentation/components/tutorial-guides";
@@ -77,7 +77,7 @@ export default async function ImportPage({
   const languageCode = activeCourse.targetLocale.split("-")[0] ?? activeCourse.targetLocale;
   const courseLanguage = {
     locale: activeCourse.targetLocale,
-    name: courseLanguageNames(locale)(languageCode),
+    name: activeCourse.targetLanguageName ?? courseLanguageNames(locale)(languageCode),
   };
 
   return (

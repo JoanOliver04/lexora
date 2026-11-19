@@ -19,7 +19,7 @@ export function CreateCourseForm({
   const router = useRouter();
   const [state, action, pending] = useActionState(createLanguageCourseAction, {});
   const [title, setTitle] = useState("");
-  const [targetLocale, setTargetLocale] = useState("");
+  const [language, setLanguage] = useState("");
   return (
     <form action={action} className="flex min-w-0 flex-col gap-4">
       <input type="hidden" name="locale" value={locale} />
@@ -48,23 +48,36 @@ export function CreateCourseForm({
         </div>
         <div className="flex min-w-0 flex-col gap-2">
           <Label htmlFor="new-course-language">{t("language")}</Label>
-          <select
-            className="min-h-11 w-full min-w-0 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3"
+          <p id="new-course-language-hint" className="text-sm text-(--color-ink-muted)">
+            {t("languageHint")}
+          </p>
+          <Input
             id="new-course-language"
-            name="targetLocale"
-            value={targetLocale}
-            onChange={(event) => setTargetLocale(event.target.value)}
+            name="language"
+            value={language}
+            onChange={(event) => setLanguage(event.target.value)}
+            aria-describedby="new-course-language-hint"
+            placeholder={t("languageExample")}
+            maxLength={80}
+            autoComplete="off"
+            dir="auto"
             required
-          >
-            <option value="" disabled>
-              {t("chooseLanguage")}
-            </option>
-            {languages.map((language) => (
-              <option key={language.locale} value={language.locale}>
-                {language.label}
-              </option>
-            ))}
-          </select>
+          />
+          {languages.length > 0 && (
+            <div role="group" aria-label={t("suggestions")} className="flex flex-wrap gap-2">
+              {languages.map(({ locale: tag, label }) => (
+                <Button
+                  key={tag}
+                  type="button"
+                  variant="secondary"
+                  className="max-w-full capitalize"
+                  onClick={() => setLanguage(label)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
         <Button type="submit" className="self-start">
           {t(pending ? "creating" : "create")}
