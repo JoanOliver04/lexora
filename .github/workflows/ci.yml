@@ -217,13 +217,18 @@ jobs:
           exit 1
 
       - name: Bibliotecas de Firefox y WebKit
-        # Chromium already works in this runner. New engines need additional
-        # libraries. The regional EC2 mirror has exhausted the job timeout.
-        # Use the primary Ubuntu archive for that mirror and keep signed sources.
+        # Regional Ubuntu mirrors have stalled this job before the tests start.
+        # Use independent HTTPS mirrors with the runner's signed Ubuntu sources.
+        timeout-minutes: 5
         run: |
-          for source in /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources /etc/apt/apt-mirrors.txt; do
+          printf '%s\tpriority:%s\n' \
+            'https://mirrors.mit.edu/ubuntu/' 1 \
+            'https://mirror.csclub.uwaterloo.ca/ubuntu/' 2 \
+            'https://archive.ubuntu.com/ubuntu/' 3 \
+            | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          for source in /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; do
             if [ -f "$source" ]; then
-              sudo sed -Ei 's~https?://[[:alnum:]-]+\.ec2\.archive\.ubuntu\.com/ubuntu/?~https://archive.ubuntu.com/ubuntu/~g' "$source"
+              sudo sed -Ei 's~https?://([[:alnum:]-]+\.)*archive\.ubuntu\.com/ubuntu/?~mirror+file:/etc/apt/apt-mirrors.txt~g' "$source"
             fi
           done
           for attempt in 1 2 3; do
