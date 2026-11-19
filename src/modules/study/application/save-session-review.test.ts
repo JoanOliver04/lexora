@@ -178,6 +178,23 @@ describe("saveSessionReview", () => {
     expect(f.committer.commit).toHaveBeenCalledTimes(1);
     expect(f.logs.size).toBe(1);
   });
+  it.each([0, 12_345])("preserves measured duration %i ms in the commit", async (durationMs) => {
+    const f = fixture();
+    expect(await saveSessionReview(f, { ...input, durationMs })).toMatchObject({ ok: true });
+    expect(f.committer.commit).toHaveBeenCalledWith(expect.objectContaining({ durationMs }));
+  });
+  it.each([-1, 1.25, 3_600_001, NaN])(
+    "rejects invalid duration %j before writing",
+    async (durationMs) => {
+      const f = fixture();
+      expect(await saveSessionReview(f, { ...input, durationMs })).toEqual({
+        ok: false,
+        reason: "invalid-input",
+      });
+      expect(f.committer.commit).not.toHaveBeenCalled();
+      expect(f.memory.create).not.toHaveBeenCalled();
+    },
+  );
   it.each([
     { sessionId: "bad" },
     { practiceItemId: "bad" },

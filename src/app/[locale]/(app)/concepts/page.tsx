@@ -304,7 +304,7 @@ export default async function ConceptsPage({
 
         <section id="new-concept" tabIndex={-1} className="collection-create">
           <h2 className="text-lg font-medium">{t("createHeading")}</h2>
-          <CreateConceptForm locale={locale} />
+          <CreateConceptForm key={activeCourse.id} locale={locale} courseId={activeCourse.id} />
         </section>
       </div>
     </main>

@@ -18,7 +18,7 @@ const ERROR_ID = "create-deck-error";
  * de error `role="alert"`, foco al primer campo inválido tras un envío fallido.
  * En éxito la Server Action redirige a la lista.
  */
-export function CreateDeckForm({ locale }: { locale: string }) {
+export function CreateDeckForm({ locale, courseId }: { locale: string; courseId: string }) {
   const t = useTranslations("Library");
   const [state, action, pending] = useActionState<DeckFormState, FormData>(createDeckAction, {});
   const formRef = useRef<HTMLFormElement>(null);
@@ -34,6 +34,7 @@ export function CreateDeckForm({ locale }: { locale: string }) {
         className="flex min-w-0 flex-col gap-4"
       >
         <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="expectedCourseId" value={courseId} />
 
         {issues.length > 0 || state.error ? (
           <FormError id={ERROR_ID}>

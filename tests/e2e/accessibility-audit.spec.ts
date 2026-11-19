@@ -31,6 +31,7 @@ for (const locale of ["es", "en"] as const) {
         ["concept", `/concepts/${fixture.conceptId}`],
         ["item", `/concepts/${fixture.conceptId}/items/${fixture.itemId}`],
         ["import", "/import"],
+        ["courses", "/app/courses"],
         ["settings", "/app/settings"],
         ["data", "/app/settings/data"],
       ] as const) {

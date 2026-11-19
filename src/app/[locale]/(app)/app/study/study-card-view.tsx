@@ -20,6 +20,7 @@ import {
   type ReviewRating,
   type StudyCard,
 } from "@/modules/study/application/study-card";
+import { MAX_REVIEW_DURATION_MS } from "@/modules/study/domain/study-time-estimate";
 import { Button, FormError } from "@/shared/presentation/components";
 import { revealStudyCardAction, type RevealFormState } from "./reveal-actions";
 import { submitStudyReview } from "./review-request";
@@ -171,6 +172,12 @@ function StudyCardControls({
   const reviewErrorRef = useRef<HTMLDivElement>(null);
   const submitLock = useRef(false);
   const revealLock = useRef(false);
+  const durationInput = useRef<HTMLInputElement>(null);
+  const timing = useRef({
+    visibleSince: null as number | null,
+    elapsed: 0,
+    submitted: null as number | null,
+  });
   const shortcutRef = useStudyShortcuts();
   const online = useSyncExternalStore(
     subscribeConnection,
@@ -183,6 +190,24 @@ function StudyCardControls({
     reviewError === "generic" || reviewError === "offline" || reviewError === "timeout";
   useEffect(() => {
     promptHeading.current?.focus();
+  }, []);
+  useLayoutEffect(() => {
+    const timer = timing.current;
+    function stop() {
+      if (timer.visibleSince === null) return;
+      timer.elapsed += performance.now() - timer.visibleSince;
+      timer.visibleSince = null;
+    }
+    function updateVisibility() {
+      if (document.hidden) stop();
+      else timer.visibleSince ??= performance.now();
+    }
+    updateVisibility();
+    document.addEventListener("visibilitychange", updateVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", updateVisibility);
+      stop();
+    };
   }, []);
   // A retry must become usable in the same commit that enables its button.
   // Passive effects can leave an enabled control guarded by the previous intent.
@@ -355,6 +380,13 @@ function StudyCardControls({
             event.preventDefault();
             return;
           }
+          const timer = timing.current;
+          const visible = timer.visibleSince === null ? 0 : performance.now() - timer.visibleSince;
+          timer.submitted ??= Math.min(
+            MAX_REVIEW_DURATION_MS,
+            Math.max(0, Math.round(timer.elapsed + visible)),
+          );
+          if (durationInput.current) durationInput.current.value = String(timer.submitted);
           submitLock.current = true;
         }}
       >
@@ -363,6 +395,7 @@ function StudyCardControls({
         <input type="hidden" name="practiceItemId" value={card.practiceItemId} />
         <input type="hidden" name="idempotencyKey" value={state.reviewKey ?? ""} />
         <input type="hidden" name="expectedRevision" value={state.preview?.revision ?? "new"} />
+        <input type="hidden" name="durationMs" ref={durationInput} />
         <fieldset
           disabled={
             !state.content ||

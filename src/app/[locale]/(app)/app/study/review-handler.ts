@@ -23,6 +23,13 @@ export async function saveStudyReviewRequest(
   const rawKey = data.get("idempotencyKey");
   const requestId = typeof rawKey === "string" && rawKey.length <= 128 ? rawKey : "";
   const rawRevision = data.get("expectedRevision");
+  const rawDuration = data.get("durationMs");
+  const durationMs =
+    rawDuration === null
+      ? undefined
+      : typeof rawDuration === "string" && /^\d{1,7}$/.test(rawDuration)
+        ? Number(rawDuration)
+        : Number.NaN;
   const expectedRevision =
     rawRevision === "new"
       ? null
@@ -49,6 +56,7 @@ export async function saveStudyReviewRequest(
         idempotencyKey: rawKey,
         rating: data.get("rating"),
         expectedRevision,
+        durationMs,
         now: context.clock.now(),
         timeZone: context.timeZone,
         config: V1_SCHEDULER_CONFIG,
@@ -61,6 +69,8 @@ export async function saveStudyReviewRequest(
   }
   if (!result.ok) return { error: result.reason, requestId };
   revalidatePath(`/${locale}/app`);
+  revalidatePath(`/${locale}/app/statistics`);
+  revalidatePath(`/${locale}/app/history`);
   revalidatePath(`/${locale}/app/study/${data.get("sessionId")}`);
   return { receipt: { rating: result.rating, replayed: result.replayed }, requestId };
 }

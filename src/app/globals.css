@@ -204,10 +204,17 @@
 .workspace-desktop-label {
   display: none;
 }
+.workspace-course-and-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  order: 1;
+  width: 100%;
+  gap: 0 0.85rem;
+}
 .workspace-tools {
   display: flex;
   flex-wrap: wrap;
-  width: 100%;
   gap: 0 1.15rem;
   font-size: 0.875rem;
   color: var(--color-accent);
@@ -1150,6 +1157,11 @@ html {
     padding: 1rem 2rem;
     background: transparent;
     border-bottom: 0;
+  }
+  .workspace-course-and-tools {
+    order: 0;
+    width: auto;
+    margin-inline-start: auto;
   }
   .workspace-content {
     padding-bottom: 2rem;

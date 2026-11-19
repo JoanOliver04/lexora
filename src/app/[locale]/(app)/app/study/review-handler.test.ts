@@ -33,7 +33,7 @@ function form() {
     dueAt: "2099-01-01",
     stability: "999",
     configVersion: "forged",
-    durationMs: "99999999",
+    durationMs: "12345",
   }))
     data.set(name, value);
   return data;
@@ -72,12 +72,15 @@ describe("saveStudyReviewAction", () => {
         practiceItemId: "20000000-0000-4000-8000-000000000001",
         idempotencyKey: key,
         expectedRevision: null,
+        durationMs: 12_345,
         rating: "good",
         config: expect.objectContaining({ configVersion: "v1", enableFuzz: true }),
       },
     );
     expect(revalidate.mock.calls).toEqual([
       ["/en/app"],
+      ["/en/app/statistics"],
+      ["/en/app/history"],
       ["/en/app/study/50000000-0000-4000-8000-000000000001"],
     ]);
   });
@@ -103,6 +106,22 @@ describe("saveStudyReviewAction", () => {
     );
     expect(revalidate).toHaveBeenCalledWith("/es/app");
   });
+  it.each([
+    [null, undefined],
+    ["0", 0],
+    ["-1", NaN],
+    ["1.5", NaN],
+    ["1e2", NaN],
+  ])(
+    "parses duration %j without turning missing or malformed input into zero",
+    async (raw, durationMs) => {
+      const data = form();
+      if (raw === null) data.delete("durationMs");
+      else data.set("durationMs", raw);
+      await saveStudyReviewAction({}, data);
+      expect(save).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ durationMs }));
+    },
+  );
   it.each(["", "0", "-1", "1.5", "01", " 1", "Infinity", "bad"])(
     "does not coerce malformed revision %j into a valid one",
     async (revision) => {

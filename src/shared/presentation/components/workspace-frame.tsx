@@ -11,7 +11,15 @@ import {
   isWorkspaceDestinationActive,
 } from "./workspace-destinations";
 
-export function WorkspaceFrame({ children, logout }: { children: ReactNode; logout: ReactNode }) {
+export function WorkspaceFrame({
+  children,
+  logout,
+  courseTitle,
+}: {
+  children: ReactNode;
+  logout: ReactNode;
+  courseTitle?: string | undefined;
+}) {
   const t = useTranslations("Navigation");
   const pathname = usePathname();
   if (pathname === "/onboarding") return children;
@@ -62,23 +70,37 @@ export function WorkspaceFrame({ children, logout }: { children: ReactNode; logo
               )?.key ?? "space",
             )}
           </span>
+          <div className="workspace-course-and-tools">
+            {courseTitle && (
+              <Link
+                href="/app/courses"
+                className="inline-flex min-h-11 min-w-0 max-w-full shrink-0 items-center gap-2 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-sm font-semibold text-(--color-ink) hover:bg-(--color-surface-sunken) [&>svg]:size-4 [&>svg]:shrink-0"
+                aria-current={pathname === "/app/courses" ? "page" : undefined}
+                aria-label={t("courseSwitcher", { course: courseTitle })}
+                title={courseTitle}
+              >
+                <span className="max-w-[min(36vw,12rem)] truncate">{courseTitle}</span>
+                <WorkspaceIcon path="m6 9 6 6 6-6" />
+              </Link>
+            )}
+            <nav className="workspace-tools" aria-label={t("tools")}>
+              {workspaceDestinations.slice(5).map((item) => (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  aria-current={
+                    isWorkspaceDestinationActive(pathname, item.href) ? "page" : undefined
+                  }
+                >
+                  {t(item.key)}
+                </Link>
+              ))}
+            </nav>
+          </div>
           <div className="workspace-header-actions">
             <WorkspaceCommands />
             {logout}
           </div>
-          <nav className="workspace-tools" aria-label={t("tools")}>
-            {workspaceDestinations.slice(5).map((item) => (
-              <Link
-                key={item.key}
-                href={item.href}
-                aria-current={
-                  isWorkspaceDestinationActive(pathname, item.href) ? "page" : undefined
-                }
-              >
-                {t(item.key)}
-              </Link>
-            ))}
-          </nav>
         </header>
         <div id="workspace-content" className="workspace-content" tabIndex={-1}>
           {children}

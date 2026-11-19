@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { VersionedSchedulerConfig } from "@/modules/study/domain/scheduler-config";
+import { MAX_REVIEW_DURATION_MS } from "@/modules/study/domain/study-time-estimate";
 import { confirmReview, type ReplayLookup, type ReviewCommitter } from "./confirm-review";
 import { getDailyQueue, type DailyQueueRepository } from "./daily-queue";
 import { ensureLearningState, type LearningStateRepository } from "./learning-state";
@@ -23,6 +24,7 @@ const intentSchema = z.object({
     .transform((value) => value.toLowerCase()),
   rating: z.enum(REVIEW_RATINGS),
   expectedRevision: z.number().int().min(1).max(2_147_483_647).nullable(),
+  durationMs: z.number().int().min(0).max(MAX_REVIEW_DURATION_MS).optional(),
 });
 
 export type SaveSessionReviewReason =
@@ -56,6 +58,7 @@ export async function saveSessionReview(
     idempotencyKey: unknown;
     rating: unknown;
     expectedRevision: unknown;
+    durationMs?: unknown;
     now: Date;
     timeZone: string;
     config: VersionedSchedulerConfig;
@@ -129,6 +132,7 @@ export async function saveSessionReview(
     now: input.now,
     config: input.config,
     studySessionId: session.id,
+    durationMs: intent.durationMs ?? null,
   });
   if (!confirmed.ok)
     return rejectOrReplay(

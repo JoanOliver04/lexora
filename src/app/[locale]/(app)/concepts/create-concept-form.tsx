@@ -28,7 +28,7 @@ const ERROR_ID = "create-concept-error";
  * disparó el envío, que un `<form action={...}>` de Next.js no garantiza
  * conservar como parte de `FormData`.
  */
-export function CreateConceptForm({ locale }: { locale: string }) {
+export function CreateConceptForm({ locale, courseId }: { locale: string; courseId: string }) {
   const t = useTranslations("Concepts");
   const [state, action, pending] = useActionState<ConceptFormState, FormData>(
     createConceptAction,
@@ -48,6 +48,7 @@ export function CreateConceptForm({ locale }: { locale: string }) {
         className="flex min-w-0 flex-col gap-4"
       >
         <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="expectedCourseId" value={courseId} />
         <input type="hidden" name="confirmDuplicate" value={duplicates.length > 0 ? "1" : "0"} />
 
         {issues.length > 0 || state.error ? (

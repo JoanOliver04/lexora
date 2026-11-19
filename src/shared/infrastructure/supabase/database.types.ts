@@ -999,6 +999,14 @@ export type Database = {
         Args: { p_deck_ids: string[]; p_owner_id: string }
         Returns: Json
       }
+      create_language_course: {
+        Args: {
+          p_profile_version: string
+          p_target_locale: string
+          p_title: string
+        }
+        Returns: string
+      }
       delete_own_account: {
         Args: { p_confirmation: string; p_email: string }
         Returns: boolean

@@ -89,7 +89,7 @@ test("pause and fresh resume preserve saved reviews, while terminal sessions sta
     await expect(summary.getByTestId("summary-reviews")).toHaveText("1");
     await expect(summary.getByTestId("summary-new-items")).toHaveText("1");
     await expect(summary.getByTestId("summary-rating-good")).toHaveText("1");
-    await expect(summary.getByTestId("summary-duration")).toHaveText("No registrado");
+    await expect(summary.getByTestId("summary-duration")).toHaveText(/^(?:<1|[1-9]\d*) s$/);
     expect(
       await checked(
         client.from("study_sessions").select("status, ended_at").eq("id", sessionId).single(),
@@ -153,7 +153,7 @@ test("pause and fresh resume preserve saved reviews, while terminal sessions sta
     await expect(summary.getByTestId("summary-reviews")).toHaveText("2");
     await expect(summary.getByTestId("summary-new-items")).toHaveText("2");
     await expect(summary.getByTestId("summary-rating-good")).toHaveText("2");
-    await expect(summary.getByTestId("summary-duration")).toHaveText("No registrado");
+    await expect(summary.getByTestId("summary-duration")).toHaveText(/^(?:<1|[1-9]\d*) s$/);
     await expect(summary.getByText(/También hay ítems programados/)).toBeVisible();
     await expect(page.getByTestId("session-controls")).toHaveCount(0);
     await expect(page.getByText(/Puede haber repasos futuros u ocultos/)).toBeVisible();
@@ -172,9 +172,11 @@ test("pause and fresh resume preserve saved reviews, while terminal sessions sta
     });
     await page.reload();
     await expect(page.getByRole("button", { name: "Reanudar sesión" })).toHaveCount(0);
-    expect(
-      await checked(client.from("review_logs").select("id").eq("study_session_id", sessionId)),
-    ).toHaveLength(2);
+    const reviews = await checked(
+      client.from("review_logs").select("duration_ms").eq("study_session_id", sessionId),
+    );
+    expect(reviews).toHaveLength(2);
+    for (const review of reviews ?? []) expect(review.duration_ms).toBeGreaterThan(0);
 
     await checked(client.from("practice_items").insert(item(randomUUID(), "Abandon front")));
     await page.goto(`/es/app/study?deck=${deckId}`);

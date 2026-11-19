@@ -59,6 +59,14 @@ describe("review write endpoint", () => {
     );
     expect(Object.fromEntries(save.mock.calls[0]![1])).toEqual(fields);
   });
+  it("accepts one optional duration and rejects a duplicate value", async () => {
+    const data = new URLSearchParams({ ...fields, durationMs: "12345" });
+    expect((await POST(request(data.toString()))).status).toBe(200);
+    expect(Object.fromEntries(save.mock.calls[0]![1])).toEqual({ ...fields, durationMs: "12345" });
+    save.mockClear();
+    expect((await POST(request(`${data}&durationMs=0`))).status).toBe(400);
+    expect(save).not.toHaveBeenCalled();
+  });
   it("limits actual streamed bytes even without Content-Length", async () => {
     const req = request("x".repeat(2049));
     expect(req.headers.has("content-length")).toBe(false);

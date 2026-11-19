@@ -12,6 +12,7 @@
     "help": "Help",
     "primary": "Main navigation",
     "tools": "Study tools",
+    "courseSwitcher": "Switch course. Active course {course}",
     "skip": "Skip to content",
     "space": "Your study space"
   },
@@ -206,7 +207,7 @@
     "days": "Last {count} days",
     "periodSummary": "Period summary",
     "reviews": "Saved reviews",
-    "recordedMinutes": "Recorded minutes",
+    "recordedTime": "Recorded time",
     "coverage": "Duration available for {measured} of {total} reviews.",
     "observedRecall": "Observed recall",
     "recallFormula": "Hard + Good + Easy / all reviews.",
@@ -349,7 +350,6 @@
     "reviewsDone": "Reviews completed",
     "newIntroduced": "New practised",
     "recordedTime": "Recorded time",
-    "recordedMinutes": "{minutes} min",
     "durationIncomplete": "Some reviews have no recorded duration; this time only includes those that do.",
     "dayReviews": "{count, plural, one {# review} other {# reviews}}",
     "loading": "Loading your study day…",
@@ -471,7 +471,6 @@
     "ratings": "Saved ratings",
     "duration": "Recorded time",
     "durationMissing": "Not recorded",
-    "durationSeconds": "{seconds, number} s",
     "durationCoverage": "Duration available for {measured, number} of {total, number} reviews.",
     "durationHint": "Only sums durations present in the records, rounded to the nearest second. It does not use time between start and finish, include pauses or estimate minutes studied.",
     "remainingTitle": "Current pending items for this selection",
@@ -562,6 +561,7 @@
     "resetScope": "Choose from all decks",
     "errors": {
       "invalid-scope": "Choose at least one active deck from this course, up to a maximum of 100, or select all decks.",
+      "course-changed": "The active course has changed. Return to Today and prepare a session in the course you want to study.",
       "invalid-session-id": "This request isn't valid. Reload the page to prepare the session again.",
       "not-found": "That session can't be created. Return to Today to check your course.",
       "invalid-timezone": "Your study day can't be calculated with that timezone.",
@@ -1264,6 +1264,25 @@
       "uncertain": "The connection was interrupted. Deletion may have completed. Check whether you can still sign in before trying again."
     }
   },
+  "Courses": {
+    "title": "My courses",
+    "back": "Back to Today",
+    "select": "Choose a course",
+    "new": "New course",
+    "empty": "Each course starts empty. You can then create decks or import your content.",
+    "name": "Course name",
+    "language": "Language you want to study",
+    "chooseLanguage": "Choose a language",
+    "create": "Create course",
+    "creating": "Creating course…",
+    "reload": "Load the current version",
+    "errors": {
+      "invalid": "Check the course name and language.",
+      "conflict": "The active course or preferences changed. Load the current version and try again.",
+      "limit": "You have reached the active course limit.",
+      "unavailable": "We couldn't create the course. Try again."
+    }
+  },
   "Settings": {
     "dataInformation": "How your data is stored and deleted",
     "title": "Settings",
@@ -1279,6 +1298,7 @@
     "limitsNote": "From 0 to 100 new cards. Due learning steps remain available when an allowance is reached; lowering a limit does not undo saved reviews.",
     "showIntervals": "Show an estimate of the next interval after revealing the answer. You can toggle its visibility during the session.",
     "course": "Active course",
+    "manageCourses": "Manage courses",
     "courseNote": "Switching course preserves its content and its own limits. Save any pending preference changes first.",
     "switchCourse": "Switch course",
     "save": "Save preferences",

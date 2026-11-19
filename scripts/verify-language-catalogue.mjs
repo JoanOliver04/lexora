@@ -89,13 +89,16 @@ try {
       raise notice 'PASS: %', label;
     end $$;
 
-    select pg_temp.assert_true((select count(*) = 3 from public.languages),
-      'fresh migrations create exactly three languages without seed');
-    select pg_temp.assert_true((select count(*) = 3 from public.languages where
+    select pg_temp.assert_true((select count(*) = 6 from public.languages),
+      'fresh migrations create exactly six catalogue entries without seed');
+    select pg_temp.assert_true((select count(*) = 6 from public.languages where
       (code, locale, name_key, active) in (
         ('es', 'es', 'language.es', true),
         ('en', 'en', 'language.en', true),
-        ('en', 'en-GB', 'language.en_gb', true))), 'reference pairs and translations');
+        ('en', 'en-GB', 'language.en_gb', true),
+        ('fr', 'fr', 'language.fr', true),
+        ('de', 'de', 'language.de', true),
+        ('it', 'it', 'language.it', true))), 'reference pairs and translations');
     select pg_temp.assert_true(
       (select count(*) = 0 from auth.users) and
       (select count(*) = 0 from public.profiles) and
@@ -154,20 +157,20 @@ try {
     select pg_temp.assert_true((select relrowsecurity from pg_class
       where oid = 'public.languages'::regclass), 'RLS remains enabled');
     set local role anon;
-    select pg_temp.assert_true((select count(*) = 3 from public.languages), 'anon can read catalogue');
+    select pg_temp.assert_true((select count(*) = 6 from public.languages), 'anon can read catalogue');
     do $$ begin
       begin
         insert into public.languages(code, locale, name_key) values ('zz', 'zz', 'denied');
         raise exception 'Expected RLS denial';
       exception when insufficient_privilege then null; end;
     end $$;
-    select pg_temp.assert_true((select count(*) = 3 from public.languages), 'anon cannot insert');
+    select pg_temp.assert_true((select count(*) = 6 from public.languages), 'anon cannot insert');
     reset role;
     insert into auth.users(id) values ('00000000-0000-4000-8000-000000000043');
     insert into public.profiles(id) values ('00000000-0000-4000-8000-000000000043');
     set local request.jwt.claim.sub = '00000000-0000-4000-8000-000000000043';
     set local role authenticated;
-    select pg_temp.assert_true((select count(*) = 3 from public.languages),
+    select pg_temp.assert_true((select count(*) = 6 from public.languages),
       'authenticated can read catalogue');
     do $$ begin
       begin
@@ -175,18 +178,28 @@ try {
         raise exception 'Expected RLS denial';
       exception when insufficient_privilege then null; end;
     end $$;
-    select pg_temp.assert_true((select count(*) = 3 from public.languages),
+    select pg_temp.assert_true((select count(*) = 6 from public.languages),
       'authenticated cannot insert');
     select public.complete_onboarding('es', 'A1', 'A1', 5);
     select pg_temp.assert_true((select count(*) = 1 from public.courses),
       'onboarding resolves reference languages without seed');
+    select public.create_language_course('French', 'fr',
+      (select updated_at from public.profiles where id = auth.uid()));
+    select pg_temp.assert_true(
+      (select count(*) = 2 from public.courses) and exists (
+        select 1 from public.profiles p join public.courses c on c.id = p.active_course_id
+        join public.course_settings s on s.course_id = c.id
+        where p.id = auth.uid() and c.target_locale = 'fr' and s.daily_new_limit = 5
+      ), 'additional course uses the migrated catalogue and default settings without seed');
     rollback;
   `,
   );
   const passes = result.stderr.split(/\r?\n/).filter((line) => line.includes("PASS:"));
-  if (passes.length !== 15) throw new Error(`Expected 15 assertions, received ${passes.length}`);
+  if (passes.length !== 16) throw new Error(`Expected 16 assertions, received ${passes.length}`);
   for (const pass of passes) console.log(pass.slice(pass.indexOf("PASS:")));
-  console.log(`${migrations.length} real migrations; 15 assertions passed; no seed executed.`);
+  console.log(
+    `${migrations.length} real migrations; ${passes.length} assertions passed; no seed executed.`,
+  );
 } finally {
   if (created) {
     sql("postgres", `drop database ${database};`);

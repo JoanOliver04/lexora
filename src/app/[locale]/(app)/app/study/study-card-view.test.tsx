@@ -199,6 +199,7 @@ describe("study reveal and rating controls", () => {
       practiceItemId: "item",
       idempotencyKey: reviewKey,
       expectedRevision: "new",
+      durationMs: expect.stringMatching(/^\d+$/),
       rating: "good",
     });
     expect(reveal).toHaveBeenCalledTimes(1);
@@ -364,6 +365,32 @@ describe("study reveal and rating controls", () => {
       Object.fromEntries(save.mock.calls[1]![1] as FormData),
     );
     expect(refresh).not.toHaveBeenCalled();
+  });
+  it("counts visible time from the first prompt and freezes it through a failed save", async () => {
+    let now = 100;
+    let hidden = false;
+    vi.spyOn(performance, "now").mockImplementation(() => now);
+    vi.spyOn(document, "hidden", "get").mockImplementation(() => hidden);
+    save.mockResolvedValue({ error: "generic", requestId: reviewKey });
+    mount();
+    now = 1_200;
+    hidden = true;
+    fireEvent(document, new Event("visibilitychange"));
+    now = 5_000;
+    hidden = false;
+    fireEvent(document, new Event("visibilitychange"));
+    fireEvent.click(screen.getByRole("button", { name: "Revelar respuesta" }));
+    await screen.findByText(content.answerText);
+    now = 5_500;
+    fireEvent.click(screen.getByRole("button", { name: "Bien" }));
+    await screen.findByRole("alert");
+    now = 60_000;
+    fireEvent.click(screen.getByRole("button", { name: "Bien" }));
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(2));
+    expect(save.mock.calls.map(([, data]) => (data as FormData).get("durationMs"))).toEqual([
+      "1600",
+      "1600",
+    ]);
   });
   it("keeps the saved status across the next front and when the queue becomes empty", async () => {
     const view = mount();

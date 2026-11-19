@@ -29,6 +29,7 @@ function form(): FormData {
   data.set("sessionId", SESSION);
   data.set("ownerId", "forged");
   data.set("courseId", "forged-course");
+  data.set("expectedCourseId", "active-course");
   data.set("now", "2099-01-01T00:00:00Z");
   return data;
 }
@@ -36,6 +37,7 @@ describe("study session action", () => {
   beforeEach(() => {
     context.mockReset().mockResolvedValue({
       ownerId: "verified-owner",
+      courseId: "active-course",
       timeZone: "Europe/Madrid",
       clock: { now: () => NOW },
       sessions: {},
@@ -78,6 +80,12 @@ describe("study session action", () => {
   it("requires an active course before creating a session", async () => {
     course.mockResolvedValue(null);
     await expect(createStudySessionAction({}, form())).rejects.toThrow("redirect:/en/onboarding");
+    expect(create).not.toHaveBeenCalled();
+  });
+  it("rejects a form from a different course after switching tabs", async () => {
+    const data = form();
+    data.set("expectedCourseId", "previous-course");
+    expect(await createStudySessionAction({}, data)).toEqual({ error: "course-changed" });
     expect(create).not.toHaveBeenCalled();
   });
   it("returns a translated error key without navigating on validation failure", async () => {

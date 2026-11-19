@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { SessionSummary } from "@/modules/study/application/session-summary";
 import { REVIEW_RATINGS } from "@/modules/study/domain/memory";
+import { formatRecordedStudyTime } from "@/modules/study/presentation/recorded-study-time";
 import { Button, FormError } from "@/shared/presentation/components";
 
 export function SessionSummaryView({ summary }: { summary: SessionSummary | null }) {
+  const locale = useLocale();
   const t = useTranslations("SessionSummary");
   const tCard = useTranslations("PracticeCard");
   const router = useRouter();
@@ -61,7 +63,11 @@ export function SessionSummaryView({ summary }: { summary: SessionSummary | null
           <p data-testid="summary-duration">
             {summary.recordedDurationMs === null
               ? t("durationMissing")
-              : t("durationSeconds", { seconds: Math.round(summary.recordedDurationMs / 1000) })}
+              : formatRecordedStudyTime(
+                  locale,
+                  summary.recordedDurationMs,
+                  summary.timedReviewCount,
+                )}
           </p>
           {summary.timedReviewCount > 0 && (
             <p className="text-sm">

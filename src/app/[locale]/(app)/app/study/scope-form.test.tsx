@@ -24,6 +24,7 @@ function view(locale: "es" | "en" = "es", availableCount = 2, selected = false) 
       now={new Date("2026-10-06T10:00:00Z")}
     >
       <ScopeForm
+        courseId="course"
         locale={locale}
         sessionId={SESSION}
         decks={[

@@ -92,6 +92,11 @@ for (const locale of ["es", "en"] as const) {
       await expect(page.getByTestId("review-save-status")).toContainText(
         locale === "es" ? "Último repaso guardado" : "Last review saved",
       );
+      const recorded = await checked(
+        client.from("review_logs").select("duration_ms").eq("practice_item_id", itemId).single(),
+      );
+      expect(recorded?.duration_ms).toBeGreaterThan(0);
+      expect(recorded?.duration_ms).toBeLessThan(60_000);
       await page.goto(`/${locale}/app/history`);
       await expect(
         page.getByRole("heading", { name: locale === "es" ? "Tu historial" : "Your history" }),
@@ -140,6 +145,10 @@ for (const locale of ["es", "en"] as const) {
           .first(),
       ).toBeVisible();
       await expect(page.getByRole("meter")).not.toHaveCount(0);
+      const period = page.getByRole("region", {
+        name: locale === "es" ? "Resumen del periodo" : "Period summary",
+      });
+      await expect(period.getByText(/^(?:<1|[1-9]\d*) (?:s|secs?)$/)).toBeVisible();
       await page
         .getByText(locale === "es" ? "Por tipo de concepto" : "By concept type", { exact: true })
         .click();

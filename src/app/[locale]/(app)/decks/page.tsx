@@ -326,7 +326,7 @@ export default async function DecksPage({
 
         <section id="new-deck" tabIndex={-1} className="collection-create">
           <h2 className="text-lg font-medium">{t("createHeading")}</h2>
-          <CreateDeckForm locale={locale} />
+          <CreateDeckForm key={activeCourse.id} locale={locale} courseId={activeCourse.id} />
         </section>
       </div>
     </main>

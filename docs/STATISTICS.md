@@ -38,7 +38,7 @@ como una colección de ceros.
 | Repasos | Número de eventos guardados en el periodo, incluyendo todos los intentos de la misma tarjeta. |
 | Valoraciones | Conteo de `again`, `hard`, `good`, `easy`; cada porcentaje usa como denominador todos los eventos del periodo. |
 | Recuerdo observado | `(hard + good + easy) / total`. Sin eventos, no hay porcentaje. Es una autoevaluación observada, no un nivel MCER ni recuperabilidad predicha. |
-| Minutos registrados | Suma de `duration_ms / 60000` únicamente para duraciones presentes. Se muestra la cobertura de medición; sin duraciones no se inventa tiempo. |
+| Tiempo registrado | Se suman los milisegundos guardados y se convierte el total para mostrarlo. Los totales de menos de un minuto se muestran en segundos. Cero medido se distingue de duración desconocida. Se muestra la cobertura de medición. |
 | Actividad diaria | Eventos agrupados por día del perfil. Los días sin eventos son cero. El gráfico muestra hasta los últimos 14 días; el resumen incluye todo el periodo. |
 | Estados actuales | Ítems habilitados, de modos V1, con concepto activo y al menos un mazo activo. Sin `learning_state`, estado New. Cada ítem se cuenta una vez aunque pertenezca a varios mazos. |
 | Desgloses | Tipo de concepto y nivel del contenido. Cada grupo muestra repasos del periodo y estados actuales por separado. La clasificación es la actual, también para eventos antiguos; los niveles describen el contenido, no una certificación del usuario. El filtro de mazo se aplica a ambos datos. |
@@ -51,6 +51,13 @@ Los agregados se calculan en PostgreSQL: el límite de filas de PostgREST no
 recorta las estadísticas. El frontend recibe sumas y conteos, no todo el
 historial. Los estados presentes pueden cambiar al archivar contenido; la
 actividad histórica se conserva. No se presenta recuperabilidad FSRS media.
+
+El repaso mide el tiempo visible desde el frente de la tarjeta hasta la primera
+valoración. Los reintentos mantienen los mismos milisegundos y el mismo ID,
+sin añadir el tiempo de espera de guardado. El servidor acepta enteros de hasta
+una hora y conserva `NULL` para los registros antiguos y clientes anteriores.
+Las fechas de sesión y repaso no indican cuándo se mostró una tarjeta, por lo
+que los datos históricos sin duración siguen siendo desconocidos.
 
 ## Presentación y verificación
 
