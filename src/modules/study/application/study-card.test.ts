@@ -111,6 +111,10 @@ describe("getStudySessionCard", () => {
       ownerId: "owner",
       courseId: "saved-course",
       deckIds: ["saved-deck"],
+      reviewPriority: {
+        at: new Date("2026-10-05T22:00:00Z"),
+        dueThrough: new Date("2026-10-06T10:00:00Z"),
+      },
     });
     expect(JSON.stringify(result)).not.toContain("Secret");
     expect(sessions.create).not.toHaveBeenCalled();

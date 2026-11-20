@@ -143,8 +143,18 @@ Orden:
 2. Review vencidos.
 3. New (con estado o sin fila todavía), hasta el cupo diario.
 
-Dentro de Learning/Review: `dueAt` ascendente, desempate
-`practiceItemId`. Dentro de New: solo `practiceItemId`. El cupo de
+Learning se ordena por `dueAt`, con desempate por `practiceItemId`.
+Review usa ese orden cuando caben todos los vencidos. Si el cupo deja
+repasos fuera, las tarjetas con una estimación compatible se sitúan de
+menor a mayor probabilidad de recuerdo, con el mismo desempate por fecha e
+ID. Las tarjetas sin estimación conservan su posición cronológica. El
+adaptador usa la estabilidad y la última valoración para calcular el
+recuerdo al inicio del día del perfil. Abrir, revelar y guardar una
+tarjeta ese día usan la misma referencia. El vencimiento determina
+cuándo entra en la cola.
+[Orden de repaso en el manual de Anki](https://docs.ankiweb.net/manual/deck-options#review-sort-order).
+
+Dentro de New se ordena por `practiceItemId`. El cupo de
 nuevos cuenta `PracticeItem` (ADR-003), restando los que hoy salieron
 de `new` en un `review_log`. El límite de repasos recorta **solo**
 Review; los pasos cortos no lo consumen. `hiddenDueReviews` /

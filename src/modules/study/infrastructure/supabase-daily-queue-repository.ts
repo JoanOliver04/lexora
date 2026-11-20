@@ -5,14 +5,23 @@ import { studyErrorFrom } from "@/modules/study/application/study-error";
 import type { QueueCandidate } from "@/modules/study/domain/queue";
 import type { MemoryPhase } from "@/modules/study/domain/memory";
 import { isMemoryPhase } from "@/modules/study/domain/memory";
+import {
+  schedulerCompatibility,
+  V1_SCHEDULER_CONFIG,
+} from "@/modules/study/domain/scheduler-config";
 import type { Database, Json } from "@/shared/infrastructure/supabase/database.types";
 import { readStudyRows, studyIdBatches } from "./read-study-rows";
 import { listEligibleStudyItemIds } from "./supabase-eligible-study-items";
+import { estimateReviewRecall } from "./ts-fsrs-scheduler";
 
+type StoredState = Database["public"]["Tables"]["learning_states"]["Row"];
 type LearningStateRow = Pick<
-  Database["public"]["Tables"]["learning_states"]["Row"],
+  StoredState,
   "id" | "practice_item_id" | "due_at" | "phase" | "revision"
->;
+> &
+  Partial<
+    Pick<StoredState, "stability" | "last_reviewed_at" | "scheduler_version" | "config_version">
+  >;
 
 function phaseFromSnapshot(raw: Json): MemoryPhase | null {
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
@@ -39,23 +48,25 @@ export function createSupabaseDailyQueueRepository(
       };
     },
 
-    async listEligibleItems({ ownerId, courseId, deckIds }) {
+    async listEligibleItems({ ownerId, courseId, deckIds, reviewPriority }) {
       const itemIds = await listEligibleStudyItemIds(client, { ownerId, courseId, deckIds });
       if (itemIds.length === 0) return [];
 
       const byItem = new Map<string, LearningStateRow>();
       for (const ids of studyIdBatches(itemIds)) {
-        const states = await readStudyRows(
-          (from, to) =>
-            client
-              .from("learning_states")
-              .select("id, practice_item_id, due_at, phase, revision")
-              .eq("owner_id", ownerId)
-              .in("practice_item_id", ids)
-              .order("id")
-              .range(from, to),
-          "no se pudieron leer los estados de la cola",
-        );
+        const states = await readStudyRows((from, to) => {
+          const table = client.from("learning_states");
+          const query = reviewPriority
+            ? table.select(
+                "id, practice_item_id, due_at, phase, revision, stability, last_reviewed_at, scheduler_version, config_version",
+              )
+            : table.select("id, practice_item_id, due_at, phase, revision");
+          return query
+            .eq("owner_id", ownerId)
+            .in("practice_item_id", ids)
+            .order("id")
+            .range(from, to);
+        }, "no se pudieron leer los estados de la cola");
         for (const row of states) byItem.set(row.practice_item_id, row);
       }
 
@@ -70,12 +81,33 @@ export function createSupabaseDailyQueueRepository(
             revision: null,
           };
         }
+        const dueAt = new Date(state.due_at);
+        const recallProbability =
+          reviewPriority &&
+          state.phase === "review" &&
+          dueAt <= reviewPriority.dueThrough &&
+          state.stability !== undefined &&
+          state.last_reviewed_at &&
+          schedulerCompatibility(
+            {
+              schedulerVersion: state.scheduler_version ?? "",
+              configVersion: state.config_version ?? "",
+            },
+            V1_SCHEDULER_CONFIG,
+          ).ok
+            ? estimateReviewRecall(
+                state.stability,
+                new Date(state.last_reviewed_at),
+                reviewPriority.at,
+              )
+            : null;
         return {
           practiceItemId: id,
           phase: state.phase as MemoryPhase,
-          dueAt: new Date(state.due_at),
+          dueAt,
           learningStateId: state.id,
           revision: state.revision,
+          ...(recallProbability === null ? {} : { recallProbability }),
         };
       });
       return candidates;

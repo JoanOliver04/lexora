@@ -5,6 +5,7 @@ import type { DailyQueueRepository } from "./daily-queue";
 import { getTodayOverview, type TodayOverviewRepository } from "./today-overview";
 
 const NOW = new Date("2026-10-06T10:00:00.000Z");
+const REVIEW_PRIORITY = { at: new Date("2026-10-05T22:00:00Z"), dueThrough: NOW };
 const input = { ownerId: "owner-a", courseId: "course-a", now: NOW, timeZone: "Europe/Madrid" };
 
 function candidate(
@@ -76,6 +77,7 @@ describe("getTodayOverview", () => {
       ownerId: "owner-a",
       courseId: "course-a",
       deckIds: ["deck-a"],
+      reviewPriority: REVIEW_PRIORITY,
     });
     expect(history.getDifficultySignals).toHaveBeenCalledWith({
       ownerId: "owner-a",
@@ -166,6 +168,7 @@ describe("getTodayOverview", () => {
       ownerId: "owner-a",
       courseId: "course-a",
       deckIds: [],
+      reviewPriority: REVIEW_PRIORITY,
     });
     expect(history.getDifficultySignals).not.toHaveBeenCalled();
   });

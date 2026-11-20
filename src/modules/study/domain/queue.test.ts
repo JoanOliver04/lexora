@@ -118,6 +118,45 @@ describe("assembleDailyQueue", () => {
     expect(queue.hiddenDueReviews).toBe(0);
   });
 
+  it("uses the last review slot for the due card with the lowest estimated recall", () => {
+    const learning = candidate("short-step", "learning", NOW);
+    const older = { ...candidate("older", "review", minutesAgo(100)), recallProbability: 0.89 };
+    const fragile = { ...candidate("fragile", "review", minutesAgo(60)), recallProbability: 0.64 };
+    const future = { ...candidate("future", "review", minutesAhead(1)), recallProbability: 0.4 };
+    const queue = assembleDailyQueue({
+      ...emptyLimits,
+      candidates: [older, future, fragile, learning, candidate("new", "new", null)],
+      maximumReviewsPerDay: 2,
+      reviewsDoneToday: 1,
+    });
+
+    expect(queue.entries.map((entry) => entry.practiceItemId)).toEqual([
+      "short-step",
+      "fragile",
+      "new",
+    ]);
+    expect(queue.hiddenDueReviews).toBe(1);
+    expect(queue.nextDueAt).toEqual(future.dueAt);
+    expect(queue.entries[1]?.dueAt).toEqual(fragile.dueAt);
+  });
+
+  it("keeps chronological positions for cards without a compatible estimate", () => {
+    const old = { ...candidate("old", "review", minutesAgo(80)), recallProbability: 0.92 };
+    const unknown = candidate("unknown", "review", minutesAgo(60));
+    const a = { ...candidate("a", "review", minutesAgo(40)), recallProbability: 0.79 };
+    const b = { ...a, practiceItemId: "b" };
+    const candidates = [b, unknown, old, a];
+    const limited = assembleDailyQueue({ ...emptyLimits, candidates, maximumReviewsPerDay: 3 });
+    const unlimited = assembleDailyQueue({ ...emptyLimits, candidates });
+    expect(limited.entries.map((entry) => entry.practiceItemId)).toEqual(["a", "unknown", "b"]);
+    expect(unlimited.entries.map((entry) => entry.practiceItemId)).toEqual([
+      "old",
+      "unknown",
+      "a",
+      "b",
+    ]);
+  });
+
   it("excluye lo que aún no ha vencido y expone el próximo dueAt", () => {
     const later = minutesAhead(10);
     const queue = assembleDailyQueue({
