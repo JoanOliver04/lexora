@@ -57,7 +57,9 @@ export default function Home({ params }: { params: Promise<{ locale: string }> }
           <p className="mt-2">{t("approach")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-          <Link href="/privacy">{privacy("title")}</Link>
+          <Link href="/privacy" className="min-w-11">
+            {privacy("title")}
+          </Link>
           <a href="https://github.com/JoanOliver04/lexora" rel="noreferrer">
             {t("repository")}
           </a>

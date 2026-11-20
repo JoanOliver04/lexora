@@ -38,7 +38,7 @@ export function AuthShell({
         ) : null}
         <Link
           href="/privacy"
-          className="inline-flex min-h-11 items-center self-start text-sm text-(--color-ink-muted) underline underline-offset-4"
+          className="inline-flex min-h-11 min-w-11 items-center self-start text-sm text-(--color-ink-muted) underline underline-offset-4"
         >
           {privacy("title")}
         </Link>
