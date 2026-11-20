@@ -1,5 +1,10 @@
 # Lexora — Estado actual
 
+**LEX-22.12 · README del proyecto.** La presentación recoge varios cursos,
+estudio programado y libre, importación y copias restaurables. Incluye un CSV
+de ejemplo, instrucciones de arranque local y dos capturas con datos
+sintéticos. [README de Lexora](../README.md).
+
 **LEX-22.11 · Límites diarios y calendario de estudio.** El guardado del repaso
 comprueba el cupo del curso dentro de la misma transacción, incluso con dos
 sesiones activas. Las valoraciones ya guardadas se pueden reintentar y los pasos

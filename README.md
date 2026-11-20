@@ -1,133 +1,109 @@
+<div align="center">
+
+<img src="public/icons/lexora-v2/brand-128.png" width="88" height="88" alt="" />
+
 # Lexora
 
-**Plataforma adaptativa de aprendizaje de inglés A1–C2.**
+**Estudio de idiomas con tarjetas y repetición espaciada**
 
-Lexora ayuda a convertir vocabulario pasivo en vocabulario activo mediante
-recuperación activa y repetición espaciada con [FSRS](https://github.com/open-spaced-repetition/ts-fsrs).
-Su idea central es que **reconocer una palabra no es lo mismo que poder producirla**:
-cada concepto se descompone en competencias distintas, y cada competencia tiene su
-propio estado de memoria.
+Organiza tu vocabulario, gramática y frases por curso. Crea tus propias tarjetas o importa un tema entero y elige cómo practicarlo.
 
-> **Entrega para uso personal.** Biblioteca e importación TXT/CSV, estudio FSRS con
-> guardado confirmado, pausa/reanudación, historial, estadísticas y preferencias
-> ES/EN. Exportación JSON/CSV verificada, borrado propio con reautenticación y PWA
-> instalable con fallback neutral. El registro público permanece cerrado.
-> [Aplicación](https://lexora-one-alpha.vercel.app/en) ·
-> [aceptación y límites](docs/evidence/LEX-1.0-personal-acceptance.md) ·
-> [estado de publicación](docs/STATUS.md).
+[Visitar Lexora en español](https://lexora-one-alpha.vercel.app/es) · [Open Lexora in English](https://lexora-one-alpha.vercel.app/en)
 
-Los **accesos rápidos** de la barra y `Ctrl`/`⌘` + `K` permiten encontrar una
-sección o crear contenido. La biblioteca muestra resultados, filtros removibles
-y acceso directo a los formularios; conserva los niveles A1–C1.
+</div>
 
-## Modelo conceptual
+> **Acceso personal.** Lexora admite inicio de sesión con correo y contraseña o con Google para la cuenta autorizada. El registro público está cerrado. El entorno local admite cuentas de prueba. [Alcance de la entrega personal](docs/adrs/008-personal-use.md)
 
-| Término | Qué es |
-|---|---|
-| `Concept` | La unidad de conocimiento: una palabra, una *collocation*, una regla, una función comunicativa. |
-| `PracticeItem` | Una competencia concreta sobre ese concepto: reconocerlo, recuperarlo, escucharlo, producirlo. |
-| `LearningState` | El estado FSRS de un usuario para un `PracticeItem`. Cada competencia se programa por separado. |
-| `ReviewLog` | Registro inmutable de cada repaso, con el estado antes y después. |
+[Funciones](#qué-puedes-hacer) · [Ejemplo de importación](#importa-un-tema-completo) · [Arranque local](#arranque-local) · [Cómo está construida](#cómo-está-construida)
 
-Saber reconocer *achievement* no marca automáticamente como dominada su producción.
+![Panel Hoy de Lexora en escritorio con cuatro tarjetas disponibles y accesos para estudiar, organizar mazos e importar contenido.](docs/evidence/assets/readme-hoy.webp)
 
-## Stack
+*Panel Hoy con un curso de inglés y tarjetas de ejemplo.*
 
-- **Aplicación:** Next.js (App Router), React, TypeScript estricto, pnpm
-- **Datos e identidad:** Supabase — PostgreSQL, Auth con sesión SSR, Row Level Security
-- **Repetición espaciada:** `ts-fsrs`, encapsulado tras un puerto de dominio
-- **Interfaz:** Tailwind CSS, controles y tokens propios, next-intl (ES/EN), Zod
-- **Testing:** Vitest, React Testing Library, Playwright, pgTAP
-- **Accesibilidad automatizada:** axe-core en los flujos críticos, teclado, contraste y reflow
-- **Infraestructura:** GitHub Actions, Vercel
+## Qué puedes hacer
 
-Arquitectura: monolito modular con Clean Architecture pragmática y organización
-feature-first. El dominio no conoce React, Next.js, Supabase ni `ts-fsrs`.
+| Función | Cómo se usa |
+| --- | --- |
+| **Cursos de idiomas** | Crea un curso vacío con su nombre y el idioma que quieras estudiar. Cambia de curso desde el selector. Cada uno tiene sus propios mazos, tarjetas, progreso y límites diarios. |
+| **Biblioteca de tarjetas** | Agrupa contenido en mazos y clasifícalo con etiquetas, categorías y niveles del MCER de A1 a C2. Un concepto puede tener tarjetas de reconocimiento, recuperación o huecos. |
+| **Estudio programado** | Abre la cola del día, revela la respuesta y elige **Otra vez**, **Difícil**, **Bien** o **Fácil**. FSRS calcula el siguiente repaso para esa tarjeta. Puedes pausar la sesión y retomarla. |
+| **Estudio libre** | Busca y selecciona uno, varios o todos los mazos. Recorre tarjetas barajadas, revela la respuesta y avanza o retrocede. Al terminar, consulta el tiempo y las tarjetas vistas. |
+| **Historial y estadísticas** | Filtra los repasos y consulta la actividad, el tiempo registrado, las tarjetas difíciles y los próximos vencimientos del curso activo. |
+| **Ayuda integrada** | Sigue la guía de primera sesión, prueba una tarjeta de ejemplo y abre los tutoriales desde **Ayuda** o desde las pantallas de estudio e importación. |
 
-La revisión visual añade navegación persistente en escritorio y navegación
-inferior en móvil, con temas propios y foco de teclado. La
-[evidencia de diseño](docs/evidence/LEX-15-visual-direction.md) identifica las
-comprobaciones y el estado de publicación; el motor de estudio se conserva.
+Cada tarjeta tiene su propio estado de memoria. Por ejemplo, puedes practicar el significado de *warm up* con una tarjeta y recuperar la expresión en inglés con otra. Cada una avanza según tus respuestas.
 
-El acceso adicional con Google usa PKCE y la cuenta personal existente con el
-mismo correo. Su activación externa y aceptación siguen la [guía de Google](docs/GOOGLE_SIGN_IN.md);
-el registro permanece cerrado. No se almacenan secretos de Google en la app.
+<details>
+<summary>Ver una tarjeta revelada en móvil</summary>
 
-## Alcance de la V1
+<br />
+<img src="docs/evidence/assets/readme-estudio-movil.webp" width="320" alt="Sesión de estudio programado de Lexora en modo oscuro. La tarjeta muestra una pregunta de gramática, la respuesta revelada y las cuatro valoraciones." />
 
-**Incluye:** cuenta y onboarding · mazos, conceptos e ítems · importación TXT/CSV
-desde Anki · sesión diaria con FSRS y cuatro valoraciones · sincronización entre
-dispositivos · historial y estadísticas · exportación y borrado de datos · PWA
-instalable · interfaz en español e inglés.
+</details>
 
-**No incluye:** IA generativa o correctora, evaluación automática de pronunciación,
-generación de audio, funcionamiento completo sin conexión, aplicaciones nativas,
-compartir mazos ni funciones sociales. Llegarán, si llegan, después de cerrar la V1.
+## Importa un tema completo
 
-La cuenta personal existente conserva su acceso; el registro y el onboarding
-de cuentas sintéticas se prueban en local. Demo de captación, portfolio, SMTP
-dedicado y Sentry quedan fuera de esta entrega por [ADR-008](docs/adrs/008-personal-use.md).
+1. En **Importar**, elige una plantilla de vocabulario, gramática o frases. Puedes descargar el CSV de ejemplo o copiar un prompt para ChatGPT con el tema, el nivel, la cantidad y el idioma de las respuestas.
+2. Sube un TXT o CSV en UTF-8, o pega el contenido directamente. Cada fila contiene frente, reverso y etiquetas. La vista previa permite revisar el mapeo de columnas, las filas válidas y los posibles duplicados.
+3. Selecciona un mazo o créalo en el asistente. En **Editar mazo**, **Añadir** omite los frentes repetidos. **Reemplazar** pide confirmación y actualiza el contenido de ese mazo conservando el historial de las tarjetas anteriores.
 
-## Puesta en marcha local
+Este CSV importa una tarjeta de vocabulario con pronunciación orientativa y significado en castellano. Después de la directiva empiezan las tarjetas.
 
-Requisitos: **Node 24** (la versión exacta está en `.nvmrc`; con `nvm` basta
-`nvm use`), **pnpm 11** (`corepack enable pnpm`) y **Docker** en marcha, que es lo
-que necesita la base de datos local de Supabase.
-
-```bash
-pnpm install --frozen-lockfile   # dependencias exactas del lockfile
-pnpm db:start                     # levanta Supabase local; imprime URL y clave publishable
-cp .env.example .env.local        # y pega en .env.local los dos valores que imprimió db:start
-pnpm db:reset                     # aplica migraciones y semillas desde una base limpia
+```csv
+#separator:comma
+Warm up (uórm ap),Calentar antes de hacer ejercicio.,sports verbs
 ```
 
-A partir de ahí:
+[Formato, columnas y manejo de duplicados](docs/IMPORT_FORMAT.md)
 
-| Comando | Qué hace |
-|---|---|
-| `pnpm dev` | Servidor de desarrollo en `http://localhost:3000`. |
-| `pnpm check` | Todas las puertas de calidad en cadena: formato, lint, tipos, contraste, tests y build. |
-| `pnpm e2e` | Pruebas de extremo a extremo (Playwright) contra el build de producción. |
-| `pnpm e2e:compat` | Matriz adicional Firefox/WebKit. |
-| `pnpm db:test` | Pruebas de esquema y RLS (pgTAP). |
-| `pnpm ops:backup:test` | Pruebas de las herramientas de backup cifrado. |
-| `pnpm ops:recovery:verify` | Recuperación y Auth/RLS en bases locales desechables propias. |
-| `pnpm db:stop` | Detiene la base de datos local. |
+## Instalación y copias de tus datos
 
-El detalle de ramas, commits, versiones fijadas, migraciones y entornos está en
-[`docs/WORKFLOW.md`](docs/WORKFLOW.md).
-`db:reset` se usa para inicializar una base local prescindible: elimina los datos
-locales existentes. Los tests de navegador exigen backend loopback:54321 y usan
-el puerto3100, separado del servidor de desarrollo. No apuntan a producción.
+- **Instala Lexora** desde un navegador compatible para abrirla desde su icono en el móvil o escritorio. Para estudiar y sincronizar hace falta conexión. [Guía de la aplicación instalable](docs/PWA.md)
+- **Descarga tus datos** desde Ajustes en JSON o CSV. La copia incluye cursos, mazos, tarjetas, progreso, historial y preferencias. Puedes revisar una copia y restaurarla en la misma cuenta, lo que sustituye sus datos actuales tras la confirmación. [Exportación y restauración](docs/DATA_EXPORT.md)
 
-## Documentación
+## Arranque local
 
-| Documento | Contenido |
-|---|---|
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Capas, regla de dependencia, módulos y puertos. |
-| [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) | Entidades, relaciones y convenciones del esquema. |
-| [`docs/FSRS.md`](docs/FSRS.md) | Integración de la repetición espaciada: puerto, transacción y tiempo. |
-| [`docs/STATISTICS.md`](docs/STATISTICS.md) | Historial, métricas, denominadores y límites de la previsión. |
-| [`docs/SECURITY.md`](docs/SECURITY.md) | Entradas no confiables y enlaces a los contratos de protección. |
-| [`docs/DEPLOYMENT_SECURITY.md`](docs/DEPLOYMENT_SECURITY.md) | CSP, cookies, Preview, CI y revisión de secretos. |
-| [`docs/DATA_LIFECYCLE.md`](docs/DATA_LIFECYCLE.md) | Conservación, exportación y borrado propio con reautenticación. |
-| [`docs/BACKUP_RECOVERY.md`](docs/BACKUP_RECOVERY.md) | Cifrado, copia externa y ensayo de recuperación con Auth/RLS. |
-| [`docs/ANTI_ABUSE.md`](docs/ANTI_ABUSE.md) | Registro cerrado, límites de Auth y cuotas duraderas de operaciones costosas. |
-| [`docs/evidence/LEX-1.0-personal-acceptance.md`](docs/evidence/LEX-1.0-personal-acceptance.md) | Trazabilidad de la entrega personal y límites conocidos. |
-| [`docs/PWA.md`](docs/PWA.md) | Instalación explícita, actualizaciones y límite del fallback offline. |
-| [`docs/GLOSSARY.md`](docs/GLOSSARY.md) | Términos del dominio y convenciones de nombres. |
-| [`docs/CONTENT_POLICY.md`](docs/CONTENT_POLICY.md) | Qué contenido puede vivir en un repositorio público. |
-| [`docs/WORKFLOW.md`](docs/WORKFLOW.md) | Ramas, commits, versiones fijadas, migraciones y entornos. |
-| [`docs/STATUS.md`](docs/STATUS.md) | Estado actual, verificaciones ejecutadas y siguiente acción. |
-| [`docs/OPEN_QUESTIONS.md`](docs/OPEN_QUESTIONS.md) | Decisiones pendientes, con contexto y opciones. |
-| [`docs/adrs/`](docs/adrs/) | Architecture Decision Records. |
-| [`docs/evidence/`](docs/evidence/) | Informes de evidencia por tarea. |
-| [`CLAUDE.md`](CLAUDE.md) | Protocolo de trabajo para agentes en este repositorio. |
+Necesitas **Node.js 24** (versión exacta en [`.nvmrc`](.nvmrc)), **pnpm** (versión en [`package.json`](package.json)) y **Docker** en ejecución. Los comandos se ejecutan en la raíz del repositorio.
 
-La especificación maestra y el roadmap detallado se mantienen fuera del
-repositorio de forma deliberada.
+```bash
+pnpm install --frozen-lockfile
+pnpm db:start
+```
+
+Copia `.env.example` a `.env.local` con `cp .env.example .env.local` en Bash o `Copy-Item .env.example .env.local` en PowerShell. Rellena `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` con la URL y la clave *publishable* que muestra Supabase local.
+
+```bash
+pnpm dev
+```
+
+Abre [Lexora local](http://localhost:3000/es), crea una cuenta de prueba y completa el alta del curso. Para aplicar migraciones pendientes a una base local existente, usa `pnpm exec supabase migration up --local`. Reserva `pnpm db:reset` para una base local desechable, ya que elimina su contenido.
+
+### Pruebas y comprobaciones
+
+| Comando | Qué comprueba |
+| --- | --- |
+| `pnpm check` | Formato, lint, TypeScript, contraste, pruebas de aplicación, verificación de copias y build. |
+| `pnpm db:test` | Esquema, permisos y aislamiento de datos con pgTAP. |
+| `pnpm e2e` | Flujos en Chromium de escritorio y móvil emulado con el build de producción y Supabase local. |
+| `pnpm e2e:compat` | Flujos críticos en Firefox y WebKit. |
+| `pnpm ops:recovery:verify` | Ensayo de recuperación con Auth y políticas de acceso en bases locales desechables. |
+
+Para Playwright, instala los navegadores con `pnpm exec playwright install chromium firefox webkit`. Las pruebas de navegador usan la app en el puerto `3100` y Supabase en el `54321`. [Flujo de trabajo y entornos](docs/WORKFLOW.md)
+
+## Cómo está construida
+
+Lexora es un monolito modular con **Next.js App Router**, **React** y **TypeScript**. Usa Tailwind CSS para la interfaz y next-intl para español e inglés. **Supabase** proporciona PostgreSQL y autenticación. Las políticas de acceso por fila (RLS) controlan el acceso a los datos de cada cuenta. GitHub Actions ejecuta la integración continua y Vercel despliega desde `main`. [Arquitectura y módulos](docs/ARCHITECTURE.md)
+
+El adaptador de estudio encapsula [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs). El dominio conserva un `LearningState` por tarjeta y registra cada valoración en `ReviewLog`. PostgreSQL guarda ambos cambios en una transacción y aplica los límites del curso al confirmar el repaso. Los reintentos de un guardado recuperan el mismo resultado. [Modelo de datos](docs/DATA_MODEL.md) · [Planificador y guardado](docs/FSRS.md)
+
+| Si buscas… | Consulta |
+| --- | --- |
+| Estado del proyecto y verificaciones | [Estado actual](docs/STATUS.md) · [Evidencia de entrega](docs/evidence/LEX-1.0-personal-acceptance.md) |
+| Historial, tiempo y previsión | [Estadísticas](docs/STATISTICS.md) · [Glosario](docs/GLOSSARY.md) |
+| Acceso, sesiones y protección del despliegue | [Google Auth](docs/GOOGLE_SIGN_IN.md) · [Seguridad de aplicación](docs/SECURITY.md) · [Seguridad de despliegue](docs/DEPLOYMENT_SECURITY.md) · [Control de abuso](docs/ANTI_ABUSE.md) |
+| Conservación, borrado y recuperación | [Ciclo de vida de los datos](docs/DATA_LIFECYCLE.md) · [Recuperación operativa](docs/BACKUP_RECOVERY.md) |
+| Decisiones y mantenimiento | [ADR](docs/adrs/) · [Preguntas abiertas](docs/OPEN_QUESTIONS.md) · [Informes de pruebas](docs/evidence/) · [Instrucciones del repositorio](CLAUDE.md) |
 
 ## Licencia
 
-Todavía sin decidir. Hasta que exista un archivo `LICENSE`, se reservan todos los
-derechos. Ver [`docs/CONTENT_POLICY.md`](docs/CONTENT_POLICY.md).
+La licencia está pendiente de decisión. Todos los derechos reservados. [Política de contenido](docs/CONTENT_POLICY.md)
