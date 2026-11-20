@@ -1,11 +1,9 @@
 # Lexora — Estado actual
 
-**LEX-23.1 · Preparación de la beta web pública.** El propietario aprueba una
-beta gratuita de Lexora bajo la marca JVOR Studios. El formulario de alta
-prepara correo y Google en español e inglés y enlaza al aviso público de datos.
-La apertura alojada requiere completar el envío SMTP, el contacto de
-privacidad y la comprobación de una cuenta Google externa. [Pendientes de
-activación](PUBLIC_BETA.md).
+**LEX-23.1 · Acceso público con Google.** El propietario aprueba las altas
+públicas con Google. El acceso por contraseña sigue disponible para cuentas
+existentes. Abrir la creación por correo queda pendiente de SMTP y de su
+verificación externa. [Operación y comprobaciones](PUBLIC_ACCESS.md).
 
 **LEX-22.13 · Prioridad de los repasos vencidos.** Cuando el cupo diario no
 cubre todos los vencidos, la cola da prioridad a las tarjetas con menor

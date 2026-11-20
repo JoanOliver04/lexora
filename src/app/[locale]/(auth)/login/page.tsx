@@ -6,7 +6,7 @@ import { resolveSafeRedirect } from "@/modules/identity/application/safe-redirec
 
 import { AuthShell } from "../_components/auth-shell";
 import { LoginForm } from "./login-form";
-import { isRegistrationOpen, isGoogleSignInAvailable } from "@/composition/identity";
+import { getGoogleAvailability, isRegistrationOpen } from "@/composition/identity";
 import { FormStatus, FormError } from "@/shared/presentation/components";
 import { GoogleSignIn } from "../_components/google-sign-in";
 
@@ -26,8 +26,8 @@ export default async function LoginPage({
 
   const deletion = await getTranslations("AccountDeletion");
   const { next, error, deleted } = await searchParams;
-  const googleAvailable = await isGoogleSignInAvailable();
-  const registrationOpen = isRegistrationOpen();
+  const google = await getGoogleAvailability();
+  const registrationOpen = isRegistrationOpen() || google.signUp;
   // Se sanea aquí también: lo que se guarda en el campo oculto ya está filtrado.
   const safeNext = next ? resolveSafeRedirect(next, `/${locale}`) : undefined;
   const initialError = SHOWN_ERRORS.has(error as AuthErrorCode)
@@ -63,8 +63,8 @@ export default async function LoginPage({
           <p>{t("errors.google-unavailable")}</p>
         </FormError>
       )}
-      {googleAvailable && (
-        <GoogleSignIn locale={locale} next={safeNext} registrationOpen={registrationOpen} />
+      {google.signIn && (
+        <GoogleSignIn locale={locale} next={safeNext} registrationOpen={google.signUp} />
       )}
       <LoginForm locale={locale} next={safeNext} initialError={initialError} />
       <Link

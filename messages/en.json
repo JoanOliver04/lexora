@@ -181,7 +181,7 @@
     "approach": "Lexora splits each concept into the skills it is made of and schedules each one separately, with spaced repetition. Being able to recognise a word does not mark its production as learned.",
     "statusTitle": "Status",
     "status": "Your personal space to learn at your own pace. Sign in to continue.",
-    "publicStatus": "Try the Lexora beta. Create an account, add a deck and start reviewing.",
+    "publicStatus": "Create an account, add a deck and start reviewing.",
     "repository": "View the code on GitHub"
   },
   "Privacy": {

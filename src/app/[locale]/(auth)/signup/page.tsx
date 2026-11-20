@@ -5,7 +5,7 @@ import { resolveSafeRedirect } from "@/modules/identity/application/safe-redirec
 
 import { AuthShell } from "../_components/auth-shell";
 import { SignupForm } from "./signup-form";
-import { isGoogleSignInAvailable, isRegistrationOpen } from "@/composition/identity";
+import { getGoogleAvailability, isRegistrationOpen } from "@/composition/identity";
 import { FormError } from "@/shared/presentation/components";
 import { GoogleSignIn } from "../_components/google-sign-in";
 
@@ -20,7 +20,9 @@ export default async function SignupPage({
   setRequestLocale(locale);
   const t = await getTranslations("Auth");
 
-  if (!isRegistrationOpen())
+  const emailSignup = isRegistrationOpen();
+  const google = await getGoogleAvailability();
+  if (!emailSignup && !google.signUp)
     return (
       <AuthShell
         title={t("private.title")}
@@ -39,7 +41,6 @@ export default async function SignupPage({
 
   const { next, error } = await searchParams;
   const safeNext = next ? resolveSafeRedirect(next, `/${locale}`) : undefined;
-  const googleAvailable = await isGoogleSignInAvailable();
 
   return (
     <AuthShell
@@ -56,13 +57,21 @@ export default async function SignupPage({
         </>
       }
     >
-      {error === "confirmation-invalid" && (
+      {emailSignup && error === "confirmation-invalid" && (
         <FormError id="signup-confirmation-error">
           <p>{t("signup.confirmationError")}</p>
         </FormError>
       )}
-      {googleAvailable && <GoogleSignIn locale={locale} next={safeNext} registrationOpen signup />}
-      <SignupForm locale={locale} next={safeNext} />
+      {(google.signUp || (emailSignup && google.signIn)) && (
+        <GoogleSignIn
+          locale={locale}
+          next={safeNext}
+          registrationOpen
+          signup
+          showEmailOption={emailSignup}
+        />
+      )}
+      {emailSignup && <SignupForm locale={locale} next={safeNext} />}
     </AuthShell>
   );
 }

@@ -22,17 +22,25 @@ import { clientEnv } from "@/env/client";
 import { beginGoogleSignIn } from "@/modules/identity/application/google-sign-in";
 import {
   createSupabaseGoogleSignIn,
-  googleProviderAvailable,
+  readGoogleAvailability,
 } from "@/modules/identity/infrastructure/supabase-google-sign-in";
 
-export async function isGoogleSignInAvailable(): Promise<boolean> {
-  if (!privateBackendEnabled()) return false;
-  if (serverEnv.LEXORA_GOOGLE_AUTH === "disabled") return false;
-  if (serverEnv.LEXORA_GOOGLE_AUTH === "enabled") return true;
-  return googleProviderAvailable(
+export const getGoogleAvailability = cache(async () => {
+  if (!privateBackendEnabled() || serverEnv.LEXORA_GOOGLE_AUTH === "disabled") {
+    return { signIn: false, signUp: false };
+  }
+  const availability = await readGoogleAvailability(
     clientEnv.NEXT_PUBLIC_SUPABASE_URL,
     clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   );
+  return {
+    ...availability,
+    signIn: availability.signIn || serverEnv.LEXORA_GOOGLE_AUTH === "enabled",
+  };
+});
+
+export async function isGoogleSignInAvailable(): Promise<boolean> {
+  return (await getGoogleAvailability()).signIn;
 }
 
 export async function signInGoogleVisitor(

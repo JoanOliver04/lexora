@@ -1,19 +1,21 @@
-import { useTranslations } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
-import { use } from "react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ThemeToggle } from "@/shared/presentation/theme/theme-toggle";
 import { Brand } from "@/shared/presentation/components/brand";
-import { isRegistrationOpen } from "@/composition/identity";
+import { getGoogleAvailability, isRegistrationOpen } from "@/composition/identity";
 import { Link } from "@/i18n/navigation";
 import { LocaleSwitcher } from "./locale-switcher";
 import { SessionControls } from "./session-controls";
 
-export default function Home({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = use(params);
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
   setRequestLocale(locale);
-  const t = useTranslations("Home");
-  const v = useTranslations("Visual");
-  const privacy = useTranslations("Privacy");
+  const [t, v, privacy, google] = await Promise.all([
+    getTranslations("Home"),
+    getTranslations("Visual"),
+    getTranslations("Privacy"),
+    getGoogleAvailability(),
+  ]);
+  const registrationOpen = isRegistrationOpen() || google.signUp;
   return (
     <div className="home-shell">
       <header className="home-header">
@@ -28,7 +30,7 @@ export default function Home({ params }: { params: Promise<{ locale: string }> }
           <h1 className="home-heading">{t("tagline")}</h1>
           <p className="home-description">{t("problem")}</p>
           <div className="home-entry">
-            <SessionControls locale={locale} />
+            <SessionControls locale={locale} registrationOpen={registrationOpen} />
           </div>
         </div>
         <div className="recall-stage" aria-hidden="true">
@@ -53,7 +55,7 @@ export default function Home({ params }: { params: Promise<{ locale: string }> }
       <footer className="home-footer">
         <div>
           <h2 className="font-semibold">{t("statusTitle")}</h2>
-          <p>{t(isRegistrationOpen() ? "publicStatus" : "status")}</p>
+          <p>{t(registrationOpen ? "publicStatus" : "status")}</p>
           <p className="mt-2">{t("approach")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
