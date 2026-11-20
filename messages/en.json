@@ -195,7 +195,7 @@
     },
     "purpose": {
       "title": "Your account and study activity",
-      "body": "We use your email to identify your account and send confirmation or recovery messages. We store your courses, cards, preferences and history to provide the service and schedule reviews. Technical logs help protect accounts and diagnose errors. Session, language and theme cookies remember your sign-in and preferences."
+      "body": "We use your email to identify your account and send confirmation or recovery messages. We store your courses, cards, preferences and history to provide the service and schedule reviews. Technical logs help protect accounts and diagnose errors. Session cookies keep you signed in. Your browser may also remember your language and theme preferences."
     },
     "providers": {
       "title": "Services Lexora uses",
@@ -203,7 +203,7 @@
     },
     "retention": {
       "title": "Retention and deletion",
-      "body": "Your courses, preferences and history are kept while you have an account. Lexora stores import results and diagnostics and removes your active data when you delete your account. Downloads you save stay under your control."
+      "body": "Your courses, preferences and history are kept while you have an account. Lexora stores import results and diagnostics and removes your active data when you delete your account. Operational backups follow their own retention cycle. Downloads you save stay under your control."
     },
     "rights": {
       "title": "Your options and rights",

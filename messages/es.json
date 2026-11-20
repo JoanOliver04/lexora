@@ -195,7 +195,7 @@
     },
     "purpose": {
       "title": "Tu cuenta y el estudio",
-      "body": "Usamos tu correo para identificar tu cuenta y enviarte confirmaciones o mensajes de recuperación. Guardamos tus cursos, tarjetas, ajustes e historial para ofrecerte el servicio y programar tus repasos. Los registros técnicos ayudan a proteger las cuentas y diagnosticar errores. Las cookies de sesión, idioma y tema mantienen tu acceso y preferencias."
+      "body": "Usamos tu correo para identificar tu cuenta y enviarte confirmaciones o mensajes de recuperación. Guardamos tus cursos, tarjetas, ajustes e historial para ofrecerte el servicio y programar tus repasos. Los registros técnicos ayudan a proteger las cuentas y diagnosticar errores. Usamos cookies de sesión para mantener tu acceso. El navegador también puede recordar tus preferencias de idioma y tema."
     },
     "providers": {
       "title": "Servicios que usa Lexora",
@@ -203,7 +203,7 @@
     },
     "retention": {
       "title": "Conservación y borrado",
-      "body": "Tus cursos, preferencias e historial se conservan mientras tienes cuenta. Lexora guarda el resultado de tus importaciones y sus diagnósticos, y elimina tus datos activos al borrar tu cuenta. Las copias que descargues quedan bajo tu control."
+      "body": "Tus cursos, preferencias e historial se conservan mientras tienes cuenta. Lexora guarda el resultado de tus importaciones y sus diagnósticos, y elimina tus datos activos al borrar tu cuenta. Las copias operativas se rigen por su ciclo de retención. Las copias que descargues quedan bajo tu control."
     },
     "rights": {
       "title": "Tus opciones y derechos",
