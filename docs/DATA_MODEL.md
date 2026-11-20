@@ -84,7 +84,7 @@ Estados cerrados como enums de PostgreSQL: `ui_locale` (`es`, `en`) y
 | `id` | `uuid` PK | `= auth.users(id)`, `on delete cascade` |
 | `display_name` | `text` NULL | CHECK: nulo, o 1–80 caracteres tras recortar |
 | `ui_locale` | `ui_locale` NOT NULL | por defecto `es` |
-| `timezone` | `text` NOT NULL | por defecto `Europe/Madrid`; un trigger `BEFORE` exige que sea un nombre real de `pg_timezone_names`. LEX-5.12: el día de estudio (cola y cupos) es medianoche–medianoche en esta zona. |
+| `timezone` | `text` NOT NULL | Por defecto `Europe/Madrid`. Un trigger `BEFORE` exige un nombre de `pg_timezone_names`. El día de estudio empieza en el primer instante válido de la fecha local y termina al empezar el día siguiente. |
 | `onboarding_completed_at` | `timestamptz` NULL | lo fija el onboarding (LEX-2.7/2.8) |
 | `active_course_id` | `uuid` NULL | curso que la interfaz prioriza (LEX-2.9). NULL = usar el más antiguo. |
 | `created_at`, `updated_at` | `timestamptz` NOT NULL | `updated_at` lo mantiene un trigger |

@@ -1,5 +1,11 @@
 # Lexora — Estado actual
 
+**LEX-22.11 · Límites diarios y calendario de estudio.** El guardado del repaso
+comprueba el cupo del curso dentro de la misma transacción, incluso con dos
+sesiones activas. Las valoraciones ya guardadas se pueden reintentar y los pasos
+cortos de aprendizaje conservan su comportamiento. La cola, el historial y las
+estadísticas usan el primer instante válido de cada día en la zona del perfil.
+
 **LEX-22.10 · Rendimiento de carga y navegación.** El perfil y el curso activo
 se leen juntos y se reutilizan durante la petición. Hoy solapa las lecturas
 independientes. El navegador carga los logotipos fijos directamente y reserva

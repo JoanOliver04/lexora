@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { DEFAULT_STUDY_TIMEZONE, isIanaTimeZone, studyDayWindow } from "./study-day";
+import {
+  DEFAULT_STUDY_TIMEZONE,
+  isIanaTimeZone,
+  studyDateWindow,
+  studyDayWindow,
+} from "./study-day";
 
 describe("isIanaTimeZone", () => {
   it("acepta Europe/Madrid y UTC, rechaza nombres inventados", () => {
@@ -53,6 +58,37 @@ describe("studyDayWindow", () => {
     const window = studyDayWindow(new Date("2026-09-11T10:00:00.000Z"), "UTC");
     expect(window.start.toISOString()).toBe("2026-09-11T00:00:00.000Z");
     expect(window.end.toISOString()).toBe("2026-09-12T00:00:00.000Z");
+  });
+
+  it("starts a day at its first valid instant when the clock skips midnight", () => {
+    const boundary = new Date("2026-09-06T04:00:00.000Z");
+    const timeZone = "America/Santiago";
+    const previousDay = studyDayWindow(new Date(boundary.getTime() - 1), timeZone);
+    const day = studyDayWindow(boundary, timeZone);
+    expect(previousDay.end).toEqual(boundary);
+    expect(day).toEqual({
+      start: boundary,
+      end: new Date("2026-09-07T03:00:00.000Z"),
+    });
+    expect(studyDateWindow("2026-09-06", timeZone)).toEqual(day);
+  });
+
+  it("includes both occurrences of a repeated midnight in the same day", () => {
+    const timeZone = "America/Havana";
+    const window = {
+      start: new Date("2026-11-01T04:00:00.000Z"),
+      end: new Date("2026-11-02T05:00:00.000Z"),
+    };
+    expect(studyDayWindow(new Date("2026-11-01T05:30:00Z"), timeZone)).toEqual(window);
+    expect(studyDateWindow("2026-11-01", timeZone)).toEqual(window);
+  });
+
+  it("rejects a skipped civil date without shortening the days around it", () => {
+    const timeZone = "Pacific/Apia";
+    const boundary = new Date("2011-12-30T10:00:00.000Z");
+    expect(studyDateWindow("2011-12-29", timeZone)?.end).toEqual(boundary);
+    expect(studyDateWindow("2011-12-30", timeZone)).toBeNull();
+    expect(studyDateWindow("2011-12-31", timeZone)?.start).toEqual(boundary);
   });
 
   it("la zona por defecto de V1 es Europe/Madrid", () => {

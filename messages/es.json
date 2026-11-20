@@ -421,6 +421,7 @@
       "card-changed": "Los pendientes han cambiado o este ítem ya no está disponible. Recarga la sesión antes de continuar.",
       "idempotency-conflict": "Este intento ya corresponde a otro repaso. No se ha guardado otra valoración. Recarga la sesión.",
       "revision-conflict": "El estado ha cambiado desde que revelaste la respuesta. No se ha sobrescrito. Recarga la sesión.",
+      "daily-limit": "Has alcanzado un límite diario de este curso. Actualiza la sesión para ver qué tarjetas quedan disponibles.",
       "scheduler-mismatch": "Este estado usa otra versión del scheduler. No se ha recalculado ni migrado tu memoria.",
       "generic": "No se pudo confirmar el guardado. Puede haberse guardado en el servidor. Conservamos la tarjeta y la valoración; reintenta el mismo repaso sin duplicarlo.",
       "offline": "Se perdió la conexión. No podemos confirmar el guardado. No cierres ni recargues esta pestaña; reconecta y reintenta el mismo repaso.",

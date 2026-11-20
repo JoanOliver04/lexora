@@ -11,6 +11,7 @@ const serverErrors = [
   "card-changed",
   "idempotency-conflict",
   "revision-conflict",
+  "daily-limit",
   "scheduler-mismatch",
   "generic",
   "unauthenticated",

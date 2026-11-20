@@ -589,6 +589,168 @@ describe.skipIf(!enabled)("Session reviews against local Supabase", () => {
     },
     20_000,
   );
+  it.each([
+    {
+      phase: "new",
+      timeZone: "America/Santiago",
+      instants: ["2026-09-06T04:00:00Z", "2026-09-06T04:30:00Z"],
+      nextDay: "2026-09-07T03:00:00Z",
+    },
+    {
+      phase: "review",
+      timeZone: "America/Havana",
+      instants: ["2026-11-01T04:15:00Z", "2026-11-01T05:15:00Z"],
+      nextDay: "2026-11-02T05:00:00Z",
+    },
+  ] as const)(
+    "enforces the last $phase slot across two live sessions",
+    async ({ phase, timeZone, instants, nextDay }) => {
+      const f = ports(clientA);
+      const previousLimits = await checked(
+        clientA
+          .from("course_settings")
+          .select("daily_new_limit, maximum_reviews_per_day")
+          .eq("course_id", courseId)
+          .single(),
+      );
+      if (!previousLimits) throw new Error("Missing course settings");
+      const ready = Promise.withResolvers<void>();
+      let queueReads = 0;
+      const racingPorts = {
+        ...f,
+        queue: {
+          ...f.queue,
+          async countTodayActivity(input: Parameters<typeof f.queue.countTodayActivity>[0]) {
+            const activity = await f.queue.countTodayActivity(input);
+            // Both requests must see the available slot before either can save.
+            if (++queueReads === 2) ready.resolve();
+            await ready.promise;
+            return activity;
+          },
+        },
+      };
+      try {
+        await checked(clientA.from("profiles").update({ timezone: timeZone }).eq("id", ownerId));
+        await checked(
+          clientA
+            .from("course_settings")
+            .update({ daily_new_limit: 1, maximum_reviews_per_day: 1 })
+            .eq("course_id", courseId),
+        );
+        const createIntent = async (instant: string) => {
+          const at = new Date(instant);
+          const deckId = randomUUID();
+          const conceptId = randomUUID();
+          const practiceItemId = randomUUID();
+          const sessionId = randomUUID();
+          await checked(
+            clientA
+              .from("decks")
+              .insert({ id: deckId, course_id: courseId, owner_id: ownerId, title: "Daily limit" }),
+          );
+          await checked(
+            clientA.from("concepts").insert({
+              id: conceptId,
+              course_id: courseId,
+              owner_id: ownerId,
+              kind: "vocabulary",
+              title: "Daily limit",
+              summary: "Original",
+            }),
+          );
+          await checked(
+            clientA
+              .from("deck_concepts")
+              .insert({ deck_id: deckId, concept_id: conceptId, owner_id: ownerId }),
+          );
+          await checked(
+            clientA.from("practice_items").insert({
+              id: practiceItemId,
+              owner_id: ownerId,
+              concept_id: conceptId,
+              mode: "basic_recall",
+              prompt_text: "Front",
+              answer_text: "Answer",
+              config: { mode: "basic_recall" },
+            }),
+          );
+          if (phase === "review") {
+            await f.memory.create({
+              ownerId,
+              practiceItemId,
+              schedulerVersion: "5.4.2",
+              configVersion: "v1",
+              state: {
+                ...f.scheduler.createInitialState(at, V1_SCHEDULER_CONFIG),
+                phase,
+                stability: 5,
+                difficulty: 4,
+                reps: 5,
+                lastReviewedAt: new Date(at.getTime() - 86_400_000),
+                scheduledDays: 1,
+              },
+            });
+          }
+          await f.sessions.create({
+            ownerId,
+            courseId,
+            sessionId,
+            scope: { deckIds: [deckId] },
+            startedAt: at,
+          });
+          return {
+            ...request(),
+            sessionId,
+            practiceItemId,
+            idempotencyKey: randomUUID(),
+            expectedRevision: phase === "review" ? 1 : null,
+            now: at,
+            timeZone,
+          };
+        };
+        const intents = await Promise.all(instants.map(createIntent));
+        const results = await Promise.all(
+          intents.map((intent) => saveSessionReview(racingPorts, intent)),
+        );
+        expect(results.filter((result) => result.ok)).toHaveLength(1);
+        expect(results).toContainEqual({ ok: false, reason: "daily-limit" });
+
+        const [winner, loser] = results[0]?.ok ? intents : intents.toReversed();
+        expect(await saveSessionReview(f, winner!)).toEqual({
+          ok: true,
+          rating: "good",
+          replayed: true,
+        });
+        expect(
+          await f.memory.getByItem({ ownerId, practiceItemId: loser!.practiceItemId }),
+        ).toMatchObject({
+          revision: 1,
+          state: { phase },
+        });
+        const logs = await checked(
+          clientA
+            .from("review_logs")
+            .select("practice_item_id")
+            .in(
+              "idempotency_key",
+              intents.map((intent) => intent.idempotencyKey),
+            ),
+        );
+        expect(logs).toEqual([{ practice_item_id: winner!.practiceItemId }]);
+        expect(await saveSessionReview(f, { ...loser!, now: new Date(nextDay) })).toEqual({
+          ok: true,
+          rating: "good",
+          replayed: false,
+        });
+      } finally {
+        await Promise.all([
+          checked(clientA.from("profiles").update({ timezone: "Europe/Madrid" }).eq("id", ownerId)),
+          checked(clientA.from("course_settings").update(previousLimits).eq("course_id", courseId)),
+        ]);
+      }
+    },
+    20_000,
+  );
   it.each(["learning", "relearning"] as const)(
     "reintroduces a real FSRS %s step only at its deadline, independently of both daily caps",
     async (phase) => {

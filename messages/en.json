@@ -421,6 +421,7 @@
       "card-changed": "The pending items have changed or this item is no longer available. Reload the session before continuing.",
       "idempotency-conflict": "This attempt already belongs to another review. No other rating has been saved. Reload the session.",
       "revision-conflict": "The state has changed since you revealed the answer. It has not been overwritten. Reload the session.",
+      "daily-limit": "You reached a daily limit for this course. Refresh the session to see which cards are still available.",
       "scheduler-mismatch": "This state uses another scheduler version. Your memory has not been recalculated or migrated.",
       "generic": "The save could not be confirmed. It may have been saved on the server. The card and rating are preserved; retry the same review without duplication.",
       "offline": "The connection was lost. The save cannot be confirmed. Do not close or reload this tab; reconnect and retry the same review.",

@@ -12,6 +12,8 @@ insert into public.languages (id, code, locale, name_key) values
 insert into public.courses (id, owner_id, title, source_language_id, target_language_id) values
   ('c0a75e00-0000-4000-8000-00000000000a', 'a11ce000-0000-4000-8000-000000000001',
    'Curso A', '20000000-0000-4000-8000-000000000000', '30000000-0000-4000-8000-000000000000');
+insert into public.course_settings (course_id, user_id) values
+  ('c0a75e00-0000-4000-8000-00000000000a', 'a11ce000-0000-4000-8000-000000000001');
 insert into public.concepts (id, course_id, owner_id, kind, title, summary) values
   ('c1000000-0000-4000-8000-00000000000a',
    'c0a75e00-0000-4000-8000-00000000000a', 'a11ce000-0000-4000-8000-000000000001',
