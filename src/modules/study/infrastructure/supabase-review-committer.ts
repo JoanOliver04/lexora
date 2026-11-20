@@ -1,9 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import {
-  type CommitReviewReason,
-  type CommitReviewResult,
-  type ReviewCommitter,
+import type {
+  CommitReviewResult,
+  ReviewCommitter,
 } from "@/modules/study/application/confirm-review";
 import { snapshotLearningState } from "@/modules/study/domain/memory";
 import { studyErrorFrom, StudyError } from "@/modules/study/application/study-error";
@@ -91,6 +90,7 @@ function parseCommitReviewPayload(data: unknown): CommitReviewResult {
     ok?: unknown;
     replayed?: unknown;
     reason?: unknown;
+    daily_limit?: unknown;
   };
 
   if (payload.ok === true) {
@@ -99,7 +99,10 @@ function parseCommitReviewPayload(data: unknown): CommitReviewResult {
 
   if (payload.ok === false) {
     const reason = payload.reason;
-    if (isCommitReviewReason(reason)) {
+    if (reason === "revision-conflict" && payload.daily_limit === true) {
+      return { ok: false, reason: "daily-limit" };
+    }
+    if (reason === "not-found" || reason === "revision-conflict") {
       return { ok: false, reason };
     }
     throw new StudyError(
@@ -109,8 +112,4 @@ function parseCommitReviewPayload(data: unknown): CommitReviewResult {
   }
 
   throw new StudyError("unavailable", "commit_review no devolvió un resultado reconocible");
-}
-
-function isCommitReviewReason(value: unknown): value is CommitReviewReason {
-  return value === "not-found" || value === "revision-conflict";
 }

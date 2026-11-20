@@ -77,6 +77,7 @@ describe("review write endpoint", () => {
     ["unauthenticated", 401],
     ["generic", 503],
     ["revision-conflict", 409],
+    ["daily-limit", 409],
     ["card-changed", 409],
   ])("returns %s safely with status %i", async (error, status) => {
     save.mockResolvedValue({ requestId: "key", error });

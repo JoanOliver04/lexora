@@ -35,6 +35,7 @@ export type SaveSessionReviewReason =
   | "card-changed"
   | "idempotency-conflict"
   | "revision-conflict"
+  | "daily-limit"
   | "scheduler-mismatch";
 
 export type SaveSessionReviewResult =
@@ -136,7 +137,9 @@ export async function saveSessionReview(
   });
   if (!confirmed.ok)
     return rejectOrReplay(
-      confirmed.reason === "revision-conflict" || confirmed.reason === "scheduler-mismatch"
+      confirmed.reason === "revision-conflict" ||
+        confirmed.reason === "scheduler-mismatch" ||
+        confirmed.reason === "daily-limit"
         ? confirmed.reason
         : "card-changed",
     );

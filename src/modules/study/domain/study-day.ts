@@ -2,13 +2,17 @@
  * Día de estudio en zona IANA (LEX-5.12, MASTER_SPEC §14.6).
  *
  * `due_at` / `reviewed_at` se guardan en UTC. El día local (cola, cupos
- * de nuevos y de repasos) es medianoche–medianoche en la zona del
- * perfil, fin exclusivo. La zona por defecto de V1 es `Europe/Madrid`.
+ * de nuevos y de repasos) va del primer instante válido de una fecha al
+ * primer instante de la siguiente, en la zona del perfil y con fin exclusivo.
  *
  * Lógica pura: sin reloj de sistema, sin `new Date()` vacío.
  */
 
+import { isIanaTimeZone } from "@/shared/domain/time-zone";
+export { isIanaTimeZone } from "@/shared/domain/time-zone";
+
 export const DEFAULT_STUDY_TIMEZONE = "Europe/Madrid";
+const DAY_MS = 86_400_000;
 
 export interface StudyDayWindow {
   /** Inicio del día local, inclusive, en UTC. */
@@ -17,18 +21,13 @@ export interface StudyDayWindow {
   end: Date;
 }
 
-import { isIanaTimeZone } from "@/shared/domain/time-zone";
-export { isIanaTimeZone } from "@/shared/domain/time-zone";
-
 export function studyDayWindow(now: Date, timeZone: string): StudyDayWindow {
   if (!isIanaTimeZone(timeZone)) {
     throw new Error(`zona IANA no reconocida: ${timeZone}`);
   }
-  const local = localCalendarDate(now, timeZone);
-  const start = zonedWallTimeToUtc(local.year, local.month, local.day, 0, 0, 0, timeZone);
-  const next = addCalendarDay(local);
-  const end = zonedWallTimeToUtc(next.year, next.month, next.day, 0, 0, 0, timeZone);
-  return { start, end };
+  const formatter = calendarFormatter(timeZone);
+  const midnight = Math.floor(wallTimeAt(now.getTime(), formatter) / DAY_MS) * DAY_MS;
+  return dayWindow(midnight, formatter);
 }
 
 /** Strict civil-date input, including impossible dates and DST boundaries. */
@@ -36,77 +35,42 @@ export function studyDateWindow(value: string, timeZone: string): StudyDayWindow
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || !isIanaTimeZone(timeZone)) return null;
   const [year = 0, month = 0, day = 0] = value.split("-").map(Number);
   if (year < 1900 || year > 9998) return null;
-  const calendar = new Date(Date.UTC(year, month - 1, day));
-  if (calendar.toISOString().slice(0, 10) !== value) return null;
-  const start = zonedWallTimeToUtc(year, month, day, 0, 0, 0, timeZone);
-  const local = localCalendarDate(start, timeZone);
-  if (local.year !== year || local.month !== month || local.day !== day) return null;
-  return studyDayWindow(start, timeZone);
+  const midnight = Date.UTC(year, month - 1, day);
+  if (new Date(midnight).toISOString().slice(0, 10) !== value) return null;
+  const window = dayWindow(midnight, calendarFormatter(timeZone));
+  return window.start.getTime() < window.end.getTime() ? window : null;
 }
 
-function localCalendarDate(
-  instant: Date,
-  timeZone: string,
-): { year: number; month: number; day: number } {
-  const parts = zonedParts(instant, timeZone);
-  return { year: parts.year, month: parts.month, day: parts.day };
-}
-
-function addCalendarDay(date: { year: number; month: number; day: number }): {
-  year: number;
-  month: number;
-  day: number;
-} {
-  const next = new Date(Date.UTC(date.year, date.month - 1, date.day + 1));
+function dayWindow(midnight: number, formatter: Intl.DateTimeFormat): StudyDayWindow {
   return {
-    year: next.getUTCFullYear(),
-    month: next.getUTCMonth() + 1,
-    day: next.getUTCDate(),
+    start: new Date(firstInstant(midnight, formatter)),
+    end: new Date(firstInstant(midnight + DAY_MS, formatter)),
   };
 }
 
-/**
- * Instant UTC of a wall-clock time in `timeZone`. Midnight exists on
- * every civil day in `Europe/Madrid`; the DST gap/overlap is at 02:00.
- */
-function zonedWallTimeToUtc(
-  year: number,
-  month: number,
-  day: number,
-  hour: number,
-  minute: number,
-  second: number,
-  timeZone: string,
-): Date {
-  const utcGuess = Date.UTC(year, month - 1, day, hour, minute, second);
-  const offset1 = tzOffsetMs(new Date(utcGuess), timeZone);
-  const instant1 = utcGuess - offset1;
-  const offset2 = tzOffsetMs(new Date(instant1), timeZone);
-  if (offset1 === offset2) return new Date(instant1);
-  const instant2 = utcGuess - offset2;
-  const offset3 = tzOffsetMs(new Date(instant2), timeZone);
-  if (offset2 === offset3) return new Date(instant2);
-  return new Date(Math.min(instant1, instant2));
-}
-
-function tzOffsetMs(instant: Date, timeZone: string): number {
-  const parts = zonedParts(instant, timeZone);
-  const asUtc = Date.UTC(
-    parts.year,
-    parts.month - 1,
-    parts.day,
-    parts.hour,
-    parts.minute,
-    parts.second,
+function firstInstant(midnight: number, formatter: Intl.DateTimeFormat): number {
+  // Sample both sides of the boundary so an overlap can offer two midnights.
+  const offsets = new Set(
+    [midnight - DAY_MS, midnight + DAY_MS].map((sample) => wallTimeAt(sample, formatter) - sample),
   );
-  return asUtc - instant.getTime();
+  const candidates = [...offsets].map((offset) => midnight - offset);
+  const exact = candidates.filter((instant) => wallTimeAt(instant, formatter) === midnight);
+  if (exact.length > 0) return Math.min(...exact);
+
+  // A forward transition can skip midnight or the whole date. Locate the
+  // transition between the earlier and later projections of midnight.
+  let before = Math.min(...candidates);
+  let after = Math.max(...candidates);
+  while (after - before > 1) {
+    const middle = before + Math.floor((after - before) / 2);
+    if (wallTimeAt(middle, formatter) < midnight) before = middle;
+    else after = middle;
+  }
+  return after;
 }
 
-function zonedParts(
-  instant: Date,
-  timeZone: string,
-): { year: number; month: number; day: number; hour: number; minute: number; second: number } {
-  const raw = new Intl.DateTimeFormat("en-US", {
+function calendarFormatter(timeZone: string): Intl.DateTimeFormat {
+  return new Intl.DateTimeFormat("en-US", {
     timeZone,
     year: "numeric",
     month: "2-digit",
@@ -115,20 +79,25 @@ function zonedParts(
     minute: "2-digit",
     second: "2-digit",
     hourCycle: "h23",
-  }).formatToParts(instant);
+  });
+}
+
+/** Local calendar fields encoded as UTC so calendar arithmetic is offset-free. */
+function wallTimeAt(instant: number, formatter: Intl.DateTimeFormat): number {
+  const raw = formatter.formatToParts(instant);
 
   function number(type: Intl.DateTimeFormatPartTypes): number {
     const part = raw.find((entry) => entry.type === type);
-    if (!part) throw new Error(`Intl no devolvió ${type} para ${timeZone}`);
+    if (!part) throw new Error(`Intl no devolvió ${type}`);
     return Number(part.value);
   }
 
-  return {
-    year: number("year"),
-    month: number("month"),
-    day: number("day"),
-    hour: number("hour"),
-    minute: number("minute"),
-    second: number("second"),
-  };
+  return Date.UTC(
+    number("year"),
+    number("month") - 1,
+    number("day"),
+    number("hour"),
+    number("minute"),
+    number("second"),
+  );
 }

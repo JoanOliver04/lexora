@@ -224,7 +224,7 @@ cobertura explícita si faltan registros; nunca usa la estimación de Hoy ni el
 tiempo entre inicio y cierre. Los pendientes proceden de la cola actual del
 alcance guardado, no de restar los repasos a un total inicial persistido.
 
-Dos garantías que se prueban explícitamente:
+Garantías que se prueban explícitamente:
 
 - **Idempotencia (LEX-5.10).** Un doble envío o un reintento de red con
   la misma clave reexpide el resultado original y un solo log. El caso
@@ -238,6 +238,13 @@ Dos garantías que se prueban explícitamente:
   actual** para recargar. No sobrescribe. `commit_review` bloquea la fila
   (`FOR UPDATE`); el que llega segundo ve la `revision` nueva. Claves de
   idempotencia distintas: no es un reintento (eso es LEX-5.10).
+- **Cupos simultáneos (LEX-22.11).** En una sesión programada, la
+  transacción bloquea la fila de ajustes del curso antes del recuento
+  definitivo de nuevos o repasos. Dos sesiones que comparten cupo se
+  comprueban por turno. Los pasos de aprendizaje y los recibos de
+  operaciones ya guardadas quedan fuera del recuento. La migración
+  `20261120130000_enforce_daily_study_limits.sql` conserva la firma del RPC,
+  el historial y los permisos existentes.
 
 El dueño **sigue pudiendo** `UPDATE` su `learning_states` por RLS
 (LEX-5.5). El producto no usa ese camino. Cerrar el agujero exigiría
@@ -251,13 +258,16 @@ dependencia, no como un detalle (LEX-5.12):
 
 - Vencimientos y momentos de revisión se almacenan en UTC.
 - El día de estudio se calcula con `profiles.timezone` (IANA). Por
-  defecto `Europe/Madrid`. Medianoche–medianoche, fin exclusivo.
+  defecto `Europe/Madrid`. Empieza en el primer instante válido de la
+  fecha local y termina al empezar el día siguiente, con fin exclusivo.
 - El puerto `Clock` se inyecta. `createSystemClock()` es el único
   `new Date()` vacío de infraestructura compartida. Dominio,
   aplicación y composición no pueden llamarlo (lint).
 - El servidor es la autoridad. El reloj del navegador es manipulable.
-- Se prueban el cambio de día, el DST de primavera (23 h) y de otoño
-  (25 h) en `Europe/Madrid`.
+- Se prueban los días de 23 y 25 horas de `Europe/Madrid`, el salto de
+  medianoche en Santiago, su repetición en La Habana y la fecha omitida
+  en el cambio de huso de Apia. La integración reproduce dos valoraciones
+  simultáneas que comparten el último cupo en Santiago y La Habana.
 
 ## Actualizaciones del algoritmo
 

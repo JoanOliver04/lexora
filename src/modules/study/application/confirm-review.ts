@@ -24,7 +24,7 @@ import type { LearningStateRepository, StoredLearningState } from "./learning-st
 import { reviewPracticeItem, type ReviewPracticeItemReason } from "./review-practice-item";
 import type { SpacedRepetitionScheduler } from "./spaced-repetition-scheduler";
 
-export type CommitReviewReason = "not-found" | "revision-conflict";
+export type CommitReviewReason = "not-found" | "revision-conflict" | "daily-limit";
 
 export type CommitReviewResult =
   { ok: true; replayed: boolean } | { ok: false; reason: CommitReviewReason };
@@ -155,8 +155,8 @@ export async function confirmReview(
     durationMs: input.durationMs ?? null,
   });
   if (!committed.ok) {
-    if (committed.reason === "not-found") {
-      return { ok: false, reason: "not-found" };
+    if (committed.reason !== "revision-conflict") {
+      return { ok: false, reason: committed.reason };
     }
     const current = await repository.getByItem({
       ownerId: input.ownerId,

@@ -147,6 +147,7 @@ describe("saveStudyReviewAction", () => {
     "card-changed",
     "idempotency-conflict",
     "revision-conflict",
+    "daily-limit",
     "scheduler-mismatch",
   ])("does not revalidate or announce success after %s", async (reason) => {
     save.mockResolvedValue({ ok: false, reason });
