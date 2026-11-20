@@ -4,7 +4,12 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { getTodayOverview } from "@/modules/study/application/today-overview";
+import { saveSessionReview } from "@/modules/study/application/save-session-review";
+import { V1_SCHEDULER_CONFIG } from "@/modules/study/domain/scheduler-config";
 import { createSupabaseDailyQueueRepository } from "@/modules/study/infrastructure/supabase-daily-queue-repository";
+import { createSupabaseLearningStateRepository } from "@/modules/study/infrastructure/supabase-learning-state-repository";
+import { createSupabaseReviewCommitter } from "@/modules/study/infrastructure/supabase-review-committer";
+import { createTsFsrsScheduler } from "@/modules/study/infrastructure/ts-fsrs-scheduler";
 import { createSupabaseTodayOverviewRepository } from "@/modules/study/infrastructure/supabase-today-overview-repository";
 import { createSupabaseTodayDashboardRepository } from "@/modules/study/infrastructure/supabase-today-dashboard-repository";
 import { createSupabaseStudySessionRepository } from "@/modules/study/infrastructure/supabase-study-session-repository";
@@ -623,7 +628,8 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
         .from("learning_states")
         .select("id, revision")
         .eq("owner_id", ownerA)
-        .in("practice_item_id", eligibleIds),
+        .in("practice_item_id", eligibleIds)
+        .order("id"),
     );
     // Compare the full immutable log, not an unordered transport-capped subset.
     const reviewLogIds = async () => {
@@ -698,7 +704,8 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
           .from("learning_states")
           .select("id, revision")
           .eq("owner_id", ownerA)
-          .in("practice_item_id", eligibleIds),
+          .in("practice_item_id", eligibleIds)
+          .order("id"),
       ),
     ).toEqual(beforeStates);
     expect(await reviewLogIds()).toEqual(beforeLogs);
@@ -839,5 +846,108 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
     expect(
       await checked(clientA.from("study_sessions").select("id").eq("id", request.sessionId)),
     ).toEqual([]);
+  });
+
+  it("fills one review slot with the most fragile due card and records its real FSRS deadline", async () => {
+    const older = randomUUID();
+    const fragile = randomUUID();
+    const sessionId = randomUUID();
+    await checked(
+      clientA
+        .from("course_settings")
+        .update({ daily_new_limit: 0, maximum_reviews_per_day: 1 })
+        .eq("course_id", otherCourse),
+    );
+    await checked(
+      clientA.from("practice_items").insert(
+        [older, fragile].map((id) => ({
+          id,
+          owner_id: ownerA,
+          concept_id: otherConcept,
+          mode: "basic_recognition" as const,
+          prompt_text: "Review priority",
+          answer_text: "Original answer",
+          config: { mode: "basic_recognition" },
+        })),
+      ),
+    );
+    const state = {
+      owner_id: ownerA,
+      phase: "review",
+      difficulty: 5,
+      reps: 3,
+      scheduler_version: V1_SCHEDULER_CONFIG.schedulerPackageVersion,
+      config_version: V1_SCHEDULER_CONFIG.configVersion,
+    } as const;
+    await checked(
+      clientA.from("learning_states").insert([
+        {
+          ...state,
+          practice_item_id: older,
+          due_at: "2026-09-25T10:00:00Z",
+          last_reviewed_at: "2026-06-27T10:00:00Z",
+          scheduled_days: 90,
+          stability: 90,
+        },
+        {
+          ...state,
+          practice_item_id: fragile,
+          due_at: "2026-10-04T10:00:00Z",
+          last_reviewed_at: "2026-10-03T10:00:00Z",
+          scheduled_days: 1,
+          stability: 1,
+        },
+      ]),
+    );
+    const ports = {
+      sessions: createSupabaseStudySessionRepository(clientA),
+      queue: createSupabaseDailyQueueRepository(clientA),
+      cards: createSupabaseStudyCardRepository(clientA),
+      memory: createSupabaseLearningStateRepository(clientA),
+      scheduler: createTsFsrsScheduler(),
+      committer: createSupabaseReviewCommitter(clientA),
+    };
+    const request = { ownerId: ownerA, sessionId, now: NOW, timeZone: "Europe/Madrid" };
+    await ports.sessions.create({
+      ownerId: ownerA,
+      courseId: otherCourse,
+      sessionId,
+      scope: { deckIds: [otherDeck] },
+      startedAt: NOW,
+    });
+    const front = await getStudySessionCard(ports.sessions, ports.queue, ports.cards, request);
+    expect(front).toMatchObject({
+      ok: true,
+      queue: { hiddenDueReviews: 1 },
+      card: { practiceItemId: fragile, revision: 1 },
+    });
+    const before = await ports.memory.getByItem({ ownerId: ownerA, practiceItemId: fragile });
+    expect(before).not.toBeNull();
+    const expected = ports.scheduler.review(before!.state, "good", NOW, V1_SCHEDULER_CONFIG);
+    expect(
+      await saveSessionReview(ports, {
+        ...request,
+        practiceItemId: fragile,
+        expectedRevision: 1,
+        rating: "good",
+        idempotencyKey: randomUUID(),
+        config: V1_SCHEDULER_CONFIG,
+      }),
+    ).toEqual({ ok: true, rating: "good", replayed: false });
+    expect(
+      await ports.memory.getByItem({ ownerId: ownerA, practiceItemId: fragile }),
+    ).toMatchObject({
+      revision: 2,
+      state: expected.state,
+    });
+    expect(await getStudySession(ports.sessions, ports.queue, request)).toMatchObject({
+      ok: true,
+      queue: { entries: [], hiddenDueReviews: 1 },
+    });
+    const tomorrow = { ...request, now: new Date("2026-10-06T22:00:00Z") };
+    expect(await getStudySession(ports.sessions, ports.queue, tomorrow)).toMatchObject({
+      ok: true,
+      queue: { entries: [{ practiceItemId: older }] },
+    });
   });
 });

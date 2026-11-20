@@ -6,7 +6,7 @@ import { learningStateFromSnapshot, snapshotLearningState } from "@/modules/stud
 import { V1_FROZEN_TRANSITIONS } from "@/modules/study/domain/scheduler-fixtures";
 import { V1_SCHEDULER_CONFIG } from "@/modules/study/domain/scheduler-config";
 
-import { createTsFsrsScheduler } from "./ts-fsrs-scheduler";
+import { createTsFsrsScheduler, estimateReviewRecall } from "./ts-fsrs-scheduler";
 
 /**
  * Transiciones congeladas sobre `ts-fsrs@5.4.2` con reloj fijo (LEX-5.2).
@@ -20,6 +20,26 @@ const NOW = new Date("2026-09-11T10:00:00.000Z");
 const config = { ...V1_SCHEDULER_CONFIG, enableFuzz: false };
 
 const scheduler = createTsFsrsScheduler();
+
+describe("estimateReviewRecall", () => {
+  it("uses the FSRS curve to distinguish stable and fragile overdue cards", () => {
+    const at = new Date("2026-09-10T22:00:00Z");
+    const older = estimateReviewRecall(90, new Date("2026-06-02T22:00:00Z"), at);
+    const fragile = estimateReviewRecall(1, new Date("2026-09-08T22:00:00Z"), at);
+
+    expect(older).toBeCloseTo(0.89259965, 8);
+    expect(fragile).toBeCloseTo(0.84588465, 8);
+  });
+
+  it("does not estimate incompatible inputs or a state from after the reference time", () => {
+    for (const stability of [0, 1e-12, -5, Infinity, NaN]) {
+      expect(estimateReviewRecall(stability, NOW, NOW)).toBeNull();
+    }
+    expect(estimateReviewRecall(1, new Date(NaN), NOW)).toBeNull();
+    expect(estimateReviewRecall(1, new Date(NOW.getTime() + 1), NOW)).toBeNull();
+    expect(estimateReviewRecall(1, NOW, NOW)).toBe(1);
+  });
+});
 
 describe("createTsFsrsScheduler", () => {
   it("createInitialState es New con vencimiento igual a now", () => {

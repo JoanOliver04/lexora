@@ -82,7 +82,26 @@ describe("getDailyQueue", () => {
       ownerId: "user-1",
       courseId: "course-1",
       deckIds: null,
+      reviewPriority: { at: MADRID_DAY_START, dueThrough: NOW },
     });
+  });
+
+  it("holds the scoring reference through the local day and rolls it over at midnight", async () => {
+    const repository = fakeRepository({
+      getCourseLimits: vi.fn().mockResolvedValue({ dailyNewLimit: 5, maximumReviewsPerDay: 5 }),
+    });
+    for (const now of [NOW, new Date(MADRID_DAY_END.getTime() - 1), MADRID_DAY_END]) {
+      await getDailyQueue(repository, { ...baseInput, now });
+      expect(repository.listEligibleItems).toHaveBeenLastCalledWith({
+        ownerId: "user-1",
+        courseId: "course-1",
+        deckIds: null,
+        reviewPriority: {
+          at: now === MADRID_DAY_END ? MADRID_DAY_END : MADRID_DAY_START,
+          dueThrough: now,
+        },
+      });
+    }
   });
 
   it("un array vacío de mazos no se interpreta como todos", async () => {

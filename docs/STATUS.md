@@ -1,5 +1,11 @@
 # Lexora — Estado actual
 
+**LEX-22.13 · Prioridad de los repasos vencidos.** Cuando el cupo diario no
+cubre todos los vencidos, la cola da prioridad a las tarjetas con menor
+probabilidad de recuerdo estimada por FSRS. Las tarjetas con datos
+insuficientes conservan su posición cronológica. La fecha guardada sigue
+determinando cuándo entra cada tarjeta. [Lógica de la cola](FSRS.md#cola-diaria).
+
 **LEX-22.12 · README del proyecto.** La presentación recoge varios cursos,
 estudio programado y libre, importación y copias restaurables. Incluye un CSV
 de ejemplo, instrucciones de arranque local y dos capturas con datos

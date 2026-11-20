@@ -14,6 +14,8 @@ import {
   type CardInput,
   type Grade,
   createEmptyCard,
+  date_diff,
+  forgetting_curve,
   fsrs,
   generatorParameters,
 } from "ts-fsrs";
@@ -25,7 +27,7 @@ import {
   type ReviewRating,
   REVIEW_RATINGS,
 } from "@/modules/study/domain/memory";
-import type { SchedulerConfig } from "@/modules/study/domain/scheduler-config";
+import { V1_SCHEDULER_CONFIG, type SchedulerConfig } from "@/modules/study/domain/scheduler-config";
 
 const PHASE_TO_STATE: Record<MemoryPhase, State> = {
   new: State.New,
@@ -94,6 +96,17 @@ function fromCard(card: Card): LearningState {
     reps: card.reps,
     lapses: card.lapses,
   };
+}
+
+/** FSRS recall estimate for a compatible review state, using elapsed full days. */
+export function estimateReviewRecall(stability: number, lastReviewedAt: Date, at: Date) {
+  const rounded = +stability.toFixed(8);
+  if (!Number.isFinite(rounded) || rounded <= 0 || !(lastReviewedAt <= at)) return null;
+  return forgetting_curve(
+    V1_SCHEDULER_CONFIG.weights,
+    date_diff(at, lastReviewedAt, "days"),
+    rounded,
+  );
 }
 
 export function createTsFsrsScheduler(): SpacedRepetitionScheduler {

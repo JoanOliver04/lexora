@@ -14,6 +14,7 @@ import {
 } from "./study-session";
 
 const NOW = new Date("2026-10-06T10:00:00Z");
+const REVIEW_PRIORITY = { at: new Date("2026-10-05T22:00:00Z"), dueThrough: NOW };
 const SESSION = "50000000-0000-4000-8000-000000000001";
 const DECK = "d0000000-0000-4000-8000-000000000001";
 const OTHER = "d0000000-0000-4000-8000-000000000002";
@@ -112,6 +113,7 @@ describe("createStudySession", () => {
       ownerId: "owner",
       courseId: "course",
       deckIds: null,
+      reviewPriority: REVIEW_PRIORITY,
     });
   });
 
@@ -127,6 +129,7 @@ describe("createStudySession", () => {
       ownerId: "owner",
       courseId: "course",
       deckIds: [DECK],
+      reviewPriority: REVIEW_PRIORITY,
     });
   });
 
@@ -267,6 +270,7 @@ describe("session reads and setup", () => {
       ownerId: "owner",
       courseId: "course",
       deckIds: null,
+      reviewPriority: REVIEW_PRIORITY,
     });
   });
 
@@ -287,6 +291,7 @@ describe("session reads and setup", () => {
       ownerId: "owner",
       courseId: "course",
       deckIds: [DECK],
+      reviewPriority: REVIEW_PRIORITY,
     });
     vi.mocked(queue.listEligibleItems).mockResolvedValue([]);
     const refreshed = await getStudySession(sessions, queue, input);

@@ -10,7 +10,9 @@
  *   2. Review vencidos
  *   3. New, hasta el cupo diario de nuevos
  *
- * Dentro de Learning/Review: `dueAt` ascendente, desempate `practiceItemId`.
+ * Learning y Review se ordenan inicialmente por `dueAt` e ID. Si el cupo
+ * deja Review fuera, se prioriza el menor recuerdo estimado entre los
+ * candidatos que tienen una estimación.
  * Dentro de New: solo `practiceItemId` (el vencimiento de un New no ordena).
  *
  * El límite de repasos recorta solo Review. Los pasos cortos de
@@ -33,6 +35,8 @@ export interface QueueCandidate {
   phase: MemoryPhase | null;
   learningStateId: string | null;
   revision: number | null;
+  /** Estimación al inicio del día local. Ausente si no se puede calcular. */
+  recallProbability?: number;
 }
 
 export interface QueueEntry {
@@ -76,6 +80,27 @@ function byDueThenId(a: QueueCandidate, b: QueueCandidate): number {
 
 function byId(a: QueueCandidate, b: QueueCandidate): number {
   return a.practiceItemId < b.practiceItemId ? -1 : a.practiceItemId > b.practiceItemId ? 1 : 0;
+}
+
+function hasRecall(candidate: QueueCandidate): candidate is QueueCandidate & {
+  recallProbability: number;
+} {
+  const recall = candidate.recallProbability;
+  return recall !== undefined && recall >= 0 && recall <= 1;
+}
+
+function takeDueReviews(reviews: QueueCandidate[], remaining: number): QueueCandidate[] {
+  if (remaining === 0) return [];
+  const ordered = reviews.sort(byDueThenId);
+  const taken = ordered.slice(0, remaining);
+  if (remaining >= ordered.length) return taken;
+
+  const ranked = ordered
+    .filter(hasRecall)
+    .sort((a, b) => a.recallProbability - b.recallProbability || byDueThenId(a, b));
+  // Preserve the chronological slots of cards without a comparable estimate.
+  let index = 0;
+  return taken.map((candidate) => (hasRecall(candidate) ? ranked[index++]! : candidate));
 }
 
 function isDue(candidate: QueueCandidate, now: Date): boolean {
@@ -139,7 +164,6 @@ export function assembleDailyQueue(input: AssembleDailyQueueInput): DailyQueue {
   }
 
   learningDue.sort(byDueThenId);
-  reviewDue.sort(byDueThenId);
   availableNew.sort(byId);
 
   const newRemaining = clampNonNegative(input.dailyNewLimit - input.newIntroducedToday);
@@ -149,7 +173,7 @@ export function assembleDailyQueue(input: AssembleDailyQueueInput): DailyQueue {
     input.maximumReviewsPerDay === null
       ? reviewDue.length
       : clampNonNegative(input.maximumReviewsPerDay - input.reviewsDoneToday);
-  const takenReview = reviewDue.slice(0, reviewRemaining);
+  const takenReview = takeDueReviews(reviewDue, reviewRemaining);
 
   return {
     entries: [

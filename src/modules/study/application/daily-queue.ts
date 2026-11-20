@@ -43,6 +43,7 @@ export interface DailyQueueRepository {
     ownerId: string;
     courseId: string;
     deckIds: string[] | null;
+    reviewPriority?: { at: Date; dueThrough: Date };
   }): Promise<QueueCandidate[]>;
   countTodayActivity(input: {
     ownerId: string;
@@ -107,6 +108,9 @@ export async function loadDailyQueue(
       ownerId: input.ownerId,
       courseId: input.courseId,
       deckIds,
+      ...((limits.maximumReviewsPerDay ?? 0) > 0
+        ? { reviewPriority: { at: dayStart, dueThrough: input.now } }
+        : {}),
     }),
     repository.countTodayActivity({
       ownerId: input.ownerId,
