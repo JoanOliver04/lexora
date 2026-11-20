@@ -1,9 +1,11 @@
 # Lexora — Estado actual
 
-**LEX-23.1 · Acceso público con Google.** El propietario aprueba las altas
-públicas con Google. El acceso por contraseña sigue disponible para cuentas
-existentes. Abrir la creación por correo queda pendiente de SMTP y de su
-verificación externa. [Operación y comprobaciones](PUBLIC_ACCESS.md).
+**LEX-23.1 · Acceso público con Google.** Las altas con Google están abiertas en
+producción desde el 20 de noviembre de 2026. El acceso por contraseña sigue
+disponible para cuentas existentes. Se verificaron las pantallas y el inicio
+de OAuth en ES y EN. Queda comprobar el primer curso con una cuenta Google
+externa. Las altas por correo quedan pendientes de SMTP y de su verificación.
+[Operación y comprobaciones](PUBLIC_ACCESS.md).
 
 **LEX-22.13 · Prioridad de los repasos vencidos.** Cuando el cupo diario no
 cubre todos los vencidos, la cola da prioridad a las tarjetas con menor

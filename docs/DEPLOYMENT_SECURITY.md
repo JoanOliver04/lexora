@@ -1,14 +1,12 @@
-# Seguridad de despliegue personal
+# Seguridad de despliegue
 
 Lexora utiliza Supabase Auth, una clave pública y el JWT del usuario; las consultas
-de negocio siguen sujetas a RLS. El registro está cerrado en aplicación y Auth.
-No se añaden SMTP, telemetría de contenido ni nuevos servicios para el uso personal.
+de negocio siguen sujetas a RLS. Supabase admite altas con Google y permite
+entrar con contraseña a quienes ya tienen cuenta. [Acceso público](PUBLIC_ACCESS.md).
 
-El proveedor opcional Google de [ADR-011](adrs/011-personal-google-sign-in.md)
-añade un salto OAuth con PKCE. El secreto está solo en Supabase; las opciones
-públicas de proveedor pueden compartirse en caché durante60s, sin sesión.
-No se relajan CSP, RLS, guardas de Preview ni el cierre de altas. La activación
-externa y el primer acceso real se distinguen de los tests en Q-011.
+Google usa OAuth con PKCE. El secreto está solo en Supabase. La aplicación
+cachea durante 60 segundos los indicadores públicos de Auth, que se consultan
+sin una sesión de usuario.
 
 ## Navegador y sesiones
 
@@ -51,10 +49,10 @@ reutiliza durante diez segundos tras completarla. La respuesta HTTP conserva
 `no-store`; la ventana acotada también aplica si la base está degradada. Este
 control limita el coste de las comprobaciones en cada instancia desplegada.
 
-## Antes de habilitar altas públicas
+## Antes de habilitar altas por correo
 
-App y Supabase deben seguir cerrados hasta verificar un alta de prueba con correo
-confirmado, recuperación y límites de Auth en el proyecto que recibirá público.
+Para ampliar las altas a correo, verifica primero el envío de confirmaciones a
+un destinatario externo, la recuperación y los límites de Auth.
 La app exige doce caracteres y como máximo 72 bytes UTF-8 al crear o cambiar
 una contraseña. Configurar también el mínimo en Supabase Auth es necesario
 porque la API del proveedor aplica su propia política. El archivo local activa

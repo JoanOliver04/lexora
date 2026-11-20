@@ -12,7 +12,7 @@ Organiza tu vocabulario, gramática y frases por curso. Crea tus propias tarjeta
 
 </div>
 
-> **Acceso personal.** Lexora admite inicio de sesión con correo y contraseña o con Google para la cuenta autorizada. El registro público está cerrado. El entorno local admite cuentas de prueba. [Alcance de la entrega personal](docs/adrs/008-personal-use.md)
+> **Acceso público y gratuito.** Crea una cuenta con Google. Si ya tienes una cuenta con contraseña, puedes seguir usándola. [Crear una cuenta](https://lexora-one-alpha.vercel.app/es/signup)
 
 [Funciones](#qué-puedes-hacer) · [Ejemplo de importación](#importa-un-tema-completo) · [Arranque local](#arranque-local) · [Cómo está construida](#cómo-está-construida)
 
