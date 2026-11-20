@@ -13,7 +13,17 @@ const googleSans = Google_Sans({
   adjustFontFallback: false,
 });
 
-export function GoogleSignIn({ locale, next }: { locale: string; next?: string | undefined }) {
+export function GoogleSignIn({
+  locale,
+  next,
+  registrationOpen,
+  signup = false,
+}: {
+  locale: string;
+  next?: string | undefined;
+  registrationOpen: boolean;
+  signup?: boolean;
+}) {
   const t = useTranslations("Auth");
   const [state, action, pending] = useActionState<AuthFormState, FormData>(googleLoginAction, {});
   return (
@@ -44,8 +54,14 @@ export function GoogleSignIn({ locale, next }: { locale: string; next?: string |
           <span>{t(pending ? "google.pending" : "google.continue")}</span>
         </button>
       </form>
-      <p className="text-xs leading-relaxed text-(--color-ink-muted)">{t("google.personalHint")}</p>
-      <p className="text-center text-sm text-(--color-ink-muted)">{t("google.orEmail")}</p>
+      {!registrationOpen && (
+        <p className="text-xs leading-relaxed text-(--color-ink-muted)">
+          {t("google.personalHint")}
+        </p>
+      )}
+      <p className="text-center text-sm text-(--color-ink-muted)">
+        {t(signup ? "google.orRegisterEmail" : "google.orEmail")}
+      </p>
     </div>
   );
 }

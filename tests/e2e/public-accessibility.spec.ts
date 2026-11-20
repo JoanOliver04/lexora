@@ -2,6 +2,22 @@ import { expect, test } from "@playwright/test";
 import { assertStudyLayout } from "./study-layout";
 
 for (const locale of ["es", "en"] as const)
+  test(`the signup page links to the public privacy notice (${locale})`, async ({ page }, info) => {
+    await page.goto(`/${locale}/signup`);
+    const title = locale === "es" ? "Privacidad" : "Privacy";
+    await page.getByRole("link", { name: title, exact: true }).click();
+    await expect(page).toHaveURL(`/${locale}/privacy`);
+    await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
+    await expect(page.getByText("JVOR Studios", { exact: true })).toBeVisible();
+    await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0);
+    await assertStudyLayout(page, info, `privacy-${locale}`);
+    await page
+      .getByRole("link", { name: locale === "es" ? "Volver a Lexora" : "Back to Lexora" })
+      .click();
+    await expect(page).toHaveURL(`/${locale}`);
+  });
+
+for (const locale of ["es", "en"] as const)
   test(`public/auth reflow and native theme keyboard (${locale})`, async ({ page }, info) => {
     test.setTimeout(90000);
     await page.goto(`/${locale}/login`);

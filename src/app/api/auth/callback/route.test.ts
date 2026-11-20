@@ -64,6 +64,21 @@ describe("PKCE callback trust boundary", () => {
     );
     expect(response.headers.get("location")).toBe("https://lexora.example/en/reset-password");
   });
+  it("sends confirmed email signups to the localized onboarding entry", async () => {
+    const response = await GET(request({ code: "synthetic-code", flow: "signup", locale: "es" }));
+    expect(response.headers.get("location")).toBe("https://lexora.example/es/app");
+    expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(complete).toHaveBeenCalledWith("synthetic-code");
+  });
+  it("returns failed signup links to an actionable registration screen", async () => {
+    complete.mockResolvedValue(false);
+    const response = await GET(
+      request({ code: "expired-code", flow: "signup", locale: "en", next: "//foreign.example" }),
+    );
+    expect(response.headers.get("location")).toBe(
+      "https://lexora.example/en/signup?error=confirmation-invalid&next=%2Fen%2Fapp",
+    );
+  });
   it.each(["false", "throw"])("fails closed on exchange/profile failure: %s", async (outcome) => {
     if (outcome === "throw") complete.mockRejectedValue(new Error("private-profile-failure"));
     else complete.mockResolvedValue(false);

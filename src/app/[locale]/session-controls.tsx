@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { logoutAction } from "@/app/[locale]/(auth)/actions";
-import { getCurrentUserId } from "@/composition/identity";
+import { getCurrentUserId, isRegistrationOpen } from "@/composition/identity";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/shared/presentation/components";
 
@@ -19,12 +19,22 @@ export async function SessionControls({ locale }: { locale: string }) {
 
   if (!userId) {
     return (
-      <Link
-        href="/login"
-        className="inline-flex min-h-11 min-w-11 items-center text-sm text-(--color-accent) underline underline-offset-4"
-      >
-        {t("login.submit")}
-      </Link>
+      <>
+        <Link
+          href="/login"
+          className="inline-flex min-h-11 min-w-11 items-center text-sm text-(--color-accent) underline underline-offset-4"
+        >
+          {t("login.submit")}
+        </Link>
+        {isRegistrationOpen() && (
+          <Link
+            href="/signup"
+            className="inline-flex min-h-11 min-w-11 items-center text-sm font-semibold text-(--color-accent) underline underline-offset-4"
+          >
+            {t("login.signupLink")}
+          </Link>
+        )}
+      </>
     );
   }
 

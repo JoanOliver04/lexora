@@ -181,7 +181,34 @@
     "approach": "Lexora separa cada concepto en las competencias que lo componen y programa cada una por separado, con repetición espaciada. Saber reconocer una palabra no marca como dominada su producción.",
     "statusTitle": "Estado",
     "status": "Tu espacio personal para aprender a tu ritmo. Entra con tu cuenta para continuar.",
+    "publicStatus": "Prueba la beta de Lexora. Crea una cuenta, añade un mazo y empieza a repasar.",
     "repository": "Ver el código en GitHub"
+  },
+  "Privacy": {
+    "title": "Privacidad",
+    "back": "Volver a Lexora",
+    "intro": "Lexora es un proyecto de JVOR Studios. Aquí puedes consultar qué datos se usan para prestar el servicio y qué opciones tienes para gestionarlos.",
+    "contact": {
+      "title": "Responsable y contacto",
+      "controller": "Responsable del tratamiento: {name}.",
+      "link": "Contacto para solicitudes de privacidad"
+    },
+    "purpose": {
+      "title": "Tu cuenta y el estudio",
+      "body": "Usamos tu correo para identificar tu cuenta y enviarte confirmaciones o mensajes de recuperación. Guardamos tus cursos, tarjetas, ajustes e historial para ofrecerte el servicio y programar tus repasos. Los registros técnicos ayudan a proteger las cuentas y diagnosticar errores. Usamos cookies de sesión para mantener tu acceso. El navegador también puede recordar tus preferencias de idioma y tema."
+    },
+    "providers": {
+      "title": "Servicios que usa Lexora",
+      "body": "Vercel aloja la web y Supabase gestiona las cuentas y la base de datos. Si eliges Google, usamos los datos básicos de identidad que autorices para iniciar sesión."
+    },
+    "retention": {
+      "title": "Conservación y borrado",
+      "body": "Tus cursos, preferencias e historial se conservan mientras tienes cuenta. Lexora guarda el resultado de tus importaciones y sus diagnósticos, y elimina tus datos activos al borrar tu cuenta. Las copias operativas se rigen por su ciclo de retención. Las copias que descargues quedan bajo tu control."
+    },
+    "rights": {
+      "title": "Tus opciones y derechos",
+      "body": "En Ajustes puedes cambiar tus datos, descargar una copia o borrar tu cuenta. También puedes solicitar acceso, rectificación, supresión, limitación, oposición o portabilidad en los casos previstos y presentar una reclamación ante la Agencia Española de Protección de Datos."
+    }
   },
   "App": {
     "courseLabel": "Tu curso",
@@ -1069,7 +1096,8 @@
       "continue": "Continuar con Google",
       "pending": "Conectando…",
       "personalHint": "Usa la cuenta de Google con el mismo correo que tu cuenta de Lexora.",
-      "orEmail": "o entra con tu correo"
+      "orEmail": "o entra con tu correo",
+      "orRegisterEmail": "o crea una cuenta con tu correo"
     },
     "private": {
       "title": "Acceso personal",
@@ -1112,7 +1140,8 @@
       "loginPrompt": "¿Ya tienes cuenta?",
       "loginLink": "Entrar",
       "checkEmailTitle": "Revisa tu correo",
-      "checkEmailBody": "Si esa dirección puede registrarse, te hemos enviado un enlace para confirmarla."
+      "checkEmailBody": "Si esa dirección puede registrarse, te hemos enviado un enlace. Ábrelo en el mismo navegador que usaste para registrarte.",
+      "confirmationError": "El enlace no ha podido confirmarse en este navegador. Prueba a abrirlo donde iniciaste el registro o vuelve a solicitar el alta."
     },
     "forgot": {
       "title": "Recuperar la contraseña",

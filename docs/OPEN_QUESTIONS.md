@@ -4,7 +4,7 @@
 > Cada entrada tiene un ID estable `Q-nnn` que nunca se reutiliza.
 > Protocolo: `ROADMAP.md` §3.5 (documento privado y local).
 
-**Última actualización:** 2026-11-18
+**Última actualización:** 2026-11-20
 
 ## Índice de estado
 
@@ -22,10 +22,20 @@
 | Q-010 | Uso personal y servicios de correo | `RESUELTA` | Entrega actual; ADR-008 |
 | Q-011 | Activación externa y aceptación de Google | `RESUELTA` | Acceso adicional; ADR-011 |
 | Q-012 | Consultar el error autenticado del despliegue1.3.0 | `RESUELTA` | Publicación de LEX-17.1 |
+| Q-013 | Configuración externa de altas para la beta | `ABIERTA` | LEX-23.1 |
 
 Q-005/Q-006 siguen abiertas como decisiones históricas de producto. Sus opciones
 actuales están implementadas y probadas; no bloquean la entrega personal ni se
 consideran aprobadas de nuevo por ausencia de respuesta.
+
+## Q-013 — Configuración externa de altas para la beta
+
+El propietario decide ampliar Lexora a una beta web abierta y gratuita bajo
+la marca JVOR Studios. El contacto público se configurará cuando exista un
+canal dedicado. El proyecto carece de remitente SMTP elegido para altas y
+recuperación de terceros. La configuración pública consultada el 2026-11-20
+mostró ambos proveedores activos y la confirmación de correo exigida, con
+altas cerradas. La activación se retoma desde [Beta web](PUBLIC_BETA.md).
 
 ## Q-012 — Consultar el error autenticado del despliegue1.3.0
 

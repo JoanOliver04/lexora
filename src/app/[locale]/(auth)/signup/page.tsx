@@ -5,14 +5,16 @@ import { resolveSafeRedirect } from "@/modules/identity/application/safe-redirec
 
 import { AuthShell } from "../_components/auth-shell";
 import { SignupForm } from "./signup-form";
-import { isRegistrationOpen } from "@/composition/identity";
+import { isGoogleSignInAvailable, isRegistrationOpen } from "@/composition/identity";
+import { FormError } from "@/shared/presentation/components";
+import { GoogleSignIn } from "../_components/google-sign-in";
 
 export default async function SignupPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -35,8 +37,9 @@ export default async function SignupPage({
       </AuthShell>
     );
 
-  const { next } = await searchParams;
+  const { next, error } = await searchParams;
   const safeNext = next ? resolveSafeRedirect(next, `/${locale}`) : undefined;
+  const googleAvailable = await isGoogleSignInAvailable();
 
   return (
     <AuthShell
@@ -45,7 +48,7 @@ export default async function SignupPage({
         <>
           {t("signup.loginPrompt")}{" "}
           <Link
-            href="/login"
+            href={safeNext ? { pathname: "/login", query: { next: safeNext } } : "/login"}
             className="inline-flex min-h-11 min-w-11 items-center text-(--color-accent) underline underline-offset-4"
           >
             {t("signup.loginLink")}
@@ -53,6 +56,12 @@ export default async function SignupPage({
         </>
       }
     >
+      {error === "confirmation-invalid" && (
+        <FormError id="signup-confirmation-error">
+          <p>{t("signup.confirmationError")}</p>
+        </FormError>
+      )}
+      {googleAvailable && <GoogleSignIn locale={locale} next={safeNext} registrationOpen signup />}
       <SignupForm locale={locale} next={safeNext} />
     </AuthShell>
   );

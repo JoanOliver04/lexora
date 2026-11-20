@@ -27,6 +27,7 @@ export default async function LoginPage({
   const deletion = await getTranslations("AccountDeletion");
   const { next, error, deleted } = await searchParams;
   const googleAvailable = await isGoogleSignInAvailable();
+  const registrationOpen = isRegistrationOpen();
   // Se sanea aquí también: lo que se guarda en el campo oculto ya está filtrado.
   const safeNext = next ? resolveSafeRedirect(next, `/${locale}`) : undefined;
   const initialError = SHOWN_ERRORS.has(error as AuthErrorCode)
@@ -37,11 +38,11 @@ export default async function LoginPage({
     <AuthShell
       title={t("login.title")}
       footer={
-        isRegistrationOpen() ? (
+        registrationOpen ? (
           <>
             {t("login.signupPrompt")}{" "}
             <Link
-              href="/signup"
+              href={safeNext ? { pathname: "/signup", query: { next: safeNext } } : "/signup"}
               className="inline-flex min-h-11 items-center text-(--color-accent) underline underline-offset-4"
             >
               {t("login.signupLink")}
@@ -62,7 +63,9 @@ export default async function LoginPage({
           <p>{t("errors.google-unavailable")}</p>
         </FormError>
       )}
-      {googleAvailable && <GoogleSignIn locale={locale} next={safeNext} />}
+      {googleAvailable && (
+        <GoogleSignIn locale={locale} next={safeNext} registrationOpen={registrationOpen} />
+      )}
       <LoginForm locale={locale} next={safeNext} initialError={initialError} />
       <Link
         href="/forgot-password"
