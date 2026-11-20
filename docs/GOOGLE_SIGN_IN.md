@@ -1,8 +1,8 @@
-# Activar el acceso personal con Google
+# Acceso con Google
 
-Lexora conserva el acceso por correo y contraseña y el registro cerrado.
-Google debe usar **el mismo correo verificado que tu cuenta existente**.
-No hace falta crear otra cuenta en Lexora, migrar datos ni contratar un servicio.
+Lexora admite nuevas cuentas con Google. Para acceder a una cuenta existente
+con Google, usa el mismo correo verificado. El acceso por contraseña sigue
+disponible para las cuentas que ya lo tienen.
 
 ## Configuración única del propietario
 
@@ -11,9 +11,9 @@ No hace falta crear otra cuenta en Lexora, migrar datos ni contratar un servicio
    tiene la forma `https://<project-ref>.supabase.co/auth/v1/callback`.
 2. En [Google Auth Platform](https://console.cloud.google.com/auth/overview),
    reutiliza el proyecto/cliente de Lexora si ya existe. Configura el nombre
-   Lexora y los datos que Google exige a su propietario. Para uso personal con
-   audiencia External en Testing, añade tu cuenta como usuario de prueba.
-   Limita los permisos a `openid`, `email` y `profile`.
+   Lexora y los datos que Google exige a su propietario. Limita los permisos a
+   `openid`, `email` y `profile`. Comprueba la pantalla de Google con una
+   cuenta externa. [Estados OAuth de Google](https://developers.google.com/identity/protocols/oauth2/production-readiness/overview)
 3. En Clients, crea o edita un cliente OAuth de tipo **Web application**.
    Origen JavaScript autorizado: `https://lexora-one-alpha.vercel.app`.
    URI de redirección autorizado: la Callback URL exacta copiada de Supabase.
@@ -21,12 +21,9 @@ No hace falta crear otra cuenta en Lexora, migrar datos ni contratar un servicio
 4. Copia el Client ID y Client secret **directamente a Supabase**, habilita
    el proveedor Google y guarda. No los envíes por chat ni los pongas en Git,
    `.env.local` o Vercel. Lexora no necesita esas credenciales.
-5. En la configuración general de Auth, mantén **Allow new users to sign up
-   desactivado**. En URL Configuration, conserva la URL de producción como
-   Site URL y autoriza el retorno canónico de Lexora:
-   `https://lexora-one-alpha.vercel.app/api/auth/callback` (con los parámetros
-   de idioma y destino que admite la allowlist de Supabase). La configuración
-   existente de recuperación por correo debe conservarse.
+5. En URL Configuration, conserva el origen de producción como Site URL y
+   añade su retorno canónico `https://lexora-one-alpha.vercel.app/api/auth/callback`.
+   Gestiona la creación de cuentas en [Acceso público](PUBLIC_ACCESS.md).
 
 Con `LEXORA_GOOGLE_AUTH=auto` (valor predeterminado), el botón aparece al
 recargar el acceso después de hasta 60 segundos. No requiere otro despliegue
@@ -41,14 +38,9 @@ habituales. Cierra sesión y vuelve a entrar por correo para confirmar ambos
 caminos. Una cancelación debe volver al acceso con un mensaje legible.
 
 Si aparece un error de URI de redirección, revisa las dos URLs anteriores en
-su consola correspondiente. Si Google no deja elegir tu cuenta en Testing,
-comprueba que está añadida como usuario de prueba. No abras las altas ni
-modifiques los usuarios/datos para resolver un problema de configuración.
-
-La herramienta disponible en esta sesión no gestiona clientes de Google Cloud
-ni la configuración Auth del proyecto; la creación/copia del secreto debe
-realizarla el propietario en esas consolas. La aceptación real se registra
-solo después de esa comprobación, separada de las pruebas automáticas locales.
+su consola correspondiente. Para comprobar el alta, abre `/es/signup` o
+`/en/signup` con una cuenta que todavía no exista en Lexora. Verifica que
+llegas a la creación del primer curso y que la biblioteca está vacía.
 
 Fuentes oficiales: [Google OAuth en Supabase](https://supabase.com/docs/guides/auth/social-sign-in/auth-google),
 [identidades verificadas](https://supabase.com/docs/guides/auth/auth-identity-linking),
