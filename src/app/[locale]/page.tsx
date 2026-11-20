@@ -3,6 +3,8 @@ import { setRequestLocale } from "next-intl/server";
 import { use } from "react";
 import { ThemeToggle } from "@/shared/presentation/theme/theme-toggle";
 import { Brand } from "@/shared/presentation/components/brand";
+import { isRegistrationOpen } from "@/composition/identity";
+import { Link } from "@/i18n/navigation";
 import { LocaleSwitcher } from "./locale-switcher";
 import { SessionControls } from "./session-controls";
 
@@ -11,6 +13,7 @@ export default function Home({ params }: { params: Promise<{ locale: string }> }
   setRequestLocale(locale);
   const t = useTranslations("Home");
   const v = useTranslations("Visual");
+  const privacy = useTranslations("Privacy");
   return (
     <div className="home-shell">
       <header className="home-header">
@@ -50,12 +53,15 @@ export default function Home({ params }: { params: Promise<{ locale: string }> }
       <footer className="home-footer">
         <div>
           <h2 className="font-semibold">{t("statusTitle")}</h2>
-          <p>{t("status")}</p>
+          <p>{t(isRegistrationOpen() ? "publicStatus" : "status")}</p>
           <p className="mt-2">{t("approach")}</p>
         </div>
-        <a href="https://github.com/JoanOliver04/lexora" rel="noreferrer">
-          {t("repository")}
-        </a>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <Link href="/privacy">{privacy("title")}</Link>
+          <a href="https://github.com/JoanOliver04/lexora" rel="noreferrer">
+            {t("repository")}
+          </a>
+        </div>
       </footer>
     </div>
   );

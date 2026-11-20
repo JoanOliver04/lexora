@@ -78,16 +78,21 @@ export async function signupAction(
   formData: FormData,
 ): Promise<AuthFormState> {
   const locale = safeLocale(formData);
+  const next = String(formData.get("next") ?? "");
+  const callback = new URL(absoluteUrl("/api/auth/callback"));
+  callback.searchParams.set("locale", locale);
+  callback.searchParams.set("flow", "signup");
+  callback.searchParams.set("next", resolveSafeRedirect(next, `/${locale}/app`));
   const outcome = await registerVisitor(
     { email: formData.get("email"), password: formData.get("password") },
-    absoluteUrl(`/api/auth/callback?locale=${locale}`),
+    callback.toString(),
   );
 
   if (!outcome.ok) {
     return { error: outcome.error };
   }
   if (outcome.result === "signed-in") {
-    redirect(resolveSafeRedirect(String(formData.get("next") ?? ""), `/${locale}`));
+    redirect(resolveSafeRedirect(next, `/${locale}`));
   }
   return { status: "check-email" };
 }

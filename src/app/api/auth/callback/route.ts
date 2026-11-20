@@ -6,7 +6,7 @@ import { routing } from "@/i18n/routing";
 import { clientEnv } from "@/env/client";
 
 /**
- * Retorno PKCE de Supabase Auth: enlaces de correo y acceso personal por Google.
+ * Retorno PKCE de Supabase Auth: enlaces de correo y acceso con Google.
  *
  * Vive bajo `/api` a propósito: el `proxy.ts` excluye ese prefijo de su
  * `matcher`, así que `next-intl` no reescribe la URL antes de que este handler
@@ -18,7 +18,9 @@ import { clientEnv } from "@/env/client";
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const google = url.searchParams.get("flow") === "google";
+  const flow = url.searchParams.get("flow");
+  const google = flow === "google";
+  const signup = flow === "signup";
 
   const rawLocale = url.searchParams.get("locale") ?? routing.defaultLocale;
   const locale = routing.locales.includes(rawLocale as (typeof routing.locales)[number])
@@ -27,10 +29,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const destination = resolveSafeRedirect(
     url.searchParams.get("next"),
-    google ? `/${locale}/app` : `/${locale}`,
+    google || signup ? `/${locale}/app` : `/${locale}`,
   );
   const origin = clientEnv.NEXT_PUBLIC_SITE_URL;
   const failure = () => {
+    if (signup) {
+      const register = new URL(`/${locale}/signup`, origin);
+      register.searchParams.set("error", "confirmation-invalid");
+      register.searchParams.set("next", destination);
+      return redirectWithoutCache(register);
+    }
     const login = new URL(`/${locale}/login`, origin);
     login.searchParams.set("error", google ? "google-unavailable" : "missing-recovery-session");
     if (google) login.searchParams.set("next", destination);

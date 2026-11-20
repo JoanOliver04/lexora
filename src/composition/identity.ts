@@ -15,7 +15,7 @@ import {
 import { createSupabaseAuthGateway } from "@/modules/identity/infrastructure/supabase-auth-gateway";
 import { createSupabaseProfileRepository } from "@/modules/identity/infrastructure/supabase-profile-repository";
 import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/server-client";
-import { serverEnv } from "@/env/server";
+import { getPrivacyContact, serverEnv } from "@/env/server";
 import { registrationAllowed } from "@/modules/identity/domain/registration-policy";
 import { privateBackendEnabled } from "@/env/deployment";
 import { clientEnv } from "@/env/client";
@@ -52,10 +52,15 @@ export async function signInGoogleVisitor(
 }
 
 export function isRegistrationOpen(): boolean {
-  return (
-    privateBackendEnabled() &&
-    registrationAllowed(serverEnv.NODE_ENV, serverEnv.LEXORA_ALLOW_REGISTRATION)
-  );
+  if (
+    !privateBackendEnabled() ||
+    !registrationAllowed(serverEnv.NODE_ENV, serverEnv.LEXORA_ALLOW_REGISTRATION)
+  )
+    return false;
+  if (serverEnv.NODE_ENV !== "production" || getPrivacyContact()) return true;
+  // Loopback builds remain usable for synthetic accounts and confirmation tests.
+  const host = new URL(clientEnv.NEXT_PUBLIC_SITE_URL).hostname;
+  return serverEnv.VERCEL !== "1" && ["localhost", "127.0.0.1", "[::1]"].includes(host);
 }
 
 /**
