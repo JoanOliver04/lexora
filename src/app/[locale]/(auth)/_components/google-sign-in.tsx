@@ -18,11 +18,13 @@ export function GoogleSignIn({
   next,
   registrationOpen,
   signup = false,
+  showEmailOption = true,
 }: {
   locale: string;
   next?: string | undefined;
   registrationOpen: boolean;
   signup?: boolean;
+  showEmailOption?: boolean;
 }) {
   const t = useTranslations("Auth");
   const [state, action, pending] = useActionState<AuthFormState, FormData>(googleLoginAction, {});
@@ -59,9 +61,11 @@ export function GoogleSignIn({
           {t("google.personalHint")}
         </p>
       )}
-      <p className="text-center text-sm text-(--color-ink-muted)">
-        {t(signup ? "google.orRegisterEmail" : "google.orEmail")}
-      </p>
+      {showEmailOption && (
+        <p className="text-center text-sm text-(--color-ink-muted)">
+          {t(signup ? "google.orRegisterEmail" : "google.orEmail")}
+        </p>
+      )}
     </div>
   );
 }

@@ -5,14 +5,19 @@ import type { GoogleSignInGateway } from "../application/google-sign-in";
 import { AuthGatewayError } from "../application/auth-gateway";
 import type { Database } from "@/shared/infrastructure/supabase/database.types";
 
-const providerSettings = z.object({ external: z.object({ google: z.boolean() }) });
+const providerSettings = z.object({
+  external: z.object({ google: z.boolean() }),
+  disable_signup: z.boolean().optional(),
+});
+
+const googleUnavailable = { signIn: false, signUp: false };
 
 /** Cache only public provider flags. Never forward a session or Authorization header. */
-export async function googleProviderAvailable(
+export async function readGoogleAvailability(
   backendUrl: string,
   publishableKey: string,
   request: typeof fetch = fetch,
-): Promise<boolean> {
+) {
   try {
     const response = await request(new URL("/auth/v1/settings", backendUrl), {
       headers: { apikey: publishableKey },
@@ -21,12 +26,17 @@ export async function googleProviderAvailable(
       next: { revalidate: 60 },
       signal: AbortSignal.timeout(3000),
     });
-    if (!response.ok) return false;
+    if (!response.ok) return googleUnavailable;
     const parsed = providerSettings.safeParse(await response.json());
-    return parsed.success && parsed.data.external.google;
+    if (!parsed.success || !parsed.data.external.google) return googleUnavailable;
+    return { signIn: true, signUp: parsed.data.disable_signup === false };
   } catch {
-    return false;
+    return googleUnavailable;
   }
+}
+
+async function googleProviderAvailable(backendUrl: string, publishableKey: string) {
+  return (await readGoogleAvailability(backendUrl, publishableKey)).signIn;
 }
 
 export function createSupabaseGoogleSignIn(

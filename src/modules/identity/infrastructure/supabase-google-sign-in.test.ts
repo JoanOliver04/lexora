@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { createSupabaseGoogleSignIn, googleProviderAvailable } from "./supabase-google-sign-in";
+import { createSupabaseGoogleSignIn, readGoogleAvailability } from "./supabase-google-sign-in";
 import type { Database } from "@/shared/infrastructure/supabase/database.types";
 
 const backend = "http://127.0.0.1:54321";
@@ -22,7 +22,10 @@ describe("Public Google availability", () => {
     const request = vi
       .fn<typeof fetch>()
       .mockResolvedValue(Response.json({ external: { google: true } }));
-    expect(await googleProviderAvailable(backend, "public-placeholder", request)).toBe(true);
+    expect(await readGoogleAvailability(backend, "public-placeholder", request)).toEqual({
+      signIn: true,
+      signUp: false,
+    });
     const [url, init] = request.mock.calls[0]!;
     expect(String(url)).toBe(`${backend}/auth/v1/settings`);
     expect(init).toMatchObject({
@@ -33,33 +36,42 @@ describe("Public Google availability", () => {
     });
     expect(init?.signal).toBeInstanceOf(AbortSignal);
   });
+  it.each([true, false])("preserves Google sign-in when disable_signup is %s", async (closed) => {
+    const request = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json({ external: { google: true }, disable_signup: closed }));
+    expect(await readGoogleAvailability(backend, "public-placeholder", request)).toEqual({
+      signIn: true,
+      signUp: !closed,
+    });
+  });
   it.each([{ external: { google: false } }, {}, { external: { google: "true" } }])(
     "hides an unavailable or invalid provider: %j",
     async (payload) => {
       expect(
-        await googleProviderAvailable(
+        await readGoogleAvailability(
           backend,
           "public-placeholder",
           vi.fn().mockResolvedValue(Response.json(payload)),
         ),
-      ).toBe(false);
+      ).toEqual({ signIn: false, signUp: false });
     },
   );
   it("fails closed on HTTP or network errors", async () => {
     expect(
-      await googleProviderAvailable(
+      await readGoogleAvailability(
         backend,
         "public-placeholder",
         vi.fn().mockResolvedValue(new Response(null, { status: 503 })),
       ),
-    ).toBe(false);
+    ).toEqual({ signIn: false, signUp: false });
     expect(
-      await googleProviderAvailable(
+      await readGoogleAvailability(
         backend,
         "public-placeholder",
         vi.fn().mockRejectedValue(new Error("offline")),
       ),
-    ).toBe(false);
+    ).toEqual({ signIn: false, signUp: false });
   });
 });
 describe("Google SDK initiation", () => {

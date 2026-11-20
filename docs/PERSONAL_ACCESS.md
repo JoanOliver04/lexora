@@ -1,5 +1,8 @@
 # Acceso personal
 
+Este documento registra el cierre personal anterior. La apertura con Google
+se gestiona según [Acceso público](PUBLIC_ACCESS.md).
+
 La entrega actual es de uso personal (ADR-008). No publica contacto ni contrata
 SMTP o telemetría adicionales. Las cuentas existentes conservan login y la
 recuperación configurada en Supabase.

@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { logoutAction } from "@/app/[locale]/(auth)/actions";
-import { getCurrentUserId, isRegistrationOpen } from "@/composition/identity";
+import { getCurrentUserId } from "@/composition/identity";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/shared/presentation/components";
 
@@ -13,7 +13,13 @@ import { Button } from "@/shared/presentation/components";
  * precio de mostrar estado de sesión, y de momento solo lo paga esta cabecera.
  * La navegación autenticada de verdad llega en LEX-2.6/2.9.
  */
-export async function SessionControls({ locale }: { locale: string }) {
+export async function SessionControls({
+  locale,
+  registrationOpen,
+}: {
+  locale: string;
+  registrationOpen: boolean;
+}) {
   const userId = await getCurrentUserId();
   const t = await getTranslations("Auth");
 
@@ -26,7 +32,7 @@ export async function SessionControls({ locale }: { locale: string }) {
         >
           {t("login.submit")}
         </Link>
-        {isRegistrationOpen() && (
+        {registrationOpen && (
           <Link
             href="/signup"
             className="inline-flex min-h-11 min-w-11 items-center text-sm font-semibold text-(--color-accent) underline underline-offset-4"
