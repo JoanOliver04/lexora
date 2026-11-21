@@ -8,6 +8,10 @@ lecturas por versión pasaron de 16 a 3 peticiones a Supabase, con medianas de
 228 a 45 ms. El selector compartido muestra 24 mazos por página y conserva
 las selecciones al buscar y cambiar de página.
 
+**Dependencias.** GitHub retiró el aviso de picomatch. La auditoría del lockfile
+pasó con cero avisos tras retirar su excepción temporal.
+[Evidencia](evidence/LEX-17-dependency-review.md).
+
 **LEX-23.1 · Acceso público con Google.** Las altas con Google están abiertas en
 producción desde el 20 de noviembre de 2026. El acceso por contraseña sigue
 disponible para cuentas existentes. Se verificaron las pantallas y el inicio
