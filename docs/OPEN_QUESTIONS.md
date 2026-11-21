@@ -33,7 +33,7 @@ consideran aprobadas de nuevo por ausencia de respuesta.
 El propietario aprueba las altas con Google para abrir Lexora al público.
 El registro por correo se pospone hasta que haya un remitente SMTP para las
 confirmaciones y recuperaciones de terceros. El contacto de privacidad se
-configurará cuando se disponga de un canal dedicado.
+configurará cuando el canal de soporte previsto esté operativo.
 [Acceso público](PUBLIC_ACCESS.md).
 
 ## Q-012 — Consultar el error autenticado del despliegue1.3.0

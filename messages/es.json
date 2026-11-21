@@ -385,13 +385,20 @@
     "invalidFilter": "No se puede aplicar ese filtro. Vuelve a todos los mazos para continuar.",
     "retry": "Volver a intentar"
   },
+  "StudyDeckPicker": {
+    "search": "Buscar mazos",
+    "noResults": "No hay mazos que coincidan con la búsqueda.",
+    "range": "Mazos {start}–{end} de {total}",
+    "selected": "{count, plural, one {# seleccionado} other {# seleccionados}}",
+    "pagination": "Páginas de mazos",
+    "previous": "Página anterior",
+    "next": "Página siguiente"
+  },
   "FreeStudy": {
     "title": "Estudio libre",
     "intro": "Recorre las tarjetas de tus mazos en orden aleatorio. Intenta recordar cada respuesta y revélala cuando quieras.",
     "back": "Volver a Estudio",
     "scope": "Mazos para esta sesión",
-    "deckSearch": "Buscar mazos",
-    "deckNoResults": "No hay mazos que coincidan con la búsqueda.",
     "all": "Todos los mazos",
     "selected": "Elegir mazos",
     "emptyDecks": "Añade un mazo con tarjetas para empezar.",
@@ -523,8 +530,6 @@
     "allDecks": "Todos los mazos activos",
     "selectedDecks": "Elegir algunos mazos",
     "deckList": "Mazos del curso",
-    "deckSearch": "Buscar mazos",
-    "deckNoResults": "No hay mazos que coincidan con la búsqueda.",
     "deckHint": "Selecciona al menos uno si eliges algunos mazos. Puedes seleccionar hasta 100.",
     "emptyDecks": "Todavía no hay mazos activos en este curso.",
     "manageDecks": "Ir a mis mazos",

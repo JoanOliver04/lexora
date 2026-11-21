@@ -1,5 +1,13 @@
 # Lexora — Estado actual
 
+**LEX-23.2 · Bibliotecas grandes en estudio.** La cola diaria y el estudio libre
+leen tarjetas elegibles por lotes de 500 mediante una consulta con relaciones y
+un cursor por ID. Se conservan el alcance por curso y mazos, los filtros de
+archivo y los controles de acceso. En el laboratorio con 1.101 tarjetas, cinco
+lecturas por versión pasaron de 16 a 3 peticiones a Supabase, con medianas de
+228 a 45 ms. El selector compartido muestra 24 mazos por página y conserva
+las selecciones al buscar y cambiar de página.
+
 **LEX-23.1 · Acceso público con Google.** Las altas con Google están abiertas en
 producción desde el 20 de noviembre de 2026. El acceso por contraseña sigue
 disponible para cuentas existentes. Se verificaron las pantallas y el inicio

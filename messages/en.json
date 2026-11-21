@@ -385,13 +385,20 @@
     "invalidFilter": "That filter can't be applied. Return to all decks to continue.",
     "retry": "Try again"
   },
+  "StudyDeckPicker": {
+    "search": "Search decks",
+    "noResults": "No decks match your search.",
+    "range": "Decks {start}–{end} of {total}",
+    "selected": "{count, plural, one {# selected} other {# selected}}",
+    "pagination": "Deck pages",
+    "previous": "Previous page",
+    "next": "Next page"
+  },
   "FreeStudy": {
     "title": "Free study",
     "intro": "Browse cards from your decks in random order. Try to recall each answer, then reveal it when you're ready.",
     "back": "Back to Study",
     "scope": "Decks for this session",
-    "deckSearch": "Search decks",
-    "deckNoResults": "No decks match your search.",
     "all": "All decks",
     "selected": "Choose decks",
     "emptyDecks": "Add a deck with cards to get started.",
@@ -523,8 +530,6 @@
     "allDecks": "All active decks",
     "selectedDecks": "Choose some decks",
     "deckList": "Course decks",
-    "deckSearch": "Search decks",
-    "deckNoResults": "No decks match your search.",
     "deckHint": "Select at least one when choosing some decks. You can select up to 100.",
     "emptyDecks": "There are no active decks in this course yet.",
     "manageDecks": "Go to my decks",

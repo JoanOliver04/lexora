@@ -7,6 +7,7 @@ import { getTodayOverview } from "@/modules/study/application/today-overview";
 import { saveSessionReview } from "@/modules/study/application/save-session-review";
 import { V1_SCHEDULER_CONFIG } from "@/modules/study/domain/scheduler-config";
 import { createSupabaseDailyQueueRepository } from "@/modules/study/infrastructure/supabase-daily-queue-repository";
+import { listEligibleStudyItemIds } from "@/modules/study/infrastructure/supabase-eligible-study-items";
 import { createSupabaseLearningStateRepository } from "@/modules/study/infrastructure/supabase-learning-state-repository";
 import { createSupabaseReviewCommitter } from "@/modules/study/infrastructure/supabase-review-committer";
 import { createTsFsrsScheduler } from "@/modules/study/infrastructure/ts-fsrs-scheduler";
@@ -44,6 +45,7 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
   let anonymous: Client;
   let ownerA: string;
   let ownerB: string;
+  let requests: number | null = null;
   const mainCourse = randomUUID();
   const otherCourse = randomUUID();
   const largeCourse = randomUUID();
@@ -90,6 +92,12 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
     const makeClient = () =>
       createClient<Database>(url, key, {
         auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+        global: {
+          fetch: (input, init) => {
+            if (requests !== null) requests++;
+            return fetch(input, init);
+          },
+        },
       });
     anonymous = makeClient();
     async function user(): Promise<{ client: Client; ownerId: string }> {
@@ -391,6 +399,39 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
       difficultItems: 1101,
       hiddenDueReviews: 0,
     });
+  });
+
+  it("reads 1,101 eligible items without dropping or repeating any card", async () => {
+    requests = 0;
+    try {
+      const ids = await listEligibleStudyItemIds(clientA, {
+        ownerId: ownerA,
+        courseId: largeCourse,
+        deckIds: null,
+      });
+      expect(requests).toBe(3);
+      expect(ids).toEqual([...largeIds].sort());
+    } finally {
+      requests = null;
+    }
+  });
+
+  it("deduplicates shared cards across deck batches and keeps course and owner isolation", async () => {
+    const input = {
+      ownerId: ownerA,
+      courseId: mainCourse,
+      deckIds: [
+        mainDeck,
+        ...Array.from({ length: 100 }, () => randomUUID()),
+        extraDeck,
+        archivedDeck,
+        otherDeck,
+      ],
+    };
+    expect((await listEligibleStudyItemIds(clientA, input)).sort()).toEqual(
+      [...eligibleIds].sort(),
+    );
+    expect(await listEligibleStudyItemIds(clientB, input)).toEqual([]);
   });
 
   it("reads course activity and its latest scope without mixing courses or owners", async () => {

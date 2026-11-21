@@ -47,6 +47,14 @@ test("free study supports one deck, several or all and keeps the trail and summa
   }));
   try {
     await checked(client.from("decks").insert(decks));
+    await checked(
+      client.from("decks").insert(
+        Array.from({ length: 25 }, (_, index) => ({
+          ...scope,
+          title: `ZZ synthetic deck ${String(index + 1).padStart(2, "0")}`,
+        })),
+      ),
+    );
     await checked(client.from("concepts").insert(concepts));
     await checked(
       client.from("deck_concepts").insert([
@@ -84,6 +92,8 @@ test("free study supports one deck, several or all and keeps the trail and summa
     const start = page.getByRole("button", { name: "Empezar estudio libre" });
     await expect(start).toBeDisabled();
     await expect(page.getByRole("checkbox", { name: "Archived deck" })).toHaveCount(0);
+    await expect(page.getByRole("checkbox")).toHaveCount(24);
+    await expect(page.getByRole("checkbox", { name: "ZZ synthetic deck 25" })).toHaveCount(0);
     const search = page.getByRole("searchbox", { name: "Buscar mazos" });
     await search.fill("FOOD");
     await expect(page.getByRole("checkbox", { name: "Sports deck" })).toHaveCount(0);
@@ -91,6 +101,15 @@ test("free study supports one deck, several or all and keeps the trail and summa
     await search.fill("no matching deck");
     await expect(page.getByText("No hay mazos que coincidan con la búsqueda.")).toBeVisible();
     await search.clear();
+    await expect(page.getByRole("checkbox", { name: "Food deck" })).toBeChecked();
+    const nextPage = page.getByRole("button", { name: "Página siguiente" });
+    await nextPage.click();
+    await expect(nextPage).toBeFocused();
+    await expect(nextPage).toBeDisabled();
+    await expect(page.getByRole("checkbox", { name: "ZZ synthetic deck 25" })).toBeVisible();
+    await expect(page.getByText("1 seleccionado")).toBeVisible();
+    await assertStudyLayout(page, info, "free-study-deck-picker");
+    await page.getByRole("button", { name: "Página anterior" }).click();
     await expect(page.getByRole("checkbox", { name: "Food deck" })).toBeChecked();
     await start.click();
     const next = page.getByRole("button", { name: "Siguiente", exact: true });
