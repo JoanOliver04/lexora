@@ -96,5 +96,5 @@ export const config = {
   // Only actual static namespaces bypass HTML handling. A dot in an app URL
   // must not skip the nonce/session handling (including a dynamic 404).
   matcher:
-    "/((?!api(?:/|$)|_next(?:/|$)|_vercel(?:/|$)|icons(?:/|$)|sw\\.js$|offline\\.(?:html|css|js)$|manifest\\.webmanifest$|favicon\\.ico$).*)",
+    "/((?!api(?:/|$)|_next(?:/|$)|_vercel(?:/|$)|icons(?:/|$)|sw\\.js$|offline\\.(?:html|css|js)$|manifest\\.webmanifest$|favicon\\.ico$|google6ec811eafa695f08\\.html$).*)",
 };

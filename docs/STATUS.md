@@ -1,5 +1,9 @@
 # Lexora — Estado actual
 
+**LEX-23.5 · Verificación de propiedad.** Search Console recibe el archivo
+original en `/google6ec811eafa695f08.html` sin entrar en el enrutado de idioma.
+La comprobación en el panel de Google corresponde al titular de la propiedad.
+
 **LEX-23.4 · Condiciones del servicio.** La página pública, en `/es/terms` y
 `/en/terms`, describe el estudio gratuito, el acceso con cuenta, el material
 que añade cada persona y las opciones de descarga y borrado. La portada y

@@ -28,3 +28,6 @@ docs/no_visible_en_github/
 # El bloque que Next.js gestiona dentro de CLAUDE.md se reescribe solo;
 # formatearlo provoca un diff en cada arranque de `next dev`.
 CLAUDE.md
+
+# Search Console requiere los bytes originales del archivo de verificación.
+/public/google6ec811eafa695f08.html
