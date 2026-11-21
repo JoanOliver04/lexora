@@ -25,7 +25,7 @@ export default async function FreeStudyPage({ params }: { params: Promise<{ loca
         {t("back")}
       </Link>
       <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-      <ClientMessages namespaces={["FreeStudy", "PracticeCard"]}>
+      <ClientMessages namespaces={["FreeStudy", "PracticeCard", "StudyDeckPicker"]}>
         <FreeStudyView key={context.courseId} courseId={context.courseId} decks={decks} />
       </ClientMessages>
     </main>

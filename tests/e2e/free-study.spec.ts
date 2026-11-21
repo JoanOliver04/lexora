@@ -36,6 +36,7 @@ test("free study supports one deck, several or all and keeps the trail and summa
     ...scope,
     id: randomUUID(),
     title,
+    position: index,
     archived_at: index === 3 ? new Date().toISOString() : null,
   }));
   const concepts = fronts.map((title) => ({
@@ -52,6 +53,7 @@ test("free study supports one deck, several or all and keeps the trail and summa
         Array.from({ length: 25 }, (_, index) => ({
           ...scope,
           title: `ZZ synthetic deck ${String(index + 1).padStart(2, "0")}`,
+          position: index + decks.length,
         })),
       ),
     );
@@ -103,7 +105,8 @@ test("free study supports one deck, several or all and keeps the trail and summa
     await search.clear();
     await expect(page.getByRole("checkbox", { name: "Food deck" })).toBeChecked();
     const nextPage = page.getByRole("button", { name: "Página siguiente" });
-    await nextPage.click();
+    await nextPage.focus();
+    await nextPage.press("Enter");
     await expect(nextPage).toBeFocused();
     await expect(nextPage).toBeDisabled();
     await expect(page.getByRole("checkbox", { name: "ZZ synthetic deck 25" })).toBeVisible();
