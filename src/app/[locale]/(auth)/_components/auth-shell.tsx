@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { PublicPolicyLinks } from "../../public-policy-links";
 
 /**
  * Marco visual común de las pantallas de autenticación: una tarjeta centrada,
@@ -18,7 +18,6 @@ export function AuthShell({
   footer?: ReactNode;
 }) {
   const t = useTranslations("Visual");
-  const privacy = useTranslations("Privacy");
   return (
     <main className="auth-composition">
       <section className="auth-story" aria-label={t("studySpace")}>
@@ -36,12 +35,7 @@ export function AuthShell({
         {footer ? (
           <div className="text-sm leading-relaxed text-(--color-ink-muted)">{footer}</div>
         ) : null}
-        <Link
-          href="/privacy"
-          className="inline-flex min-h-11 min-w-11 items-center self-start text-sm text-(--color-ink-muted) underline underline-offset-4"
-        >
-          {privacy("title")}
-        </Link>
+        <PublicPolicyLinks />
       </section>
     </main>
   );

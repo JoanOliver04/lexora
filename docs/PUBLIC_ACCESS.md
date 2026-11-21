@@ -27,11 +27,16 @@ comparte origen con la Site URL de producción.
 
 ### Enlaces de Google Auth Platform
 
-La [portada](https://lexora-one-alpha.vercel.app/es) y la
-[política de privacidad](https://lexora-one-alpha.vercel.app/es/privacy)
-son públicas y están enlazadas entre sí. La versión inglesa se sirve en
-`/en` y `/en/privacy`. Las condiciones del servicio todavía no tienen una
-página publicada. [Requisitos de marca de Google](https://support.google.com/cloud/answer/15549049?hl=en)
+| Campo | URL pública |
+| --- | --- |
+| Página principal de la aplicación | [https://lexora-one-alpha.vercel.app/es](https://lexora-one-alpha.vercel.app/es) |
+| Política de privacidad | [https://lexora-one-alpha.vercel.app/es/privacy](https://lexora-one-alpha.vercel.app/es/privacy) |
+| Condiciones del servicio | [https://lexora-one-alpha.vercel.app/es/terms](https://lexora-one-alpha.vercel.app/es/terms) |
+
+Las tres páginas se abren sin sesión. La portada y las pantallas de acceso
+enlazan a privacidad y condiciones. Los equivalentes en inglés se sirven en
+`/en`, `/en/privacy` y `/en/terms`.
+[Requisitos de marca de Google](https://support.google.com/cloud/answer/15549049?hl=en)
 
 Para pausar altas, desactivar la opción global en Supabase Auth. Las cuentas
 existentes conservan su acceso.

@@ -32,8 +32,38 @@ for (const locale of ["es", "en"] as const)
   });
 
 for (const locale of ["es", "en"] as const)
-  test(`the signup page links to the public privacy notice (${locale})`, async ({ page }, info) => {
+  test(`the public terms open without signing in (${locale})`, async ({ page }, info) => {
+    const spanish = locale === "es";
+    const title = spanish ? "Condiciones del servicio" : "Terms of service";
+    const path = `/${locale}/terms`;
+    const response = await page.goto(path);
+    expect(response?.status()).toBe(200);
+    await expect(page).toHaveURL(path);
+    await expect(page.locator("html")).toHaveAttribute("lang", locale);
+    await expect(page.getByRole("heading", { name: title, level: 1 })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: spanish ? "Política de privacidad" : "Privacy Policy" }),
+    ).toHaveAttribute("href", `/${locale}/privacy`);
+    await assertStudyLayout(page, info, `terms-${locale}`);
+    await page.getByRole("link", { name: spanish ? "Volver a Lexora" : "Back to Lexora" }).click();
+    const policies = page.getByRole("navigation", {
+      name: spanish ? "Privacidad y condiciones" : "Privacy and terms",
+    });
+    await expect(
+      policies.getByRole("link", { name: spanish ? "Privacidad" : "Privacy" }),
+    ).toHaveAttribute("href", `/${locale}/privacy`);
+    await policies.getByRole("link", { name: title }).click();
+    await expect(page).toHaveURL(path);
+  });
+
+for (const locale of ["es", "en"] as const)
+  test(`the signup page links to the public policies (${locale})`, async ({ page }, info) => {
     await page.goto(`/${locale}/signup`);
+    await expect(
+      page.getByRole("link", {
+        name: locale === "es" ? "Condiciones del servicio" : "Terms of service",
+      }),
+    ).toHaveAttribute("href", `/${locale}/terms`);
     const title = locale === "es" ? "Privacidad" : "Privacy";
     await page.getByRole("link", { name: title, exact: true }).click();
     await expect(page).toHaveURL(`/${locale}/privacy`);
