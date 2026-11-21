@@ -4,16 +4,13 @@ import { ThemeToggle } from "@/shared/presentation/theme/theme-toggle";
 import { Brand } from "@/shared/presentation/components/brand";
 import { Link } from "@/i18n/navigation";
 import { LocaleSwitcher } from "./locale-switcher";
+import { PublicPolicyLinks } from "./public-policy-links";
 import { SessionControls } from "./session-controls";
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [t, auth, privacy] = await Promise.all([
-    getTranslations("Home"),
-    getTranslations("Auth"),
-    getTranslations("Privacy"),
-  ]);
+  const [t, auth] = await Promise.all([getTranslations("Home"), getTranslations("Auth")]);
   const promptLocale = locale === "es" ? "en" : "es";
   return (
     <div className="home-shell">
@@ -77,9 +74,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </main>
       <footer className="home-footer">
         <p>{t("credit")}</p>
-        <Link href="/privacy" className="min-w-11">
-          {privacy("title")}
-        </Link>
+        <PublicPolicyLinks />
       </footer>
     </div>
   );

@@ -1,5 +1,11 @@
 # Lexora — Estado actual
 
+**LEX-23.4 · Condiciones del servicio.** La página pública, en `/es/terms` y
+`/en/terms`, describe el estudio gratuito, el acceso con cuenta, el material
+que añade cada persona y las opciones de descarga y borrado. La portada y
+las pantallas de acceso la enlazan junto a Privacidad. [Enlaces para Google
+Auth Platform](PUBLIC_ACCESS.md#enlaces-de-google-auth-platform).
+
 **LEX-23.3 · Portada pública.** La portada explica cómo estudiar con los mazos
 propios, ofrece una tarjeta interactiva en ES y EN y enlaza al alta, al inicio
 de sesión y a privacidad. Se retiró el enlace a GitHub. [Enlaces públicos

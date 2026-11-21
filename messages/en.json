@@ -224,6 +224,37 @@
       "body": "In Settings you can update your information, download a copy or delete your account. You can also request access, correction, deletion, restriction, objection or portability where applicable, and lodge a complaint with the Spanish Data Protection Agency."
     }
   },
+  "Terms": {
+    "title": "Terms of service",
+    "navigation": "Privacy and terms",
+    "intro": "Lexora is a free web app by JVOR Studios for studying languages with your own flashcards. These terms explain what Lexora offers and the rules for using it.",
+    "updated": "Last updated · <date></date>",
+    "service": {
+      "title": "What Lexora offers",
+      "body": "You can create courses and organize flashcards into decks. You can add cards by hand or import your own material. Lexora schedules reviews based on your answers. You can also practice freely and see your study history and statistics."
+    },
+    "account": {
+      "title": "Your account",
+      "body": "You need an account to save your study material and progress. You can create a new account with Google. If you already have a password account, you can still use it to sign in. Use your own account and protect your credentials."
+    },
+    "materials": {
+      "title": "Material you add",
+      "body": "You keep any rights you have in the material you add. When you upload it, you allow Lexora to store and use it so you can study and manage your data. Only add material you have the right to use, and respect other people's rights and privacy."
+    },
+    "use": {
+      "title": "Acceptable use",
+      "body": "Use Lexora lawfully. Accessing other people's accounts, sending harmful files or interfering with the service is prohibited. Lexora may limit what an account can do to protect the service against abuse."
+    },
+    "availability": {
+      "title": "Availability and changes",
+      "body": "You need an internet connection to study and sync your data. Maintenance or technical issues may interrupt the service. We will publish the current terms and their update date on this page. Your legal rights still apply."
+    },
+    "data": {
+      "title": "Your data and closing your account",
+      "body": "You can download a copy of your data or delete your account in Settings. If you want to keep your courses, decks and study history, download a copy before deleting your account. The Privacy Policy explains what data Lexora uses and how it is kept.",
+      "privacy": "Privacy Policy"
+    }
+  },
   "App": {
     "courseLabel": "Your course",
     "decksLink": "My decks",

@@ -1100,15 +1100,6 @@ html:has(.command-dialog[open]) {
   font-size: 0.875rem;
   line-height: 1.8;
 }
-.home-footer a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  color: var(--color-accent);
-  font-size: 0.875rem;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
 .study-spotlight {
   position: relative;
   overflow: hidden;
