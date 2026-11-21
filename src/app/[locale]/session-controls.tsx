@@ -1,55 +1,36 @@
 import { getTranslations } from "next-intl/server";
 
 import { logoutAction } from "@/app/[locale]/(auth)/actions";
-import { getCurrentUserId } from "@/composition/identity";
+import {
+  getCurrentUserId,
+  getGoogleAvailability,
+  isRegistrationOpen,
+} from "@/composition/identity";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/shared/presentation/components";
 
-/**
- * Muestra «Entrar» o «Cerrar sesión» según haya sesión verificada.
- *
- * Lee `getClaims()` —firma comprobada—, no `getSession()`. Que aparezca aquí
- * hace que la portada se renderice por petición en lugar de estáticamente: es el
- * precio de mostrar estado de sesión, y de momento solo lo paga esta cabecera.
- * La navegación autenticada de verdad llega en LEX-2.6/2.9.
- */
-export async function SessionControls({
-  locale,
-  registrationOpen,
-}: {
-  locale: string;
-  registrationOpen: boolean;
-}) {
-  const userId = await getCurrentUserId();
-  const t = await getTranslations("Auth");
+export async function SessionControls({ locale }: { locale: string }) {
+  const [userId, t] = await Promise.all([getCurrentUserId(), getTranslations("Auth")]);
 
   if (!userId) {
+    const registrationOpen = isRegistrationOpen() || (await getGoogleAvailability()).signUp;
     return (
       <>
-        <Link
-          href="/login"
-          className="inline-flex min-h-11 min-w-11 items-center text-sm text-(--color-accent) underline underline-offset-4"
-        >
-          {t("login.submit")}
-        </Link>
         {registrationOpen && (
-          <Link
-            href="/signup"
-            className="inline-flex min-h-11 min-w-11 items-center text-sm font-semibold text-(--color-accent) underline underline-offset-4"
-          >
-            {t("login.signupLink")}
+          <Link href="/signup" className="home-primary">
+            {t("signup.title")}
           </Link>
         )}
+        <Link href="/login" className={registrationOpen ? "home-secondary" : "home-primary"}>
+          {t("login.submit")}
+        </Link>
       </>
     );
   }
 
   return (
     <>
-      <Link
-        href="/app"
-        className="inline-flex min-h-11 items-center text-sm text-(--color-accent) underline underline-offset-4"
-      >
+      <Link href="/app" className="home-primary">
         {t("openApp")}
       </Link>
       <form action={logoutAction}>

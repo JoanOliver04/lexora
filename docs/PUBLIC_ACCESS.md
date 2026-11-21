@@ -25,6 +25,14 @@ El retorno de la app es `https://lexora-one-alpha.vercel.app/api/auth/callback`.
 Supabase admite sus parámetros de idioma, flujo y destino cuando la URL
 comparte origen con la Site URL de producción.
 
+### Enlaces de Google Auth Platform
+
+La [portada](https://lexora-one-alpha.vercel.app/es) y la
+[política de privacidad](https://lexora-one-alpha.vercel.app/es/privacy)
+son públicas y están enlazadas entre sí. La versión inglesa se sirve en
+`/en` y `/en/privacy`. Las condiciones del servicio todavía no tienen una
+página publicada. [Requisitos de marca de Google](https://support.google.com/cloud/answer/15549049?hl=en)
+
 Para pausar altas, desactivar la opción global en Supabase Auth. Las cuentas
 existentes conservan su acceso.
 

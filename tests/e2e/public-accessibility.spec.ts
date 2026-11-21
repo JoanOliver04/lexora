@@ -2,6 +2,36 @@ import { expect, test } from "@playwright/test";
 import { assertStudyLayout } from "./study-layout";
 
 for (const locale of ["es", "en"] as const)
+  test(`the public home offers a keyboard flashcard and links to privacy (${locale})`, async ({
+    page,
+  }, info) => {
+    await page.goto(`/${locale}`);
+    const spanish = locale === "es";
+    const heading = spanish ? "Prueba una tarjeta" : "Try a flashcard";
+    const example = page.getByRole("region", { name: heading });
+    const control = example.locator("summary");
+    const answer = example.getByText(
+      spanish ? "Un pequeño avance cada día." : "A little progress every day.",
+      { exact: true },
+    );
+    await expect(
+      page.getByRole("link", { name: spanish ? "Crear una cuenta" : "Create an account" }),
+    ).toHaveAttribute("href", `/${locale}/signup`);
+    await expect(page.locator('a[href*="github.com"]')).toHaveCount(0);
+    await expect(answer).toBeHidden();
+    expect((await control.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+    await control.focus();
+    await control.press("Enter");
+    await expect(answer).toBeVisible();
+    await expect(control).toBeFocused();
+    await assertStudyLayout(page, info, `home-example-${locale}`);
+    await control.press("Enter");
+    await expect(answer).toBeHidden();
+    await page.getByRole("link", { name: spanish ? "Privacidad" : "Privacy", exact: true }).click();
+    await expect(page).toHaveURL(`/${locale}/privacy`);
+  });
+
+for (const locale of ["es", "en"] as const)
   test(`the signup page links to the public privacy notice (${locale})`, async ({ page }, info) => {
     await page.goto(`/${locale}/signup`);
     const title = locale === "es" ? "Privacidad" : "Privacy";
