@@ -1,6 +1,16 @@
 import { expect, test } from "@playwright/test";
 import { assertStudyLayout } from "./study-layout";
 
+test("Search Console receives the verification file directly at the root", async ({ request }) => {
+  const filename = "google6ec811eafa695f08.html";
+  const response = await request.get(`/${filename}`, {
+    headers: { "Accept-Language": "en" },
+    maxRedirects: 0,
+  });
+  expect(response.status()).toBe(200);
+  expect(await response.body()).toEqual(Buffer.from(`google-site-verification: ${filename}`));
+});
+
 for (const locale of ["es", "en"] as const)
   test(`the public home offers a keyboard flashcard and links to privacy (${locale})`, async ({
     page,
