@@ -163,26 +163,40 @@
     "studySpace": "Tu espacio de estudio",
     "authStatement": "Haz sitio a lo que quieres recordar.",
     "authDescription": "Tu vocabulario, tus ideas y una pequeña sesión que te ayuda a seguir avanzando.",
-    "practiceNote": "Recuperación activa. Repetición espaciada. Tu propio ritmo.",
-    "cardHint": "Una idea, varias formas de practicar",
-    "cardMeaning": "Un pequeño paso, cada día.",
-    "recognise": "Reconocer",
-    "recall": "Recordar",
-    "complete": "Completar"
+    "practiceNote": "Recuperación activa. Repetición espaciada. Tu propio ritmo."
   },
   "Metadata": {
     "title": "Lexora",
-    "description": "Aprende y mantén tu inglés A1–C2 con recuperación activa y repetición espaciada."
+    "description": "Estudia idiomas con tus propios mazos, tarjetas de práctica y repetición espaciada."
   },
   "Home": {
-    "title": "Lexora",
     "tagline": "De entenderlo a decirlo.",
-    "problem": "Reconocer una palabra al verla no es lo mismo que recuperarla cuando quieres hablar o escribir. Son capacidades distintas y se olvidan a ritmos distintos.",
-    "approach": "Lexora separa cada concepto en las competencias que lo componen y programa cada una por separado, con repetición espaciada. Saber reconocer una palabra no marca como dominada su producción.",
-    "statusTitle": "Estado",
-    "status": "Tu espacio personal para aprender a tu ritmo. Entra con tu cuenta para continuar.",
-    "publicStatus": "Crea tu cuenta, añade un mazo y empieza a repasar.",
-    "repository": "Ver el código en GitHub"
+    "description": "Estudia idiomas con tarjetas hechas a partir de tu vocabulario, gramática y apuntes. Lexora organiza tus repasos para que recuerdes lo que practicas.",
+    "example": {
+      "title": "Prueba una tarjeta",
+      "instruction": "Intenta decir la frase en español y luego comprueba tu respuesta.",
+      "language": "Inglés",
+      "prompt": "A little progress every day.",
+      "answer": "Un pequeño avance cada día.",
+      "reveal": "Mostrar respuesta",
+      "hide": "Ocultar respuesta"
+    },
+    "practice": {
+      "title": "De tus apuntes a tu próximo repaso",
+      "organize": {
+        "title": "Organiza lo que estudias",
+        "body": "Crea un curso por idioma y agrupa tus tarjetas por tema. Añádelas a mano o importa tus apuntes desde un archivo."
+      },
+      "practice": {
+        "title": "Pon a prueba tu memoria",
+        "body": "Reconoce palabras, recuérdalas sin pistas o completa frases. Usa el modo libre cuando quieras practicar un tema."
+      },
+      "review": {
+        "title": "Vuelve a lo que toca",
+        "body": "La repetición espaciada ajusta cuándo vuelve a salir cada tarjeta según tus respuestas."
+      }
+    },
+    "credit": "Lexora, de JVOR Studios"
   },
   "Privacy": {
     "title": "Privacidad",

@@ -1,5 +1,10 @@
 # Lexora — Estado actual
 
+**LEX-23.3 · Portada pública.** La portada explica cómo estudiar con los mazos
+propios, ofrece una tarjeta interactiva en ES y EN y enlaza al alta, al inicio
+de sesión y a privacidad. Se retiró el enlace a GitHub. [Enlaces públicos
+para Google Auth Platform](PUBLIC_ACCESS.md#enlaces-de-google-auth-platform).
+
 **LEX-23.2 · Bibliotecas grandes en estudio.** La cola diaria y el estudio libre
 leen tarjetas elegibles por lotes de 500 mediante una consulta con relaciones y
 un cursor por ID. Se conservan el alcance por curso y mazos, los filtros de

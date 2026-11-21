@@ -163,26 +163,40 @@
     "studySpace": "Your study space",
     "authStatement": "Make room for what you want to remember.",
     "authDescription": "Your vocabulary, your ideas and a little practice to keep you moving forward.",
-    "practiceNote": "Active recall. Spaced repetition. Your own pace.",
-    "cardHint": "One idea, different ways to practise",
-    "cardMeaning": "Un pequeño paso, cada día.",
-    "recognise": "Recognise",
-    "recall": "Recall",
-    "complete": "Complete"
+    "practiceNote": "Active recall. Spaced repetition. Your own pace."
   },
   "Metadata": {
     "title": "Lexora",
-    "description": "Learn and keep your A1–C2 English with active recall and spaced repetition."
+    "description": "Study languages with your own decks, practice cards and spaced repetition."
   },
   "Home": {
-    "title": "Lexora",
     "tagline": "From knowing it to saying it.",
-    "problem": "Recognising a word when you see it is not the same as recalling it when you want to speak or write. They are different abilities, and they fade at different rates.",
-    "approach": "Lexora splits each concept into the skills it is made of and schedules each one separately, with spaced repetition. Being able to recognise a word does not mark its production as learned.",
-    "statusTitle": "Status",
-    "status": "Your personal space to learn at your own pace. Sign in to continue.",
-    "publicStatus": "Create an account, add a deck and start reviewing.",
-    "repository": "View the code on GitHub"
+    "description": "Turn your vocabulary, grammar and notes into language flashcards. Lexora schedules your reviews so the things you practise stick.",
+    "example": {
+      "title": "Try a flashcard",
+      "instruction": "Say the phrase in English, then check your answer.",
+      "language": "Spanish",
+      "prompt": "Un pequeño avance cada día.",
+      "answer": "A little progress every day.",
+      "reveal": "Show answer",
+      "hide": "Hide answer"
+    },
+    "practice": {
+      "title": "From your notes to your next review",
+      "organize": {
+        "title": "Organize what you study",
+        "body": "Create a course for each language and group your cards by topic. Add cards by hand or import your notes from a file."
+      },
+      "practice": {
+        "title": "Put your memory to work",
+        "body": "Recognize words, recall them without hints or complete sentences. Use free study whenever you want to revisit a topic."
+      },
+      "review": {
+        "title": "Review when it matters",
+        "body": "Spaced repetition adjusts when each card comes back based on how you answer."
+      }
+    },
+    "credit": "Lexora by JVOR Studios"
   },
   "Privacy": {
     "title": "Privacy",

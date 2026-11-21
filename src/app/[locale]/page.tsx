@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Suspense } from "react";
 import { ThemeToggle } from "@/shared/presentation/theme/theme-toggle";
 import { Brand } from "@/shared/presentation/components/brand";
-import { getGoogleAvailability, isRegistrationOpen } from "@/composition/identity";
 import { Link } from "@/i18n/navigation";
 import { LocaleSwitcher } from "./locale-switcher";
 import { SessionControls } from "./session-controls";
@@ -9,13 +9,12 @@ import { SessionControls } from "./session-controls";
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [t, v, privacy, google] = await Promise.all([
+  const [t, auth, privacy] = await Promise.all([
     getTranslations("Home"),
-    getTranslations("Visual"),
+    getTranslations("Auth"),
     getTranslations("Privacy"),
-    getGoogleAvailability(),
   ]);
-  const registrationOpen = isRegistrationOpen() || google.signUp;
+  const promptLocale = locale === "es" ? "en" : "es";
   return (
     <div className="home-shell">
       <header className="home-header">
@@ -25,47 +24,62 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <ThemeToggle />
         </div>
       </header>
-      <main className="home-hero">
-        <div>
-          <h1 className="home-heading">{t("tagline")}</h1>
-          <p className="home-description">{t("problem")}</p>
-          <div className="home-entry">
-            <SessionControls locale={locale} registrationOpen={registrationOpen} />
-          </div>
-        </div>
-        <div className="recall-stage" aria-hidden="true">
-          <div className="recall-card">
-            <p className="recall-card-label">{v("cardHint")}</p>
-            <p className="recall-word" lang="en">
-              a little progress,
-              <br />
-              every day.
-            </p>
-            <p className="recall-meaning" lang="es">
-              {v("cardMeaning")}
-            </p>
-            <div className="recall-skills">
-              <span>{v("recognise")}</span>
-              <span>{v("recall")}</span>
-              <span>{v("complete")}</span>
+      <main>
+        <section className="home-hero" aria-labelledby="home-title">
+          <div>
+            <h1 id="home-title" className="home-heading">
+              {t("tagline")}
+            </h1>
+            <p className="home-description">{t("description")}</p>
+            <div className="home-entry">
+              <Suspense
+                fallback={
+                  <Link href="/login" className="home-secondary">
+                    {auth("login.submit")}
+                  </Link>
+                }
+              >
+                <SessionControls locale={locale} />
+              </Suspense>
             </div>
           </div>
-        </div>
+          <section className="recall-stage" aria-labelledby="example-title">
+            <div className="recall-intro">
+              <h2 id="example-title">{t("example.title")}</h2>
+              <p>{t("example.instruction")}</p>
+            </div>
+            <div className="recall-card">
+              <p className="recall-card-label">{t("example.language")}</p>
+              <p className="recall-word" lang={promptLocale}>
+                {t("example.prompt")}
+              </p>
+              <details className="recall-answer">
+                <summary>
+                  <span className="recall-show">{t("example.reveal")}</span>
+                  <span className="recall-hide">{t("example.hide")}</span>
+                </summary>
+                <p>{t("example.answer")}</p>
+              </details>
+            </div>
+          </section>
+        </section>
+        <section className="home-practice" aria-labelledby="practice-title">
+          <h2 id="practice-title">{t("practice.title")}</h2>
+          <ol className="home-steps">
+            {(["organize", "practice", "review"] as const).map((step) => (
+              <li key={step}>
+                <h3>{t(`practice.${step}.title`)}</h3>
+                <p>{t(`practice.${step}.body`)}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
       </main>
       <footer className="home-footer">
-        <div>
-          <h2 className="font-semibold">{t("statusTitle")}</h2>
-          <p>{t(registrationOpen ? "publicStatus" : "status")}</p>
-          <p className="mt-2">{t("approach")}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-          <Link href="/privacy" className="min-w-11">
-            {privacy("title")}
-          </Link>
-          <a href="https://github.com/JoanOliver04/lexora" rel="noreferrer">
-            {t("repository")}
-          </a>
-        </div>
+        <p>{t("credit")}</p>
+        <Link href="/privacy" className="min-w-11">
+          {privacy("title")}
+        </Link>
       </footer>
     </div>
   );
