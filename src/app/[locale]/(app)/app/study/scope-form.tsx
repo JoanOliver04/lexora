@@ -9,7 +9,7 @@ import { Button, FormError } from "@/shared/presentation/components";
 import { useFocusFirstInvalid } from "@/shared/presentation/hooks/use-focus-first-invalid";
 
 import { createStudySessionAction, type StudySessionFormState } from "./actions";
-import { DeckSearch, filterStudyDecks } from "./deck-search";
+import { StudyDeckPicker } from "./study-deck-picker";
 
 export function ScopeForm({
   locale,
@@ -33,8 +33,6 @@ export function ScopeForm({
   );
   const [mode, setMode] = useState(initialScope.deckIds === null ? "all" : "selected");
   const [selected, setSelected] = useState(initialScope.deckIds ?? []);
-  const [query, setQuery] = useState("");
-  const visibleDecks = filterStudyDecks(decks, query);
   const ref = useRef<HTMLFormElement>(null);
   useEffect(() => {
     const form = ref.current;
@@ -94,38 +92,18 @@ export function ScopeForm({
         <p id="study-deck-hint" className="mb-2 text-sm leading-relaxed text-(--color-ink-muted)">
           {t("deckHint")}
         </p>
-        {decks.length > 0 && (
-          <DeckSearch label={t("deckSearch")} value={query} onChange={setQuery} />
-        )}
-        {decks.length === 0 && (
+        {decks.length > 0 ? (
+          <StudyDeckPicker
+            decks={decks}
+            selected={selected}
+            onSelectionChange={(selection) => {
+              setMode("selected");
+              setSelected(selection);
+            }}
+          />
+        ) : (
           <p className="text-sm text-(--color-ink-muted)">{t("emptyDecks")}</p>
         )}
-        {decks.length > 0 && visibleDecks.length === 0 && (
-          <p role="status" className="text-sm text-(--color-ink-muted)">
-            {t("deckNoResults")}
-          </p>
-        )}
-        {visibleDecks.map((deck) => (
-          <label
-            key={deck.id}
-            className="flex min-h-11 min-w-0 items-center gap-3 rounded-(--radius-control) border border-(--color-border) bg-(--color-surface) p-3"
-          >
-            <input
-              type="checkbox"
-              className="shrink-0"
-              checked={selected.includes(deck.id)}
-              onChange={(event) => {
-                setMode("selected");
-                setSelected(
-                  event.target.checked
-                    ? [...selected, deck.id]
-                    : selected.filter((id) => id !== deck.id),
-                );
-              }}
-            />
-            <span className="min-w-0 text-sm break-words">{deck.title}</span>
-          </label>
-        ))}
       </fieldset>
       {availableCount === 0 && (
         <p className="text-sm leading-relaxed text-(--color-ink-muted)">{t("noAvailable")}</p>

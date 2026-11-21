@@ -9,7 +9,7 @@
   "packageManager": "pnpm@11.24.0",
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm security:policy && next build && pnpm security:policy --trace",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -33,9 +33,7 @@
     "db:types": "supabase gen types typescript --local > src/shared/infrastructure/supabase/database.types.ts",
     "ops:backup:test": "node --test scripts/backup-envelope.test.mjs scripts/backup-cli.test.mjs",
     "ops:recovery:verify": "node scripts/verify-backup-recovery.mjs",
-    "security:policy": "node scripts/check-dependency-exception.mjs",
-    "security:policy:test": "node --test scripts/dependency-exception.test.mjs",
-    "check": "pnpm format:check && pnpm lint && pnpm security:policy:test && pnpm typecheck && pnpm contrast && pnpm test && pnpm ops:backup:test && pnpm build"
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm contrast && pnpm test && pnpm ops:backup:test && pnpm build"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.5",

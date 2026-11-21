@@ -1,5 +1,11 @@
 # Picomatch — excepción temporal de alcance revisado
 
+**Actualización del 21 de noviembre de 2026.** GitHub retiró el aviso el 18 de
+noviembre. El registro devolvió cero avisos con el mismo lockfile y la excepción
+eliminada. Se retiró el permiso temporal y su control de caducidad. La CI sigue
+ejecutando `pnpm audit` sobre las dependencias.
+[Aviso oficial retirado](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)
+
 **Revisión:** 2026-11-17. **Caduca:** 2026-12-01T00:00:00Z.
 **GHSA:** GHSA-fc5q-39xc-vjpf. **CVE:** CVE-2026-112366.
 

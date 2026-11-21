@@ -62,11 +62,6 @@ jobs:
         # que se probaron en local y aprobaria un arbol que nadie ha ejecutado.
         run: pnpm install --frozen-lockfile
 
-      - name: Alcance temporal de dependencias
-        run: |
-          pnpm security:policy:test
-          pnpm security:policy --registry
-
       - name: Vulnerabilidades de dependencias
         run: pnpm audit
 
