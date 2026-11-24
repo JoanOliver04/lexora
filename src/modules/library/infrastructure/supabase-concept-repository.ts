@@ -118,7 +118,16 @@ export function createSupabaseConceptRepository(
       return data ? toConcept(data) : null;
     },
 
-    async search({ ownerId, courseId, includeArchived, search, kind, cefrLevel, limit, offset }) {
+    async search({
+      ownerId,
+      courseId,
+      includeArchived = false,
+      search,
+      kind,
+      cefrLevel,
+      limit,
+      offset,
+    }) {
       const filtered = (head = false) => {
         const scoped = search
           ? client.rpc(
