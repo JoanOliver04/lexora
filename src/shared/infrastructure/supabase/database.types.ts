@@ -1089,6 +1089,36 @@ export type Database = {
         }
         Returns: undefined
       }
+      search_library_concepts: {
+        Args: {
+          p_course_id: string
+          p_include_archived?: boolean
+          p_search: string
+        }
+        Returns: {
+          archived_at: string | null
+          canonical_key: string | null
+          cefr_level: Database["public"]["Enums"]["cefr_level"] | null
+          course_id: string
+          created_at: string
+          example: string | null
+          explanation: string | null
+          id: string
+          kind: Database["public"]["Enums"]["concept_kind"]
+          metadata: Json
+          owner_id: string
+          source_reference: string | null
+          summary: string
+          title: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "concepts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       set_active_course: {
         Args: { p_course_id: string; p_profile_version: string }
         Returns: undefined

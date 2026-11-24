@@ -1066,7 +1066,7 @@
     "hideArchived": "Hide archived",
     "search": {
       "label": "Search",
-      "placeholder": "Search by title…",
+      "placeholder": "Title, question, answer or tag",
       "submit": "Search",
       "clear": "Clear filters"
     },
