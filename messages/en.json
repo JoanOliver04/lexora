@@ -431,6 +431,8 @@
     "retry": "Try again"
   },
   "StudyDeckPicker": {
+    "onlySelected": "Show selected decks only",
+    "noneSelected": "No decks selected.",
     "search": "Search decks",
     "noResults": "No decks match your search.",
     "range": "Decks {start}–{end} of {total}",

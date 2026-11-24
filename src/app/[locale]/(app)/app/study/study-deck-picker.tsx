@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { Button, Input, Label } from "@/shared/presentation/components";
 
 const PAGE_SIZE = 24;
@@ -23,38 +23,58 @@ export function StudyDeckPicker({
   const id = useId();
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
+  const [onlySelected, setOnlySelected] = useState(false);
+  const filterButton = useRef<HTMLButtonElement>(null);
+  const selection = useMemo(() => new Set(selected), [selected]);
   const indexed = useMemo(
     () => decks.map((deck) => ({ deck, key: searchKey(deck.title) })),
     [decks],
   );
   const matching = useMemo(() => {
+    if (onlySelected) return indexed.filter(({ deck }) => selection.has(deck.id));
     const key = searchKey(query);
     return key ? indexed.filter((row) => row.key.includes(key)) : indexed;
-  }, [indexed, query]);
+  }, [indexed, query, onlySelected, selection]);
   const lastPage = Math.max(0, Math.ceil(matching.length / PAGE_SIZE) - 1);
   const currentPage = Math.min(page, lastPage);
   const start = currentPage * PAGE_SIZE;
   const end = Math.min(start + PAGE_SIZE, matching.length);
-  const selection = useMemo(() => new Set(selected), [selected]);
 
   return (
     <div className="flex min-w-0 flex-col gap-3">
-      <Label htmlFor={id}>{t("search")}</Label>
-      <Input
-        id={id}
-        type="search"
-        maxLength={200}
-        value={query}
-        onChange={(event) => {
-          setQuery(event.target.value);
+      <Button
+        ref={filterButton}
+        type="button"
+        variant="secondary"
+        className="w-fit"
+        aria-pressed={onlySelected}
+        onClick={() => {
+          setOnlySelected(!onlySelected);
           setPage(0);
         }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") event.preventDefault();
-        }}
-      />
+      >
+        {t("onlySelected")}
+      </Button>
+      {!onlySelected && (
+        <>
+          <Label htmlFor={id}>{t("search")}</Label>
+          <Input
+            id={id}
+            type="search"
+            maxLength={200}
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setPage(0);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") event.preventDefault();
+            }}
+          />
+        </>
+      )}
       <p role="status" className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-(--color-ink-muted)">
-        {matching.length === 0 && <span>{t("noResults")}</span>}
+        {matching.length === 0 && <span>{t(onlySelected ? "noneSelected" : "noResults")}</span>}
         {lastPage > 0 && (
           <span>{t("range", { start: start + 1, end, total: matching.length })}</span>
         )}
@@ -69,13 +89,14 @@ export function StudyDeckPicker({
                   type="checkbox"
                   className="size-5 shrink-0"
                   checked={selection.has(deck.id)}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    if (onlySelected) filterButton.current?.focus();
                     onSelectionChange(
                       event.target.checked
                         ? [...selected, deck.id]
                         : selected.filter((value) => value !== deck.id),
-                    )
-                  }
+                    );
+                  }}
                 />
                 <span className="min-w-0 text-sm [overflow-wrap:anywhere]">{deck.title}</span>
               </label>

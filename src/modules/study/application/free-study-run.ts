@@ -42,6 +42,31 @@ function shuffle(ids: string[], lastId?: string): string[] {
   return order;
 }
 
+/** Fetch only the opening batch while the authenticated course context is available. */
+export async function prepareFreeStudyRound(
+  ids: string[],
+  load: (ids: string[]) => Promise<FreeStudyCard[]>,
+) {
+  const order = shuffle(ids);
+  const batch = order.slice(0, FREE_STUDY_BATCH_SIZE);
+  const cards = batch.length ? await load(batch) : [];
+  const present = new Set(cards.map(({ id }) => id));
+  return {
+    order: [...batch.filter((id) => present.has(id)), ...order.slice(batch.length)],
+    cards,
+  };
+}
+
+export function openPreparedFreeStudyRun({
+  order,
+  cards,
+}: Awaited<ReturnType<typeof prepareFreeStudyRound>>): FreeStudyRun {
+  const run = newFreeStudyRun(order);
+  run.order = order;
+  run.contents = new Map(cards.map((card) => [card.id, card]));
+  return run;
+}
+
 /** Revisit the existing trail before drawing from the next shuffled round. */
 export async function nextFreeStudyCard(
   run: FreeStudyRun,

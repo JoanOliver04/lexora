@@ -431,6 +431,8 @@
     "retry": "Volver a intentar"
   },
   "StudyDeckPicker": {
+    "onlySelected": "Mostrar solo los mazos seleccionados",
+    "noneSelected": "No hay mazos seleccionados.",
     "search": "Buscar mazos",
     "noResults": "No hay mazos que coincidan con la búsqueda.",
     "range": "Mazos {start}–{end} de {total}",

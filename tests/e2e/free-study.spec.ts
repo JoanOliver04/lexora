@@ -113,8 +113,23 @@ test("free study supports one deck, several or all and keeps the trail and summa
     await expect(page.getByRole("checkbox", { name: "ZZ synthetic deck 25" })).toBeVisible();
     await expect(page.getByText("1 seleccionado")).toBeVisible();
     await assertStudyLayout(page, info, "free-study-deck-picker");
-    await page.getByRole("button", { name: "Página anterior" }).click();
+    const otherDeck = page.getByRole("checkbox", { name: "ZZ synthetic deck 25" });
+    await otherDeck.check();
+    await search.fill("no matching deck");
+    const onlySelected = page.getByRole("button", { name: "Mostrar solo los mazos seleccionados" });
+    await onlySelected.click();
+    await expect(page.getByRole("checkbox")).toHaveCount(2);
     await expect(page.getByRole("checkbox", { name: "Food deck" })).toBeChecked();
+    await otherDeck.press("Space");
+    await expect(onlySelected).toBeFocused();
+    await onlySelected.click();
+    await expect(search).toHaveValue("no matching deck");
+    await search.clear();
+    await expect(page.getByRole("checkbox", { name: "Food deck" })).toBeChecked();
+    let startRequests = 0;
+    page.on("request", (request) => {
+      if (request.headers()["next-action"]) startRequests++;
+    });
     await start.click();
     const next = page.getByRole("button", { name: "Siguiente", exact: true });
     const prev = page.getByRole("button", { name: "Anterior", exact: true });
@@ -129,6 +144,7 @@ test("free study supports one deck, several or all and keeps the trail and summa
         .filter({ has: page.getByText(label, { exact: true }) })
         .locator("dd");
     await expect(position(1)).toBeVisible();
+    expect(startRequests).toBe(1);
     await expect(prev).toBeDisabled();
     await expect(visibleFront()).toHaveText(fronts[0]!);
     const reveal = page.getByRole("button", { name: "Revelar respuesta", exact: true });
