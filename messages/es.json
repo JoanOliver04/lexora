@@ -371,6 +371,7 @@
     }
   },
   "Today": {
+    "openDifficult": "Ver mis tarjetas difíciles",
     "freeStudy": "Estudio libre",
     "libraryHeading": "Haz crecer tu biblioteca",
     "addConcept": "Añadir un concepto",
@@ -442,6 +443,9 @@
     "next": "Página siguiente"
   },
   "FreeStudy": {
+    "startDifficult": "{count, plural, one {Practicar la tarjeta difícil} other {Practicar las # tarjetas difíciles de la lista}}",
+    "difficultHint": "Una vuelta de estudio libre. Las fechas de tus repasos se conservan.",
+    "backToDifficult": "Volver a las tarjetas difíciles",
     "lengthLabel": "Duración de la ronda",
     "length": {
       "continuous": "Sin límite",

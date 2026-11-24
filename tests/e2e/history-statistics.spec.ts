@@ -145,6 +145,11 @@ for (const locale of ["es", "en"] as const) {
           .first(),
       ).toBeVisible();
       await expect(page.getByRole("meter")).not.toHaveCount(0);
+      const practise = page.getByRole("button", {
+        name: locale === "es" ? "Practicar la tarjeta difícil" : "Practise the difficult card",
+        exact: true,
+      });
+      await expect(practise).toHaveCount(0);
       const period = page.getByRole("region", {
         name: locale === "es" ? "Resumen del periodo" : "Period summary",
       });
@@ -175,6 +180,44 @@ for (const locale of ["es", "en"] as const) {
       await expect(
         page.getByRole("heading", { name: locale === "es" ? "Memoria actual" : "Current memory" }),
       ).toBeVisible();
+      const beforePractice = await checked(
+        client
+          .from("learning_states")
+          .update({ lapses: 3 })
+          .eq("practice_item_id", itemId)
+          .select()
+          .single(),
+      );
+      await page.goto(`/${locale}/app?deck=${deckId}`);
+      await page
+        .getByRole("link", {
+          name: locale === "es" ? "Ver mis tarjetas difíciles" : "View my difficult cards",
+        })
+        .click();
+      await expect(page).toHaveURL(`/${locale}/app/statistics?deck=${deckId}#difficult-title`);
+      await practise.click();
+      await expect(
+        page.getByRole("heading", { name: locale === "es" ? "Tarjeta 1 de 1" : "Card 1 of 1" }),
+      ).toBeFocused();
+      await expect(page.getByText("Original question", { exact: true })).toBeVisible();
+      await page
+        .getByRole("button", { name: locale === "es" ? "Revelar respuesta" : "Reveal answer" })
+        .click();
+      await expect(page.getByText("Original answer", { exact: true })).toBeVisible();
+      await page
+        .getByRole("button", { name: locale === "es" ? "Terminar sesión" : "Finish session" })
+        .click();
+      await page
+        .getByRole("button", {
+          name: locale === "es" ? "Volver a las tarjetas difíciles" : "Back to difficult cards",
+        })
+        .click();
+      await expect(practise).toBeFocused();
+      expect(
+        await checked(
+          client.from("learning_states").select().eq("practice_item_id", itemId).single(),
+        ),
+      ).toEqual(beforePractice);
       await page.goto(`/${locale}/app/statistics?deck=${randomUUID()}`);
       await expect(page.getByRole("main").getByRole("alert")).toContainText(
         locale === "es" ? "No hemos podido consultar" : "We could not load",

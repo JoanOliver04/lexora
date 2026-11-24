@@ -10,6 +10,8 @@ import { formatRecordedStudyTime } from "@/modules/study/presentation/recorded-s
 import { V1_PRACTICE_MODES } from "@/modules/library/domain/taxonomy";
 import { Button, Label } from "@/shared/presentation/components";
 import { StatisticsBreakdowns } from "./statistics-breakdowns";
+import { ClientMessages } from "@/i18n/client-messages";
+import { FreeStudyView } from "../study/free/free-study-view";
 
 export default async function StatisticsPage({
   params,
@@ -49,6 +51,7 @@ export default async function StatisticsPage({
       </main>
     );
   const { statistics: s, days, deckId } = result;
+  const difficultItemIds = s.difficult.map((item) => item.id);
   const library = await getLibraryContextForCurrentUser();
   const decks = library
     ? await library.decks.search({
@@ -310,6 +313,15 @@ export default async function StatisticsPage({
         <p className="max-w-prose text-sm leading-relaxed text-(--color-ink-muted)">
           {t("difficultRule")}
         </p>
+        {s.difficult.length > 0 && (
+          <ClientMessages namespaces={["FreeStudy", "PracticeCard"]}>
+            <FreeStudyView
+              key={`${course.id}:${deckId}:${days}:${difficultItemIds.join(",")}`}
+              courseId={course.id}
+              difficultItemIds={difficultItemIds}
+            />
+          </ClientMessages>
+        )}
         {s.difficult.length === 0 ? (
           <p>{t("noDifficult")}</p>
         ) : (
