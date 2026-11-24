@@ -442,6 +442,14 @@
     "next": "Página siguiente"
   },
   "FreeStudy": {
+    "lengthLabel": "Duración de la ronda",
+    "length": {
+      "continuous": "Sin límite",
+      "five": "Hasta 5 tarjetas",
+      "ten": "Hasta 10 tarjetas",
+      "once": "Una vuelta completa"
+    },
+    "boundedPosition": "Tarjeta {count} de {total}",
     "roundPosition": "Repetición · tarjeta {count} de {total}",
     "mark": "Marcar para otra ronda",
     "repeatMarked": "{count, plural, one {Practicar la tarjeta marcada} other {Practicar las # tarjetas marcadas}}",

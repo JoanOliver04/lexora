@@ -442,6 +442,14 @@
     "next": "Next page"
   },
   "FreeStudy": {
+    "lengthLabel": "Round length",
+    "length": {
+      "continuous": "No limit",
+      "five": "Up to 5 cards",
+      "ten": "Up to 10 cards",
+      "once": "One full round"
+    },
+    "boundedPosition": "Card {count} of {total}",
     "roundPosition": "Retry round · card {count} of {total}",
     "mark": "Mark for another round",
     "repeatMarked": "{count, plural, one {Practice the marked card} other {Practice the # marked cards}}",

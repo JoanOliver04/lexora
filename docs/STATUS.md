@@ -1,5 +1,11 @@
 # Lexora — Estado actual
 
+**LEX-23.10 · Practicar un mazo.** Desde la lista de conceptos de un mazo
+se puede abrir cada ficha. En Estudio libre se puede elegir una ronda de
+hasta cinco o diez tarjetas distintas, una vuelta completa o la práctica
+continua. Las rondas cortas cargan sus tarjetas al empezar. El contador
+refleja las disponibles y al terminar se pueden repetir las marcadas.
+
 **LEX-23.9 · Importación de mazos.** Al cambiar el archivo, editar el texto
 pegado o alternar entre ambos, el asistente pide una nueva vista previa. Si
 cambian las columnas, permite avanzar después de actualizar la muestra. El

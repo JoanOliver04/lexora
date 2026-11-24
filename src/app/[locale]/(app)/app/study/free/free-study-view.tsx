@@ -8,7 +8,11 @@ import {
   PracticeItemAnswer,
   PracticeItemPrompt,
 } from "@/modules/library/presentation/practice-item-content";
-import type { FreeStudyCard } from "@/modules/study/application/free-study";
+import {
+  FREE_STUDY_LENGTHS,
+  type FreeStudyCard,
+  type FreeStudyLength,
+} from "@/modules/study/application/free-study";
 import {
   markedFreeStudyRun,
   openPreparedFreeStudyRun,
@@ -29,6 +33,7 @@ type View =
       index: number;
       revealed: boolean;
       roundSize: number | null;
+      markedRound: boolean;
     }
   | { kind: "summary"; total: number; distinct: number; seconds: number };
 
@@ -48,6 +53,7 @@ export function FreeStudyView({
   const cardMessages = useTranslations("PracticeCard");
   const [view, setView] = useState<View>({ kind: "setup" });
   const [all, setAll] = useState(initialDeckIds === null);
+  const [length, setLength] = useState<FreeStudyLength>("continuous");
   const [selection, setSelection] = useState<string[]>(initialDeckIds ?? []);
   const [marked, setMarked] = useState<Map<string, FreeStudyCard>>(() => new Map());
   const [pending, setPending] = useState(false);
@@ -105,7 +111,7 @@ export function FreeStudyView({
       if (retryCards) {
         run = markedFreeStudyRun(retryCards);
       } else {
-        const result = await startFreeStudyRound(courseId, all ? null : selection);
+        const result = await startFreeStudyRound(courseId, all ? null : selection, length);
         if (!result.ok) throw new Error("Free study pool unavailable");
         run = openPreparedFreeStudyRun(result.round);
       }
@@ -127,7 +133,8 @@ export function FreeStudyView({
       card,
       index: run.cursor,
       revealed: false,
-      roundSize: run.singleRound ? run.pool.length : null,
+      roundSize: run.kind === "continuous" ? null : run.pool.length,
+      markedRound: run.kind === "marked",
     });
   }
 
@@ -138,6 +145,7 @@ export function FreeStudyView({
       const card = await nextFreeStudyCard(session.run, load);
       if (!current()) return;
       if (card) showCard(session.run, card);
+      else if (session.run.kind !== "continuous") finish();
       else setError("empty");
     });
   }
@@ -203,6 +211,24 @@ export function FreeStudyView({
         </fieldset>
         {decks.length > 0 ? (
           <>
+            <label className="flex min-w-0 flex-col gap-2">
+              <span className="font-semibold">{t("lengthLabel")}</span>
+              <select
+                value={length}
+                disabled={pending}
+                onChange={(event) => {
+                  const choice = FREE_STUDY_LENGTHS.find((value) => value === event.target.value);
+                  if (choice) setLength(choice);
+                }}
+                className="min-h-11 w-full rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-base sm:w-fit"
+              >
+                {FREE_STUDY_LENGTHS.map((choice) => (
+                  <option value={choice} key={choice}>
+                    {t(`length.${choice}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
             {issue}
             <Button
               className="w-full sm:w-fit"
@@ -282,7 +308,10 @@ export function FreeStudyView({
         <h2 ref={heading} tabIndex={-1} className="text-sm font-semibold text-(--color-ink-muted)">
           {view.roundSize === null
             ? t("position", { count: view.index + 1 })
-            : t("roundPosition", { count: view.index + 1, total: view.roundSize })}
+            : t(view.markedRound ? "roundPosition" : "boundedPosition", {
+                count: view.index + 1,
+                total: view.roundSize,
+              })}
         </h2>
         <PracticeItemPrompt content={view.card.content} hintLabel={cardMessages("hintLabel")} />
         <AnswerDraft key={view.index} />

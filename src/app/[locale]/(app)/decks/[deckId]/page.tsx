@@ -173,7 +173,13 @@ export default async function DeckDetailPage({
                 key={concept.id}
                 className="flex items-center justify-between gap-3 rounded-(--radius-control) border border-(--color-border) px-3 py-2"
               >
-                <span className="text-sm">{concept.title}</span>
+                <Link
+                  href={`/concepts/${concept.id}`}
+                  prefetch={false}
+                  className="inline-flex min-h-11 min-w-0 items-center text-sm text-(--color-accent) underline underline-offset-4"
+                >
+                  {concept.title}
+                </Link>
                 <form action={unlinkConceptFromDeckAction} className="shrink-0">
                   <input type="hidden" name="returnQuery" value={returnQuery} />
                   <input type="hidden" name="locale" value={locale} />
