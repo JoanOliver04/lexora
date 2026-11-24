@@ -25,6 +25,7 @@ export function useImportTransfer(
   locale: string,
   pending: ImportProgress | null,
   target: ImportDestination | null,
+  sourceRevision: number,
 ) {
   const router = useRouter();
   const [job, setJob] = useState(pending);
@@ -55,9 +56,9 @@ export function useImportTransfer(
       const abort = new AbortController();
       controller.current = abort;
       setFailure(null);
-      let retained = previous;
+      let retained = previous.sourceRevision === sourceRevision ? previous : {};
       try {
-        let carried = previous.carried;
+        let carried = retained.carried;
         let file = form.get("file");
         const pasted = form.get("import-text");
         if (typeof pasted === "string") {
@@ -67,7 +68,7 @@ export function useImportTransfer(
           file = new File([content], "lexora-pasted.txt", { type: "text/plain;charset=utf-8" });
         }
         const newFile = file instanceof File && (file.size > 0 || file.name !== "") ? file : null;
-        if (!newFile && !carried) return { ...previous, error: "no-file" };
+        if (!newFile && !carried) return { error: "no-file" };
         const {
           prepareBrowserImport,
           readBrowserImportFile,
@@ -81,9 +82,11 @@ export function useImportTransfer(
           if (!loaded.ok) return { error: loaded.error };
           carried = loaded.carried;
         }
-        if (!carried) return { ...previous, error: "no-file" };
+        if (!carried) return { error: "no-file" };
         retained =
-          carried === previous.carried ? previous : { carried, filename: carried.filename };
+          carried === previous.carried
+            ? previous
+            : { carried, filename: carried.filename, sourceRevision };
         const mapping = readImportMapping(
           carried === previous.carried ? form : new FormData(),
           Math.max(carried.columnCount, 1),
@@ -113,6 +116,7 @@ export function useImportTransfer(
         const strategy = !deckMode && form.get("duplicateStrategy") === "copy" ? "copy" : "skip";
         const createReverse = form.get("createReverse") === "1";
         const next: ImportPreviewState = {
+          sourceRevision,
           carried,
           prepared,
           mapping,

@@ -19,6 +19,7 @@ export interface CarriedPreview extends TokenizedImport {
 export type ImportDestination = ImportDeckTarget & { title: string };
 
 export interface ImportPreviewState {
+  sourceRevision?: number;
   error?:
     | "no-file"
     | "empty-file"
@@ -43,6 +44,7 @@ export interface ImportPreviewState {
   deckId?: string;
   createReverse?: boolean;
   result?: {
+    deckId: string | null;
     rowsTotal: number;
     rowsCreated: number;
     rowsSkipped: number;

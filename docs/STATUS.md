@@ -1,5 +1,11 @@
 # Lexora — Estado actual
 
+**LEX-23.9 · Importación de mazos.** Al cambiar el archivo, editar el texto
+pegado o alternar entre ambos, el asistente pide una nueva vista previa. Si
+cambian las columnas, permite avanzar después de actualizar la muestra. El
+resultado enlaza al mazo que confirmó la importación y, si se crearon filas,
+a su práctica libre.
+
 **LEX-23.8 · Preparación de estudio.** Al empezar una práctica libre, la
 primera petición devuelve el orden aleatorio y un máximo de doce tarjetas.
 El resto se lee a medida que se avanza. En la preparación del repaso y de la

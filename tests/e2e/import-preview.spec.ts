@@ -40,10 +40,12 @@ test.describe("importación — vista previa", () => {
 
     await page.getByLabel("Columna de frente").selectOption("1");
     await page.getByLabel("Columna de reverso").selectOption("0");
+    await expect(page.getByRole("button", { name: "Continuar" })).toBeDisabled();
     await page.getByRole("button", { name: "Actualizar vista previa" }).click();
 
     const firstRowAfter = page.locator("tbody tr").first();
     await expect(firstRowAfter.locator("td").nth(1)).toHaveText("romper el hielo");
+    await expect(page.getByRole("button", { name: "Continuar" })).toBeEnabled();
     await expect(firstRowAfter.locator("td").nth(2)).toHaveText("break the ice");
   });
 
@@ -215,6 +217,18 @@ test.describe("importación — vista previa", () => {
     });
     await expect(page.getByText("Creadas: 2")).toBeVisible();
     await expect(page.getByText("Total: 2")).toBeVisible();
+
+    const destination = await page
+      .getByRole("link", { name: "Abrir el mazo de destino" })
+      .getAttribute("href");
+    expect(destination).toMatch(/^\/es\/decks\/[\da-f-]+$/);
+    const practise = page.getByRole("link", { name: "Practicar este mazo" });
+    await expect(practise).toHaveAttribute(
+      "href",
+      `/es/app/study/free?deck=${destination!.split("/").pop()}`,
+    );
+    await practise.click();
+    await expect(page.getByRole("checkbox", { name: "Importados" })).toBeChecked();
 
     await page.goto("/es/concepts");
     await expect(page.getByRole("link", { name: "break the ice", exact: true })).toBeVisible();
@@ -409,5 +423,29 @@ test.describe("importación — vista previa", () => {
     await expect(mapping).toBeVisible();
     await expect(mapping).toBeFocused();
     await expect(page.getByRole("button", { name: "3. Mazo" })).toBeVisible();
+    await page.getByRole("button", { name: "1. Archivo" }).click();
+    await page.getByRole("radio", { name: "Pegar contenido" }).check();
+    await page.getByLabel("Contenido del CSV o TSV").fill("evening\ttarde\n");
+    await expect(page.getByRole("button", { name: "Continuar" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "3. Mazo" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Previsualizar" }).click();
+    await expect(mapping).toBeFocused();
+    await expect(page.locator("tbody tr")).toHaveCount(1);
+    await expect(page.locator("tbody tr")).toContainText("evening");
+    await page.getByRole("button", { name: "1. Archivo" }).click();
+    await page.getByLabel("Contenido del CSV o TSV").fill("morning\tmañana");
+    await page.getByRole("button", { name: "Previsualizar" }).click();
+    await expect(page.locator("tbody tr")).toContainText("morning");
+    await page.getByRole("button", { name: "1. Archivo" }).click();
+    await page.getByRole("radio", { name: "Desde el dispositivo" }).check();
+    const file = page.getByLabel("Archivo", { exact: true });
+    await file.setInputFiles("tests/fixtures/import/basic-tab.txt");
+    await file.setInputFiles([]);
+    await page.getByRole("button", { name: "Previsualizar" }).click();
+    await expect(page.getByRole("alert").filter({ hasText: "Elige un archivo." })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Continuar" })).toHaveCount(0);
+    await file.setInputFiles("tests/fixtures/import/basic-tab.txt");
+    await page.getByRole("button", { name: "Previsualizar" }).click();
+    await expect(page.locator("tbody tr")).toHaveCount(2);
   });
 });

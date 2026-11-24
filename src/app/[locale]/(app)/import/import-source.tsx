@@ -7,9 +7,11 @@ import { Label } from "@/shared/presentation/components";
 export function ImportSource({
   active,
   errorId,
+  onSourceChange,
 }: {
   active: boolean;
   errorId?: string | undefined;
+  onSourceChange: () => void;
 }) {
   const t = useTranslations("Import");
   const [mode, setMode] = useState<"file" | "paste">("file");
@@ -22,6 +24,7 @@ export function ImportSource({
       tabIndex={-1}
       className="flex min-w-0 scroll-mt-6 flex-col gap-3 rounded-(--radius-surface) border border-(--color-border) p-[clamp(12px,4vw,16px)]"
       disabled={!active}
+      onChange={onSourceChange}
     >
       <legend className="px-1 text-sm font-semibold">{t("source.title")}</legend>
       <div className="flex min-w-0 flex-wrap gap-2">

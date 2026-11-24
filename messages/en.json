@@ -786,7 +786,8 @@
     "submit": "Preview",
     "resubmit": "Refresh preview",
     "submitting": "Reading…",
-    "resubmitHint": "To preview different content, choose it or paste it above and press again.",
+    "resubmitHint": "Check that the sample shows the front and back in the order you want to study.",
+    "mappingChanged": "You changed the columns. Update the preview to check the result and continue.",
     "separatorDetected": "Detected separator: {separator}",
     "separatorFromDirective": "(declared in the file)",
     "counts": "{valid, plural, one {# valid row} other {# valid rows}} · {issues, plural, =0 {no problems} one {# with a problem} other {# with problems}}",
@@ -885,7 +886,9 @@
       "errorRow": "Row {row}: {reason}",
       "errorsMore": "And {count} more. They are all in the downloadable file.",
       "download": "Download errors",
-      "retryNote": "Retrying starts a new job. Rows that already exist are skipped if you choose to skip duplicates."
+      "retryNote": "Retrying starts a new job. Rows that already exist are skipped if you choose to skip duplicates.",
+      "openDeck": "Open destination deck",
+      "practiceDeck": "Practise this deck"
     }
   },
   "Onboarding": {
