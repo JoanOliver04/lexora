@@ -1,5 +1,11 @@
 # Lexora — Estado actual
 
+**LEX-23.8 · Preparación de estudio.** Al empezar una práctica libre, la
+primera petición devuelve el orden aleatorio y un máximo de doce tarjetas.
+El resto se lee a medida que se avanza. En la preparación del repaso y de la
+práctica libre se puede ver la selección completa y desmarcar mazos aunque
+se hayan elegido en distintas páginas. Al volver se conserva la búsqueda.
+
 **LEX-23.7 · Práctica desde la biblioteca.** La ficha de un mazo activo con
 conceptos enlaza al repaso programado y al estudio libre con ese mazo seleccionado.
 Hoy y Estudio conservan los filtros al abrir Estudio libre. En ambos modos se

@@ -11,13 +11,13 @@ import {
 import type { FreeStudyCard } from "@/modules/study/application/free-study";
 import {
   markedFreeStudyRun,
-  newFreeStudyRun,
+  openPreparedFreeStudyRun,
   nextFreeStudyCard,
   type FreeStudyRun,
 } from "@/modules/study/application/free-study-run";
 import { Button, FormError } from "@/shared/presentation/components";
 
-import { loadFreeStudyCards, loadFreeStudyPool } from "./actions";
+import { loadFreeStudyCards, startFreeStudyRound } from "./actions";
 import { StudyDeckPicker } from "../study-deck-picker";
 import { AnswerDraft } from "../answer-draft";
 
@@ -105,9 +105,9 @@ export function FreeStudyView({
       if (retryCards) {
         run = markedFreeStudyRun(retryCards);
       } else {
-        const pool = await loadFreeStudyPool(courseId, all ? null : selection);
-        if (!pool.ok) throw new Error("Free study pool unavailable");
-        run = newFreeStudyRun(pool.ids);
+        const result = await startFreeStudyRound(courseId, all ? null : selection);
+        if (!result.ok) throw new Error("Free study pool unavailable");
+        run = openPreparedFreeStudyRun(result.round);
       }
       const card = await nextFreeStudyCard(run, load);
       if (!current()) return;
