@@ -442,7 +442,7 @@ test.describe("importación — vista previa", () => {
     await file.setInputFiles("tests/fixtures/import/basic-tab.txt");
     await file.setInputFiles([]);
     await page.getByRole("button", { name: "Previsualizar" }).click();
-    await expect(page.getByRole("alert")).toBeVisible();
+    await expect(page.getByRole("alert").filter({ hasText: "Elige un archivo." })).toBeVisible();
     await expect(page.getByRole("button", { name: "Continuar" })).toHaveCount(0);
     await file.setInputFiles("tests/fixtures/import/basic-tab.txt");
     await page.getByRole("button", { name: "Previsualizar" }).click();
