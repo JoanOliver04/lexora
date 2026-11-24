@@ -25,6 +25,7 @@ import type { ReviewFormState } from "./review-state";
 import { changeStudySessionAction, type SessionChangeState } from "./session-actions";
 import { SessionControls, type SessionControlInfo } from "./session-controls";
 import { useStudyShortcuts } from "./use-study-shortcuts";
+import { AnswerDraft } from "./answer-draft";
 
 async function changeWithRecovery(
   previous: SessionChangeState,
@@ -245,6 +246,7 @@ function StudyCardControls({
       <div id="study-prompt-text">
         <PracticeItemPrompt content={content} hintLabel={t("hintLabel")} />
       </div>
+      <AnswerDraft />
       <p id="study-shortcuts" className="text-sm text-(--color-ink-muted)">
         {t("shortcuts")}
       </p>

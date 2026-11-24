@@ -119,9 +119,23 @@ for (const locale of ["es", "en"] as const) {
         await checked(client.from("review_logs").select("id").eq("owner_id", ownerId)),
       ).toEqual([]);
       expect(await front.evaluate((node) => getComputedStyle(node).outlineStyle)).not.toBe("none");
+      const write = card.getByText(es ? "Escribir antes de revelar" : "Write before revealing", {
+        exact: true,
+      });
+      await tabTo(page, write);
+      await page.keyboard.press("Enter");
+      await page.keyboard.press("Tab");
+      const draft = card.getByRole("textbox");
+      await expect(draft).toBeFocused();
+      await page.keyboard.type("My answer 1 2 3 4");
+      await expect(card.getByRole("button", { name: labels.reveal })).toBeVisible();
+      await draft.press("Tab");
+      await expect(card.getByRole("button", { name: labels.reveal })).toBeFocused();
+      await front.focus();
       await page.keyboard.press("Space");
       const answer = card.getByRole("heading", { name: labels.answer, exact: true });
       await expect(answer).toBeFocused();
+      await expect(draft).toHaveValue("My answer 1 2 3 4");
       await expect(answer).toHaveAccessibleDescription(/KEYBOARD_ANSWER_1/);
       await assertStudyLayout(page, testInfo, `${locale}-answer`);
       const revealButtons = card.getByRole("button");
@@ -182,6 +196,9 @@ for (const locale of ["es", "en"] as const) {
       await tabTo(page, page.getByRole("button", { name: labels.resume, exact: true }));
       await page.keyboard.press("Enter");
       await expect(front).toBeFocused();
+      await page.keyboard.press("Tab");
+      await expect(write).toBeFocused();
+      await expect(draft).toHaveCount(0);
       await page.keyboard.press("Tab");
       const reveal = card.getByRole("button", { name: labels.reveal, exact: true });
       await expect(reveal).toBeFocused();
