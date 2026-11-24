@@ -10,7 +10,10 @@ export interface FreeStudyRun {
   kind: "continuous" | "bounded" | "marked";
 }
 
-export function newFreeStudyRun(ids: string[]): FreeStudyRun {
+export function newFreeStudyRun(
+  ids: string[],
+  kind: FreeStudyRun["kind"] = "continuous",
+): FreeStudyRun {
   return {
     pool: ids,
     order: [],
@@ -18,15 +21,14 @@ export function newFreeStudyRun(ids: string[]): FreeStudyRun {
     cursor: -1,
     trail: [],
     contents: new Map(),
-    kind: "continuous",
+    kind,
   };
 }
 
 /** A finite pass over cards already seen in this session. */
 export function markedFreeStudyRun(cards: FreeStudyCard[]): FreeStudyRun {
   const contents = new Map(cards.map((card) => [card.id, card]));
-  const run = newFreeStudyRun([...contents.keys()]);
-  return { ...run, contents, kind: "marked" };
+  return { ...newFreeStudyRun([...contents.keys()], "marked"), contents };
 }
 
 function shuffle(ids: string[], lastId?: string): string[] {
@@ -84,8 +86,7 @@ export function openPreparedFreeStudyRun({
   cards,
   kind,
 }: PreparedFreeStudyRound): FreeStudyRun {
-  const run = newFreeStudyRun(order);
-  run.kind = kind;
+  const run = newFreeStudyRun(order, kind);
   run.order = order;
   run.contents = new Map(cards.map((card) => [card.id, card]));
   return run;

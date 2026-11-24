@@ -371,6 +371,7 @@
     }
   },
   "Today": {
+    "openDifficult": "View my difficult cards",
     "freeStudy": "Free study",
     "libraryHeading": "Grow your library",
     "addConcept": "Add a concept",
@@ -442,6 +443,9 @@
     "next": "Next page"
   },
   "FreeStudy": {
+    "startDifficult": "{count, plural, one {Practise the difficult card} other {Practise the # difficult cards listed}}",
+    "difficultHint": "One free-study round. Your scheduled review dates stay the same.",
+    "backToDifficult": "Back to difficult cards",
     "lengthLabel": "Round length",
     "length": {
       "continuous": "No limit",

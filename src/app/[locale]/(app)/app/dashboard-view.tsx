@@ -187,6 +187,19 @@ export function DashboardView({
             ))}
           </dl>
           <p className="mt-5 text-sm leading-relaxed text-(--color-ink-muted)">{t("itemsHint")}</p>
+          {overview.difficultItems > 0 && (dashboard.scope.deckIds?.length ?? 0) <= 1 && (
+            <Link
+              href={{
+                pathname: "/app/statistics",
+                query: dashboard.scope.deckIds ? { deck: dashboard.scope.deckIds[0] } : {},
+                hash: "difficult-title",
+              }}
+              prefetch={false}
+              className={textLink}
+            >
+              {t("openDifficult")}
+            </Link>
+          )}
           <details className="mt-3 text-sm text-(--color-ink-muted)">
             <summary className="min-h-11 cursor-pointer content-center text-(--color-accent)">
               {t("difficultyHeading")}

@@ -15,6 +15,7 @@ import {
 } from "@/modules/study/application/free-study";
 import {
   markedFreeStudyRun,
+  newFreeStudyRun,
   openPreparedFreeStudyRun,
   nextFreeStudyCard,
   type FreeStudyRun,
@@ -42,12 +43,14 @@ const panel =
 
 export function FreeStudyView({
   courseId,
-  decks,
-  initialDeckIds,
+  decks = [],
+  initialDeckIds = null,
+  difficultItemIds,
 }: {
   courseId: string;
-  decks: { id: string; title: string }[];
-  initialDeckIds: string[] | null;
+  decks?: { id: string; title: string }[];
+  initialDeckIds?: string[] | null;
+  difficultItemIds?: string[];
 }) {
   const t = useTranslations("FreeStudy");
   const cardMessages = useTranslations("PracticeCard");
@@ -110,6 +113,8 @@ export function FreeStudyView({
       let run: FreeStudyRun;
       if (retryCards) {
         run = markedFreeStudyRun(retryCards);
+      } else if (difficultItemIds) {
+        run = newFreeStudyRun(difficultItemIds, "bounded");
       } else {
         const result = await startFreeStudyRound(courseId, all ? null : selection, length);
         if (!result.ok) throw new Error("Free study pool unavailable");
@@ -178,6 +183,18 @@ export function FreeStudyView({
       <p>{t(`errors.${error}`)}</p>
     </FormError>
   );
+
+  if (view.kind === "setup" && difficultItemIds) {
+    return (
+      <div className="flex flex-col items-start gap-2">
+        <Button ref={startButton} disabled={pending} onClick={() => start()}>
+          {pending ? t("loading") : t("startDifficult", { count: difficultItemIds.length })}
+        </Button>
+        <p className="text-sm text-(--color-ink-muted)">{t("difficultHint")}</p>
+        {issue}
+      </div>
+    );
+  }
 
   if (view.kind === "setup") {
     return (
@@ -296,7 +313,7 @@ export function FreeStudyView({
             setView({ kind: "setup" });
           }}
         >
-          {t("restart")}
+          {t(difficultItemIds ? "backToDifficult" : "restart")}
         </Button>
       </section>
     );

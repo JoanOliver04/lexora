@@ -1,5 +1,11 @@
 # Lexora — Estado actual
 
+**LEX-23.11 · Practicar tarjetas difíciles.** Estadísticas permite practicar
+una vez cada tarjeta de la lista visible, hasta veinte y con el filtro de mazo
+actual. La ronda permite revelar, escribir y repetir las marcadas. Desde Hoy
+se puede abrir la lista del curso completo o del único mazo seleccionado.
+Esta práctica lee las tarjetas y conserva las fechas y el historial de repaso.
+
 **LEX-23.10 · Practicar un mazo.** Desde la lista de conceptos de un mazo
 se puede abrir cada ficha. En Estudio libre se puede elegir una ronda de
 hasta cinco o diez tarjetas distintas, una vuelta completa o la práctica
