@@ -122,7 +122,9 @@ test("ratings save once before advancing and survive closing the confirmed tab",
     await expect(
       page.getByTestId("study-card").getByText("Review front 1", { exact: true }),
     ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Primer ítem", exact: true })).toBeFocused();
+    await expect(
+      page.getByRole("heading", { name: "Tarjeta de repaso", exact: true }),
+    ).toBeFocused();
     await expect(page.getByText("Review answer 0", { exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Bien", exact: true })).toBeDisabled();
     expect(captured).toHaveLength(1);

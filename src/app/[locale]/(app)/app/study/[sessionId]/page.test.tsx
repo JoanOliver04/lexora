@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SessionSummary } from "@/modules/study/application/session-summary";
 import { StudyError } from "@/modules/study/application/study-error";
@@ -105,6 +106,17 @@ describe("session summary route", () => {
     render(await Page({ params: Promise.resolve({ locale: "es", sessionId: id }) }));
     expect(summary).not.toHaveBeenCalled();
     expect(screen.queryByTestId("summary-panel")).not.toBeInTheDocument();
+  });
+  it("keeps session metadata available on demand when a card is ready", async () => {
+    card.mockResolvedValue({
+      ...result,
+      session: { ...result.session, status: "active" },
+      card: { practiceItemId: "item" },
+    });
+    render(await Page({ params: Promise.resolve({ locale: "es", sessionId: id }) }));
+    expect(screen.getByText(now.toISOString())).not.toBeVisible();
+    await userEvent.click(screen.getByText("scopeAll"));
+    expect(screen.getByText(now.toISOString())).toBeVisible();
   });
   it("keeps unknown and foreign sessions behind not-found before summary reads", async () => {
     card.mockResolvedValue({ ok: false, reason: "not-found" });

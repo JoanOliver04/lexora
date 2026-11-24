@@ -157,7 +157,9 @@ for (const phase of ["learning", "relearning"] as const) {
       await expect(wait).toHaveCount(0);
       await expect(page.getByRole("button", { name: "Bien", exact: true })).toBeDisabled();
       await expect(page.getByText("Original step answer", { exact: true })).toHaveCount(0);
-      await expect(page.getByRole("heading", { name: "Primer ítem", exact: true })).toBeFocused();
+      await expect(
+        page.getByRole("heading", { name: "Tarjeta de repaso", exact: true }),
+      ).toBeFocused();
       await page.getByRole("button", { name: "Revelar respuesta" }).click();
       await expect(page.getByText("Original step answer", { exact: true })).toBeVisible();
       await page.getByRole("button", { name: "Bien", exact: true }).click();

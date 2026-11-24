@@ -9,6 +9,8 @@ se pueden practicar una vez cada una desde el resumen. El historial de repasos
 y el calendario FSRS solo cambian al valorar una tarjeta en estudio programado.
 Las pruebas de navegador cubren el filtro del mazo, la comparación escrita,
 el foco de teclado y la práctica de marcadas en español e inglés.
+La sesión activa muestra el número disponible y el alcance encima de la tarjeta.
+La fecha de creación y los atajos de teclado se pueden desplegar cuando hacen falta.
 
 **LEX-23.6 · Carga de Hoy, Estudio y Estadísticas.** La cola diaria recupera
 las tarjetas y su estado de aprendizaje en la misma página de Supabase.

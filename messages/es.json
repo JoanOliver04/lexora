@@ -538,7 +538,8 @@
       "card-changed": "Los pendientes han cambiado o este ítem ya no está disponible. Recarga la sesión antes de continuar.",
       "generic": "No se pudo cargar la respuesta. Puedes reintentarlo sin perder el enunciado."
     },
-    "heading": "Primer ítem",
+    "heading": "Tarjeta de repaso",
+    "shortcutHeading": "Atajos de teclado",
     "hintLabel": "Pista",
     "unavailable": "Este ítem ya no está disponible o su contenido no es compatible. Recarga para consultar los pendientes actuales.",
     "reload": "Recargar sesión",
@@ -594,7 +595,6 @@
     "scopeAll": "Todos los mazos",
     "scopeSelected": "{count, plural, one {# mazo seleccionado} other {# mazos seleccionados}}",
     "availableNow": "{count, plural, one {# ítem disponible ahora} other {# ítems disponibles ahora}}",
-    "practicePending": "Este es el primer ítem disponible. Revela la respuesta y valora cómo la recordaste. El repaso se guarda antes de avanzar.",
     "changedAvailability": "Tu selección sigue guardada, pero ahora no hay ítems disponibles. Puedes volver a Hoy para ver qué queda pendiente.",
     "stepWaitTitle": "Hay un paso de aprendizaje pendiente",
     "stepWaitTime": "En la última comprobación quedaban aproximadamente {minutes, plural, one {# minuto} other {# minutos}} para el próximo paso.",
