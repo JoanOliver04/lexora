@@ -7,10 +7,26 @@ export interface FreeStudyRun {
   cursor: number;
   trail: FreeStudyCard[];
   contents: Map<string, FreeStudyCard | null>;
+  singleRound: boolean;
 }
 
 export function newFreeStudyRun(ids: string[]): FreeStudyRun {
-  return { pool: ids, order: [], offset: 0, cursor: -1, trail: [], contents: new Map() };
+  return {
+    pool: ids,
+    order: [],
+    offset: 0,
+    cursor: -1,
+    trail: [],
+    contents: new Map(),
+    singleRound: false,
+  };
+}
+
+/** A finite pass over cards already seen in this session. */
+export function markedFreeStudyRun(cards: FreeStudyCard[]): FreeStudyRun {
+  const contents = new Map(cards.map((card) => [card.id, card]));
+  const run = newFreeStudyRun([...contents.keys()]);
+  return { ...run, contents, singleRound: true };
 }
 
 function shuffle(ids: string[], lastId?: string): string[] {
@@ -34,6 +50,7 @@ export async function nextFreeStudyCard(
   if (run.cursor + 1 < run.trail.length) return run.trail[++run.cursor]!;
   while (run.pool.length > 0) {
     if (run.offset === run.order.length) {
+      if (run.singleRound && run.order.length > 0) return null;
       run.order = shuffle(run.pool, run.trail.at(-1)?.id);
       run.offset = 0;
     }

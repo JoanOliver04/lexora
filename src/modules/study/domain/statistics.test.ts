@@ -15,6 +15,15 @@ const empty = (): StatisticsData => ({
 });
 
 describe("Explainable study statistics", () => {
+  it("covers 90 contiguous civil days across the Madrid clock change", () => {
+    const { activity } = summarizeStatistics(empty(), now, "Europe/Madrid", 90);
+    expect(activity).toHaveLength(90);
+    expect(activity[0]?.day).toBe("2026-07-28");
+    expect(activity.at(-1)?.day).toBe("2026-10-25");
+    expect(
+      activity.slice(1).every((day, i) => day.start.getTime() === activity[i]!.end.getTime()),
+    ).toBe(true);
+  });
   it("returns no percentage or recorded time for no attempts", () => {
     const s = summarizeStatistics(empty(), now, "Europe/Madrid", 7);
     expect(s.observedRecall).toBeNull();

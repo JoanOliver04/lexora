@@ -27,7 +27,7 @@ Organiza tu vocabulario, gramática y frases por curso. Crea tus propias tarjeta
 | **Cursos de idiomas** | Crea un curso vacío con su nombre y el idioma que quieras estudiar. Cambia de curso desde el selector. Cada uno tiene sus propios mazos, tarjetas, progreso y límites diarios. |
 | **Biblioteca de tarjetas** | Agrupa contenido en mazos y clasifícalo con etiquetas, categorías y niveles del MCER de A1 a C2. Un concepto puede tener tarjetas de reconocimiento, recuperación o huecos. |
 | **Estudio programado** | Abre la cola del día, revela la respuesta y elige **Otra vez**, **Difícil**, **Bien** o **Fácil**. FSRS calcula el siguiente repaso para esa tarjeta. Puedes pausar la sesión y retomarla. |
-| **Estudio libre** | Busca y selecciona uno, varios o todos los mazos. Recorre tarjetas barajadas, revela la respuesta y avanza o retrocede. Al terminar, consulta el tiempo y las tarjetas vistas. |
+| **Estudio libre** | Practica desde un mazo o elige varios. Puedes escribir tu respuesta antes de revelarla y marcar tarjetas para volver a intentarlas en una ronda al terminar. El resumen muestra el tiempo y las tarjetas vistas. |
 | **Historial y estadísticas** | Filtra los repasos y consulta la actividad, el tiempo registrado, las tarjetas difíciles y los próximos vencimientos del curso activo. |
 | **Ayuda integrada** | Sigue la guía de primera sesión, prueba una tarjeta de ejemplo y abre los tutoriales desde **Ayuda** o desde las pantallas de estudio e importación. |
 

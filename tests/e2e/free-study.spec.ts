@@ -6,6 +6,7 @@ import type { Database } from "../../src/shared/infrastructure/supabase/database
 import { completeOnboarding, PASSWORD, signUp } from "./helpers";
 import { localBackend } from "./local-backend";
 import { assertStudyLayout } from "./study-layout";
+import { auditAxe } from "./a11y-audit";
 
 async function checked<T>(query: PromiseLike<{ data: T; error: { message: string } | null }>) {
   const { data, error } = await query;
@@ -133,12 +134,21 @@ test("free study supports one deck, several or all and keeps the trail and summa
     const reveal = page.getByRole("button", { name: "Revelar respuesta", exact: true });
     const answer = page.getByText(`Answer for ${fronts[0]}`, { exact: true });
     await expect(answer).toBeHidden();
+    await page.getByText("Escribir antes de revelar", { exact: true }).press("Enter");
+    const draft = page.getByRole("textbox", { name: "Tu respuesta para comparar" });
+    await draft.fill("My practice answer");
     await reveal.click();
     await expect(answer).toBeVisible();
+    await expect(draft).toHaveValue("My practice answer");
+    const mark = page.getByRole("checkbox", { name: "Marcar para otra ronda" });
+    await mark.press("Space");
+    await expect(mark).toBeChecked();
     await next.click();
     await expect(position(2)).toBeVisible();
     await expect(visibleFront()).toHaveText(fronts[0]!);
     await expect(answer).toBeHidden();
+    await page.getByText("Escribir antes de revelar", { exact: true }).click();
+    await expect(draft).toHaveValue("");
     await prev.click();
     await expect(position(1)).toBeVisible();
     await expect(answer).toBeHidden();
@@ -146,6 +156,17 @@ test("free study supports one deck, several or all and keeps the trail and summa
     await finish.click();
     await expect(stat("Tarjetas recorridas")).toHaveText("2");
     await expect(stat("Tarjetas distintas")).toHaveText("1");
+
+    await page.getByRole("button", { name: "Practicar la tarjeta marcada" }).click();
+    await expect(page.getByRole("heading", { name: "Repetición · tarjeta 1 de 1" })).toBeFocused();
+    await expect(visibleFront()).toHaveText(fronts[0]!);
+    await expect(answer).toBeHidden();
+    await expect(next).toHaveCount(0);
+    await reveal.click();
+    await expect(mark).not.toBeChecked();
+    await auditAxe(page, info, "marked-free-study");
+    await finish.click();
+    await expect(page.getByRole("button", { name: "Practicar la tarjeta marcada" })).toHaveCount(0);
 
     await restart.click();
     await page.getByRole("checkbox", { name: "Sports deck" }).check();
@@ -183,6 +204,22 @@ test("free study supports one deck, several or all and keeps the trail and summa
     }
     expect(allFronts.sort()).toEqual(fronts.slice(0, 3).sort());
     await finish.click();
+    const deckId = decks[0]!.id;
+    await page.goto(`/en/decks/${deckId}`);
+    await expect(page.getByRole("heading", { name: deckTitles[0]!, level: 1 })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Review this deck" })).toHaveAttribute(
+      "href",
+      `/en/app/study?deck=${deckId}`,
+    );
+    await page.getByRole("link", { name: "Practice freely" }).click();
+    await expect(page.getByRole("checkbox", { name: "Food deck" })).toBeChecked();
+    await page.getByRole("button", { name: "Start free study" }).click();
+    await expect(visibleFront()).toHaveText(fronts[0]!);
+    await page.goto(`/en/app/study/free?deck=${decks[3]!.id}`);
+    await expect(
+      page.getByText("This deck selection is unavailable in the current course."),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Start free study" })).toHaveCount(0);
     expect(await checked(client.from("review_logs").select("id").eq("owner_id", user.id))).toEqual(
       [],
     );

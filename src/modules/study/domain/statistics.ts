@@ -1,5 +1,5 @@
 import { MEMORY_PHASES, REVIEW_RATINGS, type MemoryPhase, type ReviewRating } from "./memory";
-import { isIanaTimeZone, studyDayWindow } from "./study-day";
+import { createStudyCalendar } from "./study-day";
 import { estimateStudyTime } from "./study-time-estimate";
 import { isDifficultItem } from "./difficult-item";
 
@@ -35,26 +35,14 @@ export interface StatisticsBreakdown {
   reviews: number;
 }
 
-export function statisticsDay(instant: Date, timeZone: string): string {
-  const parts = new Intl.DateTimeFormat("en", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(instant);
-  return ["year", "month", "day"]
-    .map((type) => parts.find((p) => p.type === type)!.value)
-    .join("-");
-}
-
 export function statisticsWindows(now: Date, timeZone: string, days: number) {
-  if (!isIanaTimeZone(timeZone) || ![7, 30, 90].includes(days))
-    throw new Error("Invalid statistics period");
+  if (![7, 30, 90].includes(days)) throw new Error("Invalid statistics period");
+  const calendar = createStudyCalendar(timeZone);
   const windows = [];
   let cursor = now;
   for (let i = 0; i < days; i++) {
-    const window = studyDayWindow(cursor, timeZone);
-    windows.push({ ...window, day: statisticsDay(window.start, timeZone) });
+    const window = calendar.datedWindowAt(cursor);
+    windows.push(window);
     cursor = new Date(window.start.getTime() - 1);
   }
   return windows.reverse();
@@ -99,10 +87,11 @@ export function summarizeStatistics(
     { reviews: 0, durationMs: 0, measured: 0 },
   );
   const forecast = [];
+  const calendar = createStudyCalendar(timeZone);
   let next = now;
   for (let i = 0; i < 7; i++) {
-    const window = studyDayWindow(next, timeZone);
-    const day = statisticsDay(window.start, timeZone);
+    const window = calendar.datedWindowAt(next);
+    const day = window.day;
     forecast.push({
       day,
       start: window.start,

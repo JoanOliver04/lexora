@@ -25,6 +25,7 @@ import type { ReviewFormState } from "./review-state";
 import { changeStudySessionAction, type SessionChangeState } from "./session-actions";
 import { SessionControls, type SessionControlInfo } from "./session-controls";
 import { useStudyShortcuts } from "./use-study-shortcuts";
+import { AnswerDraft } from "./answer-draft";
 
 async function changeWithRecovery(
   previous: SessionChangeState,
@@ -245,9 +246,7 @@ function StudyCardControls({
       <div id="study-prompt-text">
         <PracticeItemPrompt content={content} hintLabel={t("hintLabel")} />
       </div>
-      <p id="study-shortcuts" className="text-sm text-(--color-ink-muted)">
-        {t("shortcuts")}
-      </p>
+      <AnswerDraft />
       {!online && (
         <p role="status" className="text-sm">
           {t("offlineHint")}
@@ -288,9 +287,11 @@ function StudyCardControls({
           </Button>
         </form>
       )}
-      <p id="study-recall-hint" className="text-sm text-(--color-ink-muted)">
-        {t("revealHint")}
-      </p>
+      {!state.content && (
+        <p id="study-recall-hint" className="text-sm text-(--color-ink-muted)">
+          {t("revealHint")}
+        </p>
+      )}
       {state.content && (
         <div className="flex min-w-0 flex-col gap-3 border-t border-(--color-border) pt-4">
           <h3
@@ -460,7 +461,15 @@ function StudyCardControls({
           </Button>
         )}
       </form>
-      <p className="text-sm leading-relaxed text-(--color-ink-muted)">{t("saveHint")}</p>
+      {state.content && (
+        <p className="text-sm leading-relaxed text-(--color-ink-muted)">{t("saveHint")}</p>
+      )}
+      <details className="text-sm text-(--color-ink-muted)">
+        <summary className="min-h-11 w-fit cursor-pointer content-center text-(--color-accent) underline">
+          {t("shortcutHeading")}
+        </summary>
+        <p id="study-shortcuts">{t("shortcuts")}</p>
+      </details>
     </section>
   );
 }

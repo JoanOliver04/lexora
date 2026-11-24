@@ -401,6 +401,23 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
     });
   });
 
+  it("reads queue states in the same pages as the 1,101 eligible items", async () => {
+    const queue = createSupabaseDailyQueueRepository(clientA);
+    requests = 0;
+    try {
+      const items = await queue.listEligibleItems({
+        ownerId: ownerA,
+        courseId: largeCourse,
+        deckIds: null,
+      });
+      expect(requests).toBe(3);
+      expect(items.map((item) => item.practiceItemId)).toEqual([...largeIds].sort());
+      expect(items.every((item) => item.phase === "review" && item.learningStateId)).toBe(true);
+    } finally {
+      requests = null;
+    }
+  });
+
   it("reads 1,101 eligible items without dropping or repeating any card", async () => {
     requests = 0;
     try {

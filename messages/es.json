@@ -440,6 +440,11 @@
     "next": "Página siguiente"
   },
   "FreeStudy": {
+    "roundPosition": "Repetición · tarjeta {count} de {total}",
+    "mark": "Marcar para otra ronda",
+    "repeatMarked": "{count, plural, one {Practicar la tarjeta marcada} other {Practicar las # tarjetas marcadas}}",
+    "scopeUnavailable": "No se puede abrir esta selección de mazos en el curso actual.",
+    "chooseAgain": "Elegir otros mazos",
     "title": "Estudio libre",
     "intro": "Recorre las tarjetas de tus mazos en orden aleatorio. Intenta recordar cada respuesta y revélala cuando quieras.",
     "back": "Volver a Estudio",
@@ -466,6 +471,8 @@
     }
   },
   "PracticeCard": {
+    "writeAnswer": "Escribir antes de revelar",
+    "yourDraft": "Tu respuesta para comparar",
     "shortcuts": "Con el foco en la tarjeta: Espacio revela; 1 Otra vez, 2 Difícil, 3 Bien y 4 Fácil guardan tras revelar. En botones y casillas usa Tab, Mayús+Tab, Intro o Espacio como siempre.",
     "showIntervals": "Mostrar intervalos aproximados",
     "intervalHint": "Estimaciones del scheduler con la hora del servidor. Pueden cambiar al guardar por el tiempo transcurrido, otro repaso o el ajuste aleatorio (fuzz).",
@@ -531,7 +538,8 @@
       "card-changed": "Los pendientes han cambiado o este ítem ya no está disponible. Recarga la sesión antes de continuar.",
       "generic": "No se pudo cargar la respuesta. Puedes reintentarlo sin perder el enunciado."
     },
-    "heading": "Primer ítem",
+    "heading": "Tarjeta de repaso",
+    "shortcutHeading": "Atajos de teclado",
     "hintLabel": "Pista",
     "unavailable": "Este ítem ya no está disponible o su contenido no es compatible. Recarga para consultar los pendientes actuales.",
     "reload": "Recargar sesión",
@@ -587,7 +595,6 @@
     "scopeAll": "Todos los mazos",
     "scopeSelected": "{count, plural, one {# mazo seleccionado} other {# mazos seleccionados}}",
     "availableNow": "{count, plural, one {# ítem disponible ahora} other {# ítems disponibles ahora}}",
-    "practicePending": "Este es el primer ítem disponible. Revela la respuesta y valora cómo la recordaste. El repaso se guarda antes de avanzar.",
     "changedAvailability": "Tu selección sigue guardada, pero ahora no hay ítems disponibles. Puedes volver a Hoy para ver qué queda pendiente.",
     "stepWaitTitle": "Hay un paso de aprendizaje pendiente",
     "stepWaitTime": "En la última comprobación quedaban aproximadamente {minutes, plural, one {# minuto} other {# minutos}} para el próximo paso.",
@@ -913,6 +920,8 @@
     }
   },
   "Library": {
+    "studyDeck": "Repasar este mazo",
+    "practiceDeck": "Practicar libremente",
     "decksTitle": "Mazos",
     "decksIntro": "Agrupa conceptos del curso para decidir qué estudiar. Un mazo no guarda tu progreso, solo la selección.",
     "backToApp": "Volver al inicio",

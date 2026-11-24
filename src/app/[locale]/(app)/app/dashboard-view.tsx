@@ -146,7 +146,15 @@ export function DashboardView({
               <Link href="/app/study" prefetch={false} className={textLink}>
                 {t("openSessions")}
               </Link>
-              <Link href="/app/study/free" prefetch={false} className={textLink}>
+              <Link
+                href={
+                  dashboard.scope.deckIds === null
+                    ? "/app/study/free"
+                    : { pathname: "/app/study/free", query: { deck: dashboard.scope.deckIds } }
+                }
+                prefetch={false}
+                className={textLink}
+              >
                 {t("freeStudy")}
               </Link>
             </div>

@@ -77,15 +77,34 @@ export default async function DeckDetailPage({
       <header className="flex flex-col gap-2">
         <Link
           href="/decks"
-          className="text-sm text-(--color-ink-muted) underline underline-offset-4"
+          className="inline-flex min-h-11 w-fit items-center text-sm text-(--color-ink-muted) underline underline-offset-4"
         >
           {t("detailBack")}
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("editHeading")}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{deck.title}</h1>
         {deck.archivedAt ? (
           <p className="text-sm text-(--color-ink-subtle)">{t("archivedBadge")}</p>
         ) : null}
       </header>
+
+      {!deck.archivedAt && detail.memberCount > 0 && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Link
+            href={{ pathname: "/app/study", query: { deck: deck.id } }}
+            prefetch={false}
+            className="inline-flex min-h-11 items-center justify-center rounded-(--radius-control) bg-(--color-accent) px-4 py-2 text-center font-semibold text-(--color-on-accent)"
+          >
+            {t("studyDeck")}
+          </Link>
+          <Link
+            href={{ pathname: "/app/study/free", query: { deck: deck.id } }}
+            prefetch={false}
+            className="inline-flex min-h-11 items-center justify-center rounded-(--radius-control) border border-(--color-border-strong) px-4 py-2 text-center font-semibold text-(--color-accent)"
+          >
+            {t("practiceDeck")}
+          </Link>
+        </div>
+      )}
 
       {!deck.archivedAt && (
         <section aria-labelledby="deck-import-heading" className="flex flex-col gap-3">
@@ -110,7 +129,10 @@ export default async function DeckDetailPage({
         </section>
       )}
 
-      <EditDeckForm locale={locale} deck={deck} />
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium">{t("editHeading")}</h2>
+        <EditDeckForm locale={locale} deck={deck} />
+      </section>
 
       <section className="flex flex-col gap-3 border-t border-(--color-border) pt-8">
         <h2 className="text-lg font-medium">{t("conceptsHeading")}</h2>

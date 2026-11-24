@@ -10,15 +10,12 @@ import {
   V1_SCHEDULER_CONFIG,
 } from "@/modules/study/domain/scheduler-config";
 import type { Database, Json } from "@/shared/infrastructure/supabase/database.types";
-import { readStudyRows, studyIdBatches } from "./read-study-rows";
-import { listEligibleStudyItemIds } from "./supabase-eligible-study-items";
+import { readStudyRows } from "./read-study-rows";
+import { eligibleQueuePages } from "./supabase-eligible-study-items";
 import { estimateReviewRecall } from "./ts-fsrs-scheduler";
 
 type StoredState = Database["public"]["Tables"]["learning_states"]["Row"];
-type LearningStateRow = Pick<
-  StoredState,
-  "id" | "practice_item_id" | "due_at" | "phase" | "revision"
-> &
+type LearningStateRow = Pick<StoredState, "id" | "due_at" | "phase" | "revision"> &
   Partial<
     Pick<StoredState, "stability" | "last_reviewed_at" | "scheduler_version" | "config_version">
   >;
@@ -49,68 +46,20 @@ export function createSupabaseDailyQueueRepository(
     },
 
     async listEligibleItems({ ownerId, courseId, deckIds, reviewPriority }) {
-      const itemIds = await listEligibleStudyItemIds(client, { ownerId, courseId, deckIds });
-      if (itemIds.length === 0) return [];
-
-      const byItem = new Map<string, LearningStateRow>();
-      for (const ids of studyIdBatches(itemIds)) {
-        const states = await readStudyRows((from, to) => {
-          const table = client.from("learning_states");
-          const query = reviewPriority
-            ? table.select(
-                "id, practice_item_id, due_at, phase, revision, stability, last_reviewed_at, scheduler_version, config_version",
-              )
-            : table.select("id, practice_item_id, due_at, phase, revision");
-          return query
-            .eq("owner_id", ownerId)
-            .in("practice_item_id", ids)
-            .order("id")
-            .range(from, to);
-        }, "no se pudieron leer los estados de la cola");
-        for (const row of states) byItem.set(row.practice_item_id, row);
-      }
-
-      const candidates: QueueCandidate[] = itemIds.map((id) => {
-        const state = byItem.get(id);
-        if (!state) {
-          return {
-            practiceItemId: id,
-            phase: null,
-            dueAt: null,
-            learningStateId: null,
-            revision: null,
-          };
+      const candidates = new Map<string, QueueCandidate>();
+      for await (const page of eligibleQueuePages(
+        client,
+        { ownerId, courseId, deckIds },
+        !!reviewPriority,
+      )) {
+        for (const { id, learning_states } of page) {
+          // PostgREST recognizes the unique owner/item pair. Generated types
+          // describe the reverse of the composite foreign key as an array.
+          const state = Array.isArray(learning_states) ? learning_states[0] : learning_states;
+          if (!candidates.has(id)) candidates.set(id, queueCandidate(id, state, reviewPriority));
         }
-        const dueAt = new Date(state.due_at);
-        const recallProbability =
-          reviewPriority &&
-          state.phase === "review" &&
-          dueAt <= reviewPriority.dueThrough &&
-          state.stability !== undefined &&
-          state.last_reviewed_at &&
-          schedulerCompatibility(
-            {
-              schedulerVersion: state.scheduler_version ?? "",
-              configVersion: state.config_version ?? "",
-            },
-            V1_SCHEDULER_CONFIG,
-          ).ok
-            ? estimateReviewRecall(
-                state.stability,
-                new Date(state.last_reviewed_at),
-                reviewPriority.at,
-              )
-            : null;
-        return {
-          practiceItemId: id,
-          phase: state.phase as MemoryPhase,
-          dueAt,
-          learningStateId: state.id,
-          revision: state.revision,
-          ...(recallProbability === null ? {} : { recallProbability }),
-        };
-      });
-      return candidates;
+      }
+      return [...candidates.values()];
     },
 
     async countTodayActivity({ ownerId, courseId, dayStart, dayEnd }) {
@@ -139,5 +88,45 @@ export function createSupabaseDailyQueueRepository(
       }
       return { newIntroduced: newIds.size, reviewsDone };
     },
+  };
+}
+
+function queueCandidate(
+  id: string,
+  state: LearningStateRow | null | undefined,
+  reviewPriority: { at: Date; dueThrough: Date } | undefined,
+): QueueCandidate {
+  if (!state) {
+    return {
+      practiceItemId: id,
+      phase: null,
+      dueAt: null,
+      learningStateId: null,
+      revision: null,
+    };
+  }
+  const dueAt = new Date(state.due_at);
+  const recallProbability =
+    reviewPriority &&
+    state.phase === "review" &&
+    dueAt <= reviewPriority.dueThrough &&
+    state.stability !== undefined &&
+    state.last_reviewed_at &&
+    schedulerCompatibility(
+      {
+        schedulerVersion: state.scheduler_version ?? "",
+        configVersion: state.config_version ?? "",
+      },
+      V1_SCHEDULER_CONFIG,
+    ).ok
+      ? estimateReviewRecall(state.stability, new Date(state.last_reviewed_at), reviewPriority.at)
+      : null;
+  return {
+    practiceItemId: id,
+    phase: state.phase as MemoryPhase,
+    dueAt,
+    learningStateId: state.id,
+    revision: state.revision,
+    ...(recallProbability === null ? {} : { recallProbability }),
   };
 }

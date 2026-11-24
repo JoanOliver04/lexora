@@ -78,32 +78,40 @@ export default async function StudySessionPage({
           <p>{t(`errors.${result.reason}`)}</p>
         </FormError>
       ) : (
-        <section className="flex min-w-0 flex-col gap-4 rounded-(--radius-surface) border border-(--color-border) bg-(--color-surface) p-5">
-          <p role="status">{t("saved")}</p>
-          <p className="text-sm text-(--color-ink-muted)">
-            {t("startedAt", {
-              date: isIanaTimeZone(context.timeZone)
-                ? new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "es-ES", {
-                    timeZone: context.timeZone,
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  }).format(result.session.startedAt)
-                : result.session.startedAt.toISOString(),
-            })}
-          </p>
-          <p className="font-medium">
-            {result.session.scope.deckIds === null
-              ? t("scopeAll")
-              : t("scopeSelected", { count: result.session.scope.deckIds.length })}
-          </p>
-          {result.queue ? (
-            <>
-              <p className="text-xl font-semibold" data-testid="session-available">
+        <section className="flex min-w-0 flex-col gap-2 border-b border-(--color-border) pb-3">
+          <div className="flex flex-wrap items-baseline gap-x-5">
+            {result.queue && (
+              <p className="font-semibold" data-testid="session-available">
                 {t("availableNow", { count: result.queue.entries.length })}
               </p>
-              <p className="text-sm leading-relaxed text-(--color-ink-muted)">
-                {t(result.card ? "practicePending" : "changedAvailability")}
+            )}
+            <details open={!result.card} className="min-w-0 text-sm text-(--color-ink-muted)">
+              <summary className="min-h-11 w-fit cursor-pointer content-center text-(--color-accent) underline">
+                {result.session.scope.deckIds === null
+                  ? t("scopeAll")
+                  : t("scopeSelected", { count: result.session.scope.deckIds.length })}
+              </summary>
+              <p>
+                {t("startedAt", {
+                  date: isIanaTimeZone(context.timeZone)
+                    ? new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "es-ES", {
+                        timeZone: context.timeZone,
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }).format(result.session.startedAt)
+                    : result.session.startedAt.toISOString(),
+                })}
               </p>
+              <p>{t("saved")}</p>
+            </details>
+          </div>
+          {result.queue ? (
+            <>
+              {!result.card && (
+                <p className="text-sm leading-relaxed text-(--color-ink-muted)">
+                  {t("changedAvailability")}
+                </p>
+              )}
               {result.queue.hiddenDueReviews > 0 && (
                 <p className="text-sm">
                   {tToday("hiddenReviews", { count: result.queue.hiddenDueReviews })}

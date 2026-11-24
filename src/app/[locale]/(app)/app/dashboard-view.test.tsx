@@ -151,6 +151,18 @@ describe("Today presentation", () => {
     );
   });
 
+  it("preserves all currently selected decks when opening free study", () => {
+    const dashboard = model();
+    dashboard.scope = {
+      deckIds: ["d0000000-0000-4000-8000-000000000001", "d0000000-0000-4000-8000-000000000002"],
+    };
+    render(provider(<DashboardView dashboard={dashboard} timeZone="Europe/Madrid" />));
+    expect(screen.getByRole("link", { name: "Estudio libre" })).toHaveAttribute(
+      "data-href",
+      JSON.stringify({ pathname: "/app/study/free", query: { deck: dashboard.scope.deckIds } }),
+    );
+  });
+
   it("provides a retry for read failures", async () => {
     render(provider(<DashboardError />));
     await userEvent.click(screen.getByRole("button", { name: "Volver a intentar" }));

@@ -10,6 +10,7 @@ import {
 } from "@/modules/library/presentation/practice-item-content";
 import type { FreeStudyCard } from "@/modules/study/application/free-study";
 import {
+  markedFreeStudyRun,
   newFreeStudyRun,
   nextFreeStudyCard,
   type FreeStudyRun,
@@ -18,10 +19,17 @@ import { Button, FormError } from "@/shared/presentation/components";
 
 import { loadFreeStudyCards, loadFreeStudyPool } from "./actions";
 import { StudyDeckPicker } from "../study-deck-picker";
+import { AnswerDraft } from "../answer-draft";
 
 type View =
   | { kind: "setup" }
-  | { kind: "card"; card: FreeStudyCard; index: number; revealed: boolean }
+  | {
+      kind: "card";
+      card: FreeStudyCard;
+      index: number;
+      revealed: boolean;
+      roundSize: number | null;
+    }
   | { kind: "summary"; total: number; distinct: number; seconds: number };
 
 const panel =
@@ -30,27 +38,37 @@ const panel =
 export function FreeStudyView({
   courseId,
   decks,
+  initialDeckIds,
 }: {
   courseId: string;
   decks: { id: string; title: string }[];
+  initialDeckIds: string[] | null;
 }) {
   const t = useTranslations("FreeStudy");
   const cardMessages = useTranslations("PracticeCard");
   const [view, setView] = useState<View>({ kind: "setup" });
-  const [all, setAll] = useState(true);
-  const [selection, setSelection] = useState<string[]>([]);
+  const [all, setAll] = useState(initialDeckIds === null);
+  const [selection, setSelection] = useState<string[]>(initialDeckIds ?? []);
+  const [marked, setMarked] = useState<Map<string, FreeStudyCard>>(() => new Map());
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<"empty" | "unavailable" | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
+  const startButton = useRef<HTMLButtonElement>(null);
+  const returnToStart = useRef(false);
   const answer = useRef<HTMLDivElement>(null);
   const active = useRef<{ run: FreeStudyRun; startedAt: number } | null>(null);
   const operation = useRef<symbol | null>(null);
   const step = view.kind;
+  const index = view.kind === "card" ? view.index : null;
   const revealed = view.kind === "card" && view.revealed;
 
   useEffect(() => {
     if (step !== "setup") heading.current?.focus();
-  }, [step]);
+    else if (returnToStart.current) {
+      startButton.current?.focus();
+      returnToStart.current = false;
+    }
+  }, [step, index]);
 
   useEffect(() => {
     if (revealed) answer.current?.focus();
@@ -81,11 +99,16 @@ export function FreeStudyView({
     }
   }
 
-  function start() {
+  function start(retryCards?: FreeStudyCard[]) {
     return perform(async (current) => {
-      const pool = await loadFreeStudyPool(courseId, all ? null : selection);
-      if (!pool.ok) throw new Error("Free study pool unavailable");
-      const run = newFreeStudyRun(pool.ids);
+      let run: FreeStudyRun;
+      if (retryCards) {
+        run = markedFreeStudyRun(retryCards);
+      } else {
+        const pool = await loadFreeStudyPool(courseId, all ? null : selection);
+        if (!pool.ok) throw new Error("Free study pool unavailable");
+        run = newFreeStudyRun(pool.ids);
+      }
       const card = await nextFreeStudyCard(run, load);
       if (!current()) return;
       if (!card) {
@@ -93,7 +116,18 @@ export function FreeStudyView({
         return;
       }
       active.current = { run, startedAt: performance.now() };
-      setView({ kind: "card", card, index: run.cursor, revealed: false });
+      setMarked(new Map());
+      showCard(run, card);
+    });
+  }
+
+  function showCard(run: FreeStudyRun, card: FreeStudyCard) {
+    setView({
+      kind: "card",
+      card,
+      index: run.cursor,
+      revealed: false,
+      roundSize: run.singleRound ? run.pool.length : null,
     });
   }
 
@@ -103,7 +137,7 @@ export function FreeStudyView({
     return perform(async (current) => {
       const card = await nextFreeStudyCard(session.run, load);
       if (!current()) return;
-      if (card) setView({ kind: "card", card, index: session.run.cursor, revealed: false });
+      if (card) showCard(session.run, card);
       else setError("empty");
     });
   }
@@ -113,7 +147,7 @@ export function FreeStudyView({
     if (operation.current || !run || run.cursor <= 0) return;
     const card = run.trail[--run.cursor]!;
     setError(null);
-    setView({ kind: "card", card, index: run.cursor, revealed: false });
+    showCard(run, card);
   }
 
   function finish() {
@@ -172,8 +206,9 @@ export function FreeStudyView({
             {issue}
             <Button
               className="w-full sm:w-fit"
+              ref={startButton}
               disabled={pending || (!all && selection.length === 0)}
-              onClick={start}
+              onClick={() => start()}
             >
               {t(pending ? "loading" : "start")}
             </Button>
@@ -215,7 +250,26 @@ export function FreeStudyView({
             </div>
           ))}
         </dl>
-        <Button className="w-full sm:w-fit" onClick={() => setView({ kind: "setup" })}>
+        {issue}
+        {marked.size > 0 && (
+          <Button
+            className="w-full sm:w-fit"
+            disabled={pending}
+            onClick={() => start([...marked.values()])}
+          >
+            {t("repeatMarked", { count: marked.size })}
+          </Button>
+        )}
+        <Button
+          variant={marked.size ? "secondary" : "primary"}
+          className="w-full sm:w-fit"
+          disabled={pending}
+          onClick={() => {
+            returnToStart.current = true;
+            setMarked(new Map());
+            setView({ kind: "setup" });
+          }}
+        >
           {t("restart")}
         </Button>
       </section>
@@ -226,15 +280,37 @@ export function FreeStudyView({
     <section className="flex min-w-0 flex-col gap-4">
       <div aria-live="polite" aria-atomic="true" className={`${panel} flex min-w-0 flex-col gap-4`}>
         <h2 ref={heading} tabIndex={-1} className="text-sm font-semibold text-(--color-ink-muted)">
-          {t("position", { count: view.index + 1 })}
+          {view.roundSize === null
+            ? t("position", { count: view.index + 1 })
+            : t("roundPosition", { count: view.index + 1, total: view.roundSize })}
         </h2>
         <PracticeItemPrompt content={view.card.content} hintLabel={cardMessages("hintLabel")} />
+        <AnswerDraft key={view.index} />
         {view.revealed ? (
-          <div ref={answer} tabIndex={-1} className="border-s-2 border-(--color-accent) ps-4">
-            <PracticeItemAnswer
-              content={view.card.content}
-              clozeAnswersLabel={cardMessages("clozeAnswersLabel")}
-            />
+          <div className="flex flex-col gap-3">
+            <div ref={answer} tabIndex={-1} className="border-s-2 border-(--color-accent) ps-4">
+              <PracticeItemAnswer
+                content={view.card.content}
+                clozeAnswersLabel={cardMessages("clozeAnswersLabel")}
+              />
+            </div>
+            <label className="flex min-h-11 w-fit cursor-pointer items-center gap-3">
+              <input
+                type="checkbox"
+                className="size-5"
+                checked={marked.has(view.card.id)}
+                onChange={(event) => {
+                  const checked = event.target.checked;
+                  setMarked((previous) => {
+                    const nextMarks = new Map(previous);
+                    if (checked) nextMarks.set(view.card.id, view.card);
+                    else nextMarks.delete(view.card.id);
+                    return nextMarks;
+                  });
+                }}
+              />
+              {t("mark")}
+            </label>
           </div>
         ) : (
           <Button
@@ -256,11 +332,13 @@ export function FreeStudyView({
         >
           {t("previous")}
         </Button>
-        <Button className="flex-[1_1_auto] sm:flex-none" disabled={pending} onClick={next}>
-          {t(pending ? "loading" : "next")}
-        </Button>
+        {view.index + 1 !== view.roundSize && (
+          <Button className="flex-[1_1_auto] sm:flex-none" disabled={pending} onClick={next}>
+            {t(pending ? "loading" : "next")}
+          </Button>
+        )}
         <Button
-          variant="secondary"
+          variant={view.index + 1 === view.roundSize ? "primary" : "secondary"}
           className="basis-full sm:ms-auto sm:basis-auto"
           onClick={finish}
         >

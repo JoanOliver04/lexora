@@ -440,6 +440,11 @@
     "next": "Next page"
   },
   "FreeStudy": {
+    "roundPosition": "Retry round · card {count} of {total}",
+    "mark": "Mark for another round",
+    "repeatMarked": "{count, plural, one {Practice the marked card} other {Practice the # marked cards}}",
+    "scopeUnavailable": "This deck selection is unavailable in the current course.",
+    "chooseAgain": "Choose other decks",
     "title": "Free study",
     "intro": "Browse cards from your decks in random order. Try to recall each answer, then reveal it when you're ready.",
     "back": "Back to Study",
@@ -466,6 +471,8 @@
     }
   },
   "PracticeCard": {
+    "writeAnswer": "Write before revealing",
+    "yourDraft": "Your answer to compare",
     "shortcuts": "With focus in the card: Space reveals; 1 Again, 2 Hard, 3 Good and 4 Easy save after reveal. On buttons and checkboxes, use Tab, Shift+Tab, Enter or Space as usual.",
     "showIntervals": "Show approximate intervals",
     "intervalHint": "Scheduler estimates using server time. They may change when saved because time has passed, another review was made or random adjustment (fuzz) applies.",
@@ -531,7 +538,8 @@
       "card-changed": "The pending items have changed or this item is no longer available. Reload the session before continuing.",
       "generic": "The answer could not be loaded. You can retry without losing the prompt."
     },
-    "heading": "First item",
+    "heading": "Review card",
+    "shortcutHeading": "Keyboard shortcuts",
     "hintLabel": "Hint",
     "unavailable": "This item is no longer available or its content is not supported. Reload to check the current pending items.",
     "reload": "Reload session",
@@ -587,7 +595,6 @@
     "scopeAll": "All decks",
     "scopeSelected": "{count, plural, one {# selected deck} other {# selected decks}}",
     "availableNow": "{count, plural, one {# item available now} other {# items available now}}",
-    "practicePending": "This is the first available item. Reveal the answer and rate your recall. The review is saved before moving on.",
     "changedAvailability": "Your selection is still saved, but no items are available right now. Return to Today to see what's pending.",
     "stepWaitTitle": "A learning step is still pending",
     "stepWaitTime": "At the last check, the next step was due in approximately {minutes, plural, one {# minute} other {# minutes}}.",
@@ -913,6 +920,8 @@
     }
   },
   "Library": {
+    "studyDeck": "Review this deck",
+    "practiceDeck": "Practice freely",
     "memberSearchLabel": "Search within this deck",
     "availableSearchLabel": "Search concepts to add",
     "detailSearchSubmit": "Search",

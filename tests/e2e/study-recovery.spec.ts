@@ -198,7 +198,9 @@ test("offline, lost acknowledgement and another device preserve one durable revi
       await expect(page.getByText("Recovery front 2", { exact: true })).toBeVisible();
       await expect(page.getByText("Recovery answer 1", { exact: true })).toHaveCount(0);
       await expect(page.getByRole("button", { name: "Bien", exact: true })).toBeDisabled();
-      await expect(page.getByRole("heading", { name: "Primer ítem", exact: true })).toBeFocused();
+      await expect(
+        page.getByRole("heading", { name: "Tarjeta de repaso", exact: true }),
+      ).toBeFocused();
     } finally {
       await otherDevice.close();
     }

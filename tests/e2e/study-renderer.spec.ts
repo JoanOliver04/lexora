@@ -146,7 +146,14 @@ test("V1 session fronts and shared cloze preview are literal, private and read-o
       expect(await page.content()).not.toContain(secret);
       expect(await page.content()).not.toContain("SOLUTION_SENTINEL");
       expect(await page.content()).not.toContain("RESERVED_PROMPT_SENTINEL");
-      await expect(card.locator("script, img, a, audio, iframe, details")).toHaveCount(0);
+      await expect(card.locator("script, img, a, audio, iframe")).toHaveCount(0);
+      await expect(card.locator("#study-prompt-text details")).toHaveCount(0);
+      await expect(card.locator("details")).toHaveCount(2);
+      await expect(card.locator("details > summary")).toHaveText(
+        locale === "es"
+          ? ["Escribir antes de revelar", "Atajos de teclado"]
+          : ["Write before revealing", "Keyboard shortcuts"],
+      );
       expect(await page.evaluate(() => "studyInjected" in window)).toBe(false);
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1),
