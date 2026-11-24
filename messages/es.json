@@ -786,7 +786,8 @@
     "submit": "Previsualizar",
     "resubmit": "Actualizar vista previa",
     "submitting": "Leyendo…",
-    "resubmitHint": "Para revisar otro contenido, elígelo o pégalo arriba y vuelve a pulsar.",
+    "resubmitHint": "Comprueba que el frente y el reverso de la muestra están en el orden que quieres estudiar.",
+    "mappingChanged": "Has cambiado las columnas. Actualiza la vista previa para comprobar el resultado y continuar.",
     "separatorDetected": "Separador detectado: {separator}",
     "separatorFromDirective": "(declarado en el archivo)",
     "counts": "{valid, plural, one {# fila válida} other {# filas válidas}} · {issues, plural, =0 {sin problemas} one {# con problemas} other {# con problemas}}",
@@ -885,7 +886,9 @@
       "errorRow": "Fila {row}: {reason}",
       "errorsMore": "Y {count} más. Están todas en el archivo descargable.",
       "download": "Descargar errores",
-      "retryNote": "Reintentar abre un trabajo nuevo. Las filas que ya existen se omiten si eliges omitir duplicados."
+      "retryNote": "Reintentar abre un trabajo nuevo. Las filas que ya existen se omiten si eliges omitir duplicados.",
+      "openDeck": "Abrir el mazo de destino",
+      "practiceDeck": "Practicar este mazo"
     }
   },
   "Onboarding": {

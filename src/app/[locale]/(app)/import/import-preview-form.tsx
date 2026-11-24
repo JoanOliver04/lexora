@@ -18,7 +18,8 @@ import { ImportCreateDeckDialog } from "./import-create-deck-dialog";
 import { ImportDeckPicker } from "./import-deck-picker";
 import { ImportPreparation } from "./import-preparation";
 import { ImportSource } from "./import-source";
-import type { ImportDestination } from "./import-state";
+import { readImportMapping, type ImportDestination } from "./import-state";
+import type { ColumnMapping } from "@/modules/importing/domain/column-mapping";
 import {
   IMPORT_WIZARD_STEPS,
   canJumpToWizardStep,
@@ -121,11 +122,14 @@ function ImportPreviewFormSession({
   const createDeckDialog = useRef<HTMLDialogElement>(null);
   const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const transferHeadingRef = useRef<HTMLHeadingElement>(null);
+  const [sourceRevision, setSourceRevision] = useState(0);
+  const [draftMapping, setDraftMapping] = useState<ColumnMapping | null>(null);
   const { state, action, busy, job, failure, stopping, stop, pause } = useImportTransfer(
     courseId,
     locale,
     pending,
     target,
+    sourceRevision,
   );
   const [step, setStep] = useState<ImportWizardStep>("file");
   const [furthest, setFurthest] = useState<ImportWizardStep>("file");
@@ -147,9 +151,14 @@ function ImportPreviewFormSession({
 
   useFocusFirstInvalid(formRef, state);
 
-  const hasPreview = state.previewRows !== undefined;
+  const hasPreview = state.previewRows !== undefined && state.sourceRevision === sourceRevision;
+  const mapping = draftMapping ?? state.mapping;
+  const mappingChanged =
+    mapping?.front !== state.mapping?.front ||
+    mapping?.back !== state.mapping?.back ||
+    mapping?.tags !== state.mapping?.tags;
   const columns = Array.from({ length: Math.max(state.columnCount ?? 0, 1) }, (_, index) => index);
-  const previewHash = state.carried?.contentHash ?? "";
+  const previewHash = state.carried ? `${sourceRevision}:${state.carried.contentHash}` : "";
 
   if (hasPreview && previewHash && previewHash !== openedForHash) {
     setOpenedForHash(previewHash);
@@ -157,6 +166,14 @@ function ImportPreviewFormSession({
     setStep("mapping");
     setFurthest((current) => furthestWizardStep(current, "mapping"));
     setMoved(true);
+  }
+
+  function changeMapping(event: React.ChangeEvent<HTMLSelectElement>) {
+    const form = event.currentTarget.form;
+    if (!form) return;
+    setDraftMapping(readImportMapping(new FormData(form), columns.length, state.mapping));
+    setReplaceConfirmed(false);
+    setFurthest("mapping");
   }
 
   useEffect(() => {
@@ -219,16 +236,25 @@ function ImportPreviewFormSession({
             </Button>
           </section>
         ) : null}
-        {target ? (
-          <Link
-            href={`/decks/${target.deckId}`}
-            className="inline-flex min-h-11 w-fit items-center text-sm text-(--color-accent) underline"
-          >
-            {t("target.back")}
-          </Link>
-        ) : (
-          <p className="text-xs text-(--color-ink-subtle)">{t("result.retryNote")}</p>
+        {importResult.deckId && (
+          <div className="flex flex-wrap gap-x-4">
+            <Link
+              href={`/decks/${importResult.deckId}`}
+              className="inline-flex min-h-11 w-fit items-center text-sm text-(--color-accent) underline"
+            >
+              {t("result.openDeck")}
+            </Link>
+            {importResult.rowsCreated > 0 && (
+              <Link
+                href={{ pathname: "/app/study/free", query: { deck: importResult.deckId } }}
+                className="inline-flex min-h-11 w-fit items-center text-sm text-(--color-accent) underline"
+              >
+                {t("result.practiceDeck")}
+              </Link>
+            )}
+          </div>
         )}
+        {!target && <p className="text-xs text-(--color-ink-subtle)">{t("result.retryNote")}</p>}
         <Button type="button" variant="secondary" onClick={onAgain}>
           {t("wizard.another")}
         </Button>
@@ -366,6 +392,13 @@ function ImportPreviewFormSession({
             {!job && <ImportPreparation courseLanguage={courseLanguage} />}
             <ImportSource
               active={step === "file"}
+              onSourceChange={() => {
+                if (state.sourceRevision !== sourceRevision) return;
+                setSourceRevision(sourceRevision + 1);
+                setDraftMapping(null);
+                setReplaceConfirmed(false);
+                setFurthest("file");
+              }}
               errorId={state.error && FILE_ERRORS.has(state.error) ? ERROR_ID : undefined}
             />
           </section>
@@ -401,7 +434,8 @@ function ImportPreviewFormSession({
                     <select
                       id="import-front"
                       name="frontColumn"
-                      defaultValue={String(state.mapping?.front ?? pending?.mapping.front ?? 0)}
+                      value={String(mapping?.front ?? 0)}
+                      onChange={changeMapping}
                       className={SELECT_CLASS}
                     >
                       {columns.map((index) => (
@@ -416,7 +450,8 @@ function ImportPreviewFormSession({
                     <select
                       id="import-back"
                       name="backColumn"
-                      defaultValue={String(state.mapping?.back ?? pending?.mapping.back ?? 1)}
+                      value={String(mapping?.back ?? 1)}
+                      onChange={changeMapping}
                       className={SELECT_CLASS}
                     >
                       {columns.map((index) => (
@@ -431,11 +466,8 @@ function ImportPreviewFormSession({
                     <select
                       id="import-tags"
                       name="tagsColumn"
-                      defaultValue={
-                        (state.mapping ?? pending?.mapping)?.tags === null
-                          ? "none"
-                          : String(state.mapping?.tags ?? pending?.mapping.tags ?? 2)
-                      }
+                      value={String(mapping?.tags ?? "none")}
+                      onChange={changeMapping}
                       className={SELECT_CLASS}
                     >
                       <option value="none">{t("mapping.tagsNone")}</option>
@@ -661,7 +693,9 @@ function ImportPreviewFormSession({
             {step === "mapping" ? (
               <>
                 <PendingButton idle={t("resubmit")} pending={t("submitting")} />
-                <p className="text-xs text-(--color-ink-subtle)">{t("resubmitHint")}</p>
+                <p role="status" className="text-xs text-(--color-ink-subtle)">
+                  {t(mappingChanged ? "mappingChanged" : "resubmitHint")}
+                </p>
               </>
             ) : null}
             {step === "confirm" && selectedDeck ? (
@@ -707,6 +741,7 @@ function ImportPreviewFormSession({
               {hasPreview && nextWizardStep(step) ? (
                 <Button
                   type="button"
+                  disabled={step === "mapping" && mappingChanged}
                   variant={
                     step === "mapping" || (canCreateDeck && !selectedDeck) ? "secondary" : "primary"
                   }
