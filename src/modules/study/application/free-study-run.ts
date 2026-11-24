@@ -1,4 +1,4 @@
-import { FREE_STUDY_BATCH_SIZE, type FreeStudyCard } from "./free-study";
+import { FREE_STUDY_BATCH_SIZE, type FreeStudyCard, type FreeStudyLength } from "./free-study";
 
 export interface FreeStudyRun {
   pool: string[];
@@ -7,7 +7,7 @@ export interface FreeStudyRun {
   cursor: number;
   trail: FreeStudyCard[];
   contents: Map<string, FreeStudyCard | null>;
-  singleRound: boolean;
+  kind: "continuous" | "bounded" | "marked";
 }
 
 export function newFreeStudyRun(ids: string[]): FreeStudyRun {
@@ -18,7 +18,7 @@ export function newFreeStudyRun(ids: string[]): FreeStudyRun {
     cursor: -1,
     trail: [],
     contents: new Map(),
-    singleRound: false,
+    kind: "continuous",
   };
 }
 
@@ -26,7 +26,7 @@ export function newFreeStudyRun(ids: string[]): FreeStudyRun {
 export function markedFreeStudyRun(cards: FreeStudyCard[]): FreeStudyRun {
   const contents = new Map(cards.map((card) => [card.id, card]));
   const run = newFreeStudyRun([...contents.keys()]);
-  return { ...run, contents, singleRound: true };
+  return { ...run, contents, kind: "marked" };
 }
 
 function shuffle(ids: string[], lastId?: string): string[] {
@@ -42,26 +42,50 @@ function shuffle(ids: string[], lastId?: string): string[] {
   return order;
 }
 
-/** Fetch only the opening batch while the authenticated course context is available. */
+interface PreparedFreeStudyRound {
+  order: string[];
+  cards: FreeStudyCard[];
+  kind: "continuous" | "bounded";
+}
+
+/** Short rounds carry only playable cards. Larger rounds fetch later batches on demand. */
 export async function prepareFreeStudyRound(
   ids: string[],
   load: (ids: string[]) => Promise<FreeStudyCard[]>,
-) {
+  length: FreeStudyLength = "continuous",
+): Promise<PreparedFreeStudyRound> {
   const order = shuffle(ids);
+  if (length === "five" || length === "ten") {
+    const limit = length === "five" ? 5 : 10;
+    const cards: FreeStudyCard[] = [];
+    for (let offset = 0; offset < order.length && cards.length < limit; offset += limit) {
+      const batch = order.slice(offset, offset + limit);
+      const available = new Map((await load(batch)).map((card) => [card.id, card]));
+      for (const id of batch) {
+        const card = available.get(id);
+        if (card) cards.push(card);
+        if (cards.length === limit) break;
+      }
+    }
+    return { order: cards.map(({ id }) => id), cards, kind: "bounded" };
+  }
   const batch = order.slice(0, FREE_STUDY_BATCH_SIZE);
   const cards = batch.length ? await load(batch) : [];
   const present = new Set(cards.map(({ id }) => id));
   return {
     order: [...batch.filter((id) => present.has(id)), ...order.slice(batch.length)],
     cards,
+    kind: length === "once" ? "bounded" : "continuous",
   };
 }
 
 export function openPreparedFreeStudyRun({
   order,
   cards,
-}: Awaited<ReturnType<typeof prepareFreeStudyRound>>): FreeStudyRun {
+  kind,
+}: PreparedFreeStudyRound): FreeStudyRun {
   const run = newFreeStudyRun(order);
+  run.kind = kind;
   run.order = order;
   run.contents = new Map(cards.map((card) => [card.id, card]));
   return run;
@@ -75,7 +99,7 @@ export async function nextFreeStudyCard(
   if (run.cursor + 1 < run.trail.length) return run.trail[++run.cursor]!;
   while (run.pool.length > 0) {
     if (run.offset === run.order.length) {
-      if (run.singleRound && run.order.length > 0) return null;
+      if (run.kind !== "continuous" && run.order.length > 0) return null;
       run.order = shuffle(run.pool, run.trail.at(-1)?.id);
       run.offset = 0;
     }

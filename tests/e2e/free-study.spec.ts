@@ -211,25 +211,38 @@ test("free study supports one deck, several or all and keeps the trail and summa
 
     await restart.click();
     await page.getByRole("radio", { name: "Todos los mazos" }).check();
+    await page.getByLabel("Duración de la ronda").selectOption("five");
     await start.click();
     const allFronts = [];
     for (let index = 1; index <= 3; index++) {
-      await expect(position(index)).toBeVisible();
+      await expect(page.getByRole("heading", { name: `Tarjeta ${index} de 3` })).toBeFocused();
       allFronts.push(await visibleFront().innerText());
       if (index < 3) await next.click();
     }
-    expect(allFronts.sort()).toEqual(fronts.slice(0, 3).sort());
+    expect([...allFronts].sort()).toEqual(fronts.slice(0, 3).sort());
+    await expect(next).toHaveCount(0);
+    await prev.click();
+    await expect(visibleFront()).toHaveText(allFronts[1]!);
+    await next.click();
+    await expect(next).toHaveCount(0);
     await finish.click();
     const deckId = decks[0]!.id;
     await page.goto(`/en/decks/${deckId}`);
     await expect(page.getByRole("heading", { name: deckTitles[0]!, level: 1 })).toBeVisible();
+    const member = page.getByRole("link", { name: fronts[0]!, exact: true });
+    await member.click();
+    await expect(page).toHaveURL(`/en/concepts/${concepts[0]!.id}`);
+    await page.goBack();
+    await expect(member).toBeVisible();
     await expect(page.getByRole("link", { name: "Review this deck" })).toHaveAttribute(
       "href",
       `/en/app/study?deck=${deckId}`,
     );
     await page.getByRole("link", { name: "Practice freely" }).click();
     await expect(page.getByRole("checkbox", { name: "Food deck" })).toBeChecked();
+    await page.getByLabel("Round length").selectOption("once");
     await page.getByRole("button", { name: "Start free study" }).click();
+    await expect(page.getByRole("heading", { name: "Card 1 of 1" })).toBeFocused();
     await expect(visibleFront()).toHaveText(fronts[0]!);
     await page.goto(`/en/app/study/free?deck=${decks[3]!.id}`);
     await expect(
