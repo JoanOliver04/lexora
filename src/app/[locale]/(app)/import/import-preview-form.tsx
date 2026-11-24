@@ -19,7 +19,6 @@ import { ImportDeckPicker } from "./import-deck-picker";
 import { ImportPreparation } from "./import-preparation";
 import { ImportSource } from "./import-source";
 import { readImportMapping, type ImportDestination } from "./import-state";
-import type { ColumnMapping } from "@/modules/importing/domain/column-mapping";
 import {
   IMPORT_WIZARD_STEPS,
   canJumpToWizardStep,
@@ -123,7 +122,7 @@ function ImportPreviewFormSession({
   const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const transferHeadingRef = useRef<HTMLHeadingElement>(null);
   const [sourceRevision, setSourceRevision] = useState(0);
-  const [draftMapping, setDraftMapping] = useState<ColumnMapping | null>(null);
+  const [mappingChanged, setMappingChanged] = useState(false);
   const { state, action, busy, job, failure, stopping, stop, pause } = useImportTransfer(
     courseId,
     locale,
@@ -151,12 +150,16 @@ function ImportPreviewFormSession({
 
   useFocusFirstInvalid(formRef, state);
 
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) return;
+    // Native reset restores the selects to the mapping displayed in the preview.
+    const resetMapping = () => setMappingChanged(false);
+    form.addEventListener("reset", resetMapping);
+    return () => form.removeEventListener("reset", resetMapping);
+  }, []);
+
   const hasPreview = state.previewRows !== undefined && state.sourceRevision === sourceRevision;
-  const mapping = draftMapping ?? state.mapping;
-  const mappingChanged =
-    mapping?.front !== state.mapping?.front ||
-    mapping?.back !== state.mapping?.back ||
-    mapping?.tags !== state.mapping?.tags;
   const columns = Array.from({ length: Math.max(state.columnCount ?? 0, 1) }, (_, index) => index);
   const previewHash = state.carried ? `${sourceRevision}:${state.carried.contentHash}` : "";
 
@@ -171,7 +174,12 @@ function ImportPreviewFormSession({
   function changeMapping(event: React.ChangeEvent<HTMLSelectElement>) {
     const form = event.currentTarget.form;
     if (!form) return;
-    setDraftMapping(readImportMapping(new FormData(form), columns.length, state.mapping));
+    const draft = readImportMapping(new FormData(form), columns.length, state.mapping);
+    setMappingChanged(
+      draft.front !== state.mapping?.front ||
+        draft.back !== state.mapping?.back ||
+        draft.tags !== state.mapping?.tags,
+    );
     setReplaceConfirmed(false);
     setFurthest("mapping");
   }
@@ -395,7 +403,7 @@ function ImportPreviewFormSession({
               onSourceChange={() => {
                 if (state.sourceRevision !== sourceRevision) return;
                 setSourceRevision(sourceRevision + 1);
-                setDraftMapping(null);
+                setMappingChanged(false);
                 setReplaceConfirmed(false);
                 setFurthest("file");
               }}
@@ -434,7 +442,7 @@ function ImportPreviewFormSession({
                     <select
                       id="import-front"
                       name="frontColumn"
-                      value={String(mapping?.front ?? 0)}
+                      defaultValue={String(state.mapping?.front ?? 0)}
                       onChange={changeMapping}
                       className={SELECT_CLASS}
                     >
@@ -450,7 +458,7 @@ function ImportPreviewFormSession({
                     <select
                       id="import-back"
                       name="backColumn"
-                      value={String(mapping?.back ?? 1)}
+                      defaultValue={String(state.mapping?.back ?? 1)}
                       onChange={changeMapping}
                       className={SELECT_CLASS}
                     >
@@ -466,7 +474,7 @@ function ImportPreviewFormSession({
                     <select
                       id="import-tags"
                       name="tagsColumn"
-                      value={String(mapping?.tags ?? "none")}
+                      defaultValue={String(state.mapping?.tags ?? "none")}
                       onChange={changeMapping}
                       className={SELECT_CLASS}
                     >
