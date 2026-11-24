@@ -1,5 +1,18 @@
 # Lexora — Estado actual
 
+**LEX-23.6 · Carga de Hoy, Estudio y Estadísticas.** La cola diaria recupera
+las tarjetas y su estado de aprendizaje en la misma página de Supabase.
+Con 1.101 tarjetas sintéticas, la mediana de cinco lecturas locales pasó de
+258 a 75 ms y el número de peticiones por lectura bajó de 15 a 3. El cálculo
+del informe de 90 días reutiliza los formateadores de zona horaria. Con
+actividad vacía y el cambio de hora de Madrid, su mediana de once ejecuciones
+pasó de 24,25 a 5,73 ms. Ambas medidas corresponden a operaciones del servidor.
+Validación local en `perf/lex-23-6-study-reads`: `pnpm check` en verde
+(984 pruebas ejecutadas, 67 omitidas por el conjunto general, 12 de copias
+y build). Con Supabase local pasaron las 35 pruebas de integración dirigidas.
+Playwright pasó los 14 escenarios de Hoy, Estudio libre e Historial/Estadísticas
+en Chromium de escritorio y móvil emulado. Publicación pendiente.
+
 **LEX-23.5 · Verificación de propiedad.** Search Console recibe el archivo
 original en `/google6ec811eafa695f08.html` sin entrar en el enrutado de idioma.
 La comprobación en el panel de Google corresponde al titular de la propiedad.

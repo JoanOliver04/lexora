@@ -1,5 +1,5 @@
 import type { MemoryPhase } from "./memory";
-import { studyDayWindow, type StudyDayWindow } from "./study-day";
+import { createStudyCalendar, type StudyDayWindow } from "./study-day";
 import { MAX_REVIEW_DURATION_MS } from "./study-time-estimate";
 
 export interface StudyActivityReview {
@@ -21,9 +21,10 @@ export interface StudyActivityDay extends StudyActivityTotals, StudyDayWindow {}
 
 export function recentStudyDays(now: Date, timeZone: string): StudyDayWindow[] {
   const days: StudyDayWindow[] = [];
+  const calendar = createStudyCalendar(timeZone);
   let cursor = now;
   for (let index = 0; index < 7; index++) {
-    const day = studyDayWindow(cursor, timeZone);
+    const day = calendar.windowAt(cursor);
     days.push(day);
     // Walk calendar days across DST, rather than subtracting 24 hours.
     cursor = new Date(day.start.getTime() - 1);

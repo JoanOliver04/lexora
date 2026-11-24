@@ -22,12 +22,30 @@ export interface StudyDayWindow {
 }
 
 export function studyDayWindow(now: Date, timeZone: string): StudyDayWindow {
+  return createStudyCalendar(timeZone).windowAt(now);
+}
+
+/** Reuse one timezone formatter throughout a report or a sequence of study days. */
+export function createStudyCalendar(timeZone: string) {
   if (!isIanaTimeZone(timeZone)) {
     throw new Error(`zona IANA no reconocida: ${timeZone}`);
   }
   const formatter = calendarFormatter(timeZone);
-  const midnight = Math.floor(wallTimeAt(now.getTime(), formatter) / DAY_MS) * DAY_MS;
-  return dayWindow(midnight, formatter);
+  function midnightAt(instant: Date) {
+    return Math.floor(wallTimeAt(instant.getTime(), formatter) / DAY_MS) * DAY_MS;
+  }
+  return {
+    windowAt(instant: Date) {
+      return dayWindow(midnightAt(instant), formatter);
+    },
+    datedWindowAt(instant: Date) {
+      const midnight = midnightAt(instant);
+      return {
+        ...dayWindow(midnight, formatter),
+        day: new Date(midnight).toISOString().slice(0, 10),
+      };
+    },
+  };
 }
 
 /** Strict civil-date input, including impossible dates and DST boundaries. */
