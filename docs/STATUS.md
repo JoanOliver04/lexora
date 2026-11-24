@@ -1,5 +1,11 @@
 # Lexora — Estado actual
 
+**LEX-23.12 · Búsqueda por contenido.** En Mis conceptos se puede buscar por
+título, pregunta, respuesta o etiqueta. Cada concepto aparece una vez, aunque
+coincidan varias tarjetas. La búsqueda usa el curso actual y los filtros de
+tipo, nivel y archivo. Mostrar archivados incluye también el texto de las
+tarjetas archivadas.
+
 **LEX-23.11 · Practicar tarjetas difíciles.** Estadísticas permite practicar
 una vez cada tarjeta de la lista visible, hasta veinte y con el filtro de mazo
 actual. La ronda permite revelar, escribir y repetir las marcadas. Desde Hoy

@@ -291,6 +291,11 @@ físico previsto para esas filas salvo la cascada al borrar el curso. Trigger
 | `created_at`, `updated_at` | `timestamptz` NOT NULL | |
 | | | FK compuesta `(course_id, owner_id)` → `courses(id, owner_id)` `on delete cascade`; UNIQUE `(id, owner_id)`; índice en `(course_id)` |
 
+La función de lectura `search_library_concepts` busca fragmentos de texto
+en el título, los dos lados de las tarjetas y las etiquetas. Usa la identidad
+de la sesión y las políticas RLS de biblioteca. Los resultados se paginan por
+título e ID de concepto. Las coincidencias múltiples cuentan una sola vez.
+
 **`deck_concepts`** — relación muchos a muchos entre mazos y conceptos.
 
 | Columna | Tipo | Notas |

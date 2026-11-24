@@ -177,6 +177,71 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
         expect(await repository.search(input)).toEqual({ items: [], total: 0 });
     });
 
+    it("finds concepts by literal card text and tags within the caller's course", async () => {
+      const conceptId = ids[2019]!;
+      const cards = ["A 50% discount", "An archived clue"].map((prompt, index) => ({
+        concept_id: conceptId,
+        owner_id: owner,
+        mode: "basic_recall" as const,
+        config: { mode: "basic_recall" },
+        prompt_text: prompt,
+        answer_text: "Shared answer",
+        archived_at: index === 1 ? new Date().toISOString() : null,
+      }));
+      expect((await a.from("practice_items").insert(cards)).error).toBeNull();
+      expect(
+        await attachTagByName(
+          createSupabaseTagRepository(a),
+          owner,
+          course,
+          conceptId,
+          "Shared_topic",
+        ),
+      ).toEqual({ ok: true });
+      const repository = createSupabaseConceptRepository(a);
+      const input = {
+        ownerId: owner,
+        courseId: course,
+        includeArchived: false,
+        offset: 0,
+        limit: 20,
+      };
+      for (const search of [
+        "50%",
+        "%",
+        "_",
+        "DISCOUNT",
+        "shared",
+        "shared_topic",
+        "shared answer",
+      ]) {
+        expect(await repository.search({ ...input, search })).toMatchObject({
+          total: 1,
+          items: [{ id: conceptId }],
+        });
+      }
+      expect(await repository.search({ ...input, search: "archived clue" })).toEqual({
+        total: 0,
+        items: [],
+      });
+      expect(
+        await repository.search({ ...input, includeArchived: true, search: "archived clue" }),
+      ).toMatchObject({
+        total: 1,
+        items: [{ id: conceptId }],
+      });
+      expect(await repository.search({ ...input, search: "shared", kind: "grammar" })).toEqual({
+        total: 0,
+        items: [],
+      });
+      expect(
+        await repository.search({ ...input, courseId: otherCourse, search: "shared" }),
+      ).toEqual({ total: 0, items: [] });
+      const args = { p_course_id: course, p_search: "shared" };
+      expect(await b.rpc("search_library_concepts", args)).toMatchObject({ data: [], error: null });
+      expect((await anonymous.rpc("search_library_concepts", args)).error?.code).toBe("42501");
+    });
+
     it("counts all 1010 relationships and returns only bounded member/available pages", async () => {
       const counts = await createSupabaseDeckRepository(a).countConceptsByDeck({
         ownerId: owner,

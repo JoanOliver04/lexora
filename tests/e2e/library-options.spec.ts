@@ -95,6 +95,13 @@ for (const locale of ["es", "en"] as const)
           exact: true,
         }),
       ).toBeVisible();
+      const search = page.getByRole("searchbox", { name: text.Concepts.search.label, exact: true });
+      for (const term of ["Prompt 01009", "Meaning", "Options_01009"]) {
+        await search.fill(term);
+        await page.getByRole("button", { name: text.Concepts.search.submit, exact: true }).click();
+        await expect(page).toHaveURL((url) => url.searchParams.get("q") === term);
+        await expect(card).toHaveCount(1);
+      }
       await page.goto(`/${locale}/concepts/${concept}?tagPage=51&itemPage=51`);
       await expect(
         page.getByRole("button", {

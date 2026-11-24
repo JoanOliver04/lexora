@@ -118,21 +118,33 @@ export function createSupabaseConceptRepository(
       return data ? toConcept(data) : null;
     },
 
-    async search({ ownerId, courseId, includeArchived, search, kind, cefrLevel, limit, offset }) {
+    async search({
+      ownerId,
+      courseId,
+      includeArchived = false,
+      search,
+      kind,
+      cefrLevel,
+      limit,
+      offset,
+    }) {
       const filtered = (head = false) => {
-        let query = client
-          .from("concepts")
-          .select("*", { count: "exact", head })
-          .eq("owner_id", ownerId)
-          .eq("course_id", courseId);
-        if (!includeArchived) query = query.is("archived_at", null);
-        if (search) query = query.ilike("title", `%${search}%`);
+        const scoped = search
+          ? client.rpc(
+              "search_library_concepts",
+              { p_course_id: courseId, p_search: search, p_include_archived: includeArchived },
+              { count: "exact", head },
+            )
+          : client.from("concepts").select("*", { count: "exact", head }).eq("course_id", courseId);
+        let query = scoped.eq("owner_id", ownerId);
+        if (!search && !includeArchived) query = query.is("archived_at", null);
         if (kind) query = query.eq("kind", kind);
         if (cefrLevel) query = query.eq("cefr_level", cefrLevel);
         return query;
       };
       const { data, error, count } = await filtered()
         .order("title", { ascending: true })
+        .order("id", { ascending: true })
         .range(offset, offset + limit - 1);
       // The fallback count cannot include rows outside the original filters/RLS.
       if (error?.code === "PGRST103" && offset > 0) {
