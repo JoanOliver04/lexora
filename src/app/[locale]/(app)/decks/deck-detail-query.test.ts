@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { deckDetailReturnPath } from "./deck-detail-query";
+import { deckListReturnPath } from "./deck-list-query";
 
 const id = "10000000-0000-4000-8000-000000000001";
 describe("deck return navigation", () => {
@@ -19,8 +20,19 @@ describe("deck return navigation", () => {
     expect(deckDetailReturnPath("bad", id, "members=a&members=b&memberPage=NaN")).toBe(
       `/es/decks/${id}`,
     );
-    expect(deckDetailReturnPath("es", id, "x".repeat(4097))).toBe(`/es/decks/${id}`);
+    expect(deckDetailReturnPath("es", id, "members=" + "x".repeat(6144))).toBe(`/es/decks/${id}`);
     expect(deckDetailReturnPath("en", "//foreign.example", "")).toBe("/en/decks");
+  });
+  it("retains deck list filters on save and drops detail-only options", () => {
+    expect(
+      deckListReturnPath(
+        "es",
+        "q=viaje&category=grammar&cefrLevel=B1&archived=1&page=2&members=sitio",
+      ),
+    ).toBe("/es/decks?q=viaje&category=grammar&cefrLevel=B1&archived=1&page=2");
+    expect(deckListReturnPath("invalid", "category=x&cefrLevel=AA&page=-2&q=a&q=b")).toBe(
+      "/es/decks",
+    );
   });
   it("retains both maximum-length Unicode searches after percent encoding", () => {
     const text = "漢".repeat(200);

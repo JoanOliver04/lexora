@@ -59,7 +59,7 @@ test.describe("mazos", () => {
       await expect(page.getByRole("link", { name, exact: true })).toBeVisible();
     }
 
-    const titles = page.locator("main ul li a");
+    const titles = page.getByRole("list").getByRole("link", { name: /^(Vocabulario|Gramática)$/ });
     await expect(titles).toHaveText(["Vocabulario", "Gramática"]);
 
     // "Bajar" en el primero intercambia el orden.

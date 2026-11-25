@@ -1,5 +1,10 @@
 # Lexora — Estado actual
 
+**LEX-23.14 · Volver al mazo.** El contador de conceptos abre el contenido del
+mazo. Al abrir un concepto desde ahí, puedes editar sus tarjetas y volver al
+mazo con la búsqueda y la página que estabas viendo. Mis mazos conserva los
+filtros y la página al regresar, guardar cambios, archivar o restaurar un mazo.
+
 **LEX-23.13 · Volver a los resultados.** Mis conceptos conserva la búsqueda,
 el tipo, el nivel, los archivados y la página al abrir una ficha, editar una
 tarjeta y regresar a la lista. Guardar o archivar un concepto también devuelve

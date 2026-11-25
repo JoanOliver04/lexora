@@ -19,6 +19,7 @@ import {
 import { LibraryError } from "@/modules/library/application/library-error";
 import type { DeckIssue } from "@/modules/library/domain/deck";
 import { deckDetailReturnPath } from "./deck-detail-query";
+import { deckListReturnPath } from "./deck-list-query";
 import type { DeckFieldDefaults } from "./deck-fields";
 import { draftFromForm, fieldValuesFromForm } from "./deck-form-data";
 
@@ -123,7 +124,7 @@ export async function updateDeckAction(
 
   revalidatePath(`/${locale}/decks`);
   revalidatePath(`/${locale}/decks/${deckId}`);
-  redirect(`/${locale}/decks`);
+  redirect(deckListReturnPath(locale, formData.get("returnQuery")));
 }
 
 export async function setDeckArchivedAction(formData: FormData): Promise<void> {
@@ -139,7 +140,7 @@ export async function setDeckArchivedAction(formData: FormData): Promise<void> {
   await run(scope.context.decks, scope.context.ownerId, deckId);
 
   revalidatePath(`/${locale}/decks`);
-  redirect(`/${locale}/decks`);
+  redirect(deckListReturnPath(locale, formData.get("returnQuery")));
 }
 
 /**

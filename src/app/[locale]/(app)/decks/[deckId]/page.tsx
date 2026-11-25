@@ -16,6 +16,7 @@ import {
 import { EditDeckForm } from "../edit-deck-form";
 import { DeckDetailNavigation } from "../deck-detail-navigation";
 import { deckDetailParams } from "../deck-detail-query";
+import { deckListQuery } from "../deck-list-query";
 
 /**
  * Detalle y edición de un mazo (LEX-3.5).
@@ -52,7 +53,9 @@ export default async function DeckDetailPage({
     redirect(`/${locale}/login`);
   }
 
-  const query = parseDeckDetailQuery(await searchParams);
+  const raw = await searchParams;
+  const listQuery = deckListQuery(raw);
+  const query = parseDeckDetailQuery(raw);
   const detail = await readDeckDetail(
     context.deckDetails,
     context.ownerId,
@@ -67,8 +70,12 @@ export default async function DeckDetailPage({
   const { deck, members: linked, available } = detail;
   const memberPage = Math.floor(linked.offset / detail.pageSize) + 1;
   const availablePage = Math.floor(available.offset / detail.pageSize) + 1;
-  const linkQuery = deckDetailParams(query, memberPage, availablePage);
+  const linkQuery = { ...listQuery, ...deckDetailParams(query, memberPage, availablePage) };
   const returnQuery = new URLSearchParams(linkQuery).toString();
+  const listReturnQuery = new URLSearchParams(listQuery).toString();
+  const listFields = Object.entries(listQuery).map(([name, value]) => (
+    <input key={name} type="hidden" name={name} value={value} />
+  ));
 
   const t = await getTranslations("Library");
 
@@ -76,7 +83,7 @@ export default async function DeckDetailPage({
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-8 px-6 py-12 [overflow-wrap:anywhere]">
       <header className="flex flex-col gap-2">
         <Link
-          href="/decks"
+          href={{ pathname: "/decks", query: listQuery }}
           className="inline-flex min-h-11 w-fit items-center text-sm text-(--color-ink-muted) underline underline-offset-4"
         >
           {t("detailBack")}
@@ -131,20 +138,24 @@ export default async function DeckDetailPage({
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-medium">{t("editHeading")}</h2>
-        <EditDeckForm locale={locale} deck={deck} />
+        <EditDeckForm locale={locale} deck={deck} returnQuery={listReturnQuery} />
       </section>
 
       <section className="flex flex-col gap-3 border-t border-(--color-border) pt-8">
-        <h2 className="text-lg font-medium">{t("conceptsHeading")}</h2>
+        <h2 id="deck-concepts" tabIndex={-1} className="text-lg font-medium">
+          {t("conceptsHeading")}
+        </h2>
         <p className="text-sm text-(--color-ink-muted)">
           {t("conceptCount", { count: detail.memberCount })}
         </p>
 
         <form
           method="get"
+          action={`/${locale}/decks/${deck.id}#deck-concepts`}
           aria-label={t("memberSearchLabel")}
           className="flex flex-wrap items-end gap-3"
         >
+          {listFields}
           <input type="hidden" name="available" value={query.availableSearch} />
           <input type="hidden" name="availablePage" value={String(availablePage)} />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -174,7 +185,10 @@ export default async function DeckDetailPage({
                 className="flex items-center justify-between gap-3 rounded-(--radius-control) border border-(--color-border) px-3 py-2"
               >
                 <Link
-                  href={`/concepts/${concept.id}`}
+                  href={{
+                    pathname: `/concepts/${concept.id}`,
+                    query: { ...linkQuery, fromDeck: deck.id },
+                  }}
                   prefetch={false}
                   className="inline-flex min-h-11 min-w-0 items-center text-sm text-(--color-accent) underline underline-offset-4"
                 >
@@ -202,12 +216,16 @@ export default async function DeckDetailPage({
           label={t("membersPaginationLabel")}
         />
 
-        <h3 className="pt-3 font-medium">{t("availableHeading")}</h3>
+        <h3 id="available-concepts" tabIndex={-1} className="pt-3 font-medium">
+          {t("availableHeading")}
+        </h3>
         <form
           method="get"
+          action={`/${locale}/decks/${deck.id}#available-concepts`}
           aria-label={t("availableSearchLabel")}
           className="flex flex-wrap items-end gap-3"
         >
+          {listFields}
           <input type="hidden" name="members" value={query.memberSearch} />
           <input type="hidden" name="memberPage" value={String(memberPage)} />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -270,6 +288,7 @@ export default async function DeckDetailPage({
       </section>
 
       <form action={setDeckArchivedAction} className="border-t border-(--color-border) pt-8">
+        <input type="hidden" name="returnQuery" value={listReturnQuery} />
         <input type="hidden" name="locale" value={locale} />
         <input type="hidden" name="deckId" value={deck.id} />
         <input type="hidden" name="archived" value={deck.archivedAt ? "0" : "1"} />

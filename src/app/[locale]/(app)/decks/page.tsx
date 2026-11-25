@@ -6,12 +6,7 @@ import { getLibraryContextForCurrentUser } from "@/composition/library";
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
 import { countConceptsPerDeck, searchDecks } from "@/modules/library/application/deck";
-import {
-  CEFR_LEVELS,
-  DECK_CATEGORIES,
-  type CefrLevel,
-  type DeckCategory,
-} from "@/modules/library/domain/taxonomy";
+import { CEFR_LEVELS, DECK_CATEGORIES } from "@/modules/library/domain/taxonomy";
 import { Button, Input, Label } from "@/shared/presentation/components";
 import {
   CollectionEmpty,
@@ -19,10 +14,8 @@ import {
   CollectionResults,
 } from "@/shared/presentation/components/collection-tools";
 import {
-  collectionPage,
   collectionPageQuery,
-  collectionSearch,
-  queryValue,
+  withoutCollectionFilter,
   COLLECTION_PAGE_SIZE as PAGE_SIZE,
   MAX_COLLECTION_SEARCH_LENGTH,
   type QueryValue,
@@ -30,15 +23,8 @@ import {
 
 import { setDeckArchivedAction, moveDeckAction } from "./actions";
 import { CreateDeckForm } from "./create-deck-form";
+import { deckListQuery } from "./deck-list-query";
 import { PendingButton } from "../../(auth)/_components/pending-button";
-
-function parseCategory(value: string | undefined): DeckCategory | undefined {
-  return DECK_CATEGORIES.includes(value as DeckCategory) ? (value as DeckCategory) : undefined;
-}
-
-function parseCefrLevel(value: string | undefined): CefrLevel | undefined {
-  return CEFR_LEVELS.includes(value as CefrLevel) ? (value as CefrLevel) : undefined;
-}
 
 /**
  * Lista de mazos del curso activo (LEX-3.5, búsqueda/filtros/paginación
@@ -91,19 +77,14 @@ export default async function DecksPage({
     redirect(`/${locale}/login`);
   }
 
-  const sp = await searchParams;
-  const includeArchived = queryValue(sp.archived) === "1";
-  const search = collectionSearch(sp.q);
-  const category = parseCategory(queryValue(sp.category));
-  const cefrLevel = parseCefrLevel(queryValue(sp.cefrLevel));
-  const page = collectionPage(sp.page);
+  const listQuery = deckListQuery(await searchParams);
+  const { q: search, category, cefrLevel } = listQuery;
+  const includeArchived = listQuery.archived === "1";
+  const page = Number(listQuery.page ?? 1);
   const offset = (page - 1) * PAGE_SIZE;
-  const filterQuery: Record<string, string> = {
-    ...(search ? { q: search } : {}),
-    ...(category ? { category } : {}),
-    ...(cefrLevel ? { cefrLevel } : {}),
-  };
-  const baseQuery = includeArchived ? { ...filterQuery, archived: "1" } : filterQuery;
+  const filterQuery = withoutCollectionFilter(listQuery, "archived");
+  const baseQuery = withoutCollectionFilter(listQuery, "page");
+  const returnQuery = new URLSearchParams(listQuery).toString();
 
   const { items: decks, total } = await searchDecks(
     context.decks,
@@ -151,7 +132,10 @@ export default async function DecksPage({
             <h1>{t("decksTitle")}</h1>
             <p>{t("decksIntro")}</p>
           </div>
-          <Link href="/decks#new-deck" className="collection-action">
+          <Link
+            href={{ pathname: "/decks", query: listQuery, hash: "new-deck" }}
+            className="collection-action"
+          >
             {t("createHeading")}
           </Link>
         </div>
@@ -258,7 +242,11 @@ export default async function DecksPage({
               {decks.map((deck, index) => (
                 <li key={deck.id} className="collection-item">
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <Link href={`/decks/${deck.id}`} className="collection-item-title">
+                    <Link
+                      id={`deck-title-${deck.id}`}
+                      href={{ pathname: `/decks/${deck.id}`, query: listQuery }}
+                      className="collection-item-title"
+                    >
                       {deck.title}
                     </Link>
                     {deck.category ? (
@@ -274,9 +262,18 @@ export default async function DecksPage({
                     ) : null}
                   </div>
 
-                  <p className="text-sm text-(--color-ink-muted)">
+                  <Link
+                    href={{
+                      pathname: `/decks/${deck.id}`,
+                      query: listQuery,
+                      hash: "deck-concepts",
+                    }}
+                    aria-describedby={`deck-title-${deck.id}`}
+                    prefetch={false}
+                    className="inline-flex min-h-11 w-fit items-center text-sm text-(--color-ink-muted) underline underline-offset-4"
+                  >
                     {t("conceptCount", { count: counts[deck.id] ?? 0 })}
-                  </p>
+                  </Link>
 
                   <div className="flex flex-wrap gap-2">
                     {reorderable && !deck.archivedAt ? (
@@ -306,6 +303,7 @@ export default async function DecksPage({
                       </>
                     ) : null}
                     <form action={setDeckArchivedAction}>
+                      <input type="hidden" name="returnQuery" value={returnQuery} />
                       <input type="hidden" name="locale" value={locale} />
                       <input type="hidden" name="deckId" value={deck.id} />
                       <input type="hidden" name="archived" value={deck.archivedAt ? "0" : "1"} />

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { conceptListReturnPath, conceptOptionsReturnPath } from "./concept-options-query";
+import { conceptParentReturnPath, conceptOptionsReturnPath } from "./concept-options-query";
 const id = "10000000-0000-4000-8000-000000000001";
 describe("concept option return paths", () => {
   it("preserves numeric pages and ignores arbitrary destinations or repeated parameters", () => {
@@ -29,7 +29,7 @@ describe("concept option return paths", () => {
     expect(conceptOptionsReturnPath("es", id, nested)).toBe(
       `/es/concepts/${id}?${query}&tagPage=4&itemPage=2`,
     );
-    expect(conceptListReturnPath("es", nested)).toBe(`/es/concepts?${query}`);
+    expect(conceptParentReturnPath("es", nested)).toBe(`/es/concepts?${query}`);
     expect(conceptOptionsReturnPath("en", id, query.toString(), "item")).toBe(
       `/en/concepts/${id}?${query}`,
     );
@@ -37,7 +37,31 @@ describe("concept option return paths", () => {
   it("builds a local list destination only from supported filters", () => {
     const raw =
       "q=rock%26roll&kind=bad&cefrLevel=bad&page=1&archived=1&archived=1&next=https://example.com";
-    expect(conceptListReturnPath("en", raw)).toBe("/en/concepts?q=rock%26roll");
-    expect(conceptListReturnPath("other", null)).toBe("/es/concepts");
+    expect(conceptParentReturnPath("en", raw)).toBe("/en/concepts?q=rock%26roll");
+    expect(conceptParentReturnPath("other", null)).toBe("/es/concepts");
+  });
+  it("round trips the source deck and all three Unicode searches through a card", () => {
+    const term = "漢".repeat(200);
+    const filters = new URLSearchParams({
+      q: term,
+      category: "grammar",
+      cefrLevel: "B2",
+      archived: "1",
+      page: "3",
+      members: term,
+      available: term,
+      memberPage: "2",
+      availablePage: "4",
+    });
+    const nested = `${filters}&fromDeck=${id}&tagPage=2&itemPage=3`;
+    expect(conceptOptionsReturnPath("en", id, nested)).toBe(`/en/concepts/${id}?${nested}`);
+    expect(conceptParentReturnPath("en", nested)).toBe(`/en/decks/${id}?${filters}#deck-concepts`);
+  });
+  it("uses only a single valid deck ID as the origin", () => {
+    for (const fromDeck of ["//elsewhere", `${id}&fromDeck=${id}`]) {
+      expect(conceptParentReturnPath("es", `fromDeck=${fromDeck}&memberPage=3`)).toBe(
+        "/es/concepts",
+      );
+    }
   });
 });

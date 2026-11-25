@@ -3,6 +3,19 @@ export type QueryValue = string | string[] | undefined;
 export const COLLECTION_PAGE_SIZE = 20;
 export const MAX_COLLECTION_SEARCH_LENGTH = 200;
 
+/** Three 200-character searches can use 5,400 characters after URL encoding. */
+export function readLibraryReturnQuery(raw: unknown): Record<string, string> {
+  if (typeof raw !== "string" || raw.length > 6144) return {};
+  const values = new Map<string, string>();
+  const seen = new Set<string>();
+  for (const [key, value] of new URLSearchParams(raw)) {
+    if (seen.has(key)) values.delete(key);
+    else values.set(key, value);
+    seen.add(key);
+  }
+  return Object.fromEntries(values);
+}
+
 export function queryValue(value: QueryValue): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
