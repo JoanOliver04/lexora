@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { libraryPageOffset } from "@/modules/library/application/library-options";
+import { parseStudySessionId } from "@/modules/study/application/study-session";
 import { readLibraryReturnQuery, type QueryValue } from "@/shared/presentation/library-query";
 import { deckViewQuery } from "../decks/deck-detail-query";
 import { conceptListQuery } from "./concept-list-query";
@@ -28,6 +29,18 @@ export function conceptOptionsQuery(raw: Record<string, QueryValue>): string {
 export function conceptParentReturnPath(locale: string, raw: unknown): string {
   const origin = conceptOrigin(readLibraryReturnQuery(raw));
   return `/${locale === "en" ? "en" : "es"}${origin.href}`;
+}
+
+export function practiceItemOrigin(conceptId: string, raw: Record<string, QueryValue>) {
+  const sessionId = parseStudySessionId(raw["fromStudy"]);
+  if (sessionId) {
+    return { sessionId, href: `/app/study/${sessionId}`, returnQuery: `fromStudy=${sessionId}` };
+  }
+  const returnQuery = conceptOptionsQuery(raw);
+  const href = z.uuid().safeParse(conceptId).success
+    ? `/concepts/${conceptId}${returnQuery ? "?" + returnQuery : ""}`
+    : "/concepts";
+  return { sessionId, href, returnQuery };
 }
 
 export function conceptOptionsReturnPath(

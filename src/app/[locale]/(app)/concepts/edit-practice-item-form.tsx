@@ -17,7 +17,7 @@ const ERROR_ID = "edit-practice-item-error";
 /**
  * Edición de un ítem de práctica. El `id` viaja en un campo oculto: es un
  * `update` sobre el mismo `id`, nunca un alta nueva. En éxito la Server Action
- * redirige al detalle del concepto.
+ * redirige al concepto o a la sesión de repaso de origen.
  */
 export function EditPracticeItemForm({
   locale,

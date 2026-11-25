@@ -113,7 +113,7 @@ for (const locale of ["es", "en"] as const) {
       await assertStudyLayout(page, testInfo, `${locale}-front`);
       expect(await card.ariaSnapshot()).not.toContain("KEYBOARD_ANSWER");
       expect(await page.content()).not.toContain("KEYBOARD_ANSWER");
-      for (const key of ["1", "2", "3", "4", "Control+Space"]) await page.keyboard.press(key);
+      for (const key of ["1", "2", "3", "4", "e", "Control+Space"]) await page.keyboard.press(key);
       await expect(card.getByRole("heading", { name: labels.answer, exact: true })).toHaveCount(0);
       expect(
         await checked(client.from("review_logs").select("id").eq("owner_id", ownerId)),
@@ -152,6 +152,11 @@ for (const locale of ["es", "en"] as const) {
       // Offline never queues a keyboard rating; reconnect never submits it automatically.
       await context.setOffline(true);
       await expect(good).toBeDisabled();
+      const edit = card.getByRole("button", {
+        name: es ? "Editar tarjeta" : "Edit card",
+        exact: true,
+      });
+      await expect(edit).toBeDisabled();
       await page.keyboard.press("3");
       await context.setOffline(false);
       await expect(good).toBeEnabled();
@@ -169,6 +174,7 @@ for (const locale of ["es", "en"] as const) {
       });
       await page.keyboard.press("3");
       await expect(good).toBeDisabled();
+      await expect(edit).toBeDisabled();
       await expect(page.getByRole("button", { name: labels.pause, exact: true })).toBeDisabled();
       await page.keyboard.press("3");
       await page.keyboard.press("4");

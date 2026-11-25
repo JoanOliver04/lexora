@@ -487,7 +487,8 @@
   "PracticeCard": {
     "writeAnswer": "Escribir antes de revelar",
     "yourDraft": "Tu respuesta para comparar",
-    "shortcuts": "Con el foco en la tarjeta: Espacio revela; 1 Otra vez, 2 Difícil, 3 Bien y 4 Fácil guardan tras revelar. En botones y casillas usa Tab, Mayús+Tab, Intro o Espacio como siempre.",
+    "editCard": "Editar tarjeta",
+    "shortcuts": "Con el foco en la tarjeta, pulsa Espacio para revelar la respuesta. Después, E abre la edición y las teclas 1 (Otra vez), 2 (Difícil), 3 (Bien) y 4 (Fácil) guardan tu valoración.",
     "showIntervals": "Mostrar intervalos aproximados",
     "intervalHint": "Estimaciones del scheduler con la hora del servidor. Pueden cambiar al guardar por el tiempo transcurrido, otro repaso o el ajuste aleatorio (fuzz).",
     "intervalApproximate": "≈ {duration}",
@@ -1124,6 +1125,7 @@
       "createHeading": "Nuevo ítem",
       "editHeading": "Editar ítem",
       "backToConcept": "Volver al concepto",
+      "backToReview": "Volver al repaso",
       "empty": "Este concepto no tiene ítems de práctica todavía.",
       "fields": {
         "modeLabel": "Modo",

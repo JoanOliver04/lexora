@@ -57,6 +57,7 @@ describe("read-only reveal action", () => {
       await revealStudyCardAction(
         {
           content: {
+            conceptId: "forged",
             mode: "cloze",
             promptText: "forged",
             hintText: null,

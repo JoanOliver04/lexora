@@ -487,7 +487,8 @@
   "PracticeCard": {
     "writeAnswer": "Write before revealing",
     "yourDraft": "Your answer to compare",
-    "shortcuts": "With focus in the card: Space reveals; 1 Again, 2 Hard, 3 Good and 4 Easy save after reveal. On buttons and checkboxes, use Tab, Shift+Tab, Enter or Space as usual.",
+    "editCard": "Edit card",
+    "shortcuts": "With focus on the card, press Space to reveal the answer. Then press E to edit, or rate it with 1 (Again), 2 (Hard), 3 (Good) or 4 (Easy).",
     "showIntervals": "Show approximate intervals",
     "intervalHint": "Scheduler estimates using server time. They may change when saved because time has passed, another review was made or random adjustment (fuzz) applies.",
     "intervalApproximate": "≈ {duration}",
@@ -1124,6 +1125,7 @@
       "createHeading": "New item",
       "editHeading": "Edit item",
       "backToConcept": "Back to concept",
+      "backToReview": "Back to review",
       "empty": "This concept has no practice items yet.",
       "fields": {
         "modeLabel": "Mode",

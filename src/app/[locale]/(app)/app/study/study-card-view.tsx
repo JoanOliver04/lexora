@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
+  useTransition,
 } from "react";
 
 import {
@@ -72,7 +73,8 @@ export function StudyCardView({
   initialShowIntervals?: boolean;
 }) {
   const t = useTranslations("PracticeCard");
-  const { refresh } = useRouter();
+  const { refresh, push } = useRouter();
+  const [openingEditor, startEditing] = useTransition();
   const [reloadVersion, setReloadVersion] = useState(0);
   const [reviewState, reviewAction, reviewPending] = useActionState<ReviewFormState, FormData>(
     submitStudyReview,
@@ -89,7 +91,11 @@ export function StudyCardView({
     if (!card && reviewState.receipt) saveStatus.current?.focus();
   }, [card, reviewState.receipt]);
   return (
-    <div className="flex min-w-0 flex-col gap-3">
+    <fieldset
+      disabled={openingEditor}
+      aria-busy={openingEditor}
+      className="flex min-w-0 flex-col gap-3 border-0 p-0"
+    >
       <p
         ref={saveStatus}
         tabIndex={-1}
@@ -116,6 +122,10 @@ export function StudyCardView({
             reviewState={reviewState}
             reviewAction={reviewAction}
             reviewPending={reviewPending}
+            onEdit={(conceptId) => {
+              const href = `/${locale}/concepts/${conceptId}/items/${card.practiceItemId}?fromStudy=${sessionId}`;
+              startEditing(() => push(href));
+            }}
             onReload={() => {
               setReloadVersion((value) => value + 1);
               refresh();
@@ -134,7 +144,7 @@ export function StudyCardView({
           state={sessionState}
         />
       )}
-    </div>
+    </fieldset>
   );
 }
 
@@ -146,6 +156,7 @@ function StudyCardControls({
   reviewState,
   reviewAction,
   reviewPending,
+  onEdit,
   onReload,
 }: {
   initialShowIntervals: boolean;
@@ -155,6 +166,7 @@ function StudyCardControls({
   reviewState: ReviewFormState;
   reviewAction: (data: FormData) => void;
   reviewPending: boolean;
+  onEdit: (conceptId: string) => void;
   onReload: () => void;
 }) {
   const t = useTranslations("PracticeCard");
@@ -463,6 +475,21 @@ function StudyCardControls({
       </form>
       {state.content && (
         <p className="text-sm leading-relaxed text-(--color-ink-muted)">{t("saveHint")}</p>
+      )}
+      {state.content && (
+        <Button
+          type="button"
+          variant="secondary"
+          className="w-fit"
+          data-study-shortcut="e"
+          aria-keyshortcuts="E"
+          disabled={!online || pending || reviewPending || confirmed || !!reviewError}
+          onClick={() => {
+            if (state.content && !submitLock.current) onEdit(state.content.conceptId);
+          }}
+        >
+          {t("editCard")}
+        </Button>
       )}
       <details className="text-sm text-(--color-ink-muted)">
         <summary className="min-h-11 w-fit cursor-pointer content-center text-(--color-accent) underline">

@@ -1,7 +1,25 @@
 import { describe, it, expect } from "vitest";
-import { conceptParentReturnPath, conceptOptionsReturnPath } from "./concept-options-query";
+import {
+  conceptParentReturnPath,
+  conceptOptionsReturnPath,
+  practiceItemOrigin,
+} from "./concept-options-query";
 const id = "10000000-0000-4000-8000-000000000001";
 describe("concept option return paths", () => {
+  it("accepts only a single session ID when returning from a card editor", () => {
+    expect(practiceItemOrigin(id, { fromStudy: id, itemPage: "4" })).toEqual({
+      sessionId: id,
+      href: `/app/study/${id}`,
+      returnQuery: `fromStudy=${id}`,
+    });
+    for (const fromStudy of ["//elsewhere.example", [id, id]]) {
+      expect(practiceItemOrigin(id, { fromStudy, itemPage: "2" })).toEqual({
+        sessionId: null,
+        href: `/concepts/${id}?itemPage=2`,
+        returnQuery: "itemPage=2",
+      });
+    }
+  });
   it("preserves numeric pages and ignores arbitrary destinations or repeated parameters", () => {
     expect(
       conceptOptionsReturnPath("en", id, "tagPage=51&itemPage=3&next=https://example.com"),
