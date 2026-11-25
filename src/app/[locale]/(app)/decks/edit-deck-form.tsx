@@ -20,7 +20,15 @@ const ERROR_ID = "edit-deck-error";
  * es un `update`, nunca un alta nueva. En éxito la Server Action redirige a la
  * lista.
  */
-export function EditDeckForm({ locale, deck }: { locale: string; deck: Deck }) {
+export function EditDeckForm({
+  locale,
+  deck,
+  returnQuery,
+}: {
+  locale: string;
+  deck: Deck;
+  returnQuery: string;
+}) {
   const t = useTranslations("Library");
   const [state, action, pending] = useActionState<DeckFormState, FormData>(updateDeckAction, {});
   const formRef = useRef<HTMLFormElement>(null);
@@ -37,6 +45,7 @@ export function EditDeckForm({ locale, deck }: { locale: string; deck: Deck }) {
       >
         <input type="hidden" name="locale" value={locale} />
         <input type="hidden" name="deckId" value={deck.id} />
+        <input type="hidden" name="returnQuery" value={returnQuery} />
 
         {issues.length > 0 || state.error ? (
           <FormError id={ERROR_ID}>

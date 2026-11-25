@@ -1034,6 +1034,7 @@
     "createHeading": "New concept",
     "editHeading": "Edit concept",
     "detailBack": "Back to concepts",
+    "backToDeck": "Back to deck",
     "fields": {
       "kindLabel": "Type",
       "titleLabel": "Title",

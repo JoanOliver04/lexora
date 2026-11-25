@@ -24,6 +24,7 @@ export async function DeckDetailNavigation({
   const target = (next: number) => ({
     pathname: `/decks/${deckId}`,
     query: { ...query, [pageKey]: String(next) },
+    hash: pageKey === "memberPage" ? "deck-concepts" : "available-concepts",
   });
   return (
     <nav aria-label={label} className="flex flex-wrap items-center justify-between gap-3 text-sm">

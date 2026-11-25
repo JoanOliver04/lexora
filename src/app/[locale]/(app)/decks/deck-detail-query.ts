@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { readLibraryReturnQuery, type QueryValue } from "@/shared/presentation/library-query";
+import { deckListQuery } from "./deck-list-query";
 import {
   parseDeckDetailQuery,
   type DeckDetailQuery,
@@ -17,20 +19,23 @@ export function deckDetailParams(
   };
 }
 
+export function deckViewQuery(raw: Record<string, QueryValue>): Record<string, string> {
+  const query = parseDeckDetailQuery(raw);
+  return {
+    ...deckListQuery(raw),
+    ...deckDetailParams(
+      query,
+      query.memberOffset / query.limit + 1,
+      query.availableOffset / query.limit + 1,
+    ),
+  };
+}
+
 /** A mutation can return only to this deck, with normalized library parameters. */
 export function deckDetailReturnPath(locale: string, deckId: string, raw: unknown): string {
   const base = `/${locale === "en" ? "en" : "es"}/decks`;
   if (!z.uuid().safeParse(deckId).success) return base;
   const path = `${base}/${deckId}`;
-  // Two 200-code-unit searches can exceed 2 KiB after percent encoding.
-  if (typeof raw !== "string" || raw.length > 4096) return path;
-  const params = new URLSearchParams(raw),
-    known: Record<string, unknown> = {};
-  for (const key of ["members", "available", "memberPage", "availablePage"])
-    if (params.getAll(key).length === 1) known[key] = params.get(key);
-  const query = parseDeckDetailQuery(known);
-  const serialized = new URLSearchParams(
-    deckDetailParams(query, query.memberOffset / 20 + 1, query.availableOffset / 20 + 1),
-  ).toString();
+  const serialized = new URLSearchParams(deckViewQuery(readLibraryReturnQuery(raw))).toString();
   return path + (serialized ? `?${serialized}` : "");
 }

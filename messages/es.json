@@ -1034,6 +1034,7 @@
     "createHeading": "Nuevo concepto",
     "editHeading": "Editar concepto",
     "detailBack": "Volver a los conceptos",
+    "backToDeck": "Volver al mazo",
     "fields": {
       "kindLabel": "Tipo",
       "titleLabel": "Título",

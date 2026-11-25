@@ -18,7 +18,7 @@ import { AddTagForm } from "../add-tag-form";
 import { CreatePracticeItemForm } from "../create-practice-item-form";
 import { EditConceptForm } from "../edit-concept-form";
 import { ConceptOptionsNavigation } from "../concept-options-navigation";
-import { conceptListQuery } from "../concept-list-query";
+import { conceptOrigin } from "../concept-options-query";
 
 /**
  * Detalle y edición de un concepto (LEX-3.6). A diferencia del detalle de mazo
@@ -70,9 +70,9 @@ export default async function ConceptDetailPage({
   });
   if (!options) notFound();
   const { tags, items } = options;
-  const listQuery = conceptListQuery(query);
+  const origin = conceptOrigin(query);
   const detailQuery = {
-    ...listQuery,
+    ...origin.query,
     ...(tags.total >= 20 || items.total >= 20
       ? { tagPage: String(tags.offset / 20 + 1), itemPage: String(items.offset / 20 + 1) }
       : {}),
@@ -85,10 +85,10 @@ export default async function ConceptDetailPage({
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-8 px-6 py-12 [overflow-wrap:anywhere]">
       <header className="flex flex-col gap-2">
         <Link
-          href={{ pathname: "/concepts", query: listQuery }}
+          href={origin.href}
           className="text-sm text-(--color-ink-muted) underline underline-offset-4"
         >
-          {t("detailBack")}
+          {t(origin.deckId ? "backToDeck" : "detailBack")}
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">{t("editHeading")}</h1>
         {concept.archivedAt ? (
@@ -136,7 +136,7 @@ export default async function ConceptDetailPage({
         )}
         <ConceptOptionsNavigation
           conceptId={concept.id}
-          listQuery={listQuery}
+          listQuery={origin.query}
           result={tags}
           pageKey="tagPage"
           otherPage={items.offset / 20 + 1}
@@ -197,7 +197,7 @@ export default async function ConceptDetailPage({
         )}
         <ConceptOptionsNavigation
           conceptId={concept.id}
-          listQuery={listQuery}
+          listQuery={origin.query}
           result={items}
           pageKey="itemPage"
           otherPage={tags.offset / 20 + 1}

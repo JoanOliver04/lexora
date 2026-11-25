@@ -231,8 +231,8 @@ test("free study supports one deck, several or all and keeps the trail and summa
     await expect(page.getByRole("heading", { name: deckTitles[0]!, level: 1 })).toBeVisible();
     const member = page.getByRole("link", { name: fronts[0]!, exact: true });
     await member.click();
-    await expect(page).toHaveURL(`/en/concepts/${concepts[0]!.id}`);
-    await page.goBack();
+    await expect(page).toHaveURL(`/en/concepts/${concepts[0]!.id}?fromDeck=${deckId}`);
+    await page.getByRole("link", { name: "Back to deck", exact: true }).click();
     await expect(member).toBeVisible();
     await expect(page.getByRole("link", { name: "Review this deck" })).toHaveAttribute(
       "href",
