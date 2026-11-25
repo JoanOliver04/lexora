@@ -93,15 +93,12 @@ for (const locale of ["es", "en"] as const)
         .click();
       await expect(page).toHaveURL(results);
       await entry.click();
-      await page
+      const save = locale === "es" ? "Guardar cambios" : "Save changes";
+      const editor = page.getByRole("group", { name: save, exact: true });
+      await editor
         .getByLabel(locale === "es" ? "Resumen" : "Summary", { exact: true })
         .fill("Updated synthetic meaning");
-      await page
-        .getByRole("button", {
-          name: locale === "es" ? "Guardar cambios" : "Save changes",
-          exact: true,
-        })
-        .click();
+      await editor.getByRole("button", { name: save, exact: true }).click();
       await expect(page).toHaveURL(results);
       const updated = page.getByRole("listitem").filter({ has: entry });
       await expect(updated).toContainText("Updated synthetic meaning");
