@@ -142,10 +142,11 @@ export default async function ConceptsPage({
             )}
           </div>
 
-          <form key={returnQuery} method="get" className="collection-toolbar">
+          <form method="get" className="collection-toolbar">
             <div className="collection-field">
               <Label htmlFor="concept-search-q">{t("search.label")}</Label>
               <Input
+                key={search ?? ""}
                 id="concept-search-q"
                 name="q"
                 type="search"
@@ -157,6 +158,7 @@ export default async function ConceptsPage({
             <div className="collection-field">
               <Label htmlFor="concept-search-kind">{t("filters.kindLabel")}</Label>
               <select
+                key={kind ?? ""}
                 id="concept-search-kind"
                 name="kind"
                 defaultValue={kind ?? ""}
@@ -173,6 +175,7 @@ export default async function ConceptsPage({
             <div className="collection-field">
               <Label htmlFor="concept-search-level">{t("filters.levelLabel")}</Label>
               <select
+                key={cefrLevel ?? ""}
                 id="concept-search-level"
                 name="cefrLevel"
                 defaultValue={cefrLevel ?? ""}
