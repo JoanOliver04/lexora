@@ -10,17 +10,19 @@ import type { ReviewFormState } from "./review-state";
 import type { SessionChangeState } from "./session-actions";
 import type { SessionControlInfo } from "./session-controls";
 
-const { reveal, refresh, save, change } = vi.hoisted(() => ({
+const { reveal, refresh, push, save, change } = vi.hoisted(() => ({
   reveal: vi.fn(),
   refresh: vi.fn(),
+  push: vi.fn(),
   save: vi.fn(),
   change: vi.fn(),
 }));
 vi.mock("./reveal-actions", () => ({ revealStudyCardAction: reveal }));
 vi.mock("./review-request", () => ({ submitStudyReview: save }));
 vi.mock("./session-actions", () => ({ changeStudySessionAction: change }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh, push }) }));
 const content: StudyCardContent = {
+  conceptId: "concept",
   mode: "cloze",
   promptText: "We ___ to work.",
   hintText: "A verb",
@@ -74,6 +76,7 @@ describe("study reveal and rating controls", () => {
       requestId: data.get("idempotencyKey"),
     }));
     refresh.mockClear();
+    push.mockClear();
     change.mockReset().mockResolvedValue({});
   });
   it("blocks card controls while pausing and sends only the observed session intent", async () => {
@@ -117,6 +120,9 @@ describe("study reveal and rating controls", () => {
       expect(screen.getByRole("button", { name: "Pausar sesión" })).toBeDisabled(),
     );
     await act(async () => finish({ error: "timeout", requestId: reviewKey }));
+    expect(screen.getByRole("button", { name: "Editar tarjeta" })).toBeDisabled();
+    fireEvent.keyDown(screen.getByRole("heading", { name: "Respuesta" }), { key: "e" });
+    expect(push).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: "Pausar sesión" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Abandonar sesión" })).toBeDisabled();
     expect(screen.getByText(es.StudySession.resolveReviewFirst)).toBeVisible();
@@ -544,6 +550,8 @@ describe("study reveal and rating controls", () => {
     const checkbox = await screen.findByRole("checkbox");
     fireEvent.keyDown(checkbox, { key: "3" });
     fireEvent.keyDown(checkbox, { key: " " });
+    fireEvent.keyDown(checkbox, { key: "e" });
+    expect(push).not.toHaveBeenCalled();
     expect(save).not.toHaveBeenCalled();
   });
   it("blocks keyboard activation offline and while a lifecycle change disables the card", async () => {

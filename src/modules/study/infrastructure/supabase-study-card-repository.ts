@@ -11,12 +11,18 @@ import type { StudyCardRepository } from "@/modules/study/application/study-card
 import { StudyError, studyErrorFrom } from "@/modules/study/application/study-error";
 import type { Database } from "@/shared/infrastructure/supabase/database.types";
 
+const itemFields = "id, mode, prompt_text, answer_text, hint_text, config";
+
 export function createSupabaseStudyCardRepository(
   client: SupabaseClient<Database>,
 ): StudyCardRepository {
   return {
     async findContent({ ownerId, courseId, practiceItemId }) {
-      const { data, error } = await studyContentQuery(client, { ownerId, courseId })
+      const { data, error } = await studyContentQuery(
+        client,
+        { ownerId, courseId },
+        `${itemFields}, concepts!inner(id, example, explanation)`,
+      )
         .eq("id", practiceItemId)
         .maybeSingle();
       if (error) throw studyErrorFrom(error, "Could not read study card content");
@@ -25,6 +31,7 @@ export function createSupabaseStudyCardRepository(
       if (!content) throw new StudyError("unavailable", "Study card content is invalid");
       return {
         ...content,
+        conceptId: data.concepts.id,
         exampleText: data.concepts.example,
         explanationText: data.concepts.explanation,
       };
@@ -32,15 +39,14 @@ export function createSupabaseStudyCardRepository(
   };
 }
 
-function studyContentQuery(
+function studyContentQuery<Fields extends string>(
   client: SupabaseClient<Database>,
   { ownerId, courseId }: { ownerId: string; courseId: string },
+  fields: Fields,
 ) {
   return client
     .from("practice_items")
-    .select(
-      "id, mode, prompt_text, answer_text, hint_text, config, concepts!inner(course_id, archived_at, example, explanation)",
-    )
+    .select(fields)
     .eq("owner_id", ownerId)
     .eq("enabled", true)
     .is("archived_at", null)
@@ -72,7 +78,11 @@ export async function listFreeStudyCards(
   scope: { ownerId: string; courseId: string },
   itemIds: string[],
 ): Promise<FreeStudyCard[]> {
-  const { data, error } = await studyContentQuery(client, scope).in("id", itemIds);
+  const { data, error } = await studyContentQuery(
+    client,
+    scope,
+    `${itemFields}, concepts!inner()`,
+  ).in("id", itemIds);
   if (error) throw studyErrorFrom(error, "Could not read free study cards");
   return (data ?? []).flatMap((row) => {
     const content = readContent(row);

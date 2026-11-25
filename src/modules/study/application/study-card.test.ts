@@ -43,6 +43,7 @@ function repositories() {
   };
   const cards: StudyCardRepository = {
     findContent: vi.fn().mockResolvedValue({
+      conceptId: "review-concept",
       mode: "cloze",
       promptText: "I ___ to work.",
       hintText: "A verb",
@@ -187,6 +188,7 @@ describe("revealStudySessionCard", () => {
       ok: true,
       practiceItemId: "review",
       content: {
+        conceptId: "review-concept",
         answerText: "Secret sentence",
         clozeAnswers: ["Secret solution"],
         exampleText: "Secret example",

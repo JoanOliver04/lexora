@@ -27,8 +27,8 @@ export function useStudyShortcuts() {
         )
       )
         return;
-      const key = event.key === " " ? "Space" : event.key;
-      if (!["Space", "1", "2", "3", "4"].includes(key)) return;
+      const key = event.key === " " ? "Space" : event.key.toLowerCase();
+      if (!["Space", "1", "2", "3", "4", "e"].includes(key)) return;
       const button = card.querySelector<HTMLButtonElement>(`button[data-study-shortcut="${key}"]`);
       if (!button || button.matches(":disabled")) return;
       event.preventDefault();

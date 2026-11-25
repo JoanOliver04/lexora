@@ -28,7 +28,12 @@ import type { PracticeItemIssue } from "@/modules/library/domain/practice-item";
 import type { TagIssue } from "@/modules/library/domain/tag";
 
 import type { ConceptFieldDefaults } from "./concept-fields";
-import { conceptParentReturnPath, conceptOptionsReturnPath } from "./concept-options-query";
+import {
+  conceptParentReturnPath,
+  conceptOptionsReturnPath,
+  practiceItemOrigin,
+} from "./concept-options-query";
+import { readLibraryReturnQuery } from "@/shared/presentation/library-query";
 import type { PracticeItemFieldDefaults } from "./practice-item-fields";
 
 /**
@@ -348,6 +353,17 @@ export async function createPracticeItemAction(
   redirect(conceptOptionsReturnPath(locale, conceptId, formData.get("returnQuery"), "item"));
 }
 
+function returnFromPracticeItem(
+  locale: string,
+  conceptId: string,
+  raw: FormDataEntryValue | null,
+): never {
+  const origin = practiceItemOrigin(conceptId, readLibraryReturnQuery(raw));
+  const path = `/${locale}${origin.href}`;
+  if (origin.sessionId) revalidatePath(path);
+  redirect(path);
+}
+
 export async function updatePracticeItemAction(
   _prev: PracticeItemFormState,
   formData: FormData,
@@ -381,7 +397,7 @@ export async function updatePracticeItemAction(
 
   revalidatePath(`/${locale}/concepts/${conceptId}`);
   revalidatePath(`/${locale}/concepts/${conceptId}/items/${itemId}`);
-  redirect(conceptOptionsReturnPath(locale, conceptId, formData.get("returnQuery")));
+  returnFromPracticeItem(locale, conceptId, formData.get("returnQuery"));
 }
 
 export async function setPracticeItemArchivedAction(formData: FormData): Promise<void> {
@@ -398,7 +414,7 @@ export async function setPracticeItemArchivedAction(formData: FormData): Promise
   await run(scope.context.practiceItems, scope.context.ownerId, itemId);
 
   revalidatePath(`/${locale}/concepts/${conceptId}`);
-  redirect(conceptOptionsReturnPath(locale, conceptId, formData.get("returnQuery")));
+  returnFromPracticeItem(locale, conceptId, formData.get("returnQuery"));
 }
 
 /** Reads the selected owner-bound item directly, including beyond the first page. */

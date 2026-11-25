@@ -1,5 +1,14 @@
 # Lexora — Estado actual
 
+**LEX-23.15 · Corregir una tarjeta durante el repaso.** Tras revelar la
+respuesta en una sesión programada, «Editar tarjeta» o la tecla E abren su
+ficha. Guardar, archivar o volver devuelve a la cola actual de esa sesión.
+Corregir el contenido conserva el historial y las fechas de repaso. La
+práctica libre solicita únicamente los campos que utiliza para mostrar las tarjetas.
+En Supabase local, un lote de 12 tarjetas con ejemplo y explicación pasó de
+10.313 a 2.045 bytes de JSON antes de compresión. Las preguntas, respuestas,
+pistas y configuraciones coincidieron en ambas lecturas.
+
 **LEX-23.14 · Volver al mazo.** El contador de conceptos abre el contenido del
 mazo. Al abrir un concepto desde ahí, puedes editar sus tarjetas y volver al
 mazo con la búsqueda y la página que estabas viendo. Mis mazos conserva los

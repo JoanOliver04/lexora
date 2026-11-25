@@ -11,15 +11,13 @@ import { Button } from "@/shared/presentation/components";
 
 import { setPracticeItemArchivedAction } from "../../../actions";
 import { EditPracticeItemForm } from "../../../edit-practice-item-form";
-import { conceptOptionsQuery } from "../../../concept-options-query";
+import { practiceItemOrigin } from "../../../concept-options-query";
 import { PracticeItemPreview } from "./practice-item-preview";
 
 /**
  * Edición de un ítem de práctica (LEX-3.7), con su previsualización
- * (LEX-3.11) — cómo se vería al estudiar, sin planificador ni valoración.
- * `PracticeItemRepository` no tiene `get` (LEX-3.4): se lee la lista del
- * concepto —incluidos los archivados— y se busca por id, como el detalle de
- * mazo (LEX-3.5).
+ * (LEX-3.11). La biblioteca lee el ítem por su identificador y concepto.
+ * El origen determina a dónde se vuelve al guardar o cancelar la edición.
  */
 export default async function PracticeItemDetailPage({
   params,
@@ -56,19 +54,17 @@ export default async function PracticeItemDetailPage({
   }
 
   const t = await getTranslations("Concepts");
-  const returnQuery = conceptOptionsQuery(await searchParams);
+  const origin = practiceItemOrigin(conceptId, await searchParams);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-8 px-6 py-12">
       <header className="flex flex-col gap-2">
         <Link
-          href={{
-            pathname: `/concepts/${conceptId}`,
-            query: Object.fromEntries(new URLSearchParams(returnQuery)),
-          }}
+          href={origin.href}
+          prefetch={false}
           className="text-sm text-(--color-ink-muted) underline underline-offset-4"
         >
-          {t("items.backToConcept")}
+          {t(origin.sessionId ? "items.backToReview" : "items.backToConcept")}
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">{t("items.editHeading")}</h1>
         {item.archivedAt ? (
@@ -82,7 +78,7 @@ export default async function PracticeItemDetailPage({
         locale={locale}
         conceptId={conceptId}
         item={item}
-        returnQuery={returnQuery}
+        returnQuery={origin.returnQuery}
       />
 
       <form
@@ -92,7 +88,7 @@ export default async function PracticeItemDetailPage({
         <input type="hidden" name="locale" value={locale} />
         <input type="hidden" name="conceptId" value={conceptId} />
         <input type="hidden" name="itemId" value={item.id} />
-        <input type="hidden" name="returnQuery" value={returnQuery} />
+        <input type="hidden" name="returnQuery" value={origin.returnQuery} />
         <input type="hidden" name="archived" value={item.archivedAt ? "0" : "1"} />
         <Button type="submit" variant="secondary">
           {item.archivedAt ? t("items.actions.restore") : t("items.actions.archive")}

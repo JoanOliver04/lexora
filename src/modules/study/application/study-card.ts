@@ -15,6 +15,7 @@ export interface StudyCardRepository {
 }
 
 export type StudyCardContent = PracticeItemContent & {
+  conceptId: string;
   exampleText: string | null;
   explanationText: string | null;
 };
