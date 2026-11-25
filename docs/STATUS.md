@@ -1,5 +1,11 @@
 # Lexora — Estado actual
 
+**LEX-23.13 · Volver a los resultados.** Mis conceptos conserva la búsqueda,
+el tipo, el nivel, los archivados y la página al abrir una ficha, editar una
+tarjeta y regresar a la lista. Guardar o archivar un concepto también devuelve
+a esos resultados. Pulsar una etiqueta inicia su búsqueda en la primera página
+con los demás filtros activos.
+
 **LEX-23.12 · Búsqueda por contenido.** En Mis conceptos se puede buscar por
 título, pregunta, respuesta o etiqueta. Cada concepto aparece una vez, aunque
 coincidan varias tarjetas. La búsqueda usa el curso actual y los filtros de

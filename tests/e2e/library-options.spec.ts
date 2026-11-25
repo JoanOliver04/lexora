@@ -102,7 +102,32 @@ for (const locale of ["es", "en"] as const)
         await expect(page).toHaveURL((url) => url.searchParams.get("q") === term);
         await expect(card).toHaveCount(1);
       }
-      await page.goto(`/${locale}/concepts/${concept}?tagPage=51&itemPage=51`);
+      await page
+        .getByLabel(text.Concepts.filters.kindLabel, { exact: true })
+        .selectOption("vocabulary");
+      await page.getByRole("button", { name: text.Concepts.search.submit, exact: true }).click();
+      const tag = "Options_00000";
+      await search.fill("Unsubmitted search");
+      await card
+        .getByRole("link", { name: text.Concepts.tags.search.replace("{tag}", tag) })
+        .click();
+      const tagResults = `/${locale}/concepts?q=${tag}&kind=vocabulary`;
+      await expect(page).toHaveURL(tagResults);
+      await expect(search).toHaveValue(tag);
+      await card
+        .getByRole("link", { name: locale === "es" ? "+1007 etiquetas más" : "+1007 more tags" })
+        .click();
+      const tagPages = page.getByRole("navigation", {
+        name: text.Concepts.tags.pages,
+        exact: true,
+      });
+      await tagPages.getByRole("link", { name: text.Library.pagination.next, exact: true }).click();
+      await expect(page).toHaveURL(
+        (url) => url.searchParams.get("q") === tag && url.searchParams.get("tagPage") === "2",
+      );
+      await page.goto(
+        `/${locale}/concepts/${concept}?q=${tag}&kind=vocabulary&tagPage=51&itemPage=51`,
+      );
       await expect(
         page.getByRole("button", {
           name: `${text.Concepts.tags.removeButton}: Options_01009`,
@@ -147,6 +172,8 @@ for (const locale of ["es", "en"] as const)
       await page.evaluate(() => {
         document.documentElement.style.fontSize = "";
       });
+      await page.getByRole("link", { name: text.Concepts.detailBack, exact: true }).click();
+      await expect(page).toHaveURL(tagResults);
       await page.goto(`/${locale}/import`);
       await page.getByLabel(text.Import.fileLabel, { exact: true }).setInputFiles({
         name: "synthetic-directive.tsv",

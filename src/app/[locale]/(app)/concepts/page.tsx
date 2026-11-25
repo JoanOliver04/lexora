@@ -7,12 +7,7 @@ import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
 import { searchConcepts } from "@/modules/library/application/concept";
 import { readTagPreviews } from "@/modules/library/application/library-options";
-import {
-  CEFR_LEVELS,
-  CONCEPT_KINDS,
-  type CefrLevel,
-  type ConceptKind,
-} from "@/modules/library/domain/taxonomy";
+import { CEFR_LEVELS, CONCEPT_KINDS } from "@/modules/library/domain/taxonomy";
 import { Button, Input, Label } from "@/shared/presentation/components";
 import {
   CollectionEmpty,
@@ -20,26 +15,16 @@ import {
   CollectionResults,
 } from "@/shared/presentation/components/collection-tools";
 import {
-  collectionPage,
   collectionPageQuery,
-  collectionSearch,
-  queryValue,
   COLLECTION_PAGE_SIZE as PAGE_SIZE,
   MAX_COLLECTION_SEARCH_LENGTH,
   type QueryValue,
 } from "@/shared/presentation/library-query";
 
 import { setConceptArchivedAction } from "./actions";
+import { conceptListQuery } from "./concept-list-query";
 import { CreateConceptForm } from "./create-concept-form";
 import { PendingButton } from "../../(auth)/_components/pending-button";
-
-function parseKind(value: string | undefined): ConceptKind | undefined {
-  return CONCEPT_KINDS.includes(value as ConceptKind) ? (value as ConceptKind) : undefined;
-}
-
-function parseCefrLevel(value: string | undefined): CefrLevel | undefined {
-  return CEFR_LEVELS.includes(value as CefrLevel) ? (value as CefrLevel) : undefined;
-}
 
 /**
  * Lista de conceptos del curso activo (LEX-3.6, búsqueda/filtros/paginación
@@ -79,19 +64,14 @@ export default async function ConceptsPage({
     redirect(`/${locale}/login`);
   }
 
-  const sp = await searchParams;
-  const includeArchived = queryValue(sp.archived) === "1";
-  const search = collectionSearch(sp.q);
-  const kind = parseKind(queryValue(sp.kind));
-  const cefrLevel = parseCefrLevel(queryValue(sp.cefrLevel));
-  const page = collectionPage(sp.page);
+  const listQuery = conceptListQuery(await searchParams);
+  const { page: requestedPage, ...baseQuery } = listQuery;
+  const { archived, ...filterQuery } = baseQuery;
+  const { q: search, kind, cefrLevel } = filterQuery;
+  const includeArchived = archived === "1";
+  const page = Number(requestedPage ?? 1);
   const offset = (page - 1) * PAGE_SIZE;
-  const filterQuery: Record<string, string> = {
-    ...(search ? { q: search } : {}),
-    ...(kind ? { kind } : {}),
-    ...(cefrLevel ? { cefrLevel } : {}),
-  };
-  const baseQuery = includeArchived ? { ...filterQuery, archived: "1" } : filterQuery;
+  const returnQuery = new URLSearchParams(listQuery).toString();
 
   const { items: concepts, total } = await searchConcepts(
     context.concepts,
@@ -162,7 +142,7 @@ export default async function ConceptsPage({
             )}
           </div>
 
-          <form method="get" className="collection-toolbar">
+          <form key={returnQuery} method="get" className="collection-toolbar">
             <div className="collection-field">
               <Label htmlFor="concept-search-q">{t("search.label")}</Label>
               <Input
@@ -240,7 +220,10 @@ export default async function ConceptsPage({
               {concepts.map((concept) => (
                 <li key={concept.id} className="collection-item">
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <Link href={`/concepts/${concept.id}`} className="collection-item-title">
+                    <Link
+                      href={{ pathname: `/concepts/${concept.id}`, query: listQuery }}
+                      className="collection-item-title"
+                    >
                       {concept.title}
                     </Link>
                     <span className="collection-badge">{t(`kinds.${concept.kind}`)}</span>
@@ -259,16 +242,22 @@ export default async function ConceptsPage({
                   {(tagsByConcept[concept.id] ?? []).length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {(tagsByConcept[concept.id] ?? []).map((tag) => (
-                        <span
+                        <Link
                           key={tag.id}
-                          className="rounded-full border border-(--color-border) px-2 py-0.5 text-xs text-(--color-ink-muted)"
+                          href={{
+                            pathname: "/concepts",
+                            query: { ...baseQuery, q: tag.displayName },
+                          }}
+                          prefetch={false}
+                          aria-label={t("tags.search", { tag: tag.displayName })}
+                          className="inline-flex min-h-11 max-w-full items-center rounded-full border border-(--color-border) px-3 text-xs wrap-anywhere text-(--color-accent) underline underline-offset-4"
                         >
                           {tag.displayName}
-                        </span>
+                        </Link>
                       ))}
                       {(tagTotals[concept.id] ?? 0) > 3 ? (
                         <Link
-                          href={`/concepts/${concept.id}`}
+                          href={{ pathname: `/concepts/${concept.id}`, query: listQuery }}
                           className="inline-flex min-h-11 min-w-11 items-center text-xs underline"
                         >
                           {t("tags.more", { count: (tagTotals[concept.id] ?? 0) - 3 })}
@@ -279,6 +268,7 @@ export default async function ConceptsPage({
 
                   <div>
                     <form action={setConceptArchivedAction}>
+                      <input type="hidden" name="returnQuery" value={returnQuery} />
                       <input type="hidden" name="locale" value={locale} />
                       <input type="hidden" name="conceptId" value={concept.id} />
                       <input type="hidden" name="archived" value={concept.archivedAt ? "0" : "1"} />

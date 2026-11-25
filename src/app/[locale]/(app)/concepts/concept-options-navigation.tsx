@@ -7,12 +7,14 @@ export async function ConceptOptionsNavigation({
   result,
   pageKey,
   otherPage,
+  listQuery,
 }: {
   conceptId: string;
   label: string;
   result: { total: number; offset: number };
   pageKey: "tagPage" | "itemPage";
   otherPage: number;
+  listQuery: Record<string, string>;
 }) {
   if (result.total <= 20) return null;
   const t = await getTranslations("Library");
@@ -21,6 +23,7 @@ export async function ConceptOptionsNavigation({
   const href = (p: number) => ({
     pathname: `/concepts/${conceptId}`,
     query: {
+      ...listQuery,
       [pageKey]: String(p),
       [pageKey === "tagPage" ? "itemPage" : "tagPage"]: String(otherPage),
     },

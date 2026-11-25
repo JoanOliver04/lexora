@@ -19,7 +19,15 @@ const ERROR_ID = "edit-concept-error";
  * sobre el mismo `id`, nunca un alta nueva (misma identidad conservada que
  * `EditDeckForm`, LEX-3.5). En éxito la Server Action redirige a la lista.
  */
-export function EditConceptForm({ locale, concept }: { locale: string; concept: Concept }) {
+export function EditConceptForm({
+  locale,
+  concept,
+  returnQuery,
+}: {
+  locale: string;
+  concept: Concept;
+  returnQuery: string;
+}) {
   const t = useTranslations("Concepts");
   const [state, action, pending] = useActionState<ConceptFormState, FormData>(
     updateConceptAction,
@@ -39,6 +47,7 @@ export function EditConceptForm({ locale, concept }: { locale: string; concept: 
       >
         <input type="hidden" name="locale" value={locale} />
         <input type="hidden" name="conceptId" value={concept.id} />
+        <input type="hidden" name="returnQuery" value={returnQuery} />
 
         {issues.length > 0 || state.error ? (
           <FormError id={ERROR_ID}>

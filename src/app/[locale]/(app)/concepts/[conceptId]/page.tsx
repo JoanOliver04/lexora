@@ -18,7 +18,7 @@ import { AddTagForm } from "../add-tag-form";
 import { CreatePracticeItemForm } from "../create-practice-item-form";
 import { EditConceptForm } from "../edit-concept-form";
 import { ConceptOptionsNavigation } from "../concept-options-navigation";
-import { conceptOptionsQuery } from "../concept-options-query";
+import { conceptListQuery } from "../concept-list-query";
 
 /**
  * Detalle y edición de un concepto (LEX-3.6). A diferencia del detalle de mazo
@@ -70,13 +70,14 @@ export default async function ConceptDetailPage({
   });
   if (!options) notFound();
   const { tags, items } = options;
-  const returnQuery =
-    tags.total >= 20 || items.total >= 20
-      ? new URLSearchParams({
-          tagPage: String(tags.offset / 20 + 1),
-          itemPage: String(items.offset / 20 + 1),
-        }).toString()
-      : conceptOptionsQuery({});
+  const listQuery = conceptListQuery(query);
+  const detailQuery = {
+    ...listQuery,
+    ...(tags.total >= 20 || items.total >= 20
+      ? { tagPage: String(tags.offset / 20 + 1), itemPage: String(items.offset / 20 + 1) }
+      : {}),
+  };
+  const returnQuery = new URLSearchParams(detailQuery).toString();
   const t = await getTranslations("Concepts");
   const tHistory = await getTranslations("History");
 
@@ -84,7 +85,7 @@ export default async function ConceptDetailPage({
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-8 px-6 py-12 [overflow-wrap:anywhere]">
       <header className="flex flex-col gap-2">
         <Link
-          href="/concepts"
+          href={{ pathname: "/concepts", query: listQuery }}
           className="text-sm text-(--color-ink-muted) underline underline-offset-4"
         >
           {t("detailBack")}
@@ -95,7 +96,7 @@ export default async function ConceptDetailPage({
         ) : null}
       </header>
 
-      <EditConceptForm locale={locale} concept={concept} />
+      <EditConceptForm locale={locale} concept={concept} returnQuery={returnQuery} />
       {["tag", "item", "reverse"].includes(
         typeof query["saved"] === "string" ? query["saved"] : "",
       ) ? (
@@ -135,6 +136,7 @@ export default async function ConceptDetailPage({
         )}
         <ConceptOptionsNavigation
           conceptId={concept.id}
+          listQuery={listQuery}
           result={tags}
           pageKey="tagPage"
           otherPage={items.offset / 20 + 1}
@@ -171,7 +173,7 @@ export default async function ConceptDetailPage({
                   <Link
                     href={{
                       pathname: `/concepts/${concept.id}/items/${item.id}`,
-                      query: Object.fromEntries(new URLSearchParams(returnQuery)),
+                      query: detailQuery,
                     }}
                     className="text-sm underline underline-offset-4"
                   >
@@ -195,6 +197,7 @@ export default async function ConceptDetailPage({
         )}
         <ConceptOptionsNavigation
           conceptId={concept.id}
+          listQuery={listQuery}
           result={items}
           pageKey="itemPage"
           otherPage={tags.offset / 20 + 1}
@@ -210,6 +213,7 @@ export default async function ConceptDetailPage({
         {tHistory("conceptTimeline")}
       </Link>
       <form action={setConceptArchivedAction} className="border-t border-(--color-border) pt-8">
+        <input type="hidden" name="returnQuery" value={returnQuery} />
         <input type="hidden" name="locale" value={locale} />
         <input type="hidden" name="conceptId" value={concept.id} />
         <input type="hidden" name="archived" value={concept.archivedAt ? "0" : "1"} />

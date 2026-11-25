@@ -28,7 +28,7 @@ import type { PracticeItemIssue } from "@/modules/library/domain/practice-item";
 import type { TagIssue } from "@/modules/library/domain/tag";
 
 import type { ConceptFieldDefaults } from "./concept-fields";
-import { conceptOptionsReturnPath } from "./concept-options-query";
+import { conceptListReturnPath, conceptOptionsReturnPath } from "./concept-options-query";
 import type { PracticeItemFieldDefaults } from "./practice-item-fields";
 
 /**
@@ -238,7 +238,7 @@ export async function updateConceptAction(
 
   revalidatePath(`/${locale}/concepts`);
   revalidatePath(`/${locale}/concepts/${conceptId}`);
-  redirect(`/${locale}/concepts`);
+  redirect(conceptListReturnPath(locale, formData.get("returnQuery")));
 }
 
 export async function setConceptArchivedAction(formData: FormData): Promise<void> {
@@ -254,7 +254,7 @@ export async function setConceptArchivedAction(formData: FormData): Promise<void
   await run(scope.context.concepts, scope.context.ownerId, conceptId);
 
   revalidatePath(`/${locale}/concepts`);
-  redirect(`/${locale}/concepts`);
+  redirect(conceptListReturnPath(locale, formData.get("returnQuery")));
 }
 
 /**

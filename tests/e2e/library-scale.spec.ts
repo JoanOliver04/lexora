@@ -58,6 +58,7 @@ for (const locale of ["es", "en"] as const)
               course_id: course.id,
               kind: "vocabulary" as const,
               title: `Synthetic library ${String(start + index).padStart(5, "0")}`,
+              cefr_level: "B1" as const,
               summary: "Synthetic meaning",
             })),
           ),
@@ -80,6 +81,45 @@ for (const locale of ["es", "en"] as const)
       await expect(card).toContainText(/1[.,]?010/);
       await page.getByRole("link", { name: "Synthetic large library", exact: true }).click();
       await expect(page.getByRole("button", { name: remove, exact: true })).toHaveCount(20);
+      const results = `/${locale}/concepts?q=Synthetic+library&kind=vocabulary&cefrLevel=B1&archived=1&page=2`;
+      await page.goto(results);
+      const title = "Synthetic library 00020";
+      const entry = page.getByRole("link", { name: title, exact: true });
+      await entry.click();
+      await page
+        .getByRole("link", {
+          name: locale === "es" ? "Volver a los conceptos" : "Back to concepts",
+        })
+        .click();
+      await expect(page).toHaveURL(results);
+      await entry.click();
+      await page
+        .getByLabel(locale === "es" ? "Resumen" : "Summary", { exact: true })
+        .fill("Updated synthetic meaning");
+      await page
+        .getByRole("button", {
+          name: locale === "es" ? "Guardar cambios" : "Save changes",
+          exact: true,
+        })
+        .click();
+      await expect(page).toHaveURL(results);
+      const updated = page.getByRole("listitem").filter({ has: entry });
+      await expect(updated).toContainText("Updated synthetic meaning");
+      await updated
+        .getByRole("button", { name: locale === "es" ? "Archivar" : "Archive", exact: true })
+        .click();
+      await expect(page).toHaveURL(results);
+      await updated
+        .getByRole("button", { name: locale === "es" ? "Restaurar" : "Restore", exact: true })
+        .click();
+      await expect(page).toHaveURL(results);
+      await expect(
+        updated.getByRole("button", {
+          name: locale === "es" ? "Archivar" : "Archive",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await page.goto(`/${locale}/decks/${deck}`);
       await expect(page.locator("#link-concept option")).toHaveCount(20);
       await page
         .getByRole("navigation", { name: memberNavigation, exact: true })

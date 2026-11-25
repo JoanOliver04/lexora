@@ -1103,6 +1103,7 @@
       "heading": "Tags",
       "pages": "Concept tag pages",
       "more": "+{count} more tags",
+      "search": "Search my concepts for “{tag}”",
       "addLabel": "New tag",
       "addPlaceholder": "e.g. phrasal-verbs",
       "addButton": "Add",
