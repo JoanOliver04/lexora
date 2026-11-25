@@ -1103,6 +1103,7 @@
       "heading": "Etiquetas",
       "pages": "Páginas de etiquetas del concepto",
       "more": "+{count} etiquetas más",
+      "search": "Buscar «{tag}» en mis conceptos",
       "addLabel": "Nueva etiqueta",
       "addPlaceholder": "p. ej. phrasal-verbs",
       "addButton": "Añadir",
