@@ -24,6 +24,7 @@ import { Button, FormError } from "@/shared/presentation/components";
 
 import { loadFreeStudyCards, startFreeStudyRound } from "./actions";
 import { StudyDeckPicker } from "../study-deck-picker";
+import { EoiExercise } from "@/modules/library/presentation/eoi-exercise";
 import { AnswerDraft } from "../answer-draft";
 
 type View =
@@ -331,7 +332,15 @@ export function FreeStudyView({
               })}
         </h2>
         <PracticeItemPrompt content={view.card.content} hintLabel={cardMessages("hintLabel")} />
-        <AnswerDraft key={view.index} />
+        {view.card.content.exercise ? (
+          <EoiExercise
+            key={view.card.id}
+            front={view.card.content}
+            revealed={view.revealed ? view.card.content : null}
+          />
+        ) : (
+          <AnswerDraft key={view.index} />
+        )}
         {view.revealed ? (
           <div className="flex flex-col gap-3">
             <div ref={answer} tabIndex={-1} className="border-s-2 border-(--color-accent) ps-4">

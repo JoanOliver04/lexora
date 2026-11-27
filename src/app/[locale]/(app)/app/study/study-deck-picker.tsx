@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useId, useMemo, useRef, useState } from "react";
+import { skills, type Skill } from "@/modules/library/domain/eoi";
 import { Button, Input, Label } from "@/shared/presentation/components";
 
 const PAGE_SIZE = 24;
@@ -15,11 +16,13 @@ export function StudyDeckPicker({
   selected,
   onSelectionChange,
 }: {
-  decks: readonly { id: string; title: string }[];
+  decks: readonly { id: string; title: string; category?: string | null }[];
   selected: string[];
   onSelectionChange: (selection: string[]) => void;
 }) {
   const t = useTranslations("StudyDeckPicker");
+  const eoi = useTranslations("Eoi");
+  const [skill, setSkill] = useState<Skill | "">("");
   const id = useId();
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
@@ -33,8 +36,14 @@ export function StudyDeckPicker({
   const matching = useMemo(() => {
     if (onlySelected) return indexed.filter(({ deck }) => selection.has(deck.id));
     const key = searchKey(query);
-    return key ? indexed.filter((row) => row.key.includes(key)) : indexed;
-  }, [indexed, query, onlySelected, selection]);
+    return indexed.filter(
+      (row) =>
+        (!skill ||
+          row.deck.category === skill ||
+          (skill === "speaking" && row.deck.category === "pronunciation")) &&
+        (!key || row.key.includes(key)),
+    );
+  }, [indexed, query, onlySelected, selection, skill]);
   const lastPage = Math.max(0, Math.ceil(matching.length / PAGE_SIZE) - 1);
   const currentPage = Math.min(page, lastPage);
   const start = currentPage * PAGE_SIZE;
@@ -57,6 +66,26 @@ export function StudyDeckPicker({
       </Button>
       {!onlySelected && (
         <>
+          {decks.some((d) => d.category) && (
+            <label>
+              {eoi("template")}
+              <select
+                className="block min-h-11 w-full rounded border px-2"
+                value={skill}
+                onChange={(e) => {
+                  setSkill(e.target.value as Skill | "");
+                  setPage(0);
+                }}
+              >
+                <option value="">—</option>
+                {skills.map((s) => (
+                  <option key={s} value={s}>
+                    {eoi(s)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <Label htmlFor={id}>{t("search")}</Label>
           <Input
             id={id}

@@ -17,7 +17,7 @@ export function createSupabaseTodayDashboardRepository(
         (from, to) =>
           client
             .from("decks")
-            .select("id, title")
+            .select("id, title, category")
             .eq("owner_id", ownerId)
             .eq("course_id", courseId)
             .is("archived_at", null)

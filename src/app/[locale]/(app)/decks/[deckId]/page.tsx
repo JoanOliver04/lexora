@@ -89,6 +89,19 @@ export default async function DeckDetailPage({
           {t("detailBack")}
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">{deck.title}</h1>
+        {detail.deck.eoiPack && deck.category === "listening" && (
+          <Link className="min-h-11 underline" href={"/decks/" + deck.id + "/listening"}>
+            {(await getTranslations("Eoi"))("exam")}
+          </Link>
+        )}
+        {detail.deck.eoiPack && (
+          <Link
+            className="min-h-11 underline"
+            href={{ pathname: "/import/eoi", query: { deck: deck.id } }}
+          >
+            {(await getTranslations("Eoi"))("editPack")}
+          </Link>
+        )}
         {deck.archivedAt ? (
           <p className="text-sm text-(--color-ink-subtle)">{t("archivedBadge")}</p>
         ) : null}

@@ -41,7 +41,7 @@ export default async function FreeStudyPage({
       </Link>
       <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
       {valid ? (
-        <ClientMessages namespaces={["FreeStudy", "PracticeCard", "StudyDeckPicker"]}>
+        <ClientMessages namespaces={["FreeStudy", "PracticeCard", "StudyDeckPicker", "Eoi"]}>
           <FreeStudyView
             key={`${context.courseId}:${scope.deckIds?.join(",") ?? "all"}`}
             courseId={context.courseId}

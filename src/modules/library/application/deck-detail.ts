@@ -16,6 +16,7 @@ export const deckDetailSchema = z
         description: z.string().nullable(),
         cefrLevel: z.enum(CEFR_LEVELS).nullable(),
         category: z.enum(DECK_CATEGORIES).nullable(),
+        eoiPack: z.boolean().optional(),
         position: z.number().int(),
         archivedAt: z.string().nullable(),
         createdAt: z.string(),

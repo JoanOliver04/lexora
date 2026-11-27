@@ -95,6 +95,9 @@ export default async function ImportPage({
           <p className="font-medium">{t(`target.${target.mode}Title`, { deck: target.title })}</p>
         )}
       </header>
+      <Link className="min-h-11 w-fit underline" href="/import/eoi">
+        {(await getTranslations("Eoi"))("studio")}
+      </Link>
       <TutorialHint topic="import" />
 
       {blockedBy ? (

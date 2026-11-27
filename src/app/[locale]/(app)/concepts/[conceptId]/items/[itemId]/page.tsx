@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { eoiDeckForKey } from "@/composition/eoi";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { getActiveCourseForCurrentUser } from "@/composition/courses";
@@ -53,8 +54,22 @@ export default async function PracticeItemDetailPage({
     notFound();
   }
 
-  const t = await getTranslations("Concepts");
   const origin = practiceItemOrigin(conceptId, await searchParams);
+  if (item.config.exercise && item.config.pack) {
+    const deck = await eoiDeckForKey(item.config.pack);
+    if (deck)
+      redirect(
+        "/" +
+          locale +
+          "/import/eoi?" +
+          new URLSearchParams({
+            deck,
+            card: item.config.exercise.key,
+            ...(origin.sessionId ? { fromStudy: origin.sessionId } : {}),
+          }),
+      );
+  }
+  const t = await getTranslations("Concepts");
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-8 px-6 py-12">

@@ -25,6 +25,7 @@ export function contentSecurityPolicy({
     "style-src 'self' 'unsafe-inline'",
     `connect-src 'self' ${backend.origin}${development ? " ws: wss:" : ""}`,
     "img-src 'self' data: blob:",
+    `media-src 'self' blob: ${backend.origin}`,
     "font-src 'self'",
     "manifest-src 'self'",
     "worker-src 'self'",

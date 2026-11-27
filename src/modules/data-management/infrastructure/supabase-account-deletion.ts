@@ -67,6 +67,21 @@ export function createSupabaseAccountDeletionGateway(
         if (challenge.error)
           return { ok: false, error: challenge.error.status === 429 ? "cooldown" : "mfa-required" };
       }
+      // Storage objects must be removed through its API to delete the backing bytes.
+      // Reauthentication and the optional second factor have both completed.
+      const audio = client.storage.from("study-audio");
+      for (;;) {
+        const folders = await audio.list(user.id, { limit: 100 });
+        if (folders.error) return { ok: false, error: "unavailable" };
+        if (!folders.data.length) break;
+        for (const folder of folders.data) {
+          const prefix = user.id + "/" + folder.name;
+          const objects = await audio.list(prefix, { limit: 100 });
+          if (objects.error || !objects.data.length) return { ok: false, error: "unavailable" };
+          const removed = await audio.remove(objects.data.map((o) => prefix + "/" + o.name));
+          if (removed.error) return { ok: false, error: "unavailable" };
+        }
+      }
       const result = await client
         .rpc("delete_own_account", {
           p_email: input.email,

@@ -1,5 +1,7 @@
 # Lexora — Estado actual
 
+**Mazos de destrezas B1.** El estudio programado y la práctica libre admiten preguntas con variantes, lecturas compartidas, producción oral y escrita y modelos de audio privados. El editor permite previsualizar, importar y actualizar un mazo por sus identificadores. El simulacro de Listening agrupa preguntas por grabación y ofrece dos escuchas por bloque. [Guía de importación](IMPORT_FORMAT.md#mazos-de-destrezas-b1).
+
 **LEX-23.15 · Corregir una tarjeta durante el repaso.** Tras revelar la
 respuesta en una sesión programada, «Editar tarjeta» o la tecla E abren su
 ficha. Guardar, archivar o volver devuelve a la cola actual de esa sesión.

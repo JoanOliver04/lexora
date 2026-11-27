@@ -18,6 +18,7 @@ import {
 export type { StudyActivityDay, StudyActivityTotals, StudyScope };
 
 export interface DashboardDeck {
+  category?: string | null;
   id: string;
   title: string;
 }

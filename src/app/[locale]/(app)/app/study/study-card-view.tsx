@@ -26,6 +26,7 @@ import type { ReviewFormState } from "./review-state";
 import { changeStudySessionAction, type SessionChangeState } from "./session-actions";
 import { SessionControls, type SessionControlInfo } from "./session-controls";
 import { useStudyShortcuts } from "./use-study-shortcuts";
+import { EoiExercise } from "@/modules/library/presentation/eoi-exercise";
 import { AnswerDraft } from "./answer-draft";
 
 async function changeWithRecovery(
@@ -258,7 +259,11 @@ function StudyCardControls({
       <div id="study-prompt-text">
         <PracticeItemPrompt content={content} hintLabel={t("hintLabel")} />
       </div>
-      <AnswerDraft />
+      {content.exercise ? (
+        <EoiExercise front={content} revealed={state.content} />
+      ) : (
+        <AnswerDraft />
+      )}
       {!online && (
         <p role="status" className="text-sm">
           {t("offlineHint")}

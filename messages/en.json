@@ -367,7 +367,11 @@
     "modes": {
       "basic_recognition": "Recognition",
       "basic_recall": "Active recall",
-      "cloze": "Fill in the gaps"
+      "cloze": "Fill in the gaps",
+      "listening_dictation": "Listening",
+      "guided_production": "Guided production",
+      "free_production": "Free production",
+      "pronunciation": "Pronunciation"
     }
   },
   "Today": {
@@ -561,7 +565,11 @@
     "modes": {
       "basic_recognition": "Basic recognition",
       "basic_recall": "Basic recall",
-      "cloze": "Fill in the blanks"
+      "cloze": "Fill in the blanks",
+      "listening_dictation": "Listening",
+      "guided_production": "Guided production",
+      "free_production": "Free production",
+      "pronunciation": "Pronunciation"
     }
   },
   "SessionSummary": {
@@ -977,7 +985,12 @@
       "communicative_function": "Communicative function",
       "pronunciation": "Pronunciation",
       "professional": "Professional",
-      "mixed": "Mixed"
+      "mixed": "Mixed",
+      "reading": "Reading",
+      "writing": "Writing",
+      "speaking": "Speaking",
+      "listening": "Listening",
+      "mediation": "Mediation"
     },
     "actions": {
       "create": "Create deck",
@@ -1138,7 +1151,11 @@
       "modes": {
         "basic_recognition": "Basic recognition",
         "basic_recall": "Basic recall",
-        "cloze": "Cloze"
+        "cloze": "Cloze",
+        "listening_dictation": "Listening",
+        "guided_production": "Guided production",
+        "free_production": "Free production",
+        "pronunciation": "Pronunciation"
       },
       "actions": {
         "create": "Create item",
@@ -1432,5 +1449,81 @@
       "unavailable": "This course or its settings are no longer available. Load the current version.",
       "generic": "Settings could not be saved. Your changes have not been confirmed; please try again."
     }
+  },
+  "Eoi": {
+    "replaceDraft": "Replace your changes to this draft?",
+    "back": "Back to Import",
+    "studio": "B1 skills decks",
+    "intro": "Open a Lexora file or prepare a deck using a template. Review matches before saving to your course.",
+    "load": "Open .lexora.json deck or grammar/vocabulary CSV",
+    "template": "Skill template",
+    "title": "Title",
+    "packKey": "Stable deck key",
+    "sources": "Shared texts and recordings",
+    "source": "Source",
+    "sourceKey": "Source key",
+    "passage": "Visible passage",
+    "transcript": "Transcript",
+    "audioFile": "Model audio",
+    "downloadAudio": "Download model audio",
+    "addSource": "Add source",
+    "card": "Card",
+    "cardKey": "Stable card key",
+    "format": "Exercise type",
+    "short": "Short answer",
+    "choice": "Multiple choice",
+    "written": "Written production",
+    "oral": "Spoken production",
+    "imitate": "Imitation",
+    "produce": "Pronunciation production",
+    "word": "Word with reverse",
+    "prompt": "Question or situation",
+    "model": "Model answer",
+    "alternatives": "Accepted alternatives (one per line)",
+    "criteria": "Self-assessment criteria (one per line)",
+    "tags": "Tags (one per line)",
+    "options": "Choices (one per line)",
+    "evidence": "Exact supporting passage",
+    "emphasis": "Stressed part of the answer",
+    "from": "Clip start (s)",
+    "to": "Clip end (s)",
+    "addCard": "Add card",
+    "showModel": "Show or hide model",
+    "download": "Download deck JSON",
+    "previewCard": "Card preview",
+    "exam": "Listening mock exam",
+    "finishExam": "Mark block",
+    "preview": "Preview import",
+    "counts": "New: {created}. Linked: {linked}. Updated: {updated}. To detach from this deck: {removed}.",
+    "save": "Save and link matches",
+    "problem": "Review the deck.",
+    "openDeck": "Open saved deck",
+    "invalid": "The file or a field is invalid.",
+    "audioSize": "Choose audio up to 4 MiB.",
+    "audioError": "Audio could not load. You can try again.",
+    "needAudio": "Save the deck with its recording before starting a mock exam.",
+    "stop": "Stop",
+    "clue": "Replay the clue",
+    "listen": "Listen to model",
+    "listens": "Listens: {count} of {limit}",
+    "finishRecording": "Finish recording",
+    "record": "Record local attempt",
+    "listenSelf": "Listen to my attempt",
+    "micError": "Microphone unavailable. You can still practise aloud.",
+    "discard": "Discard attempt",
+    "select": "Select your answer",
+    "answer": "Your answer",
+    "speak": "Respond aloud.",
+    "match": "Your answer matches an accepted variant.",
+    "compare": "Compare your answer with the model.",
+    "editPack": "Edit, export or practise B1 deck",
+    "reading": "Reading",
+    "speaking": "Speaking",
+    "writing": "Writing",
+    "listening": "Listening",
+    "mediation": "Mediation",
+    "pronunciation": "Speaking · Pronunciation",
+    "grammar": "Grammar",
+    "vocabulary": "Vocabulary"
   }
 }

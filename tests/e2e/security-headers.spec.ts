@@ -74,7 +74,7 @@ test("HTML nonces change between responses; static, API and dotted 404 routes ke
     expect(response.headers()["x-content-type-options"]).toBe("nosniff");
     expect(response.headers()["x-frame-options"]).toBe("DENY");
     expect(response.headers()["referrer-policy"]).toBe("strict-origin-when-cross-origin");
-    expect(response.headers()["permissions-policy"]).toContain("microphone=()");
+    expect(response.headers()["permissions-policy"]).toContain("microphone=(self)");
     if (path === "/offline.html")
       expect(response.headers()["content-security-policy"]).toContain("script-src 'self'");
     if (path === "/en/unknown.page") {
