@@ -14,7 +14,8 @@ export default async function EoiPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  if (!(await getActiveCourseForCurrentUser())) redirect("/" + locale + "/onboarding");
+  const course = await getActiveCourseForCurrentUser();
+  if (!course) redirect("/" + locale + "/onboarding");
   const { deck, card, fromStudy } = await searchParams;
   const session = parseStudySessionId(fromStudy);
   const concepts = await getTranslations("Concepts");
@@ -27,7 +28,7 @@ export default async function EoiPage({
         {session ? concepts("items.backToReview") : t("back")}
       </Link>
       <h1 className="text-2xl font-semibold">{t("studio")}</h1>
-      <EoiStudio draftId={crypto.randomUUID()} initial={data} cardKey={card} />
+      <EoiStudio courseId={course.id} draftId={crypto.randomUUID()} initial={data} cardKey={card} />
     </main>
   );
 }

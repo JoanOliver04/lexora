@@ -7,7 +7,12 @@ async function target(params: Params["params"]) {
   const { hash } = await params;
   if (!/^[0-9a-f]{64}$/.test(hash)) return null;
   const { client, owner, course } = await eoiContext();
-  return { store: client.storage.from(bucket), path: [owner, course, hash].join("/"), hash };
+  return {
+    course,
+    store: client.storage.from(bucket),
+    path: [owner, course, hash].join("/"),
+    hash,
+  };
 }
 export async function GET(req: Request, { params }: Params) {
   try {
@@ -43,6 +48,7 @@ export async function PUT(req: Request, { params }: Params) {
   try {
     const t = await target(params);
     if (!t) return new Response(null, { status: 400 });
+    if (req.headers.get("x-lexora-course") !== t.course) return new Response(null, { status: 409 });
     const reader = req.body?.getReader();
     if (!reader) return new Response(null, { status: 400 });
     let size = 0;

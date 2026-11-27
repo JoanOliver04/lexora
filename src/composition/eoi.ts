@@ -22,10 +22,16 @@ const previewSchema = z.object({
   token: z.string(),
 });
 export type EoiPreview = z.infer<typeof previewSchema>;
-export async function saveEoi(input: string, media: Record<string, string>, token?: string) {
+export async function saveEoi(
+  expectedCourse: string,
+  input: string,
+  media: Record<string, string>,
+  token?: string,
+) {
   const pack = parseEoiPack(input);
   const hashes = z.record(z.string().max(100), z.string().regex(/^[a-f0-9]{64}$/)).parse(media);
   const { client, course } = await eoiContext();
+  if (course !== expectedCourse) throw Error("course-changed");
   const { data, error } = await client.rpc("eoi_save_pack", {
     p_course: course,
     p_pack: pack,

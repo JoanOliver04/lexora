@@ -79,9 +79,11 @@ export function EoiStudio({
   initial,
   cardKey,
   draftId,
+  courseId,
 }: {
   initial: EoiLoaded | null;
   draftId: string;
+  courseId: string;
   cardKey?: string | undefined;
 }) {
   const t = useTranslations("Eoi"),
@@ -162,13 +164,17 @@ export function EoiStudio({
           };
           const res = await fetch("/api/eoi/audio/" + hashes[s.audio], {
             method: "PUT",
-            headers: { "Content-Type": types[s.audio.split(".").pop()!.toLowerCase()]! },
+            headers: {
+              "X-Lexora-Course": courseId,
+              "Content-Type": types[s.audio.split(".").pop()!.toLowerCase()]!,
+            },
             body: f,
           });
           if (!res.ok) throw Error(t("audioError"));
         }
       }
       const r = await submitEoi(
+        courseId,
         JSON.stringify(validated),
         hashes,
         apply ? preview?.token : undefined,
