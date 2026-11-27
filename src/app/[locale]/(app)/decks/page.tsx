@@ -41,11 +41,7 @@ import { PendingButton } from "../../(auth)/_components/pending-button";
  * method="get">` sin JavaScript: navega con la query string, coherente con que
  * el resto de la pantalla ya funciona sin cliente.
  *
- * Reordenar («Subir»/«Bajar») solo tiene sentido sobre el orden completo y sin
- * filtrar: con búsqueda, filtro o más de una página activos, los botones se
- * ocultan — moverían una fila respecto de vecinos que no son los reales.
- * `moveDeckAction` sigue leyendo el orden completo por su cuenta (LEX-3.5), así
- * que no hace falta paginar esa lectura interna.
+ * El servidor mueve un mazo respecto de su vecino global, incluso entre páginas.
  */
 export default async function DecksPage({
   params,
@@ -113,7 +109,7 @@ export default async function DecksPage({
   const t = await getTranslations("Library");
   const collection = await getTranslations("Collection");
   const isFiltered = Boolean(search || category || cefrLevel);
-  const reorderable = !isFiltered && !includeArchived && total <= PAGE_SIZE;
+  const reorderable = !isFiltered && !includeArchived;
   const filters = [
     ...(search ? [{ key: "q", label: search }] : []),
     ...(category ? [{ key: "category", label: t(`categories.${category}`) }] : []),
@@ -279,6 +275,7 @@ export default async function DecksPage({
                     {reorderable && !deck.archivedAt ? (
                       <>
                         <form action={moveDeckAction}>
+                          <input type="hidden" name="returnQuery" value={returnQuery} />
                           <input type="hidden" name="locale" value={locale} />
                           <input type="hidden" name="deckId" value={deck.id} />
                           <input type="hidden" name="direction" value="up" />
@@ -286,10 +283,11 @@ export default async function DecksPage({
                             idle={t("actions.moveUp")}
                             pending={collection("saving")}
                             variant="secondary"
-                            disabled={index === 0}
+                            disabled={offset + index === 0}
                           />
                         </form>
                         <form action={moveDeckAction}>
+                          <input type="hidden" name="returnQuery" value={returnQuery} />
                           <input type="hidden" name="locale" value={locale} />
                           <input type="hidden" name="deckId" value={deck.id} />
                           <input type="hidden" name="direction" value="down" />
@@ -297,7 +295,7 @@ export default async function DecksPage({
                             idle={t("actions.moveDown")}
                             pending={collection("saving")}
                             variant="secondary"
-                            disabled={index === decks.length - 1}
+                            disabled={offset + index === total - 1}
                           />
                         </form>
                       </>

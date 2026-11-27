@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { getStudySessionSummary, type SessionHistoryRepository } from "./session-summary";
 import type { StudySession, StudySessionRepository } from "./study-session";
-import type { DailyQueueRepository } from "./daily-queue";
+import { queueFixture } from "../../../../tests/unit/study/queue-fixture";
 import { StudyError } from "./study-error";
 
 const now = new Date("2026-10-16T10:00:00Z");
@@ -35,7 +35,7 @@ function fixture(status: StudySession["status"] = "paused") {
       },
     ]),
   };
-  const queue: DailyQueueRepository = {
+  const queue = queueFixture({
     getCourseLimits: vi.fn().mockResolvedValue({ dailyNewLimit: 1, maximumReviewsPerDay: 0 }),
     listEligibleItems: vi.fn().mockResolvedValue([
       ...["a", "b"].map((practiceItemId) => ({
@@ -61,7 +61,7 @@ function fixture(status: StudySession["status"] = "paused") {
       },
     ]),
     countTodayActivity: vi.fn().mockResolvedValue({ newIntroduced: 0, reviewsDone: 0 }),
-  };
+  });
   return { sessions, history, queue };
 }
 describe("getStudySessionSummary", () => {

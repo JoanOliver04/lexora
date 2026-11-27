@@ -110,13 +110,8 @@ export function createSupabaseTagRepository(client: SupabaseClient<Database>): T
       return (data ?? []).map(toTag);
     },
 
-    async tagConcept({ ownerId, conceptId, tagId }) {
-      const { error } = await client
-        .from("concept_tags")
-        .upsert(
-          { owner_id: ownerId, concept_id: conceptId, tag_id: tagId },
-          { onConflict: "concept_id,tag_id", ignoreDuplicates: true },
-        );
+    async tagConcept({ conceptId, tagId }) {
+      const { error } = await client.rpc("keep_manual_tag", { p_concept: conceptId, p_tag: tagId });
       if (error) throw libraryErrorFrom(error, "no se pudo etiquetar el concepto");
     },
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { DailyQueueRepository } from "./daily-queue";
+import { queueFixture } from "../../../../tests/unit/study/queue-fixture";
 import type { TodayOverviewRepository } from "./today-overview";
 import { getTodayDashboard, type TodayDashboardRepository } from "./today-dashboard";
 
@@ -9,13 +9,12 @@ const DECK = "d0000000-0000-4000-8000-000000000001";
 const FOREIGN = "d0000000-0000-4000-8000-000000000002";
 const input = { ownerId: "owner", courseId: "course", now: NOW, timeZone: "Europe/Madrid" };
 function repositories() {
-  const queue: DailyQueueRepository = {
+  const queue = queueFixture({
     getCourseLimits: vi.fn().mockResolvedValue({ dailyNewLimit: 5, maximumReviewsPerDay: null }),
     listEligibleItems: vi.fn().mockResolvedValue([]),
     countTodayActivity: vi.fn().mockResolvedValue({ newIntroduced: 0, reviewsDone: 0 }),
-  };
+  });
   const overview: TodayOverviewRepository = {
-    getDifficultySignals: vi.fn().mockResolvedValue([]),
     listRecentDurations: vi.fn().mockResolvedValue([]),
   };
   const dashboard: TodayDashboardRepository = {

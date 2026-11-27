@@ -1,5 +1,5 @@
 begin;
-select plan(25);
+select plan(38);
 
 insert into auth.users(id) values('a11ce000-0000-4000-8000-000000000001');
 insert into public.profiles(id) values('a11ce000-0000-4000-8000-000000000001');
@@ -43,6 +43,41 @@ select lives_ok($$select public.eoi_save_pack(course,first_pack,'{}',true,public
 select ok((select summary like '%pasarela%' and summary like '%puente de mando%' and not ('puente'=any(string_to_array(summary,' · '))) from public.concepts where title='bridge'),'correction replaces own previous meaning and retains other deck meaning');
 update collision set pack=jsonb_set(jsonb_set(pack||'{"key":"words-phonetic","title":"Words D"}','{cards,0,prompt}','"bridge /brídj/"'),'{cards,0,answer}','"pasarela"');
 select is((select (public.eoi_save_pack(course,pack,'{}',false)->>'linked')::int from collision),1,'alternate pronunciation spelling links to the same vocabulary concept');
+-- A draft opened before another edit must not overwrite that edit during preview.
+select throws_ok($$select public.eoi_save_versioned(course,pack,'{}',false,null,'2001-01-01') from eoi_case$$,'P0001','editor-conflict','stale editor rejected before preview');
+select ok((select public.eoi_save_versioned(course,pack,'{}',false,null,d.updated_at) ? 'token'
+ from eoi_case e join public.decks d on d.eoi_manifest->>'key'=e.pack->>'key'),'fresh revision opens normally');
+update eoi_case set pack=jsonb_set(pack,'{cards,0,tags}','["retired-tag","manual-tag"]');
+select public.eoi_save_pack(course,pack,'{}',true,public.eoi_save_pack(course,pack,'{}',false)->>'token') from eoi_case;
+select public.attach_library_tag(c.owner_id,c.course_id,c.id,'manual-tag','manual-tag') from public.concepts c where title='When is lunch?';
+update eoi_case set pack=pack #- '{cards,0,tags}';
+select public.eoi_save_pack(course,pack,'{}',true,public.eoi_save_pack(course,pack,'{}',false)->>'token') from eoi_case;
+select ok(not exists(select 1 from public.concept_tags ct join public.tags t on ct.tag_id=t.id where t.normalized_name='retired-tag'),'retired import tag removed');
+select ok(exists(select 1 from public.concept_tags ct join public.tags t on ct.tag_id=t.id where t.normalized_name='manual-tag'),'explicit manual tag survives');
+create temp table saved_card as select pack->'cards'->1 q from eoi_case;
+update eoi_case set pack=pack #- '{cards,1}';
+select public.eoi_save_pack(course,pack,'{}',true,public.eoi_save_pack(course,pack,'{}',false)->>'token') from eoi_case;
+select is((select (public.eoi_save_pack(course,jsonb_set(pack,'{cards}',(pack->'cards')||q),'{}',false)->>'restored')::int from eoi_case,saved_card),1,'restoring a retired ID requires explicit UI confirmation');
+select is((select (public.eoi_save_pack(course,jsonb_set(pack,'{cards}',(pack->'cards')||(q||'{"key":"q-fresh"}')),'{}',false)->>'new')::int from eoi_case,saved_card),1,'a fresh key creates an unstudied question');
+update eoi_case set pack=jsonb_set(pack,'{sources}',(pack->'sources')||'{"key":"unused-source","title":"Extra"}');
+select public.eoi_save_pack(course,pack,'{}',true,public.eoi_save_pack(course,pack,'{}',false)->>'token') from eoi_case;
+update eoi_case set pack=pack #- '{sources,1}';
+select public.eoi_save_pack(course,pack,'{}',true,public.eoi_save_pack(course,pack,'{}',false)->>'token') from eoi_case;
+select ok((select not(eoi_sources ? 'unused-source') and eoi_sources ? 's1' from public.courses limit 1),'unused source pruned and live source retained');
+select is((select count(*)::int from eoi_case e cross join lateral public.eoi_find_sources(e.course,'notice')),1,'existing sources offered by title');
+reset role;
+insert into storage.objects(bucket_id,name,created_at)
+ select 'study-audio','a11ce000-0000-4000-8000-000000000001/c0a75e00-0000-4000-8000-00000000000a/'||repeat(h,64),now()-interval '2 days'
+ from (values('a'),('b'),('c')) hashes(h);
+update public.courses set eoi_sources=jsonb_set(eoi_sources,'{s1,hash}',to_jsonb(repeat('a',64))) where id='c0a75e00-0000-4000-8000-00000000000a';
+set local role authenticated;
+select ok((select public.eoi_audio_lease(course,repeat('b',64)) from eoi_case),'new upload protected until saved');
+select is((select string_agg(h.hash,',') from eoi_case e cross join lateral public.eoi_collect_audio(e.course) h),repeat('c',64),'only old unreferenced, unleased bytes eligible for cleanup');
+select ok((select not public.eoi_audio_lease(course,repeat('c',64)) from eoi_case),'new upload waits for physical deletion already in progress');
+select public.eoi_finish_audio_gc(course,array[repeat('c',64)]) from eoi_case;
+select ok((select public.eoi_media_busy(course,repeat('c',64)) from eoi_case),'failed physical deletion retains its claim');
+select ok(not exists(select from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'
+ and p.proname in ('keep_manual_tag','eoi_media_busy','eoi_audio_lease','eoi_collect_audio','eoi_finish_audio_gc') and p.prosecdef),'exposed media and tag functions run with caller privileges');
 select ok(not has_function_privilege('anon','public.eoi_save_pack(uuid,jsonb,jsonb,boolean,text)','EXECUTE'),'anonymous role cannot import');
 set local request.jwt.claims='{"sub":"b11ce000-0000-4000-8000-000000000002","role":"authenticated"}';
 select is(public.eoi_read_sources('c0a75e00-0000-4000-8000-00000000000a',array['s1']),'{}'::jsonb,'other account cannot read sources');

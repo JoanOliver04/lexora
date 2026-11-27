@@ -1,12 +1,61 @@
 # Exportación de datos propios
 
-La pantalla de ajustes permite solicitar JSON o CSV. La descarga es explícita,
+En Ajustes, **Descargar copia completa** crea un archivo `.lexora` con los registros
+de la cuenta y cada audio modelo referenciado por sus cursos. JSON y CSV siguen
+disponibles como formatos de datos que guardan las referencias al audio.
+La descarga es explícita,
 sin cifrar y se ofrece solo cuando el navegador ha recibido y verificado todo
 el archivo. Un fallo, cancelación o discrepancia de bytes/hash no crea un enlace
 de descarga. No se sube una copia a un proveedor nuevo ni se guarda un snapshot
 temporal en la base de datos.
 
-## Lectura y permisos
+## Copia completa con audio
+
+La copia completa usa un manifiesto JSON, páginas de registros en UTF-8 y archivos
+de audio binarios. El manifiesto identifica la cuenta, la fecha, las colecciones,
+los tamaños, los tipos de audio y sus huellas SHA-256. Cada combinación de curso
+y huella se descarga una vez. Las grabaciones de práctica son locales y se
+descartan al salir del ejercicio.
+
+PostgreSQL calcula las huellas de las páginas bajo una misma instantánea de lectura.
+El navegador obtiene cada página en fragmentos de hasta 256 KiB y comprueba la
+huella antes de crear el archivo. Si una página cambia durante la descarga o
+falta una grabación, vuelve a solicitar la copia. El límite es de 200.000 filas,
+64 MiB de páginas, 4.096 páginas y 128 MiB de audio en hasta 1.024 archivos.
+Cada audio admite hasta 4 MiB. La solicitud inicial comparte la cuota de una
+exportación por minuto con JSON y CSV.
+
+Al seleccionar el archivo, Lexora verifica en el dispositivo la cuenta, el
+manifiesto, todas las páginas y todos los audios. Tras la confirmación, el
+servidor recibe fragmentos de hasta 256 KiB. La autorización temporal de
+Storage permite recuperar los audios de un curso incluso cuando ese curso
+ya se ha eliminado. El servidor verifica las huellas, el tamaño de cada objeto
+y la propiedad de las filas antes de confirmar la sustitución. Una única
+transacción restaura las páginas en el orden de sus dependencias.
+Se requiere una sesión reciente al iniciar y al confirmar la restauración.
+La autorización del archivo completo caduca al cabo de una hora. Para reanudar
+tras identificarte de nuevo, selecciona el mismo archivo en la misma pestaña.
+
+Cada audio nuevo tiene un recibo de subida vinculado al propietario que puede
+sobrevivir a la ausencia del curso. Al descartar una restauración, Lexora retira
+los audios introducidos por ese intento que siguen sin referencias. Si la red
+se interrumpe o el intento caduca, Ajustes reintenta la limpieza al abrirse,
+al recuperar conexión y mientras la página permanece abierta. La siguiente
+restauración también la reintenta. El servidor reserva cada retirada, protege
+audios compartidos o en uso y verifica la ausencia en Storage antes de borrar
+su recibo. El equipo puede permanecer apagado entre intentos.
+
+### Lectura del archivo fuera de Lexora
+
+Los primeros 82 bytes son una cabecera ASCII. Las tres líneas contienen
+`LEXORA1`, la longitud del manifiesto en ocho dígitos hexadecimales y su SHA-256
+en 64 dígitos hexadecimales. Cada línea termina con un salto LF. A continuación
+vienen el manifiesto JSON UTF-8, las páginas JSON en el orden de `pages` y los
+archivos binarios en el orden de `audio`. El campo `bytes` de cada entrada
+delimita su contenido. Las entradas de audio identifican el curso, el tipo MIME
+y la huella SHA-256. Los nombres originales figuran en `eoi_sources` del curso.
+
+## Lectura y permisos de JSON y CSV
 
 `export_account_data()` es SECURITY INVOKER, fija `search_path` vacío y UTC, deriva
 `auth.uid()` y pasa por las políticas RLS de cada tabla. No acepta un propietario
@@ -75,7 +124,7 @@ iniciales. El escape de fórmulas es independiente del escape de delimitadores,
 comillas y saltos de línea. Se comprueba con un parser real y fixtures hostiles,
 siguiendo [OWASP CSV Injection](https://community.owasp.org/attacks/CSV_Injection).
 
-## Restauración en Ajustes
+## Restauración de JSON y CSV en Ajustes
 
 Se admite el JSON original y el CSV original que incluye el envelope en la última
 fila. El navegador comprueba la versión, el checksum y la cuenta, y muestra la

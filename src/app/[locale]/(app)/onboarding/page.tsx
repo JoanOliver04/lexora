@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 
+import { Link } from "@/i18n/navigation";
 import { OnboardingForm } from "./onboarding-form";
 
 /**
@@ -34,6 +35,12 @@ export default async function OnboardingPage({ params }: { params: Promise<{ loc
         <p className="text-sm text-(--color-ink-muted)">{t("intro")}</p>
       </div>
       <OnboardingForm locale={locale} />
+      <Link
+        href="/app/settings"
+        className="self-start py-3 font-medium text-(--color-accent) underline underline-offset-4"
+      >
+        {t("accountSettings")}
+      </Link>
     </main>
   );
 }

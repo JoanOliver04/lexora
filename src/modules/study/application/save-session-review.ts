@@ -97,13 +97,17 @@ export async function saveSessionReview(
   const existing = await readReceipt();
   if (existing) return receiptResult(existing);
   if (session.status !== "active") return { ok: false, reason: "inactive-session" };
-  const available = await getDailyQueue(ports.queue, {
-    ownerId: input.ownerId,
-    courseId: session.courseId,
-    deckIds: session.scope.deckIds,
-    now: input.now,
-    timeZone: input.timeZone,
-  });
+  const available = await getDailyQueue(
+    ports.queue,
+    {
+      ownerId: input.ownerId,
+      courseId: session.courseId,
+      deckIds: session.scope.deckIds,
+      now: input.now,
+      timeZone: input.timeZone,
+    },
+    "first",
+  );
   if (!available.ok) return available;
   if (available.queue.entries[0]?.practiceItemId !== intent.practiceItemId)
     return rejectOrReplay("card-changed");

@@ -608,5 +608,65 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
         ).error?.code,
       ).toBe("42501");
     });
+    it("serializes two relative moves across a thousand decks and respects foreign owners and ties", async () => {
+      const { data: template, error } = await a
+        .from("courses")
+        .select("source_language_id,target_language_id")
+        .eq("id", course)
+        .single();
+      expect(error).toBeNull();
+      const courseId = randomUUID();
+      expect(
+        (
+          await a
+            .from("courses")
+            .insert({ id: courseId, owner_id: owner, title: "Ordering fixture", ...template! })
+        ).error,
+      ).toBeNull();
+      const deckIds = Array.from({ length: 1003 }, () => randomUUID());
+      for (let from = 0; from < deckIds.length; from += 500) {
+        expect(
+          (
+            await a.from("decks").insert(
+              deckIds.slice(from, from + 500).map((id, index) => ({
+                id,
+                owner_id: owner,
+                course_id: courseId,
+                title: "Ordered " + (from + index),
+                position: from + index,
+              })),
+            )
+          ).error,
+        ).toBeNull();
+      }
+      const repo = createSupabaseDeckRepository(a),
+        scope = { ownerId: owner, courseId };
+      const moving = deckIds[1002]!;
+      const move = { ...scope, deckId: moving, direction: "up" as const };
+      const order = async () => (await repo.list(scope)).map((row) => row.id);
+      expect(await order()).toEqual(deckIds);
+      const before = await repo.search({ ...scope, offset: 1000, limit: 20 });
+      expect(before.total).toBe(1003);
+      expect(before.items.map((item) => item.id)).toEqual(deckIds.slice(1000));
+      await Promise.all([repo.move(move), repo.move(move)]);
+      const expected = [...deckIds.slice(0, 1000), moving, deckIds[1000]!, deckIds[1001]!];
+      expect(await order()).toEqual(expected);
+      await createSupabaseDeckRepository(b).move(move);
+      expect(await order()).toEqual(expected);
+
+      // Legacy positions can coincide. A gap separates this cluster from the rest.
+      expect(
+        (await a.from("decks").update({ position: 0 }).in("id", deckIds.slice(0, 4))).error,
+      ).toBeNull();
+      const tied = await order(),
+        first = tied[0]!,
+        next = tied[1]!;
+      await repo.move({ ...scope, deckId: next, direction: "up" });
+      expect(await order()).toEqual([next, first, ...tied.slice(2)]);
+      await repo.move({ ...scope, deckId: next, direction: "up" });
+      expect(
+        (await repo.search({ ...scope, offset: 0, limit: 2 })).items.map((item) => item.id),
+      ).toEqual([next, first]);
+    }, 30_000);
   },
 );

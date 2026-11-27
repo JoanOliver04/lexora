@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { answerMatches, type EoiPack } from "../domain/eoi";
 import { ModelAudio } from "./eoi-exercise";
@@ -9,7 +9,9 @@ export function ListeningExam({
   pack,
   hashes,
   previews = {},
+  attemptId,
 }: {
+  attemptId: string;
   pack: EoiPack;
   hashes: Record<string, string>;
   previews?: Record<string, string>;
@@ -19,15 +21,66 @@ export function ListeningExam({
   const [finished, setFinished] = useState<Record<string, boolean>>({}),
     [plays, setPlays] = useState<Record<string, number>>({}),
     [answers, setAnswers] = useState<Record<string, string>>({});
+  const storageKey = "lexora:listening:" + attemptId;
+  const signature = JSON.stringify([pack, hashes]);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      try {
+        const raw = sessionStorage.getItem(storageKey);
+        if (raw) {
+          const saved = JSON.parse(raw);
+          if (saved.signature === signature) {
+            setKey(saved.key);
+            setAnswers(saved.answers);
+            setPlays(saved.plays);
+            setFinished(saved.finished);
+          }
+        }
+      } catch {
+        /* Storage can be disabled in private browsing. */
+      }
+      setReady(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, [storageKey, signature]);
+  useEffect(() => {
+    if (!ready) return;
+    try {
+      sessionStorage.setItem(
+        storageKey,
+        JSON.stringify({ signature, key, answers, plays, finished }),
+      );
+    } catch {
+      /* The current attempt stays available in memory. */
+    }
+  }, [ready, storageKey, signature, key, answers, plays, finished]);
   const source = pack.sources.find((s) => s.key === key);
   const cards = pack.cards.filter((c) => c.source === key);
   const hash = source?.audio && hashes[source.audio];
   const done = !!finished[key];
+  if (!ready) return null;
   if (!hash || !source) return <p>{t("needAudio")}</p>;
   const audio = previews[hash] ?? "/api/eoi/audio/" + hash;
   return (
     <section className="flex flex-col gap-3 rounded border p-4">
       <h3>{t("exam")}</h3>
+      <button
+        type="button"
+        className={button}
+        onClick={() => {
+          if (!window.confirm(t("restartConfirm"))) return;
+          setAnswers({});
+          setPlays({});
+          setFinished({});
+        }}
+      >
+        {t("restart")}
+      </button>
       <select
         aria-label={t("source")}
         className={field}

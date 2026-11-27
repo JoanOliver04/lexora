@@ -100,13 +100,14 @@ function fromCard(card: Card): LearningState {
 
 /** FSRS recall estimate for a compatible review state, using elapsed full days. */
 export function estimateReviewRecall(stability: number, lastReviewedAt: Date, at: Date) {
+  if (!(lastReviewedAt <= at)) return null;
+  return estimateRecallAfterDays(stability, date_diff(at, lastReviewedAt, "days"));
+}
+
+export function estimateRecallAfterDays(stability: number, elapsedDays: number) {
   const rounded = +stability.toFixed(8);
-  if (!Number.isFinite(rounded) || rounded <= 0 || !(lastReviewedAt <= at)) return null;
-  return forgetting_curve(
-    V1_SCHEDULER_CONFIG.weights,
-    date_diff(at, lastReviewedAt, "days"),
-    rounded,
-  );
+  if (!Number.isFinite(rounded) || rounded <= 0) return null;
+  return forgetting_curve(V1_SCHEDULER_CONFIG.weights, elapsedDays, rounded);
 }
 
 export function createTsFsrsScheduler(): SpacedRepetitionScheduler {

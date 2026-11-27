@@ -17,7 +17,7 @@ export function ExportControls() {
   useEffect(() => {
     if (result) message.current?.focus();
   }, [result]);
-  async function download(format: ExportFormat) {
+  async function download(format: ExportFormat | "archive") {
     if (busy.current) return;
     busy.current = true;
     const controller = new AbortController();
@@ -44,6 +44,10 @@ export function ExportControls() {
       </header>
       <dl className="flex flex-col gap-3 text-sm">
         <div>
+          <dt className="font-semibold">{t("archiveName")}</dt>
+          <dd className="mt-1 leading-relaxed text-(--color-ink-muted)">{t("archiveNote")}</dd>
+        </div>
+        <div>
           <dt className="font-semibold">JSON</dt>
           <dd className="mt-1 leading-relaxed text-(--color-ink-muted)">{t("jsonNote")}</dd>
         </div>
@@ -55,7 +59,10 @@ export function ExportControls() {
       <p className="text-sm leading-relaxed text-(--color-ink-muted)">{t("privacy")}</p>
       <fieldset disabled={pending} className="flex min-w-0 flex-wrap gap-3 border-0 p-0">
         <legend className="sr-only">{t("format")}</legend>
-        <Button type="button" onClick={() => void download("json")}>
+        <Button type="button" onClick={() => void download("archive")}>
+          {t("archive")}
+        </Button>
+        <Button type="button" variant="secondary" onClick={() => void download("json")}>
           {t("json")}
         </Button>
         <Button type="button" variant="secondary" onClick={() => void download("csv")}>

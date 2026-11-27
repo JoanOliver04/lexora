@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { DailyQueueRepository } from "./daily-queue";
+import { queueFixture } from "../../../../tests/unit/study/queue-fixture";
 import type { TodayDashboardRepository } from "./today-dashboard";
 import { StudyError } from "./study-error";
 import {
@@ -14,7 +14,6 @@ import {
 } from "./study-session";
 
 const NOW = new Date("2026-10-06T10:00:00Z");
-const REVIEW_PRIORITY = { at: new Date("2026-10-05T22:00:00Z"), dueThrough: NOW };
 const SESSION = "50000000-0000-4000-8000-000000000001";
 const DECK = "d0000000-0000-4000-8000-000000000001";
 const OTHER = "d0000000-0000-4000-8000-000000000002";
@@ -70,7 +69,7 @@ function repositories() {
         return session;
       }),
   };
-  const queue: DailyQueueRepository = {
+  const queue = queueFixture({
     getCourseLimits: vi.fn().mockResolvedValue({ dailyNewLimit: 1, maximumReviewsPerDay: 1 }),
     listEligibleItems: vi.fn().mockResolvedValue([
       {
@@ -84,7 +83,7 @@ function repositories() {
       { practiceItemId: "new-2", phase: null, dueAt: null, learningStateId: null, revision: null },
     ]),
     countTodayActivity: vi.fn().mockResolvedValue({ newIntroduced: 0, reviewsDone: 0 }),
-  };
+  });
   const decks: Pick<TodayDashboardRepository, "listActiveDecks"> = {
     listActiveDecks: vi.fn().mockResolvedValue([
       { id: DECK, title: "One" },
@@ -113,7 +112,6 @@ describe("createStudySession", () => {
       ownerId: "owner",
       courseId: "course",
       deckIds: null,
-      reviewPriority: REVIEW_PRIORITY,
     });
   });
 
@@ -129,7 +127,6 @@ describe("createStudySession", () => {
       ownerId: "owner",
       courseId: "course",
       deckIds: [DECK],
-      reviewPriority: REVIEW_PRIORITY,
     });
   });
 
@@ -270,7 +267,6 @@ describe("session reads and setup", () => {
       ownerId: "owner",
       courseId: "course",
       deckIds: null,
-      reviewPriority: REVIEW_PRIORITY,
     });
   });
 
@@ -291,7 +287,6 @@ describe("session reads and setup", () => {
       ownerId: "owner",
       courseId: "course",
       deckIds: [DECK],
-      reviewPriority: REVIEW_PRIORITY,
     });
     vi.mocked(queue.listEligibleItems).mockResolvedValue([]);
     const refreshed = await getStudySession(sessions, queue, input);

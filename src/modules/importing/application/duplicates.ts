@@ -1,8 +1,8 @@
 /**
  * Plan de duplicados de importación (LEX-4.6).
  *
- * Reutiliza `canonicalKey` y `ConceptRepository.list` de la biblioteca
- * (LEX-3.10 / LEX-3.4): misma clave, mismos conceptos vivos del curso.
+ * Compara el vocabulario con la clave del editor EOI y conserva la coincidencia
+ * exacta para los demás conceptos vivos.
  * Una sola lectura del curso, clasificación en memoria — no un `find` por
  * fila (un archivo de 10.000 filas no debe disparar 10.000 consultas).
  *
@@ -10,7 +10,8 @@
  */
 
 import { type ConceptRepository } from "@/modules/library/application/concept";
-import { canonicalKey } from "@/modules/library/domain/concept";
+import { vocabularyKey } from "@/modules/library/domain/eoi";
+import { canonicalKey, type Concept } from "@/modules/library/domain/concept";
 
 import {
   DUPLICATE_HIT_LIMIT,
@@ -63,25 +64,7 @@ export async function planImportDuplicates(input: {
     courseId: input.courseId,
   });
 
-  const titlesByKey = new Map<string, string[]>();
-  const existingKeys = new Set<string>();
-  for (const concept of existing) {
-    existingKeys.add(concept.canonicalKey);
-    const titles = titlesByKey.get(concept.canonicalKey) ?? [];
-    titles.push(concept.title);
-    titlesByKey.set(concept.canonicalKey, titles);
-  }
-
-  const keyed = input.validRows.map((row) => ({
-    rowNumber: row.rowNumber,
-    key: canonicalKey(row.front),
-    front: row.front,
-  }));
-
-  const classified = classifyImportRows(
-    keyed.map(({ rowNumber, key }) => ({ rowNumber, key })),
-    existingKeys,
-  );
+  const { keyed, classified } = classifyVocabularyImport(input.validRows, existing);
 
   const hits: DuplicateHit[] = [];
   for (const row of keyed) {
@@ -91,7 +74,7 @@ export async function planImportDuplicates(input: {
     hits.push({
       rowNumber: row.rowNumber,
       front: row.front,
-      existingTitles: (titlesByKey.get(row.key) ?? []).slice(0, EXISTING_TITLE_LIMIT),
+      existingTitles: row.existingTitles.slice(0, EXISTING_TITLE_LIMIT),
       otherFileRows: fileRows.filter((number) => number !== row.rowNumber),
     });
   }
@@ -103,4 +86,34 @@ export async function planImportDuplicates(input: {
     invalidCount: input.invalidCount,
     hits,
   };
+}
+
+// The classic importer creates vocabulary rows. An exact front still counts
+// against other concept kinds, whose slash-delimited text can be meaningful.
+export function classifyVocabularyImport(
+  rows: Pick<ParsedImportRow, "rowNumber" | "front">[],
+  concepts: Pick<Concept, "kind" | "title" | "canonicalKey">[],
+) {
+  const vocabulary = new Map<string, string[]>();
+  const other = new Map<string, string[]>();
+  for (const concept of concepts) {
+    const isWord = concept.kind === "vocabulary";
+    const index = isWord ? vocabulary : other;
+    const key = isWord ? vocabularyKey(concept.title) : concept.canonicalKey;
+    const titles = index.get(key) ?? [];
+    if (titles.length < EXISTING_TITLE_LIMIT) titles.push(concept.title);
+    index.set(key, titles);
+  }
+  const keyed = rows.map(({ rowNumber, front }) => {
+    const key = vocabularyKey(front);
+    const exact = other.get(canonicalKey(front)) ?? [];
+    return {
+      rowNumber,
+      front,
+      key,
+      exactMatch: exact.length > 0,
+      existingTitles: [...(vocabulary.get(key) ?? []), ...exact],
+    };
+  });
+  return { keyed, classified: classifyImportRows(keyed, new Set(vocabulary.keys())) };
 }

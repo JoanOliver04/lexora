@@ -609,6 +609,20 @@ function ImportPreviewFormSession({
                   </fieldset>
                 )}
 
+                {state.prepared && state.prepared.independentVocabulary.count > 0 && (
+                  <p className="text-sm">
+                    {t("plan.independentVocabulary", {
+                      count: state.prepared.independentVocabulary.count,
+                      examples: state.prepared.independentVocabulary.examples.join(", "),
+                    })}
+                  </p>
+                )}
+                <p className="text-sm text-(--color-ink-muted)">
+                  {t("plan.sharedVocabulary")}{" "}
+                  <Link href="/import/eoi" className="font-medium underline underline-offset-4">
+                    {t("plan.openEoi")}
+                  </Link>
+                </p>
                 {(state.duplicateHits ?? []).length > 0 ? (
                   <div className="flex flex-col gap-2">
                     <h3 className="font-medium">{t("plan.hitsHeading")}</h3>

@@ -84,6 +84,7 @@ const matchesSchema = z
       rowNumber: z.number().int().positive(),
       canonicalKey: z.string().max(400),
       existingTitles: z.array(z.string().max(200)).max(3),
+      independentVocabulary: z.boolean().optional(),
     }),
   )
   .max(250);

@@ -18,15 +18,20 @@ export async function checkStudyStepsAction(sessionId: string) {
   const context = await getStudyContextForCurrentUser();
   if (!context) return { status: "error" } as const;
   const now = context.clock.now();
-  const result = await getStudySession(context.sessions, context.dailyQueue, {
-    ownerId: context.ownerId,
-    sessionId,
-    now,
-    timeZone: context.timeZone,
-  });
+  const result = await getStudySession(
+    context.sessions,
+    context.dailyQueue,
+    {
+      ownerId: context.ownerId,
+      sessionId,
+      now,
+      timeZone: context.timeZone,
+    },
+    "counts",
+  );
   if (!result.ok) return { status: "error" } as const;
   const queue = result.queue;
-  if (!queue || queue.entries.length > 0 || !queue.nextLearningDueAt) {
+  if (!queue || queue.availableCount > 0 || !queue.nextLearningDueAt) {
     return { status: "refresh" } as const;
   }
   return {

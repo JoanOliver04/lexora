@@ -9,10 +9,19 @@ import type {
   AccountDeletionResult,
 } from "@/modules/data-management/application/delete-account";
 
-export function DeleteAccountForm({ factors }: { factors: AccountDeletionFactors | null }) {
+export function DeleteAccountForm({
+  factors,
+  verifyGoogle,
+  googleFailed = false,
+}: {
+  factors: AccountDeletionFactors | null;
+  verifyGoogle?: () => Promise<void>;
+  googleFailed?: boolean;
+}) {
   const t = useTranslations("AccountDeletion"),
     locale = useLocale();
   const router = useRouter();
+  const googleMode = factors?.google && (!factors.password || factors.googleVerified);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<AccountDeletionFailure | "uncertain" | null>(null);
   const busy = useRef(false),
@@ -33,7 +42,7 @@ export function DeleteAccountForm({ factors }: { factors: AccountDeletionFactors
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: data.get("email"),
-          password: data.get("password"),
+          ...(googleMode ? { method: "google" } : { password: data.get("password") }),
           confirmation: data.get("confirmation"),
           acknowledged: data.get("acknowledged") === "on",
           ...(data.get("otp") ? { otp: data.get("otp") } : {}),
@@ -51,6 +60,7 @@ export function DeleteAccountForm({ factors }: { factors: AccountDeletionFactors
         "unauthenticated",
         "reauth-required",
         "mfa-required",
+        "cleanup-pending",
         "cooldown",
         "unavailable",
       ];
@@ -77,10 +87,19 @@ export function DeleteAccountForm({ factors }: { factors: AccountDeletionFactors
         {t("title")}
       </h2>
       <p className="mt-3 leading-relaxed text-(--color-ink-muted)">{t("description")}</p>
-      <details className="mt-4">
+      <details className="mt-4" open={factors?.googleVerified || googleFailed || undefined}>
         <summary className="min-h-11 cursor-pointer py-3 font-medium underline underline-offset-4">
           {t("open")}
         </summary>
+        {factors?.google && (
+          <form action={verifyGoogle} className="mt-4 space-y-3">
+            {googleFailed && <p role="alert">{t("googleFailed")}</p>}
+            <p>{t(factors.googleVerified ? "googleVerified" : "googleHint")}</p>
+            <Button type="submit" variant="secondary">
+              {t("verifyGoogle")}
+            </Button>
+          </form>
+        )}
         <form onSubmit={submit} className="mt-4 flex min-w-0 flex-col gap-5">
           <p id="delete-warning" className="leading-relaxed">
             {t("warning")}
@@ -89,6 +108,11 @@ export function DeleteAccountForm({ factors }: { factors: AccountDeletionFactors
             {error && (
               <FormError id="delete-error">
                 <p>{t(`errors.${error}`)}</p>
+                {error === "cleanup-pending" && (
+                  <Button type="button" variant="secondary" onClick={() => router.refresh()}>
+                    {t("resume")}
+                  </Button>
+                )}
               </FormError>
             )}
           </div>
@@ -103,7 +127,10 @@ export function DeleteAccountForm({ factors }: { factors: AccountDeletionFactors
           {factors?.requiresMfa && !factors.factors.length && <p>{t("unsupportedFactor")}</p>}
           <fieldset
             disabled={
-              pending || factors === null || (factors.requiresMfa && !factors.factors.length)
+              pending ||
+              factors === null ||
+              (googleMode === true && !factors.googleVerified) ||
+              (factors.requiresMfa && !factors.factors.length)
             }
             className="flex min-w-0 flex-col gap-5 border-0 p-0"
             aria-describedby="delete-warning"
@@ -120,18 +147,20 @@ export function DeleteAccountForm({ factors }: { factors: AccountDeletionFactors
                 autoComplete="username"
               />
             </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="delete-password">{t("password")}</Label>
-              <Input
-                id="delete-password"
-                name="password"
-                type="password"
-                required
-                minLength={8}
-                maxLength={72}
-                autoComplete="current-password"
-              />
-            </div>
+            {!googleMode && (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="delete-password">{t("password")}</Label>
+                <Input
+                  id="delete-password"
+                  name="password"
+                  type="password"
+                  required
+                  minLength={8}
+                  maxLength={72}
+                  autoComplete="current-password"
+                />
+              </div>
+            )}
             {factors && factors.factors.length > 0 && (
               <div className="flex flex-col gap-2">
                 <Label htmlFor="delete-factor">{t("factor")}</Label>

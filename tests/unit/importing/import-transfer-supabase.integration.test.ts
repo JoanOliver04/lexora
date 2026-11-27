@@ -202,7 +202,16 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
         .eq("owner_id", owner);
       expect(receipts.data).toHaveLength(5);
       expect(receipts.data!.every((row) => row.request_payload === null)).toBe(true);
-      const matches = await port.duplicates(course, [{ rowNumber: 1, front: "Synthetic 01009" }]);
+      const previewBatch = Array.from({ length: 250 }, (_, index) => ({
+        rowNumber: index + 1,
+        front: `Synthetic ${String(index).padStart(5, "0")} /ipa/`,
+      }));
+      const allMatches = await port.duplicates(course, previewBatch);
+      expect(allMatches).toHaveLength(250);
+      expect(allMatches.every((match) => match.existingTitles.length === 1)).toBe(true);
+      const matches = await port.duplicates(course, [
+        { rowNumber: 1, front: "Synthetic 01009 /ten/" },
+      ]);
       expect(matches).toEqual([
         { rowNumber: 1, canonicalKey: "synthetic 01009", existingTitles: ["Synthetic 01009"] },
       ]);
@@ -216,7 +225,7 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
             {
               kind: "valid",
               rowNumber: 1,
-              front: "Synthetic 01009",
+              front: "Synthetic 01009 /ten/",
               back: "Synthetic meaning 1009",
               tags: [],
             },
@@ -425,6 +434,32 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
       expect((await port.errors(job.id, 0))[0]?.sample?.isWellFormed()).toBe(true);
     });
 
+    it("keeps a phonetic vocabulary variant when the owner explicitly chooses an independent copy", async () => {
+      const { original, other } = await targetFixture("Pronunciation");
+      const front = "Pronunciation original /oʊ/";
+      expect(await port.duplicates(course, [{ rowNumber: 1, front }])).toMatchObject([
+        { canonicalKey: "pronunciation original", existingTitles: ["Pronunciation original"] },
+      ]);
+      await new Promise((resolve) => setTimeout(resolve, 2100));
+      const input = descriptor(1);
+      input.mapping.strategy = "copy";
+      const job = await port.begin(input);
+      expect(await port.append(job.id, 0, records(1, front))).toMatchObject({
+        status: "completed",
+        rowsCreated: 1,
+        rowsSkipped: 0,
+        rowsDuplicate: 1,
+      });
+      expect((await members(other)).map((row) => row.concept_id)).toEqual([original]);
+      const copy = await a
+        .from("concepts")
+        .select("id,title")
+        .eq("owner_id", owner)
+        .eq("title", front)
+        .single();
+      expect(copy.data?.title).toBe(front);
+      expect(copy.data?.id).not.toBe(original);
+    });
     it("adds to a specific deck without same-front duplicates across batches", async () => {
       await new Promise((resolve) => setTimeout(resolve, 2100));
       const { target, original, other } = await targetFixture("Append probe");
@@ -454,12 +489,12 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
 
       const scope = { deckId: target, mode: "append" as const };
       const preview = [
-        { rowNumber: 1, front: "APPEND   probe original" },
+        { rowNumber: 1, front: "APPEND   probe original /oʊ/" },
         { rowNumber: 2, front: "Elsewhere only" },
       ];
       expect(await port.duplicates(course, preview, scope)).toMatchObject([
-        { existingTitles: ["Append probe original"] },
-        { existingTitles: [] },
+        { existingTitles: ["Append probe original"], independentVocabulary: false },
+        { existingTitles: [], independentVocabulary: true },
       ]);
       const foreign = createSupabaseImportTransferRepository(b, users[1]!);
       await expect(foreign.duplicates(course, preview, scope)).rejects.toMatchObject({
@@ -470,8 +505,8 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
       });
 
       const job = await port.begin(targetedDescriptor(target, 4, "append"));
-      await port.append(job.id, 0, records(1, "APPEND probe original", "Elsewhere only"));
-      const done = await port.append(job.id, 2, records(3, "elsewhere  only", "New unique"));
+      await port.append(job.id, 0, records(1, "APPEND probe original /oʊ/", "Elsewhere only"));
+      const done = await port.append(job.id, 2, records(3, "elsewhere  only /e/", "New unique"));
       expect(done).toMatchObject({
         status: "completed",
         rowsCreated: 2,
@@ -512,17 +547,17 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
           deckId: target,
           mode: "replace",
         }),
-      ).toMatchObject([{ existingTitles: [] }]);
+      ).toMatchObject([{ existingTitles: [], independentVocabulary: true }]);
 
       const job = await port.begin(input);
-      const draft = records(1, "Replacement probe original", "Replacement probe two");
+      const draft = records(1, "Replacement probe original", "Replacement probe two /tuː/");
       expect(await port.append(job.id, 0, draft)).toMatchObject({
         status: "importing",
         processedRows: 2,
       });
       expect(await members(target)).toEqual(before);
       expect(
-        (await a.from("concepts").select("id").eq("title", "Replacement probe two")).data,
+        (await a.from("concepts").select("id").eq("title", "Replacement probe two /tuː/")).data,
       ).toEqual([]);
       expect((await port.begin(input)).processedRows).toBe(2);
       const lateFailure = await a.rpc("commit_import_batch", {
@@ -543,7 +578,7 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
       expect(await members(target)).toEqual(before);
       expect((await port.status(job.id)).processedRows).toBe(2);
 
-      const finish = records(3, "replacement probe two", "Replacement probe three");
+      const finish = records(3, "replacement probe two /tʊ/", "Replacement probe three");
       const done = await port.append(job.id, 2, finish);
       expect(done).toMatchObject({
         status: "completed",
@@ -554,7 +589,7 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
       expect(await port.append(job.id, 2, finish)).toEqual(done);
       expect((await members(target)).map((row) => row.concepts)).toEqual([
         { title: "Replacement probe original", summary: "New meaning" },
-        { title: "Replacement probe two", summary: "New meaning" },
+        { title: "Replacement probe two /tuː/", summary: "New meaning" },
         { title: "Replacement probe three", summary: "New meaning" },
       ]);
       expect(await members(other)).toEqual(before);

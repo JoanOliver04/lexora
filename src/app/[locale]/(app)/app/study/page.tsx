@@ -135,13 +135,18 @@ async function ScopeSelector({
 }) {
   const t = await getTranslations("StudySession");
   const tToday = await getTranslations("Today");
-  const result = await getStudySetup(context.dailyQueue, context.todayDashboard, {
-    ownerId: context.ownerId,
-    courseId,
-    now: context.clock.now(),
-    timeZone: context.timeZone,
-    deckQuery,
-  });
+  const result = await getStudySetup(
+    context.dailyQueue,
+    context.todayDashboard,
+    {
+      ownerId: context.ownerId,
+      courseId,
+      now: context.clock.now(),
+      timeZone: context.timeZone,
+      deckQuery,
+    },
+    "counts",
+  );
   if (!result.ok)
     return (
       <div className="flex flex-col gap-4">
@@ -160,7 +165,7 @@ async function ScopeSelector({
     <>
       <section className="space-y-2 rounded-(--radius-surface) border border-(--color-border) bg-(--color-surface) p-5">
         <p className="font-medium">
-          {t("courseAvailable", { count: result.setup.courseQueue.entries.length })}
+          {t("courseAvailable", { count: result.setup.courseQueue.availableCount })}
         </p>
         <p className="text-sm leading-relaxed text-(--color-ink-muted)">
           {t("courseAvailableHint")}
@@ -183,7 +188,7 @@ async function ScopeSelector({
         sessionId={createStudySessionId()}
         decks={result.setup.decks}
         initialScope={result.setup.scope}
-        availableCount={result.setup.courseQueue.entries.length}
+        availableCount={result.setup.courseQueue.availableCount}
       />
     </>
   );

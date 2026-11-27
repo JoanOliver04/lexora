@@ -34,7 +34,7 @@ export async function getStudySessionCard(
   cards: StudyCardRepository,
   input: { ownerId: string; sessionId: unknown; now: Date; timeZone: string },
 ) {
-  const result = await getStudySession(sessions, queue, input);
+  const result = await getStudySession(sessions, queue, input, "first");
   if (!result.ok) return result;
   const first = result.queue?.entries[0];
   let card: StudyCard | null = null;
@@ -71,7 +71,7 @@ export async function revealStudySessionCard(
     timeZone: string;
   },
 ): Promise<RevealStudyCardResult> {
-  const result = await getStudySession(sessions, queue, input);
+  const result = await getStudySession(sessions, queue, input, "first");
   if (!result.ok) return result;
   const first = result.queue?.entries[0];
   if (!first || first.practiceItemId !== input.practiceItemId)

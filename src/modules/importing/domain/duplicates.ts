@@ -1,10 +1,8 @@
 /**
  * Plan de duplicados de una importación (LEX-4.6, MASTER_SPEC §9.7).
  *
- * Lógica pura. Una fila válida es **nueva** o **posible duplicada**. La
- * coincidencia es la misma `canonical_key` que usa la biblioteca (LEX-3.10):
- * minúsculas, espacios colapsados, acentos conservados. Quien calcula la clave
- * es la capa de aplicación, para no acoplar este dominio al módulo `library`.
+ * Lógica pura. Una fila válida es **nueva** o **posible duplicada**. El llamador aporta la clave
+ * del vocabulario y las coincidencias exactas de otros tipos de conceptos.
  *
  * Estrategias que la persona elige, nunca una omisión destructiva:
  * `skip` (no crear la fila duplicada) y `copy` (crear otro concepto
@@ -24,6 +22,7 @@ export const DUPLICATE_HIT_LIMIT = 20;
 export interface ImportRowKey {
   rowNumber: number;
   key: string;
+  exactMatch?: boolean;
 }
 
 export interface ClassifiedImportRows {
@@ -60,7 +59,7 @@ export function classifyImportRows(
   }
 
   for (const row of rows) {
-    const duplicate = existingKeys.has(row.key) || seenInFile.has(row.key);
+    const duplicate = row.exactMatch || existingKeys.has(row.key) || seenInFile.has(row.key);
     if (duplicate) {
       duplicateCount += 1;
       isDuplicate.add(row.rowNumber);

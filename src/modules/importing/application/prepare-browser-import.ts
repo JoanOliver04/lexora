@@ -23,6 +23,7 @@ export interface PreparedBrowserImport {
   newCount: number;
   duplicateCount: number;
   duplicateHits: DuplicateHit[];
+  independentVocabulary: { count: number; examples: string[] };
 }
 
 /** Pack by actual prepared bytes as well as count, including JSON punctuation. */
@@ -99,6 +100,7 @@ export async function prepareBrowserImport(input: {
 
   const valid = records.filter((record) => record.kind === "valid");
   const matches = new Map<number, string[]>();
+  const independentRows = new Set<number>();
   const keys = new Map<number, string>();
   for (let start = 0; start < valid.length; start += IMPORT_BATCH_ROWS) {
     input.signal.throwIfAborted();
@@ -122,6 +124,7 @@ export async function prepareBrowserImport(input: {
     for (const match of response.matches) {
       if (!expected.delete(match.rowNumber)) throw new ImportTransferError("unavailable");
       keys.set(match.rowNumber, match.canonicalKey);
+      if (match.independentVocabulary) independentRows.add(match.rowNumber);
       if (match.existingTitles.length) matches.set(match.rowNumber, match.existingTitles);
     }
   }
@@ -136,6 +139,7 @@ export async function prepareBrowserImport(input: {
   const seen = new Set<string>(),
     duplicateHits: DuplicateHit[] = [];
   let duplicateCount = 0;
+  const independentVocabulary = { count: 0, examples: [] as string[] };
   for (const row of valid) {
     const key = keys.get(row.rowNumber)!;
     if (matches.has(row.rowNumber) || seen.has(key)) {
@@ -149,6 +153,10 @@ export async function prepareBrowserImport(input: {
             .filter((number) => number !== row.rowNumber)
             .slice(0, 20),
         });
+    } else if (independentRows.has(row.rowNumber)) {
+      independentVocabulary.count++;
+      if (independentVocabulary.examples.length < 10)
+        independentVocabulary.examples.push(row.front);
     }
     seen.add(key);
   }
@@ -161,5 +169,6 @@ export async function prepareBrowserImport(input: {
     duplicateCount,
     newCount: valid.length - duplicateCount,
     duplicateHits,
+    independentVocabulary,
   };
 }

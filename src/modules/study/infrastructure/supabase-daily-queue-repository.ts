@@ -1,29 +1,50 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-
-import type { DailyQueueRepository } from "@/modules/study/application/daily-queue";
+import type { DailyQueueRepository, QueueScope } from "@/modules/study/application/daily-queue";
 import { studyErrorFrom } from "@/modules/study/application/study-error";
-import type { QueueCandidate } from "@/modules/study/domain/queue";
-import type { MemoryPhase } from "@/modules/study/domain/memory";
-import { isMemoryPhase } from "@/modules/study/domain/memory";
-import {
-  schedulerCompatibility,
-  V1_SCHEDULER_CONFIG,
-} from "@/modules/study/domain/scheduler-config";
-import type { Database, Json } from "@/shared/infrastructure/supabase/database.types";
-import { readStudyRows } from "./read-study-rows";
-import { eligibleQueuePages } from "./supabase-eligible-study-items";
-import { estimateReviewRecall } from "./ts-fsrs-scheduler";
+import type { QueueEntry, QueueGroup } from "@/modules/study/domain/queue";
+import { V1_SCHEDULER_CONFIG } from "@/modules/study/domain/scheduler-config";
+import type { Database } from "@/shared/infrastructure/supabase/database.types";
+import { readStudyRows, STUDY_PAGE_SIZE } from "./read-study-rows";
+import { estimateRecallAfterDays } from "./ts-fsrs-scheduler";
 
-type StoredState = Database["public"]["Tables"]["learning_states"]["Row"];
-type LearningStateRow = Pick<StoredState, "id" | "due_at" | "phase" | "revision"> &
-  Partial<
-    Pick<StoredState, "stability" | "last_reviewed_at" | "scheduler_version" | "config_version">
-  >;
+function scopeArgs({ ownerId, courseId, deckIds }: QueueScope) {
+  return {
+    p_owner_id: ownerId,
+    p_course_id: courseId,
+    ...(deckIds === null ? {} : { p_deck_ids: deckIds }),
+  };
+}
 
-function phaseFromSnapshot(raw: Json): MemoryPhase | null {
-  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
-  const phase = (raw as { phase?: unknown }).phase;
-  return isMemoryPhase(phase) ? phase : null;
+type ItemRow = Pick<
+  Database["public"]["Functions"]["study_queue_items"]["Returns"][number],
+  "item_id" | "phase" | "due_at" | "state_id" | "revision"
+>;
+
+async function readSlots(
+  group: QueueGroup,
+  count: number,
+  page: (
+    from: number,
+    to: number,
+  ) => PromiseLike<{ data: ItemRow[] | null; error: { code: string; message: string } | null }>,
+) {
+  const entries: QueueEntry[] = [];
+  for (let from = 0; from < count; from += STUDY_PAGE_SIZE) {
+    const { data, error } = await page(from, Math.min(count, from + STUDY_PAGE_SIZE) - 1);
+    if (error) throw studyErrorFrom(error, "no se pudieron leer las tarjetas disponibles");
+    for (const item of data ?? []) {
+      entries.push({
+        practiceItemId: item.item_id,
+        group,
+        phase: item.phase,
+        dueAt: item.due_at ? new Date(item.due_at) : null,
+        learningStateId: item.state_id,
+        revision: item.revision,
+      });
+    }
+    if ((data?.length ?? 0) < STUDY_PAGE_SIZE) break;
+  }
+  return entries;
 }
 
 export function createSupabaseDailyQueueRepository(
@@ -38,95 +59,120 @@ export function createSupabaseDailyQueueRepository(
         .eq("course_id", courseId)
         .maybeSingle();
       if (error) throw studyErrorFrom(error, "no se pudieron leer los límites del curso");
-      if (!data) return null;
-      return {
-        dailyNewLimit: data.daily_new_limit,
-        maximumReviewsPerDay: data.maximum_reviews_per_day,
-      };
-    },
-
-    async listEligibleItems({ ownerId, courseId, deckIds, reviewPriority }) {
-      const candidates = new Map<string, QueueCandidate>();
-      for await (const page of eligibleQueuePages(
-        client,
-        { ownerId, courseId, deckIds },
-        !!reviewPriority,
-      )) {
-        for (const { id, learning_states } of page) {
-          // PostgREST recognizes the unique owner/item pair. Generated types
-          // describe the reverse of the composite foreign key as an array.
-          const state = Array.isArray(learning_states) ? learning_states[0] : learning_states;
-          if (!candidates.has(id)) candidates.set(id, queueCandidate(id, state, reviewPriority));
-        }
-      }
-      return [...candidates.values()];
+      return data
+        ? {
+            dailyNewLimit: data.daily_new_limit,
+            maximumReviewsPerDay: data.maximum_reviews_per_day,
+          }
+        : null;
     },
 
     async countTodayActivity({ ownerId, courseId, dayStart, dayEnd }) {
-      const data = await readStudyRows(
-        (from, to) =>
-          client
-            .from("review_logs")
-            .select(
-              "practice_item_id, state_before, practice_items!inner(concepts!inner(course_id))",
-            )
-            .eq("owner_id", ownerId)
-            .eq("practice_items.concepts.course_id", courseId)
-            .gte("reviewed_at", dayStart.toISOString())
-            .lt("reviewed_at", dayEnd.toISOString())
-            .order("id")
-            .range(from, to),
-        "no se pudo leer la actividad de hoy",
-      );
-
-      const newIds = new Set<string>();
-      let reviewsDone = 0;
-      for (const row of data ?? []) {
-        const phase = phaseFromSnapshot(row.state_before);
-        if (phase === "new") newIds.add(row.practice_item_id);
-        if (phase === "review") reviewsDone += 1;
-      }
-      return { newIntroduced: newIds.size, reviewsDone };
+      const { data, error } = await client
+        .rpc("study_day_activity", {
+          p_owner_id: ownerId,
+          p_course_id: courseId,
+          p_start: dayStart.toISOString(),
+          p_end: dayEnd.toISOString(),
+        })
+        .single();
+      if (error) throw studyErrorFrom(error, "no se pudo leer la actividad de hoy");
+      return { newIntroduced: data.new_introduced, reviewsDone: data.reviews_done };
     },
-  };
-}
 
-function queueCandidate(
-  id: string,
-  state: LearningStateRow | null | undefined,
-  reviewPriority: { at: Date; dueThrough: Date } | undefined,
-): QueueCandidate {
-  if (!state) {
-    return {
-      practiceItemId: id,
-      phase: null,
-      dueAt: null,
-      learningStateId: null,
-      revision: null,
-    };
-  }
-  const dueAt = new Date(state.due_at);
-  const recallProbability =
-    reviewPriority &&
-    state.phase === "review" &&
-    dueAt <= reviewPriority.dueThrough &&
-    state.stability !== undefined &&
-    state.last_reviewed_at &&
-    schedulerCompatibility(
-      {
-        schedulerVersion: state.scheduler_version ?? "",
-        configVersion: state.config_version ?? "",
-      },
-      V1_SCHEDULER_CONFIG,
-    ).ok
-      ? estimateReviewRecall(state.stability, new Date(state.last_reviewed_at), reviewPriority.at)
-      : null;
-  return {
-    practiceItemId: id,
-    phase: state.phase as MemoryPhase,
-    dueAt,
-    learningStateId: state.id,
-    revision: state.revision,
-    ...(recallProbability === null ? {} : { recallProbability }),
+    async countEligibleItems(scope, includeDifficulty) {
+      const { data, error } = await client
+        .rpc("study_queue_counts", {
+          ...scopeArgs(scope),
+          p_now: scope.now.toISOString(),
+          p_include_difficulty: includeDifficulty,
+        })
+        .single();
+      if (error) throw studyErrorFrom(error, "no se pudo contar la cola");
+      return {
+        learningDue: data.learning_due,
+        reviewsDue: data.reviews_due,
+        newItems: data.new_items,
+        difficultItems: data.difficult_items,
+        nextDueAt: data.next_due ? new Date(data.next_due) : null,
+        nextLearningDueAt: data.next_learning_due ? new Date(data.next_learning_due) : null,
+      };
+    },
+
+    async listAvailableEntries(scope, selection, dayStart, firstOnly) {
+      const args = scopeArgs(scope);
+      const now = scope.now.toISOString();
+      const items = () =>
+        client.rpc("study_queue_items", args).select("item_id, phase, state_id, due_at, revision");
+      // A front or reveal needs one row from the first available group.
+      const learningCount = firstOnly ? Math.min(1, selection.learningDue) : selection.learningDue;
+      const reviewCount = firstOnly
+        ? Math.min(1 - learningCount, selection.availableReviews)
+        : selection.availableReviews;
+      const newCount = firstOnly
+        ? Math.min(1 - learningCount - reviewCount, selection.newAvailable)
+        : selection.newAvailable;
+      const readReviews = async () => {
+        const count = reviewCount;
+        if (count === 0) return [];
+        if (!selection.hiddenDueReviews) {
+          return readSlots("review", count, (from, to) =>
+            items()
+              .eq("phase", "review")
+              .lte("due_at", now)
+              .order("due_at")
+              .order("item_id")
+              .range(from, to),
+          );
+        }
+        const priority = {
+          ...args,
+          p_now: now,
+          p_reference: dayStart.toISOString(),
+          p_scheduler: V1_SCHEDULER_CONFIG.schedulerPackageVersion,
+          p_config: V1_SCHEDULER_CONFIG.configVersion,
+        };
+        const groups = await readStudyRows(
+          (from, to) =>
+            client
+              .rpc("study_review_priority_inputs", priority)
+              .order("stability")
+              .order("elapsed_days")
+              .range(from, to),
+          "no se pudo priorizar el repaso",
+        );
+        const scores = groups.map(({ stability, elapsed_days }) => ({
+          stability,
+          elapsed_days,
+          recall: estimateRecallAfterDays(stability, elapsed_days),
+        }));
+        return readSlots("review", count, (from, to) =>
+          client
+            .rpc("study_ranked_reviews", {
+              ...priority,
+              p_limit: count,
+              p_scores: scores,
+            })
+            .order("slot")
+            .range(from, to),
+        );
+      };
+
+      const [learning, reviews, fresh] = await Promise.all([
+        readSlots("learning", learningCount, (from, to) =>
+          items()
+            .in("phase", ["learning", "relearning"])
+            .lte("due_at", now)
+            .order("due_at")
+            .order("item_id")
+            .range(from, to),
+        ),
+        readReviews(),
+        readSlots("new", newCount, (from, to) =>
+          items().or("phase.is.null,phase.eq.new").order("item_id").range(from, to),
+        ),
+      ]);
+      return [...learning, ...reviews, ...fresh];
+    },
   };
 }

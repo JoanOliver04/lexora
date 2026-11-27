@@ -68,6 +68,38 @@ describe("browser import preparation and recovery", () => {
     ).rejects.toMatchObject({ name: "AbortError" });
     expect(onProgress).not.toHaveBeenCalled();
   });
+  it("surfaces course matches that a targeted import would copy without counting file repeats twice", async () => {
+    const transfer: ImportTransferPort = async (request) => {
+      if (request.action !== "duplicates") throw new Error("Preview must not write");
+      return {
+        ok: true,
+        matches: request.rows.map((row) => ({
+          rowNumber: row.rowNumber,
+          canonicalKey: "harbour",
+          existingTitles: [],
+          independentVocabulary: true,
+        })),
+      };
+    };
+    const result = await prepareBrowserImport({
+      courseId: id,
+      locale: "en",
+      target: { mode: "append", deckId: id },
+      mapping: { front: 0, back: 1, tags: null },
+      rawRows: [
+        { rowNumber: 1, columns: ["Harbour /hɑːbə/", "port"] },
+        { rowNumber: 2, columns: ["harbour", "port"] },
+      ],
+      transfer,
+      yieldControl: async () => {},
+      signal: signal(),
+    });
+    expect(result).toMatchObject({
+      newCount: 1,
+      duplicateCount: 1,
+      independentVocabulary: { count: 1, examples: ["Harbour /hɑːbə/"] },
+    });
+  });
   it("converts HTML once, retains encoded literal text, records invalid rows and uses database Unicode keys", async () => {
     const transfer = vi.fn<ImportTransferPort>(async (request) => {
       if (request.action !== "duplicates") throw new Error("Unexpected write during preview");

@@ -213,11 +213,11 @@
     },
     "providers": {
       "title": "Servicios que usa Lexora",
-      "body": "Vercel aloja la web y Supabase gestiona las cuentas y la base de datos. Si eliges Google, usamos los datos básicos de identidad que autorices para iniciar sesión."
+      "body": "Vercel aloja Lexora. Supabase gestiona las cuentas, la base de datos y el almacenamiento privado de los audios modelo que subes. Si eliges Google, usamos los datos básicos de identidad que autorizas para iniciar sesión."
     },
     "retention": {
       "title": "Conservación y borrado",
-      "body": "Tus cursos, preferencias e historial se conservan mientras tienes cuenta. Lexora guarda el resultado de tus importaciones y sus diagnósticos, y elimina tus datos activos al borrar tu cuenta. Las copias operativas se rigen por su ciclo de retención. Las copias que descargues quedan bajo tu control."
+      "body": "Tus cursos, preferencias e historial se conservan en tu cuenta. Lexora guarda las tarjetas importadas y diagnósticos acotados de las importaciones CSV. Los audios modelo que subes se guardan en almacenamiento privado. Las grabaciones de práctica con el micrófono se quedan en tu navegador y se descartan al salir del ejercicio. El borrado elimina los datos activos de la cuenta. Las copias de los proveedores siguen su ciclo de conservación. Las descargas quedan bajo tu control."
     },
     "rights": {
       "title": "Tus opciones y derechos",
@@ -815,14 +815,17 @@
     "plan": {
       "counts": "{fresh, plural, one {# nueva} other {# nuevas}} · {duplicates, plural, =0 {sin duplicados} one {# posible duplicada} other {# posibles duplicadas}}",
       "heading": "Duplicados",
-      "intro": "Si el frente coincide con un concepto que ya tienes (misma clave canónica), no lo fusionamos. Tú eliges qué hacer con esas filas; no se importa nada todavía.",
+      "intro": "La vista previa compara cada anverso con el curso y con las demás filas. En vocabulario se ignoran las mayúsculas, los espacios repetidos y la pronunciación final entre barras. Elige qué hacer con las coincidencias.",
       "skip": "Omitir las filas duplicadas",
       "copy": "Crear una copia independiente",
-      "updateNote": "No actualizamos un concepto existente: el título no basta para saber si es el mismo con un campo distinto, y tocar lo que ya estudias no es seguro.",
+      "updateNote": "Una copia independiente tiene su propio historial de estudio.",
       "hitsHeading": "Posibles duplicados",
       "hitRow": "Fila {row}: {front}",
       "hitExisting": "(ya existe: {title})",
-      "hitFile": "(también en filas {rows})"
+      "hitFile": "(también en filas {rows})",
+      "sharedVocabulary": "Para compartir una palabra entre mazos y conservar sus repasos, usa el editor EOI de vocabulario. Allí podrás revisar también sus acepciones.",
+      "openEoi": "Abrir el editor EOI",
+      "independentVocabulary": "{count, plural, one {Una expresión ya existe en el curso y se importará como copia independiente} other {# expresiones ya existen en el curso y se importarán como copias independientes}}. Por ejemplo, {examples}."
     },
     "separator": {
       "tab": "tabulación",
@@ -874,8 +877,8 @@
       "appendTitle": "Añadir contenido a {deck}",
       "replaceTitle": "Reemplazar el contenido de {deck}",
       "unavailable": "El mazo de esta importación ya no está disponible.",
-      "appendDuplicates": "Se omiten las filas con el mismo frente dentro del archivo o en este mazo.",
-      "replaceDuplicates": "Si varias filas del archivo tienen el mismo frente, se importa la primera.",
+      "appendDuplicates": "Se omiten los anversos repetidos en el archivo o en este mazo. En vocabulario se ignora la pronunciación final entre barras.",
+      "replaceDuplicates": "Se conserva la primera aparición de cada anverso del archivo. En vocabulario se ignora la pronunciación final entre barras.",
       "appendSubmit": "Añadir al mazo",
       "replaceSubmit": "Reemplazar contenido",
       "replaceNotice": "Al terminar, las tarjetas válidas del archivo serán el contenido de este mazo. Las tarjetas anteriores y su historial seguirán en tu biblioteca y en los demás mazos donde ya estén.",
@@ -943,7 +946,8 @@
       "startLevel_invalid": "Elige desde qué nivel quieres empezar.",
       "dailyNewLimit_notInteger": "Escribe un número entero de ítems nuevos.",
       "dailyNewLimit_outOfRange": "Los ítems nuevos por día deben estar entre 0 y 100."
-    }
+    },
+    "accountSettings": "Gestionar mi cuenta y mis datos"
   },
   "Library": {
     "studyDeck": "Repasar este mazo",
@@ -1198,7 +1202,7 @@
     },
     "private": {
       "title": "Acceso personal",
-      "description": "Lexora es de uso personal por ahora. El registro de nuevas cuentas está cerrado."
+      "description": "Puedes crear una cuenta con Google cuando el registro está abierto. Si ya tienes cuenta, puedes entrar con tu método habitual."
     },
     "errors": {
       "email-required": "Escribe tu correo.",
@@ -1208,7 +1212,7 @@
       "invalid-credentials": "El correo o la contraseña no son correctos.",
       "weak-password": "Esa contraseña es demasiado débil. Prueba con una más larga.",
       "missing-recovery-session": "Este enlace de recuperación ha caducado. Pide uno nuevo.",
-      "registration-closed": "El registro de nuevas cuentas está cerrado.",
+      "registration-closed": "El alta por correo no está disponible. La pantalla de registro muestra los métodos habilitados.",
       "preview-disabled": "El acceso personal está desactivado en esta vista previa.",
       "auth-unavailable": "No hemos podido completar la operación. Inténtalo de nuevo en un momento.",
       "google-unavailable": "No hemos podido entrar con Google. Vuelve a intentarlo o usa tu correo y contraseña."
@@ -1277,7 +1281,10 @@
   "DataExport": {
     "title": "Tus datos, contigo",
     "description": "Descarga tus cursos, contenido y actividad guardada, incluido lo archivado. No se incluyen contraseñas ni credenciales.",
-    "jsonNote": "Copia restaurable con tus mazos, tarjetas, progreso, historial y preferencias.",
+    "archiveName": "Copia completa de Lexora",
+    "archiveNote": "Incluye tus datos y los archivos de audio modelo asociados a tus cursos. Transfiere los datos por partes para admitir cuentas más grandes. Las grabaciones de práctica permanecen en el dispositivo.",
+    "archive": "Descargar copia completa",
+    "jsonNote": "Datos de mazos, tarjetas, progreso, historial y preferencias. JSON y CSV solo contienen referencias a los audios.",
     "csvNote": "Copia restaurable que también puedes consultar en una hoja de cálculo. Conserva el archivo original para restaurarlo.",
     "privacy": "Los archivos contienen tus datos sin cifrar. Guárdalos en un lugar privado. Puedes solicitar una exportación cada minuto; una descarga fallida no genera un archivo parcial.",
     "format": "Formato de descarga",
@@ -1292,7 +1299,7 @@
       "unauthenticated": "Vuelve a entrar en tu cuenta para descargar tus datos.",
       "invalid-input": "El formato de descarga no es válido. Recarga los ajustes y vuelve a intentarlo.",
       "cooldown": "Espera un minuto antes de solicitar otra exportación.",
-      "too-large": "Tus datos superan el límite de exportación de esta versión. No se ha descargado un archivo parcial.",
+      "too-large": "Tus datos superan el límite del formato elegido. Si has elegido JSON o CSV, prueba «Descargar copia completa».",
       "unavailable": "No se ha podido preparar la descarga. Tus datos siguen guardados; vuelve a intentarlo.",
       "interrupted": "Descarga cancelada. No se ha descargado ningún archivo.",
       "integrity": "La descarga no ha superado la comprobación de integridad. No se ha guardado ningún archivo; vuelve a intentarlo."
@@ -1300,8 +1307,9 @@
   },
   "DataRestore": {
     "title": "Restaurar copia de seguridad",
-    "description": "Selecciona un JSON o CSV descargado de Lexora para esta misma cuenta.",
+    "description": "Selecciona la copia completa (.lexora), el JSON o el CSV descargado desde esta cuenta.",
     "file": "Archivo de la copia",
+    "audioCount": "{count, plural, one {# archivo de audio} other {# archivos de audio}}",
     "checking": "Comprobando la copia…",
     "date": "Copia del {date}",
     "counts": "{decks, plural, one {# mazo} other {# mazos}} · {cards, plural, one {# tarjeta} other {# tarjetas}} · {reviews, plural, one {# repaso} other {# repasos}}",
@@ -1316,7 +1324,7 @@
     "errors": {
       "unauthenticated": "Entra en tu cuenta para restaurar la copia.",
       "reauthenticate": "Para confirmar esta operación, cierra sesión y vuelve a entrar. Después selecciona la copia de nuevo.",
-      "invalid": "El archivo no es una copia restaurable válida. Selecciona el JSON o CSV original descargado de Lexora.",
+      "invalid": "El archivo no es una copia restaurable válida. Selecciona el archivo original descargado de Lexora.",
       "integrity": "El contenido de la copia no coincide con su comprobación de integridad. Usa el archivo original.",
       "version": "Esta versión de Lexora no admite el formato de esta copia.",
       "wrongAccount": "Esta copia pertenece a otra cuenta.",
@@ -1342,26 +1350,26 @@
   "DataInformation": {
     "title": "Tus datos en Lexora",
     "back": "Volver a ajustes",
-    "intro": "Este es un espacio personal con el registro público cerrado. Aquí se explica qué se guarda, dónde y qué implica eliminar la cuenta.",
+    "intro": "Las cuentas nuevas se pueden crear con Google cuando el registro está abierto. Las cuentas existentes con contraseña pueden seguir usándola. Aquí se explica qué guarda Lexora y qué ocurre al eliminar tu cuenta.",
     "content": {
       "title": "Contenido e historial",
       "body": "Tu perfil, preferencias, cursos, tarjetas e historial de repasos permanecen en tu cuenta hasta que los modificas o eliminas la cuenta. Archivar oculta contenido sin destruir sus relaciones ni su historial. Los repasos se conservan durante la vida de la cuenta."
     },
     "imports": {
       "title": "Archivos importados",
-      "body": "El archivo original no se guarda en el servidor. Los registros de importación conservan el nombre, hash, mapeo, contadores y diagnósticos de error acotados durante la vida de la cuenta. Un diagnóstico puede incluir hasta 500 caracteres de una fila. Son privados y se eliminan con la cuenta."
+      "body": "Lexora importa las filas de un CSV y conserva el nombre del archivo, su hash, la correspondencia de columnas, los contadores y los detalles de error, que pueden incluir hasta 500 caracteres de una fila afectada. El archivo CSV se descarta. Los audios modelo que subes se guardan en un espacio privado de Supabase Storage. Las grabaciones de pronunciación que haces con el micrófono se quedan en tu navegador hasta que sales del ejercicio."
     },
     "exports": {
       "title": "Descargas bajo tu control",
-      "body": "Las copias JSON y CSV se verifican antes de la descarga y se guardan sin cifrar en tu dispositivo. Puedes restaurarlas en la misma cuenta con una sesión reciente. Tras confirmar, el servidor prepara temporalmente los datos y sustituye el contenido en una transacción. Las importaciones de tarjetas pendientes quedan detenidas. Las copias descargadas siguen en tu dispositivo tras borrar la cuenta."
+      "body": "La copia completa (.lexora) contiene también los audios modelo de tus cursos. JSON y CSV solo guardan sus referencias. Los tres archivos se verifican antes de la descarga y se guardan sin cifrar en tu dispositivo. Puedes restaurarlas en la misma cuenta con una sesión reciente. Tras confirmar, el servidor prepara temporalmente los datos y sustituye el contenido en una transacción. Las importaciones de tarjetas pendientes quedan detenidas. Las copias descargadas siguen en tu dispositivo tras borrar la cuenta."
     },
     "deletion": {
       "title": "Eliminar una cuenta",
-      "body": "El borrado exige tu contraseña actual, aceptación explícita y una sesión de Auth reciente y vigente. Si hay un segundo factor activado, también debe verificarse. La transacción elimina la identidad de Auth y todos sus datos de aplicación, incluidos archivados, importaciones y repasos. Si la transacción falla, se revierte. El registro público sigue cerrado después."
+      "body": "Confirma tu correo y el borrado permanente después de verificar tu contraseña o tu cuenta de Google vinculada. Si usas un segundo factor, también debes verificarlo. Tras confirmar, se eliminan tu perfil, tus cursos, tus importaciones y tus repasos. A continuación, Lexora retira los audios que hayas subido y cierra tu cuenta de acceso. Si se interrumpe, vuelve a iniciar sesión para terminar el borrado."
     },
     "providers": {
       "title": "Dónde se ejecuta la app",
-      "body": "Supabase proporciona la autenticación y la base de datos PostgreSQL. Vercel aloja y ejecuta la aplicación web. Si eliges Google, se usa tu identidad y perfil básico para entrar mediante Supabase, sin solicitar permisos de Gmail ni Drive. No se envía contenido de aprendizaje a ningún servicio de IA. Esta entrega personal no añade analítica de contenido, Sentry ni un proveedor de correo nuevo."
+      "body": "Supabase ofrece la autenticación, la base de datos PostgreSQL y el almacenamiento privado de los audios modelo. Vercel aloja Lexora. El acceso con Google utiliza tus datos básicos de identidad y perfil. Lexora no solicita acceso a Gmail o Drive ni envía contenido de estudio a un servicio de IA."
     },
     "limits": {
       "title": "Backups y logs técnicos",
@@ -1372,7 +1380,7 @@
     "title": "Eliminar tu cuenta",
     "description": "Elimina de forma permanente tu identidad y todos tus datos de Lexora, incluidos el contenido archivado y el historial de repasos.",
     "open": "Revisar la eliminación de cuenta",
-    "warning": "No se puede deshacer desde la app. Descarga primero lo que quieras conservar. El registro público está cerrado: eliminar tu cuenta personal no permite crear otra aquí.",
+    "warning": "Descarga lo que quieras conservar antes de confirmar. El borrado es permanente. Una cuenta nueva empieza con un espacio de estudio vacío.",
     "email": "Confirma el correo de tu cuenta",
     "password": "Tu contraseña actual",
     "otp": "Código del autenticador, si utilizas doble factor",
@@ -1387,15 +1395,24 @@
     "deleting": "Verificando y eliminando…",
     "deleted": "Se han eliminado tu cuenta y sus datos activos de aplicación.",
     "errors": {
-      "invalid-input": "Revisa el correo, la contraseña y la confirmación. Escribe DELETE exactamente y marca la casilla de aceptación.",
+      "invalid-input": "Comprueba tu correo y el método de verificación, escribe DELETE tal como aparece y marca la casilla de aceptación.",
       "invalid-credentials": "No se han podido verificar el correo o la contraseña. No se ha solicitado el borrado.",
       "unauthenticated": "Inicia sesión de nuevo antes de eliminar tu cuenta.",
-      "reauth-required": "Se necesita una sesión reciente y vigente. Introduce tu contraseña otra vez.",
+      "reauth-required": "Vuelve a verificar tu cuenta con tu contraseña o con la cuenta de Google vinculada.",
       "mfa-required": "Se necesita un código válido del autenticador. Si tu cuenta utiliza otro segundo factor, debe verificarse ese método antes de borrar; no se omitirá la protección.",
       "cooldown": "Hay demasiados intentos de verificación. Espera un minuto antes de reintentarlo.",
       "unavailable": "No se ha podido confirmar el borrado. Comprueba si todavía puedes iniciar sesión antes de reintentarlo.",
-      "uncertain": "Se ha interrumpido la conexión. El borrado podría haberse completado. Comprueba si todavía puedes iniciar sesión antes de reintentarlo."
-    }
+      "uncertain": "Se ha interrumpido la conexión. El borrado podría haberse completado. Comprueba si todavía puedes iniciar sesión antes de reintentarlo.",
+      "cleanup-pending": "Tus datos de estudio ya se han eliminado. Reanuda el borrado para terminar de retirar los audios que subiste y cerrar la cuenta. Puedes volver a iniciar sesión para continuar."
+    },
+    "googleHint": "Verifica la cuenta de Google vinculada a Lexora. Después volverás aquí para confirmar el borrado.",
+    "googleVerified": "Has verificado tu cuenta de Google. Confirma el borrado en los próximos cinco minutos.",
+    "verifyGoogle": "Verificar con Google",
+    "googleFailed": "No se ha podido verificar esta cuenta con Google. Elige la cuenta de Google vinculada a Lexora y vuelve a intentarlo.",
+    "pendingTitle": "Terminar de eliminar tu cuenta",
+    "resume": "Reanudar el borrado",
+    "retryCleanup": "Aún quedan pasos pendientes. Vuelve a intentarlo para continuar desde el último archivo procesado.",
+    "signOut": "Cerrar sesión"
   },
   "Courses": {
     "title": "Mis cursos",
@@ -1448,7 +1465,9 @@
       "conflict": "Los ajustes han cambiado en otra pestaña o dispositivo. Carga la versión actual antes de guardar de nuevo.",
       "unavailable": "Este curso o sus ajustes ya no están disponibles. Carga la versión actual.",
       "generic": "No se han podido guardar los ajustes. Tus cambios no se han confirmado; vuelve a intentarlo."
-    }
+    },
+    "onboarding": "Volver a la configuración del curso",
+    "accountIntro": "Puedes descargar tus datos o eliminar tu cuenta antes de crear un curso."
   },
   "Eoi": {
     "removeCard": "Quitar tarjeta del mazo",
@@ -1528,6 +1547,40 @@
     "mediation": "Mediación",
     "pronunciation": "Speaking · Pronunciation",
     "grammar": "Grammar",
-    "vocabulary": "Vocabulary"
+    "vocabulary": "Vocabulary",
+    "draftRestored": "Se ha recuperado el borrador de esta pestaña. Comprueba los archivos adjuntos antes de guardar.",
+    "discardDraft": "Descartar el borrador y abrir la versión guardada",
+    "restart": "Empezar de nuevo",
+    "restartConfirm": "¿Quieres borrar las respuestas y reiniciar las escuchas de este intento?",
+    "csvCategory": "¿Qué tipo de mazo contiene {file}?",
+    "csvGrammar": "Grammar · solo pregunta y respuesta",
+    "csvVocabulary": "Vocabulary · con tarjeta inversa",
+    "cancelCsv": "Cancelar selección",
+    "invalidPrompt": "Revisa el enunciado de la tarjeta {n}. Escribe entre 1 y 200 caracteres.",
+    "invalidAnswer": "Revisa la respuesta de la tarjeta {n}. Escribe entre 1 y 500 caracteres.",
+    "errors": {
+      "editor-conflict": "Otra edición ha cambiado este mazo. Puedes descargar el borrador y volver a abrir la versión guardada.",
+      "preview-changed": "El contenido cambió después de la vista previa. Revísalo de nuevo.",
+      "missing-audio": "Adjunta el audio indicado en la fuente antes de guardar.",
+      "audio": "Selecciona el archivo de audio de la pregunta.",
+      "audioError": "No se pudo subir el audio. Conserva el archivo y vuelve a intentarlo.",
+      "media-busy": "El archivo se está actualizando. Espera un momento y vuelve a adjuntarlo.",
+      "title-in-use": "Ya existe un mazo con ese título en este curso.",
+      "shared-source-changed": "Otro mazo comparte esta fuente. Usa una clave nueva para una versión diferente.",
+      "ambiguous-word": "Hay varios conceptos para esta palabra. Revisa las coincidencias en la biblioteca.",
+      "choices": "Revisa las opciones y comprueba que una coincida con la respuesta.",
+      "evidence": "La cita debe aparecer en el texto o en la transcripción.",
+      "clip": "Revisa los límites del fragmento de audio.",
+      "duplicate-key": "Cada pregunta y cada fuente necesita su propia clave.",
+      "duplicate-word": "La misma expresión aparece más de una vez en el mazo.",
+      "linked-word-changed": "Añade una tarjeta nueva para una palabra distinta.",
+      "review-meanings": "Acorta las definiciones combinadas antes de guardar.",
+      "course-changed": "El curso activo ha cambiado. Abre de nuevo el editor en el curso correcto."
+    },
+    "restoreKeys": "Se recuperarán {n} preguntas retiradas y su historial porque coinciden sus claves. Para crear preguntas nuevas, cambia sus claves.",
+    "confirmRestore": "Recuperar preguntas y guardar",
+    "findSource": "Buscar un texto o audio de otro mazo",
+    "searchSources": "Buscar fuentes de este curso",
+    "noSources": "No se encontraron fuentes."
   }
 }

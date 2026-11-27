@@ -58,6 +58,41 @@ describe("planImportDuplicates", () => {
     ]);
   });
 
+  it("agrupa variantes fonéticas del archivo y del vocabulario existente sin cambiar otros tipos", async () => {
+    const list = vi.fn().mockResolvedValue([
+      { ...existing, title: "Harbour /ˈhɑːbə/", canonicalKey: "harbour /ˈhɑːbə/" },
+      { ...existing, kind: "grammar", title: "Rule /X/", canonicalKey: "rule /x/" },
+    ]);
+    const fronts = [
+      "  HARBOUR  /ɑ/",
+      "harbour",
+      "full /fʊl/",
+      "Full /fʊɫ/",
+      "Rule",
+      "Rule /X/",
+      "literal/path",
+    ];
+    const plan = await planImportDuplicates({
+      ownerId: "u",
+      courseId: "c",
+      validRows: fronts.map((front, index) => ({
+        rowNumber: index + 1,
+        front,
+        back: "gloss",
+        tags: [],
+      })),
+      invalidCount: 0,
+      strategy: "skip",
+      concepts: { list },
+    });
+    expect(plan.newCount).toBe(3);
+    expect(plan.hits.map((hit) => [hit.rowNumber, hit.existingTitles, hit.otherFileRows])).toEqual([
+      [1, ["Harbour /ˈhɑːbə/"], [2]],
+      [2, ["Harbour /ˈhɑːbə/"], [1]],
+      [4, [], [3]],
+      [6, ["Rule /X/"], [5]],
+    ]);
+  });
   it("sin conceptos en el curso, todo es nuevo", async () => {
     const plan = await planImportDuplicates({
       ownerId: "user-1",

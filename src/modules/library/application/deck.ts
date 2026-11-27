@@ -59,13 +59,12 @@ export interface DeckRepository {
   removeConcept(input: { ownerId: string; deckId: string; conceptId: string }): Promise<void>;
   /** Conceptos de un mazo, en su orden. Excluye los conceptos archivados. */
   listConcepts(input: { ownerId: string; deckId: string }): Promise<DeckConcept[]>;
-  /**
-   * Reescribe `position` de los mazos del curso al orden recibido: el mazo
-   * `deckIds[i]` pasa a `position = i`. Solo toca filas del par
-   * `(ownerId, courseId)`; un id ajeno o inexistente en la lista no afecta a
-   * ninguna fila. No es atómico (§ evidencia LEX-3.5).
-   */
-  reorder(input: { ownerId: string; courseId: string; deckIds: string[] }): Promise<void>;
+  move(input: {
+    ownerId: string;
+    courseId: string;
+    deckId: string;
+    direction: "up" | "down";
+  }): Promise<void>;
   /**
    * Búsqueda paginada por texto/categoría/nivel (LEX-3.9). `search` es `ilike`
    * sobre el título: a los volúmenes de la V1 (mazos de un único curso) un
@@ -161,20 +160,15 @@ export async function listDecks(
   return repository.list({ ownerId, courseId, includeArchived: options.includeArchived ?? false });
 }
 
-/**
- * Reordena en bloque los mazos de un curso. `orderedDeckIds` es la lista
- * completa de mazos visibles en el orden que la persona ha fijado; el adaptador
- * asigna `position = 0..n-1`. La pantalla (LEX-3.5) construye la lista a partir
- * de un movimiento «subir»/«bajar» sobre el orden actual.
- */
-export async function reorderDecks(
+export async function moveDeck(
   repository: DeckRepository,
   ownerId: string,
   courseId: string,
-  orderedDeckIds: string[],
+  deckId: string,
+  direction: "up" | "down",
 ): Promise<void> {
   assertUserId(ownerId);
-  await repository.reorder({ ownerId, courseId, deckIds: orderedDeckIds });
+  await repository.move({ ownerId, courseId, deckId, direction });
 }
 
 export async function addConceptToDeck(

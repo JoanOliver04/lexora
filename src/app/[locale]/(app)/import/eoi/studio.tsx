@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { ZodError } from "zod";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
@@ -12,11 +13,16 @@ import {
   type EoiPack,
   type EoiSource,
 } from "@/modules/library/domain/eoi";
+import {
+  rememberDraftAudio,
+  recoverDraftAudio,
+  clearDraftAudio,
+} from "@/modules/library/presentation/draft-audio";
 import { ListeningExam } from "@/modules/library/presentation/listening-exam";
 import { EoiExercise } from "@/modules/library/presentation/eoi-exercise";
 import type { EoiLoaded, EoiPreview } from "@/composition/eoi";
 import { eoiFromCsv } from "@/composition/import-browser";
-import { submitEoi } from "./actions";
+import { submitEoi, searchSources, chooseSource, clearRetiredAudio } from "./actions";
 
 const field = "block min-h-11 w-full rounded border bg-transparent p-2";
 const button = "min-h-11 rounded border px-3";
@@ -25,11 +31,15 @@ function Field({
   value,
   change,
   multiline = false,
+  id,
+  invalid = false,
 }: {
   label: string;
   value: string;
   change: (s: string) => void;
   multiline?: boolean;
+  id?: string;
+  invalid?: boolean;
 }) {
   return (
     <label className="block">
@@ -37,12 +47,22 @@ function Field({
       {multiline ? (
         <textarea
           className={field}
+          id={id}
+          aria-invalid={invalid || undefined}
+          aria-describedby={invalid ? "eoi-error" : undefined}
           rows={3}
           value={value}
           onChange={(e) => change(e.target.value)}
         />
       ) : (
-        <input className={field} value={value} onChange={(e) => change(e.target.value)} />
+        <input
+          id={id}
+          aria-invalid={invalid || undefined}
+          aria-describedby={invalid ? "eoi-error" : undefined}
+          className={field}
+          value={value}
+          onChange={(e) => change(e.target.value)}
+        />
       )}
     </label>
   );
@@ -56,11 +76,6 @@ function download(pack: EoiPack) {
   a.href = url;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-function nextKey(prefix: string, keys: string[]) {
-  let i = 1;
-  while (keys.includes(prefix + i)) i++;
-  return prefix + i;
 }
 function cardContent(card: EoiCard, source: EoiSource | undefined, hashes: Record<string, string>) {
   return {
@@ -102,6 +117,82 @@ export function EoiStudio({
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
   const allocatedUrls = useRef<Record<string, string>>({});
   const dirty = useRef(false);
+  const tab = useRef(draftId);
+  const version = useRef(initial?.version);
+  const draftStorage = "lexora:eoi:draft:" + courseId + ":" + (initial?.pack.key ?? "new");
+  const [hydrated, setHydrated] = useState(false);
+  const [restored, setRestored] = useState(false);
+  const [csv, setCsv] = useState<File | null>(null);
+  const [filter, setFilter] = useState("");
+  const [choices, setChoices] = useState<{ key: string; title: string }[] | null>(null);
+  useEffect(() => {
+    void clearRetiredAudio(courseId).catch(() => {});
+  }, [courseId]);
+  const [invalidField, setInvalidField] = useState("");
+  useEffect(() => {
+    let active = true;
+    async function restore() {
+      // The client-only storage read also gives React a stable initial server render.
+      await Promise.resolve();
+      if (!active) return;
+      try {
+        const raw = sessionStorage.getItem(draftStorage);
+        if (raw) {
+          const draft = JSON.parse(raw);
+          if (
+            draft.pack?.format === "lexora-eoi/1" &&
+            draft.pack.cards?.length &&
+            Array.isArray(draft.pack.sources)
+          ) {
+            if (draft.tab) tab.current = draft.tab;
+            const attachments = await recoverDraftAudio(tab.current).catch(() => []);
+            if (!active) return;
+            for (const f of attachments) {
+              files.current.set(f.name, f);
+              const digest = draft.hashes?.[f.name];
+              if (digest) allocatedUrls.current[digest] = URL.createObjectURL(f);
+            }
+            setPreviewUrls({ ...allocatedUrls.current });
+            setPack(draft.pack);
+            setCi(0);
+            setSi(0);
+            setHashes(draft.hashes ?? {});
+            version.current = draft.version;
+            dirty.current = true;
+            setRestored(true);
+          }
+        } else {
+          void clearDraftAudio(tab.current).catch(() => {});
+        }
+      } catch {
+        /* The editor still works if the browser disables draft storage. */
+      }
+      if (active) setHydrated(true);
+    }
+    void restore();
+    function warn(e: BeforeUnloadEvent) {
+      if (dirty.current) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    }
+    window.addEventListener("beforeunload", warn);
+    return () => {
+      active = false;
+      window.removeEventListener("beforeunload", warn);
+    };
+  }, [draftStorage]);
+  useEffect(() => {
+    if (!hydrated || !dirty.current) return;
+    try {
+      sessionStorage.setItem(
+        draftStorage,
+        JSON.stringify({ pack, hashes, version: version.current, tab: tab.current }),
+      );
+    } catch {
+      /* beforeunload still warns when browser storage is unavailable. */
+    }
+  }, [draftStorage, pack, hashes, hydrated]);
   useEffect(() => {
     const urls = allocatedUrls.current;
     return () => Object.values(urls).forEach((url) => URL.revokeObjectURL(url));
@@ -116,6 +207,7 @@ export function EoiStudio({
     setPreview(null);
     setResult("");
     setError("");
+    setInvalidField("");
     setShow(false);
     setExam(false);
   }
@@ -140,9 +232,30 @@ export function EoiStudio({
     allocatedUrls.current[digest] ??= URL.createObjectURL(file);
     setPreviewUrls({ ...allocatedUrls.current });
     files.current.set(file.name, file);
+    await rememberDraftAudio(tab.current, file).catch(() => {});
     setHashes((old) => ({ ...old, [file.name]: digest }));
     setPreview(null);
     return file.name;
+  }
+  function acceptPack(p: EoiPack) {
+    if (initial && (p.key !== initial.pack.key || p.skill !== initial.pack.skill))
+      throw Error(t("invalid"));
+    if (dirty.current && !window.confirm(t("replaceDraft"))) return;
+    update(p);
+    setCi(0);
+    setSi(0);
+    setCsv(null);
+    version.current = initial?.version;
+    setHashes(initial?.hashes ?? {});
+    files.current.clear();
+  }
+  async function importCsv(skill: "grammar" | "vocabulary") {
+    if (!csv) return;
+    try {
+      acceptPack(await eoiFromCsv(csv.name, await csv.text(), skill));
+    } catch (err) {
+      setError(err instanceof Error && err.message.startsWith("CSV:") ? err.message : t("invalid"));
+    }
   }
   async function submit(apply: boolean) {
     if (busy) return;
@@ -170,7 +283,7 @@ export function EoiStudio({
             },
             body: f,
           });
-          if (!res.ok) throw Error(t("audioError"));
+          if (!res.ok) throw Error("audioError");
         }
       }
       const r = await submitEoi(
@@ -178,16 +291,41 @@ export function EoiStudio({
         JSON.stringify(validated),
         hashes,
         apply ? preview?.token : undefined,
+        version.current,
       );
       if ("error" in r) throw Error(r.error);
-      if (r.preview) setPreview(r.preview);
-      if (r.deck) {
+      if ("preview" in r) setPreview(r.preview);
+      if ("deck" in r) {
         dirty.current = false;
+        version.current = r.version;
+        try {
+          sessionStorage.removeItem(draftStorage);
+        } catch {
+          /* storage disabled */
+        }
+        void clearDraftAudio(tab.current).catch(() => {});
+        setRestored(false);
         setResult(r.deck);
         setPreview(null);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("invalid"));
+      if (e instanceof ZodError) {
+        const path = e.issues[0]?.path ?? [];
+        if (
+          path[0] === "cards" &&
+          typeof path[1] === "number" &&
+          (path[2] === "prompt" || path[2] === "answer")
+        ) {
+          const id = "eoi-" + path[2];
+          setCi(path[1]);
+          setInvalidField(id);
+          setError(t(path[2] === "prompt" ? "invalidPrompt" : "invalidAnswer", { n: path[1] + 1 }));
+          requestAnimationFrame(() => document.getElementById(id)?.focus());
+        } else setError(t("invalid"));
+      } else {
+        const message = e instanceof Error ? e.message.split(":")[0] : "";
+        setError(t.has("errors." + message) ? t("errors." + message) : t("invalid"));
+      }
       setPreview(null);
     } finally {
       setBusy(false);
@@ -202,7 +340,29 @@ export function EoiStudio({
   return (
     <div className="flex flex-col gap-4">
       <p>{t("intro")}</p>
-      <fieldset disabled={busy} className="flex min-w-0 flex-col gap-4">
+      {(restored || error === t("errors.editor-conflict")) && (
+        <div>
+          {restored && <p role="status">{t("draftRestored")}</p>}
+          <button
+            type="button"
+            className={button}
+            onClick={() => {
+              if (!window.confirm(t("replaceDraft"))) return;
+              try {
+                sessionStorage.removeItem(draftStorage);
+              } catch {
+                /* optional */
+              }
+              void clearDraftAudio(tab.current).catch(() => {});
+              dirty.current = false;
+              window.location.reload();
+            }}
+          >
+            {t("discardDraft")}
+          </button>
+        </div>
+      )}
+      <fieldset disabled={busy || !hydrated} className="flex min-w-0 flex-col gap-4">
         <label>
           {t("load")}
           <input
@@ -214,22 +374,12 @@ export function EoiStudio({
               if (!f) return;
               try {
                 if (f.size > 1000000) throw Error(t("invalid"));
-                const body = await f.text();
-                const p = /\.json$/i.test(f.name)
-                  ? parseEoiPack(body)
-                  : await eoiFromCsv(
-                      f.name,
-                      body,
-                      pack.skill === "grammar" ? "grammar" : "vocabulary",
-                    );
-                if (initial && (p.key !== initial.pack.key || p.skill !== initial.pack.skill))
-                  throw Error(t("invalid"));
-                if (dirty.current && !window.confirm(t("replaceDraft"))) return;
-                update(p);
-                setCi(0);
-                setSi(0);
-                setHashes(initial?.hashes ?? {});
-                files.current.clear();
+                if (!/\.json$/i.test(f.name)) {
+                  setCsv(f);
+                  setPreview(null);
+                  return;
+                }
+                acceptPack(parseEoiPack(await f.text()));
               } catch (err) {
                 setError(
                   err instanceof Error && err.message.startsWith("CSV:")
@@ -240,6 +390,26 @@ export function EoiStudio({
             }}
           />
         </label>
+        {csv && (
+          <fieldset className="flex flex-wrap gap-2">
+            <legend>{t("csvCategory", { file: csv.name })}</legend>
+            {(["grammar", "vocabulary"] as const)
+              .filter((skill) => !initial || initial.pack.skill === skill)
+              .map((skill) => (
+                <button
+                  className={button}
+                  type="button"
+                  key={skill}
+                  onClick={() => void importCsv(skill)}
+                >
+                  {t(skill === "grammar" ? "csvGrammar" : "csvVocabulary")}
+                </button>
+              ))}
+            <button className={button} type="button" onClick={() => setCsv(null)}>
+              {t("cancelCsv")}
+            </button>
+          </fieldset>
+        )}
         <label>
           {t("template")}
           <select
@@ -249,7 +419,7 @@ export function EoiStudio({
             onChange={(e) => {
               if (dirty.current && !window.confirm(t("replaceDraft"))) return;
               update(templatePack(e.target.value as Skill, draftId));
-              dirty.current = false;
+              version.current = undefined;
               setCi(0);
               setSi(0);
               setHashes({});
@@ -371,10 +541,7 @@ export function EoiStudio({
                   sources: [
                     ...pack.sources,
                     {
-                      key: nextKey(
-                        "s",
-                        pack.sources.map((s) => s.key),
-                      ),
+                      key: "s-" + crypto.randomUUID(),
                       title: t("source"),
                     },
                   ],
@@ -383,6 +550,70 @@ export function EoiStudio({
             >
               {t("addSource")}
             </button>
+            <div>
+              <label>
+                {t("findSource")}
+                <input
+                  className={field}
+                  value={filter}
+                  maxLength={160}
+                  onChange={(e) => setFilter(e.target.value)}
+                />
+              </label>
+              <button
+                type="button"
+                className={button}
+                onClick={async () => {
+                  try {
+                    setChoices(await searchSources(courseId, filter));
+                  } catch {
+                    setError(t("invalid"));
+                  }
+                }}
+              >
+                {t("searchSources")}
+              </button>
+              {choices &&
+                (choices.length ? (
+                  <ul>
+                    {choices.map((choice) => (
+                      <li key={choice.key}>
+                        <button
+                          type="button"
+                          className={button}
+                          disabled={pack.sources.some((s) => s.key === choice.key)}
+                          onClick={async () => {
+                            setBusy(true);
+                            try {
+                              const chosen = await chooseSource(courseId, choice.key);
+                              if (!chosen) throw Error();
+                              const { hash, ...detail } = chosen;
+                              if (hash && detail.audio) {
+                                if (hashes[detail.audio] && hashes[detail.audio] !== hash) {
+                                  setError(t("audioCollision"));
+                                  return;
+                                }
+                                setHashes((old) => ({ ...old, [detail.audio!]: hash }));
+                              }
+                              setSi(pack.sources.length);
+                              update({ ...pack, sources: [...pack.sources, detail] });
+                              setChoices(null);
+                            } catch {
+                              setError(t("invalid"));
+                            } finally {
+                              setBusy(false);
+                            }
+                          }}
+                        >
+                          {choice.title} ({choice.key})
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p role="status">{t("noSources")}</p>
+                ))}
+            </div>
             {source && !pack.cards.some((q) => q.source === source.key) && (
               <button
                 type="button"
@@ -450,12 +681,16 @@ export function EoiStudio({
         </label>
         <Field
           multiline
+          id="eoi-prompt"
+          invalid={invalidField === "eoi-prompt"}
           label={t("prompt")}
           value={card.prompt}
           change={(prompt) => updateCard({ prompt })}
         />
         <Field
           multiline
+          id="eoi-answer"
+          invalid={invalidField === "eoi-answer"}
           label={t("model")}
           value={card.answer}
           change={(answer) => updateCard({ answer })}
@@ -522,10 +757,7 @@ export function EoiStudio({
                   ...pack.cards,
                   {
                     ...card,
-                    key: nextKey(
-                      "q",
-                      pack.cards.map((c) => c.key),
-                    ),
+                    key: "q-" + crypto.randomUUID(),
                     prompt: "",
                     answer: "",
                   },
@@ -582,8 +814,20 @@ export function EoiStudio({
             {t("exam")}
           </button>
         )}
-        {exam && <ListeningExam pack={pack} hashes={hashes} previews={previewUrls} />}
-        <button className={button} type="button" onClick={() => void submit(false)}>
+        {exam && (
+          <ListeningExam
+            attemptId={courseId + ":preview:" + pack.key}
+            pack={pack}
+            hashes={hashes}
+            previews={previewUrls}
+          />
+        )}
+        <button
+          className={button}
+          type="button"
+          disabled={!!csv}
+          onClick={() => void submit(false)}
+        >
           {t("preview")}
         </button>
         {preview && (
@@ -596,21 +840,27 @@ export function EoiStudio({
                 removed: preview.removed,
               })}
             </p>
+            {preview.restored > 0 && <p>{t("restoreKeys", { n: preview.restored })}</p>}
             {preview.variants.map((v) => (
               <p key={v.front}>
                 {v.front} — {v.current} · {v.incoming}
               </p>
             ))}
             <button className={button} type="button" onClick={() => void submit(true)}>
-              {t("save")}
+              {t(preview.restored ? "confirmRestore" : "save")}
             </button>
           </section>
         )}
       </fieldset>
       {error && (
-        <p role="alert">
+        <p role="alert" id="eoi-error">
           {t("problem")} {error}
         </p>
+      )}
+      {error === t("errors.editor-conflict") && (
+        <button className={button} type="button" onClick={() => download(pack)}>
+          {t("download")}
+        </button>
       )}
       {result && (
         <Link className="underline" href={"/decks/" + result}>

@@ -14,8 +14,6 @@ interface Scope {
 export const studyModeFilter = `mode.in.(${V1_PRACTICE_MODES.join(",")}),config->exercise.not.is.null`;
 
 const membership = "id, concepts!inner(deck_concepts!inner(decks!inner()))";
-const state = "id, due_at, phase, revision";
-const recall = "stability, last_reviewed_at, scheduler_version, config_version";
 
 function eligiblePage<Fields extends string>(
   client: SupabaseClient<Database>,
@@ -74,18 +72,4 @@ export async function listEligibleStudyItemIds(client: SupabaseClient<Database>,
     for (const { id } of rows) ids.add(id);
   }
   return [...ids];
-}
-
-export function eligibleQueuePages(
-  client: SupabaseClient<Database>,
-  scope: Scope,
-  withRecall: boolean,
-) {
-  // Left embedding keeps new cards that have no learning state yet.
-  const fields = withRecall
-    ? (`${membership}, learning_states(${state}, ${recall})` as const)
-    : (`${membership}, learning_states(${state})` as const);
-  return eligiblePages(scope.deckIds, (batch, after) =>
-    eligiblePage(client, scope, fields, batch, after),
-  );
 }

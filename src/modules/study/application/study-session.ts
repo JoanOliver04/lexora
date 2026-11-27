@@ -8,7 +8,12 @@ import {
 } from "@/modules/study/domain/study-scope";
 import type { StudySession } from "@/modules/study/domain/study-session";
 import { SESSION_ACTIONS, nextSessionStatus } from "@/modules/study/domain/study-session";
-import { getDailyQueue, type DailyQueueRepository, type DailyQueue } from "./daily-queue";
+import {
+  getDailyQueue,
+  type DailyQueueRepository,
+  type AvailableDailyQueue,
+  type QueueRead,
+} from "./daily-queue";
 import { StudyError } from "./study-error";
 import type { DashboardDeck, TodayDashboardRepository } from "./today-dashboard";
 
@@ -72,15 +77,19 @@ export async function changeStudySession(
   if (status === session.status) return { ok: true, session };
   if (session.status !== input.expectedStatus) return { ok: false, reason: "session-changed" };
   if (action.data === "complete" || action.data === "resume") {
-    const current = await getDailyQueue(queue, {
-      ownerId: input.ownerId,
-      courseId: session.courseId,
-      deckIds: session.scope.deckIds,
-      now: input.now,
-      timeZone: input.timeZone,
-    });
+    const current = await getDailyQueue(
+      queue,
+      {
+        ownerId: input.ownerId,
+        courseId: session.courseId,
+        deckIds: session.scope.deckIds,
+        now: input.now,
+        timeZone: input.timeZone,
+      },
+      "counts",
+    );
     if (!current.ok) return current;
-    if (action.data === "complete" && current.queue.entries.length > 0)
+    if (action.data === "complete" && current.queue.availableCount > 0)
       return { ok: false, reason: "items-available" };
   }
   const changed = await sessions.transition({
@@ -113,7 +122,7 @@ interface StudyInput {
 export interface StudySetup {
   decks: DashboardDeck[];
   scope: StudyScope;
-  courseQueue: DailyQueue;
+  courseQueue: AvailableDailyQueue;
 }
 export type CreateStudySessionReason =
   | "invalid-scope"
@@ -144,6 +153,7 @@ export async function getStudySetup(
   queue: DailyQueueRepository,
   decks: Pick<TodayDashboardRepository, "listActiveDecks">,
   input: StudyInput & { deckQuery?: unknown },
+  read: "all" | "counts" = "all",
 ): Promise<
   | { ok: true; setup: StudySetup }
   | { ok: false; reason: "invalid-scope" | "not-found" | "invalid-timezone" }
@@ -156,13 +166,17 @@ export async function getStudySetup(
     courseId: input.courseId,
   });
   if (!scopeBelongsToDecks(scope, activeDecks)) return { ok: false, reason: "invalid-scope" };
-  const result = await getDailyQueue(queue, {
-    ownerId: input.ownerId,
-    courseId: input.courseId,
-    now: input.now,
-    timeZone: input.timeZone,
-    deckIds: null,
-  });
+  const result = await getDailyQueue(
+    queue,
+    {
+      ownerId: input.ownerId,
+      courseId: input.courseId,
+      now: input.now,
+      timeZone: input.timeZone,
+      deckIds: null,
+    },
+    read,
+  );
   if (!result.ok) return result;
   return { ok: true, setup: { decks: activeDecks, scope, courseQueue: result.queue } };
 }
@@ -189,15 +203,19 @@ export async function createStudySession(
     courseId: input.courseId,
   });
   if (!scopeBelongsToDecks(scope, activeDecks)) return { ok: false, reason: "invalid-scope" };
-  const result = await getDailyQueue(queue, {
-    ownerId: input.ownerId,
-    courseId: input.courseId,
-    deckIds: scope.deckIds,
-    now: input.now,
-    timeZone: input.timeZone,
-  });
+  const result = await getDailyQueue(
+    queue,
+    {
+      ownerId: input.ownerId,
+      courseId: input.courseId,
+      deckIds: scope.deckIds,
+      now: input.now,
+      timeZone: input.timeZone,
+    },
+    "counts",
+  );
   if (!result.ok) return result;
-  if (result.queue.entries.length === 0) return { ok: false, reason: "no-items" };
+  if (result.queue.availableCount === 0) return { ok: false, reason: "no-items" };
   try {
     const session = await sessions.create({
       ownerId: input.ownerId,
@@ -219,8 +237,9 @@ export async function getStudySession(
   sessions: StudySessionRepository,
   queue: DailyQueueRepository,
   input: { ownerId: string; sessionId: unknown; now: Date; timeZone: string },
+  read: QueueRead = "all",
 ): Promise<
-  | { ok: true; session: StudySession; queue: DailyQueue | null }
+  | { ok: true; session: StudySession; queue: AvailableDailyQueue | null }
   | { ok: false; reason: "not-found" | "invalid-timezone" }
 > {
   assertOwner(input.ownerId);
@@ -229,12 +248,16 @@ export async function getStudySession(
   const session = await sessions.get({ ownerId: input.ownerId, sessionId });
   if (!session) return { ok: false, reason: "not-found" };
   if (session.status !== "active") return { ok: true, session, queue: null };
-  const result = await getDailyQueue(queue, {
-    ownerId: input.ownerId,
-    courseId: session.courseId,
-    deckIds: session.scope.deckIds,
-    now: input.now,
-    timeZone: input.timeZone,
-  });
+  const result = await getDailyQueue(
+    queue,
+    {
+      ownerId: input.ownerId,
+      courseId: session.courseId,
+      deckIds: session.scope.deckIds,
+      now: input.now,
+      timeZone: input.timeZone,
+    },
+    read,
+  );
   return result.ok ? { ok: true, session, queue: result.queue } : result;
 }

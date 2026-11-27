@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 
 import { getActiveCourseForCurrentUser } from "@/composition/courses";
 import { getLibraryContextForCurrentUser } from "@/composition/library";
@@ -10,9 +11,8 @@ import {
   addConceptToDeck,
   archiveDeck,
   createDeck,
-  listDecks,
+  moveDeck,
   removeConceptFromDeck,
-  reorderDecks,
   restoreDeck,
   updateDeck,
 } from "@/modules/library/application/deck";
@@ -183,26 +183,14 @@ export async function unlinkConceptFromDeckAction(formData: FormData): Promise<v
 
 export async function moveDeckAction(formData: FormData): Promise<void> {
   const locale = safeLocale(formData);
-  const deckId = String(formData.get("deckId") ?? "");
+  const deckId = z.guid().safeParse(formData.get("deckId")).data;
   const direction = String(formData.get("direction") ?? "");
   const scope = await decksContext();
-  if (!scope || deckId === "" || (direction !== "up" && direction !== "down")) {
+  if (!scope || !deckId || (direction !== "up" && direction !== "down")) {
     redirect(`/${locale}/decks`);
   }
 
-  const decks = await listDecks(scope.context.decks, scope.context.ownerId, scope.course.id);
-  const order = decks.map((deck) => deck.id);
-  const from = order.indexOf(deckId);
-  const to = direction === "up" ? from - 1 : from + 1;
-
-  if (from !== -1 && to >= 0 && to < order.length) {
-    const [moved] = order.splice(from, 1);
-    if (moved !== undefined) {
-      order.splice(to, 0, moved);
-      await reorderDecks(scope.context.decks, scope.context.ownerId, scope.course.id, order);
-    }
-  }
-
+  await moveDeck(scope.context.decks, scope.context.ownerId, scope.course.id, deckId, direction);
   revalidatePath(`/${locale}/decks`);
-  redirect(`/${locale}/decks`);
+  redirect(deckListReturnPath(locale, formData.get("returnQuery")));
 }

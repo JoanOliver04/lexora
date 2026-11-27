@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { ensureProfileForCurrentUser, getCurrentUserId } from "@/composition/identity";
+import { isCurrentAccountDeletionPending } from "@/composition/account-deletion";
+import { PendingAccountDeletion } from "./app/settings/pending-account-deletion";
 import { getWorkspaceProfileForCurrentUser } from "@/composition/courses";
 import { AccountTheme } from "@/shared/presentation/theme/account-theme";
 import { getTranslations } from "next-intl/server";
@@ -46,7 +48,16 @@ export default async function AppLayout({
     getWorkspaceProfileForCurrentUser(),
     getTranslations("Auth"),
   ]);
-  if (!profile && !(await ensureProfileForCurrentUser())) redirect(`/${locale}/login`);
+  if (!profile) {
+    if (await isCurrentAccountDeletionPending()) {
+      return (
+        <ClientMessages namespaces={["AccountDeletion"]}>
+          <PendingAccountDeletion locale={locale} />
+        </ClientMessages>
+      );
+    }
+    if (!(await ensureProfileForCurrentUser())) redirect(`/${locale}/login`);
+  }
   const theme = profile?.theme ?? "system";
   return (
     <>

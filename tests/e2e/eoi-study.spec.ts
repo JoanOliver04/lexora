@@ -63,6 +63,7 @@ test("imports a reading, preserves its second question and highlights its own ev
 });
 
 test("imports private audio and corrects a listening block after the attempt", async ({ page }) => {
+  test.setTimeout(60000);
   await signUp(page);
   await completeOnboarding(page);
   await page.goto("/es/import/eoi");
@@ -85,6 +86,29 @@ test("imports private audio and corrects a listening block after the attempt", a
     .getByLabel(/Audio modelo/i)
     .setInputFiles({ name: "model.wav", mimeType: "audio/wav", buffer: wav });
   await expect(page.getByText("Audio modelo model.wav")).toBeVisible();
+  await page.getByRole("button", { name: "Escuchar modelo" }).click();
+  const modelPlayer = page.locator("audio").first();
+  const originalSrc = await modelPlayer.getAttribute("src");
+  expect(originalSrc).toMatch(/^blob:/);
+  const replacement = Buffer.from(wav);
+  replacement.writeInt16LE(93, 100);
+  await page
+    .getByLabel(/Audio modelo/)
+    .setInputFiles({ name: "changed.wav", mimeType: "audio/wav", buffer: replacement });
+  await expect(page.getByText("Audio modelo changed.wav")).toBeVisible();
+  await page.getByRole("button", { name: "Escuchar modelo" }).click();
+  await expect(modelPlayer).not.toHaveAttribute("src", originalSrc!);
+  const modelFile = page.getByRole("link", { name: /Descargar copia del audio/ });
+  const downloaded = page.waitForEvent("download");
+  await modelFile.click();
+  const stream = await (await downloaded).createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream!) chunks.push(Buffer.from(chunk));
+  expect(Buffer.concat(chunks)).toEqual(replacement);
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.reload();
+  await page.getByText("Textos y audios compartidos", { exact: true }).click();
+  await expect(modelFile).toHaveAttribute("href", /^blob:/);
   await page.getByRole("button", { name: "Revisar importación" }).click();
   await page.getByRole("button", { name: "Guardar y vincular coincidencias" }).click();
   await page.getByRole("link", { name: "Abrir mazo guardado" }).click();
@@ -97,7 +121,67 @@ test("imports private audio and corrects a listening block after the attempt", a
   await expect(listen).toBeDisabled();
   await expect(page.getByText("I need the blue one.", { exact: true })).toHaveCount(0);
   await page.getByRole("textbox").fill("blue");
+  await page.reload();
+  await expect(page.getByText("Escuchas: 2 de 2")).toBeVisible();
+  await expect(page.getByRole("textbox")).toHaveValue("blue");
   await page.getByRole("button", { name: "Corregir el bloque" }).click();
   await expect(page.getByText(/coincide con una variante/)).toBeVisible();
   await expect(page.getByText("I need the blue one.", { exact: true })).toBeVisible();
+});
+
+test("keeps drafts, allocates fresh question keys and rejects an edit from an old tab", async ({
+  page,
+  context,
+}) => {
+  await signUp(page);
+  await completeOnboarding(page);
+  await page.goto("/es/import/eoi");
+  await page.getByLabel("Plantilla de destreza").selectOption("grammar");
+  const prompt = page.getByLabel("Pregunta o situación");
+  await prompt.fill("First synthetic prompt");
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.reload();
+  await expect(prompt).toHaveValue("First synthetic prompt");
+  await page.getByRole("button", { name: "Añadir tarjeta", exact: true }).click();
+  const oldKey = await page.getByLabel("Identificador estable de la tarjeta").inputValue();
+  await page.getByRole("button", { name: "Revisar importación" }).click();
+  await expect(page.locator("#eoi-error")).toContainText("tarjeta 2");
+  await expect(prompt).toBeFocused();
+  await page.getByRole("button", { name: "Quitar tarjeta del mazo" }).click();
+  await page.getByRole("button", { name: "Añadir tarjeta", exact: true }).click();
+  expect(await page.getByLabel("Identificador estable de la tarjeta").inputValue()).not.toBe(
+    oldKey,
+  );
+  await prompt.fill("Second synthetic prompt");
+  await page.getByLabel("Respuesta modelo").fill("answer");
+  await page.getByRole("button", { name: "Revisar importación" }).click();
+  await page.getByRole("button", { name: "Guardar y vincular coincidencias" }).click();
+  const href = await page.getByRole("link", { name: "Abrir mazo guardado" }).getAttribute("href");
+  const url = "/es/import/eoi?deck=" + href!.split("/").pop();
+  await page.goto(url);
+  const other = await context.newPage();
+  await other.goto(url);
+  await prompt.fill("First tab correction");
+  await page.getByRole("button", { name: "Revisar importación" }).click();
+  await page.getByRole("button", { name: "Guardar y vincular coincidencias" }).click();
+  await expect(page.getByRole("link", { name: "Abrir mazo guardado" })).toBeVisible();
+  await other.getByLabel("Título", { exact: true }).first().fill("Changed title");
+  await other.getByRole("button", { name: "Revisar importación" }).click();
+  await expect(other.locator("#eoi-error")).toContainText("Otra edición");
+  await page.reload();
+  await expect(prompt).toHaveValue("First tab correction");
+});
+test("requires an explicit direction for a CSV opened from the EOI menu", async ({ page }) => {
+  await signUp(page);
+  await completeOnboarding(page);
+  await page.goto("/es/import/eoi");
+  await page.getByLabel(/Abrir mazo/).setInputFiles({
+    name: "past.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from("front,back,tags\nShe ___ (go) yesterday.,went,grammar::past\n"),
+  });
+  await expect(page.getByRole("button", { name: "Revisar importación" })).toBeDisabled();
+  await page.getByRole("button", { name: /Grammar ·/ }).click();
+  await expect(page.getByLabel("Plantilla de destreza")).toHaveValue("grammar");
+  await expect(page.getByText("Tarjeta inversa")).toHaveCount(0);
 });

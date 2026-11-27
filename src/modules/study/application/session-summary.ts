@@ -40,13 +40,17 @@ export async function getStudySessionSummary(
   if (session.status === "active") return { ok: false, reason: "active-session" };
   const [records, current] = await Promise.all([
     history.listReviews({ ownerId: input.ownerId, sessionId, now: input.now }),
-    getDailyQueue(queue, {
-      ownerId: input.ownerId,
-      courseId: session.courseId,
-      deckIds: session.scope.deckIds,
-      now: input.now,
-      timeZone: input.timeZone,
-    }),
+    getDailyQueue(
+      queue,
+      {
+        ownerId: input.ownerId,
+        courseId: session.courseId,
+        deckIds: session.scope.deckIds,
+        now: input.now,
+        timeZone: input.timeZone,
+      },
+      "counts",
+    ),
   ]);
   return {
     ok: true,
@@ -54,7 +58,7 @@ export async function getStudySessionSummary(
       ...summarizeSessionReviews(records),
       remaining: current.ok
         ? {
-            availableCount: current.queue.entries.length,
+            availableCount: current.queue.availableCount,
             hiddenDueReviews: current.queue.hiddenDueReviews,
             hiddenNew: current.queue.hiddenNew,
             hasFutureReviews: current.queue.nextDueAt !== null,
