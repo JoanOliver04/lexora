@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { PublicPolicyLinks } from "../../public-policy-links";
 
 /**
@@ -12,10 +13,12 @@ export function AuthShell({
   title,
   children,
   footer,
+  demoLabel,
 }: {
   title: string;
   children: ReactNode;
   footer?: ReactNode;
+  demoLabel?: string;
 }) {
   const t = useTranslations("Visual");
   return (
@@ -35,6 +38,14 @@ export function AuthShell({
         {footer ? (
           <div className="text-sm leading-relaxed text-(--color-ink-muted)">{footer}</div>
         ) : null}
+        {demoLabel && (
+          <Link
+            href="/demo"
+            className="inline-flex min-h-11 items-center self-start text-sm font-semibold text-(--color-accent) underline underline-offset-4"
+          >
+            {demoLabel}
+          </Link>
+        )}
         <PublicPolicyLinks />
       </section>
     </main>

@@ -1193,6 +1193,7 @@
     }
   },
   "Auth": {
+    "tryDemo": "Probar la demo sin registro",
     "google": {
       "continue": "Continuar con Google",
       "pending": "Conectando…",

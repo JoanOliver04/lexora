@@ -1,0 +1,577 @@
+.page {
+  --paper: #f6f3e9;
+  --card: #fffcf5;
+  --ticket: #f6e6c2;
+  --ink: #192e3c;
+  --muted: #455761;
+  --line: #c9c7b9;
+  --edge: #898e85;
+  --blue: #234a99;
+  --on-blue: #fff;
+  --tile: var(--tint);
+  --tint: #e8edf6;
+  --gold: #eca742;
+  --gold-ink: #68460c;
+  color: var(--ink);
+  background: var(--paper);
+  min-height: 100svh;
+}
+
+:global(html[data-theme="dark"]) .page {
+  --paper: #16212a;
+  --card: #202e39;
+  --ticket: #433c30;
+  --ink: #f5f0e6;
+  --muted: #c4ccc9;
+  --line: #4c5b65;
+  --edge: #8e999c;
+  --blue: #b0caff;
+  --on-blue: #132747;
+  --tint: #2b3d52;
+  --gold: #eab365;
+  --gold-ink: #f1c782;
+}
+
+.header {
+  border-bottom: 1px solid var(--line);
+}
+.topBar,
+.main,
+.footer {
+  width: min(calc(100% - 2.25rem), 73rem);
+  margin-inline: auto;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 4.5rem;
+}
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.tools > label > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.tools select {
+  min-height: 2.75rem;
+}
+.main {
+  padding-block: clamp(2rem, 5vw, 4.5rem) clamp(2.3rem, 5vw, 4.5rem);
+}
+.intro {
+  margin-bottom: clamp(1.55rem, 4vw, 2.6rem);
+}
+.eyebrow {
+  color: var(--blue);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 650;
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.intro .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.intro .eyebrow::before {
+  content: "";
+  width: 1.75rem;
+  height: 3px;
+  background: var(--gold);
+}
+.intro h1,
+.card h2,
+.word,
+.sentence,
+.ticketRoute p,
+.score strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  letter-spacing: -0.045em;
+}
+.intro h1 {
+  margin-block: 0.5rem;
+  font-size: clamp(2.75rem, 6.3vw, 5.5rem);
+  line-height: 1.04;
+  text-wrap: balance;
+}
+.lede {
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+  color: var(--muted);
+  line-height: 1.5;
+}
+.layout {
+  display: grid;
+  gap: clamp(1.25rem, 3.5vw, 3.2rem);
+  align-items: start;
+}
+.practice,
+.card,
+.stack > *,
+.ticket {
+  min-width: 0;
+}
+.itinerary {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 0;
+  margin: 0 0 1.25rem;
+}
+.itinerary li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  position: relative;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.itinerary li::before {
+  content: "";
+  position: absolute;
+  height: 1px;
+  background: var(--edge);
+  top: 0.84rem;
+  left: 1.55rem;
+  right: 0;
+}
+.itinerary li:last-child::before {
+  display: none;
+}
+.marker {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--edge);
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  background: var(--paper);
+  font: 600 0.75rem var(--font-mono);
+  z-index: 1;
+}
+.itinerary li[aria-current] {
+  font-weight: 750;
+  color: var(--ink);
+}
+.itinerary li[aria-current] .marker {
+  background: var(--gold);
+  color: #242b30;
+  border-color: var(--gold-ink);
+}
+.itinerary li[data-done="true"] .marker {
+  background: var(--blue);
+  color: var(--on-blue);
+  border-color: var(--blue);
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--blue);
+  border-radius: 0.5rem;
+  padding: clamp(1.1rem, 3.7vw, 2.6rem);
+}
+.card h2 {
+  font-size: clamp(2rem, 3.9vw, 3.15rem);
+  line-height: 1.08;
+  margin-block: 0.4rem 1rem;
+}
+.stack {
+  display: grid;
+  gap: 1.1rem;
+  line-height: 1.55;
+}
+.stack > p:first-child {
+  color: var(--muted);
+}
+.flashcard,
+.sentence {
+  position: relative;
+  border: 1px solid var(--line);
+  border-left: 0.28rem solid var(--gold);
+  padding: clamp(1.15rem, 3.2vw, 2rem);
+  background: var(--paper);
+  border-radius: 0.25rem;
+}
+.word {
+  font-size: clamp(2rem, 4.3vw, 3.45rem);
+  line-height: 1.14;
+  color: var(--ink);
+}
+.definition {
+  border-top: 1px dashed var(--edge);
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+}
+.definition p:first-child {
+  color: var(--blue);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.definition p + p {
+  margin-top: 0.4rem;
+  color: var(--muted);
+  font-style: italic;
+}
+.primary,
+.ratingField button {
+  cursor: pointer;
+  max-width: 100%;
+  min-height: 2.9rem;
+  border-radius: 0.33rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+.primary {
+  width: fit-content;
+  padding: 0.74rem 1.25rem;
+  color: var(--on-blue);
+  background: var(--blue);
+}
+.primary:hover:not(:disabled) {
+  box-shadow: inset 0 0 0 2px currentColor;
+}
+.primary:disabled {
+  background: var(--line);
+  color: var(--ink);
+  cursor: default;
+}
+.primary span {
+  margin-inline-start: 0.45rem;
+}
+.ratingField,
+.choices {
+  min-width: 0;
+}
+.ratingField legend,
+.choices legend,
+.answer,
+.audioBox > p:first-child {
+  font-weight: 650;
+  font-size: 0.94rem;
+}
+.ratingField > div {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-top: 0.6rem;
+}
+.ratingField button {
+  border: 1px solid var(--edge);
+  color: var(--blue);
+  background: var(--card);
+  padding: 0.5rem;
+}
+.ratingField button:hover,
+.choices label:hover {
+  background: var(--tint);
+  border-color: var(--blue);
+}
+.sentence {
+  font-size: clamp(1.55rem, 3vw, 2.1rem);
+  line-height: 1.32;
+}
+.sentence em {
+  color: var(--muted);
+}
+.blank {
+  color: var(--blue);
+}
+.answer {
+  display: grid;
+  gap: 0.45rem;
+}
+.answer input {
+  width: 100%;
+  min-height: 3rem;
+  border: 1px solid var(--edge);
+  border-radius: 0.32rem;
+  background: var(--card);
+  color: var(--ink);
+  padding: 0.6rem 0.85rem;
+  font-size: 1rem;
+  font-weight: 450;
+}
+.answer input[readonly] {
+  border-style: dashed;
+  color: var(--muted);
+}
+.feedback,
+.plan {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem 1.1rem;
+  background: var(--tint);
+  border-inline-start: 3px solid var(--blue);
+}
+.feedback h3,
+.plan h3,
+.account h3 {
+  color: var(--ink);
+  font-weight: 700;
+}
+.feedback p,
+.plan > p:last-child {
+  color: var(--muted);
+}
+.feedback .modelAnswer {
+  color: var(--ink);
+}
+.audioBox {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem 1.1rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 0.3rem;
+}
+.audioBox audio {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+.audioBox summary {
+  cursor: pointer;
+  color: var(--blue);
+  font-weight: 600;
+  min-height: 2.75rem;
+  align-content: center;
+  width: fit-content;
+}
+.audioBox details p {
+  margin-top: 0.25rem;
+}
+.choices {
+  display: grid;
+  gap: 0.4rem;
+}
+.choices legend {
+  margin-bottom: 0.45rem;
+}
+.choices label {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid var(--edge);
+  min-height: 2.8rem;
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+  border-radius: 0.3rem;
+}
+.choices label:has(:checked) {
+  border-color: var(--blue);
+  background: var(--tint);
+}
+.choices input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--blue);
+}
+.score {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+.score strong {
+  color: var(--blue);
+  font-size: clamp(2.5rem, 5vw, 3.75rem);
+  line-height: 1;
+}
+.breakdown {
+  border-block: 1px solid var(--line);
+}
+.breakdown > div {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 1fr) minmax(0, 2fr);
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  align-items: baseline;
+}
+.breakdown > div + div {
+  border-top: 1px dashed var(--line);
+}
+.breakdown dt {
+  font-weight: 650;
+}
+.breakdown dd small {
+  display: block;
+  color: var(--muted);
+}
+.planLine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+}
+.planLine strong {
+  color: var(--blue);
+}
+.account {
+  border-top: 1px solid var(--line);
+  padding-top: 1.1rem;
+}
+.account > p {
+  margin-top: 0.3rem;
+  color: var(--muted);
+}
+.secondary {
+  justify-self: start;
+  min-height: 2.75rem;
+  cursor: pointer;
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.secondary:hover {
+  text-decoration-thickness: 2px;
+}
+.account > div {
+  display: flex;
+  gap: 0.5rem 0.9rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 0.55rem;
+}
+.ticket {
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--ticket);
+}
+.photo {
+  aspect-ratio: 16/9;
+  position: relative;
+}
+.photo img {
+  object-fit: cover;
+  object-position: 52% center;
+}
+.ticketRoute {
+  display: grid;
+  gap: 1rem;
+  padding: 1.1rem 1.4rem 1.35rem;
+  position: relative;
+  border-top: 2px dashed var(--edge);
+}
+.ticketRoute > div {
+  position: relative;
+  padding-inline-start: 1.35rem;
+}
+.ticketRoute > div::before {
+  content: "";
+  width: 0.62rem;
+  height: 0.62rem;
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.43rem;
+  background: var(--ticket);
+  border: 2px solid var(--blue);
+  border-radius: 50%;
+}
+.ticketRoute > div:first-child::after {
+  content: "";
+  width: 1px;
+  height: calc(100% + 0.4rem);
+  position: absolute;
+  inset-inline-start: 0.28rem;
+  top: 1rem;
+  background: var(--blue);
+}
+.ticketRoute > div:last-child::before {
+  background: var(--blue);
+}
+.ticketRoute span {
+  font: 650 0.73rem var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.075em;
+  color: var(--muted);
+}
+.ticketRoute p {
+  font-size: clamp(1.65rem, 2.8vw, 2.4rem);
+  line-height: 1.16;
+}
+.localHint {
+  margin-top: 0.8rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.footer {
+  border-top: 1px solid var(--line);
+  padding-block: 1rem 1.5rem;
+  display: flex;
+  gap: 0.5rem 2rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  color: var(--blue);
+  font-weight: 600;
+  text-underline-offset: 0.2em;
+}
+.back:hover {
+  text-decoration: underline;
+}
+.card [tabindex="-1"]:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+@media (min-width: 48rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.42fr);
+  }
+  .ticket {
+    margin-top: 0.2rem;
+  }
+  .photo {
+    aspect-ratio: 1.38;
+  }
+}
+@media (max-width: 47.99rem) {
+  .ticket {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  }
+  .photo {
+    aspect-ratio: auto;
+    min-height: 10rem;
+  }
+  .ticketRoute {
+    border-top: 0;
+    border-inline-start: 2px dashed var(--edge);
+  }
+}
+@media (max-width: 30rem) {
+  .ratingField > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .itinerary li {
+    font-size: 0.7rem;
+  }
+  .ticketRoute {
+    padding: 0.8rem;
+  }
+  .ticketRoute p {
+    font-size: 1.4rem;
+  }
+  .footer {
+    align-items: flex-start;
+  }
+}

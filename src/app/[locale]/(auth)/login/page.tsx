@@ -37,6 +37,7 @@ export default async function LoginPage({
   return (
     <AuthShell
       title={t("login.title")}
+      demoLabel={t("tryDemo")}
       footer={
         registrationOpen ? (
           <>

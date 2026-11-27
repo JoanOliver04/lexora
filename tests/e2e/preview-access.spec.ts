@@ -31,6 +31,21 @@ for (const locale of ["es", "en"] as const)
       ).toBeVisible();
       await expect(page.locator("input[type=email], input[type=password], form")).toHaveCount(0);
     }
+    await page.goto(`/${locale}/login`);
+    const demo = page.getByRole("link", {
+      name: locale === "es" ? "Probar la demo sin registro" : "Try the demo without an account",
+      exact: true,
+    });
+    await expect(demo).toHaveAttribute("href", `/${locale}/demo`);
+    await audit(page, info, "preview-auth-information");
+    await demo.click();
+    await expect(page).toHaveURL(`/${locale}/demo`);
+    await expect(
+      page.getByRole("button", {
+        name: locale === "es" ? "Revelar significado" : "Reveal meaning",
+      }),
+    ).toBeVisible();
+    await page.goto(`/${locale}/import`);
     expect(backendRequests).toEqual([]);
     await audit(page, info, "preview-information");
     const health = await request.get("/api/health");

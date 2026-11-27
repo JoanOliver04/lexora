@@ -1,5 +1,9 @@
 # Lexora — Estado actual
 
+## Portada y demo pública de Brighton
+
+La portada y las pantallas de acceso enlazan a una sesión bilingüe abierta en [español](https://lexora-one-alpha.vercel.app/es/demo) e [inglés](https://lexora-one-alpha.vercel.app/en/demo). La demo combina recuperación de vocabulario, una respuesta escrita y un anuncio de estación. Al terminar muestra los resultados del visitante y el intervalo de FSRS para su tarjeta. El progreso dura una pestaña y se puede reiniciar. La fotografía, el audio y las tarjetas para compartir se sirven desde Lexora. Se conserva la configuración de registro del despliegue.
+
 ## Correcciones de integridad de noviembre de 2026
 
 Los mazos EOI distinguen una pregunta nueva de una pregunta recuperada y comprueban la versión del mazo antes de aceptar una edición. En el editor se recupera el borrador de la pestaña y en Listening se conserva el intento hasta reiniciarlo. Los CSV piden confirmar si son de Grammar o Vocabulary. Las fuentes de un curso se pueden buscar y compartir.

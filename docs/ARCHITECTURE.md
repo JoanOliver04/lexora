@@ -71,7 +71,7 @@ Se organiza por área de negocio, no por tipo de archivo.
 | `data-management` | Exportación verificada y eliminación de la cuenta propia. |
 
 Las consultas de historial y estadísticas pertenecen a `study`; no existe un
-módulo `analytics` separado. La demo pública queda fuera de la entrega personal.
+módulo `analytics` separado. La demo pública usa tres actividades de ejemplo y el mismo planificador de repaso. La página calcula los intervalos en el servidor y el navegador conserva las respuestas en `sessionStorage` por pestaña. Los participantes de la demo no generan registros de estudio en Supabase.
 
 Un módulo trivial no está obligado a tener las cuatro capas. La regla de
 dependencia sí es obligatoria siempre.
