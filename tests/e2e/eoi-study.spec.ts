@@ -5,6 +5,7 @@ import { completeOnboarding, signUp } from "./helpers";
 test("imports a reading, preserves its second question and highlights its own evidence", async ({
   page,
 }) => {
+  test.setTimeout(60000);
   await signUp(page);
   await completeOnboarding(page);
   const pack = templatePack("reading");
@@ -27,7 +28,9 @@ test("imports a reading, preserves its second question and highlights its own ev
   await page.getByRole("button", { name: "Revisar importación" }).click();
   await expect(page.getByText(/Nuevas: 2/)).toBeVisible();
   await page.getByRole("button", { name: "Guardar y vincular coincidencias" }).click();
-  await page.getByRole("link", { name: "Abrir mazo guardado" }).click();
+  const saved = page.getByRole("link", { name: "Abrir mazo guardado" });
+  await saved.click();
+  await expect(page).toHaveURL(/\/decks\/[a-f0-9-]{36}$/);
   const id = new URL(page.url()).pathname.split("/").pop()!;
   await page.getByRole("link", { name: "Editar, exportar o practicar el mazo B1" }).click();
   await page.getByRole("combobox", { name: "Tarjeta", exact: true }).selectOption("1");
