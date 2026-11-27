@@ -1193,6 +1193,7 @@
     }
   },
   "Auth": {
+    "tryDemo": "Try the demo without an account",
     "google": {
       "continue": "Continue with Google",
       "pending": "Connecting…",

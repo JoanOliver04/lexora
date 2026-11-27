@@ -22,10 +22,16 @@ for (const locale of ["es", "en"] as const)
     await expect(
       page.getByRole("heading", { name: locale === "es" ? "Acceso personal" : "Personal access" }),
     ).toBeVisible();
+    const demo = page.getByRole("link", {
+      name: locale === "es" ? "Probar la demo sin registro" : "Try the demo without an account",
+      exact: true,
+    });
+    await expect(demo).toHaveAttribute("href", `/${locale}/demo`);
     await expect(page.getByRole("textbox")).toHaveCount(0);
     await audit(page, info, "closed-registration");
     await page.goto(`/${locale}/login`);
     await expect(page.locator('a[href$="/signup"]')).toHaveCount(0);
+    await expect(demo).toHaveAttribute("href", `/${locale}/demo`);
     await audit(page, info, "personal-login");
     await page.locator('[name="email"]').fill(email);
     await page.locator('[name="password"]').fill(PASSWORD);

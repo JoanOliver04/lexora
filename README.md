@@ -8,9 +8,11 @@
 
 Organiza tu vocabulario, gramática y frases por curso. Crea tus propias tarjetas o importa un tema entero y elige cómo practicarlo.
 
-[Visitar Lexora en español](https://lexora-one-alpha.vercel.app/es) · [Open Lexora in English](https://lexora-one-alpha.vercel.app/en)
+[Probar la demo sin registro](https://lexora-one-alpha.vercel.app/es/demo) · [Try the demo in English](https://lexora-one-alpha.vercel.app/en/demo)
 
 </div>
+
+> **Un viaje a Brighton.** Pide un billete, completa una frase y escucha el anuncio del andén. Al terminar verás tus respuestas y cuándo volverías a repasar la tarjeta.
 
 > **Acceso público y gratuito.** Crea una cuenta con Google. Si ya tienes una cuenta con contraseña, puedes seguir usándola. [Crear una cuenta](https://lexora-one-alpha.vercel.app/es/signup)
 

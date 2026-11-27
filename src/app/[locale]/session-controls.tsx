@@ -7,9 +7,17 @@ import {
   isRegistrationOpen,
 } from "@/composition/identity";
 import { Link } from "@/i18n/navigation";
-import { Button } from "@/shared/presentation/components";
 
-export async function SessionControls({ locale }: { locale: string }) {
+import styles from "./landing.module.css";
+
+export async function SessionControls({
+  locale,
+  presentation = "header",
+}: {
+  locale: string;
+  presentation?: "header" | "completion";
+}) {
+  const completion = presentation === "completion";
   const [userId, t] = await Promise.all([getCurrentUserId(), getTranslations("Auth")]);
 
   if (!userId) {
@@ -17,11 +25,14 @@ export async function SessionControls({ locale }: { locale: string }) {
     return (
       <>
         {registrationOpen && (
-          <Link href="/signup" className="home-primary">
+          <Link href="/signup" className={completion ? styles["demoLink"] : styles["quietAccount"]}>
             {t("signup.title")}
           </Link>
         )}
-        <Link href="/login" className={registrationOpen ? "home-secondary" : "home-primary"}>
+        <Link
+          href="/login"
+          className={completion && !registrationOpen ? styles["demoLink"] : styles["account"]}
+        >
           {t("login.submit")}
         </Link>
       </>
@@ -30,14 +41,14 @@ export async function SessionControls({ locale }: { locale: string }) {
 
   return (
     <>
-      <Link href="/app" className="home-primary">
+      <Link href="/app" className={completion ? styles["demoLink"] : styles["account"]}>
         {t("openApp")}
       </Link>
       <form action={logoutAction}>
         <input type="hidden" name="locale" value={locale} />
-        <Button type="submit" variant="secondary">
+        <button type="submit" className={styles["quietAccount"]}>
           {t("logout")}
-        </Button>
+        </button>
       </form>
     </>
   );

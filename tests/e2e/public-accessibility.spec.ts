@@ -34,6 +34,13 @@ for (const locale of ["es", "en"] as const)
     await control.press("Enter");
     await expect(answer).toBeVisible();
     await expect(control).toBeFocused();
+    const continueDemo = example.getByRole("link", {
+      name: spanish ? "Practicar el viaje a Brighton" : "Practise the trip to Brighton",
+      exact: true,
+    });
+    await expect(continueDemo).toHaveAttribute("href", `/${locale}/demo`);
+    await page.keyboard.press("Tab");
+    await expect(continueDemo).toBeFocused();
     await assertStudyLayout(page, info, `home-example-${locale}`);
     await control.press("Enter");
     await expect(answer).toBeHidden();

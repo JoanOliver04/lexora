@@ -26,6 +26,7 @@ export default async function SignupPage({
     return (
       <AuthShell
         title={t("private.title")}
+        demoLabel={t("tryDemo")}
         footer={
           <Link
             href="/login"
@@ -45,6 +46,7 @@ export default async function SignupPage({
   return (
     <AuthShell
       title={t("signup.title")}
+      demoLabel={t("tryDemo")}
       footer={
         <>
           {t("signup.loginPrompt")}{" "}
