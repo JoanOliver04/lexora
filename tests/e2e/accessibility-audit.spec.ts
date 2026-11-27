@@ -89,9 +89,17 @@ for (const locale of ["es", "en"] as const) {
       ).toBeVisible();
       const dock = page.locator(".workspace-bottom-nav");
       if (await dock.isVisible()) {
-        const content = await page.locator("#workspace-content").boundingBox();
-        const navigation = await dock.boundingBox();
-        expect(navigation!.y).toBeGreaterThanOrEqual(content!.y + content!.height - 1);
+        // Layout and scroll can change as focus moves to the session summary.
+        // Measure both elements in the same frame so they share viewport coordinates.
+        const layout = await dock.evaluate((navigation) => {
+          const content = document.getElementById("workspace-content");
+          if (!content) throw new Error("Missing workspace content");
+          return {
+            navigationTop: navigation.getBoundingClientRect().top,
+            contentBottom: content.getBoundingClientRect().bottom,
+          };
+        });
+        expect(layout.navigationTop).toBeGreaterThanOrEqual(layout.contentBottom - 1);
       }
       await audit(page, info, "study-summary");
       for (const path of ["/app/history", "/app/statistics"]) {
