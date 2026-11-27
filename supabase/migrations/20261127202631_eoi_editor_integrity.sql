@@ -1,7 +1,7 @@
 -- NULL preserves independently assigned tags and pre-existing associations.
 alter table public.concept_tags add column eoi_managed boolean;
 -- A manual tag explicitly keeps this association even if an imported pack drops it.
-create function public.keep_manual_tag(p_concept uuid,p_tag uuid) returns void
+create function private.keep_manual_tag(p_concept uuid,p_tag uuid) returns void
 language plpgsql security definer set search_path='' as $$
 declare uid uuid:=auth.uid();
 begin
@@ -10,6 +10,12 @@ begin
  insert into public.concept_tags(owner_id,concept_id,tag_id,eoi_managed) values(uid,p_concept,p_tag,false)
  on conflict(concept_id,tag_id) do update set eoi_managed=false;
 end; $$;
+revoke all on function private.keep_manual_tag(uuid,uuid) from public,anon,authenticated;
+grant execute on function private.keep_manual_tag(uuid,uuid) to authenticated;
+create function public.keep_manual_tag(p_concept uuid,p_tag uuid) returns void
+language sql security invoker set search_path='' as $$
+ select private.keep_manual_tag(p_concept,p_tag)
+$$;
 revoke all on function public.keep_manual_tag(uuid,uuid) from public,anon;
 grant execute on function public.keep_manual_tag(uuid,uuid) to authenticated;
 create table private.eoi_media_leases (
@@ -21,12 +27,18 @@ create table private.eoi_media_leases (
 );
 alter table private.eoi_media_leases enable row level security;
 revoke all on private.eoi_media_leases from public,anon,authenticated;
-create function public.eoi_media_busy(p_course uuid,p_hash text) returns boolean
+create function private.eoi_media_busy(p_course uuid,p_hash text) returns boolean
 language sql stable security definer set search_path='' as $$
  select exists(select 1 from private.eoi_media_leases where owner_id=auth.uid() and course_id=p_course
  and hash=p_hash and deleting and expires_at>clock_timestamp())
 $$;
-create function public.eoi_audio_lease(p_course uuid,p_hash text) returns boolean
+revoke all on function private.eoi_media_busy(uuid,text) from public,anon,authenticated;
+grant execute on function private.eoi_media_busy(uuid,text) to authenticated;
+create function public.eoi_media_busy(p_course uuid,p_hash text) returns boolean
+language sql stable security invoker set search_path='' as $$
+ select private.eoi_media_busy(p_course,p_hash)
+$$;
+create function private.eoi_audio_lease(p_course uuid,p_hash text) returns boolean
 language plpgsql security definer set search_path='' as $$
 begin
  if p_hash !~ '^[0-9a-f]{64}$' then return false; end if;
@@ -36,7 +48,13 @@ begin
  on conflict(course_id,hash) do update set deleting=false,expires_at=excluded.expires_at;
  return true;
 end; $$;
-create function public.eoi_collect_audio(p_course uuid) returns table(hash text)
+revoke all on function private.eoi_audio_lease(uuid,text) from public,anon,authenticated;
+grant execute on function private.eoi_audio_lease(uuid,text) to authenticated;
+create function public.eoi_audio_lease(p_course uuid,p_hash text) returns boolean
+language sql security invoker set search_path='' as $$
+ select private.eoi_audio_lease(p_course,p_hash)
+$$;
+create function private.eoi_collect_audio(p_course uuid) returns table(hash text)
 language plpgsql security definer set search_path='' as $$
 declare uid uuid:=auth.uid();
 begin
@@ -57,6 +75,12 @@ begin
  insert into private.eoi_media_leases as l select uid,p_course,h,true,now()+interval '10 minutes' from candidates
  on conflict do nothing returning l.hash;
 end; $$;
+revoke all on function private.eoi_collect_audio(uuid) from public,anon,authenticated;
+grant execute on function private.eoi_collect_audio(uuid) to authenticated;
+create function public.eoi_collect_audio(p_course uuid) returns table(hash text)
+language sql security invoker set search_path='' as $$
+ select * from private.eoi_collect_audio(p_course)
+$$;
 
 create or replace function public.eoi_save_pack(p_course uuid,p_pack jsonb,p_media jsonb,p_apply boolean,p_preview text default null)
 returns jsonb language plpgsql security invoker set search_path='' set statement_timeout='25s' as $$
@@ -297,11 +321,17 @@ language sql stable security invoker set search_path='' as $$
  in lower(s.key||' '||coalesce(s.value->>'title','')))>0
  order by lower(s.value->>'title'),s.key limit 40
 $$;
-create function public.eoi_finish_audio_gc(p_course uuid,p_hashes text[]) returns void
+create function private.eoi_finish_audio_gc(p_course uuid,p_hashes text[]) returns void
 language sql security definer set search_path='' as $$
  delete from private.eoi_media_leases l where l.owner_id=auth.uid() and l.course_id=p_course and l.deleting
  and l.hash=any(p_hashes) and not exists(select 1 from storage.objects o where o.bucket_id='study-audio'
  and o.name=l.owner_id::text||'/'||l.course_id::text||'/'||l.hash)
+$$;
+revoke all on function private.eoi_finish_audio_gc(uuid,text[]) from public,anon,authenticated;
+grant execute on function private.eoi_finish_audio_gc(uuid,text[]) to authenticated;
+create function public.eoi_finish_audio_gc(p_course uuid,p_hashes text[]) returns void
+language sql security invoker set search_path='' as $$
+ select private.eoi_finish_audio_gc(p_course,p_hashes)
 $$;
 revoke all on function public.eoi_find_sources(uuid,text),public.eoi_finish_audio_gc(uuid,text[]) from public,anon;
 grant execute on function public.eoi_find_sources(uuid,text),public.eoi_finish_audio_gc(uuid,text[]) to authenticated;

@@ -48,7 +48,7 @@ revoke all on function private.archive_check_restore_media() from public,anon,au
 create trigger verify_archive_restore_media before insert on private.account_archive_restores
  for each row execute function private.archive_check_restore_media();
 
-create or replace function public.eoi_media_busy(p_course uuid,p_hash text) returns boolean
+create or replace function private.eoi_media_busy(p_course uuid,p_hash text) returns boolean
 language sql stable security definer set search_path='' as $$
  select exists(select 1 from private.eoi_media_leases where owner_id=auth.uid() and course_id=p_course
  and hash=p_hash and deleting and expires_at>clock_timestamp()) or exists(

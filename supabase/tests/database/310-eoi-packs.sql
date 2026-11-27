@@ -1,5 +1,5 @@
 begin;
-select plan(37);
+select plan(38);
 
 insert into auth.users(id) values('a11ce000-0000-4000-8000-000000000001');
 insert into public.profiles(id) values('a11ce000-0000-4000-8000-000000000001');
@@ -76,6 +76,8 @@ select is((select string_agg(h.hash,',') from eoi_case e cross join lateral publ
 select ok((select not public.eoi_audio_lease(course,repeat('c',64)) from eoi_case),'new upload waits for physical deletion already in progress');
 select public.eoi_finish_audio_gc(course,array[repeat('c',64)]) from eoi_case;
 select ok((select public.eoi_media_busy(course,repeat('c',64)) from eoi_case),'failed physical deletion retains its claim');
+select ok(not exists(select from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'
+ and p.proname in ('keep_manual_tag','eoi_media_busy','eoi_audio_lease','eoi_collect_audio','eoi_finish_audio_gc') and p.prosecdef),'exposed media and tag functions run with caller privileges');
 select ok(not has_function_privilege('anon','public.eoi_save_pack(uuid,jsonb,jsonb,boolean,text)','EXECUTE'),'anonymous role cannot import');
 set local request.jwt.claims='{"sub":"b11ce000-0000-4000-8000-000000000002","role":"authenticated"}';
 select is(public.eoi_read_sources('c0a75e00-0000-4000-8000-00000000000a',array['s1']),'{}'::jsonb,'other account cannot read sources');
