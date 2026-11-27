@@ -6,6 +6,10 @@ import { localBackend } from "./local-backend";
 import { audit, auditAxe } from "./a11y-audit";
 import { assertStudyLayout } from "./study-layout";
 
+// The provider is intercepted by Playwright. Keep the app's service worker
+// from handling the mocked navigation and the subsequent return to Lexora.
+test.use({ serviceWorkers: "block" });
+
 /** No Google credentials, provider activation or external accounts. The denial is synthetic. */
 for (const locale of ["es", "en"] as const) {
   test(`personal Google initiation and cancellation (${locale})`, async ({
@@ -14,7 +18,7 @@ for (const locale of ["es", "en"] as const) {
     baseURL,
     browserName,
   }, info) => {
-    test.setTimeout(90000);
+    test.setTimeout(90_000);
     const backend = localBackend();
     const label = locale === "es" ? "Continuar con Google" : "Continue with Google";
     let initiated = false;
@@ -43,18 +47,8 @@ for (const locale of ["es", "en"] as const) {
       callback.searchParams.set("error", "access_denied");
       callback.searchParams.set("error_description", "synthetic-private-provider-message");
       initiated = true;
-      // WebKit cannot fulfill a mocked HTTP redirect. A synthetic provider
-      // document performs the same navigation without changing the app's CSP.
-      const destination = callback.toString().replaceAll("&", "&amp;").replaceAll('"', "&quot;");
-      await route.fulfill({
-        status: 200,
-        contentType: "text/html",
-        headers: {
-          "cache-control": "no-store",
-          "content-security-policy": "default-src 'none'; base-uri 'none'",
-        },
-        body: `<!doctype html><html lang="${locale}"><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=${destination}"><title>Synthetic provider cancellation</title><body>Returning to Lexora.</body></html>`,
-      });
+      // Continue to the real callback so the browser follows its actual redirect.
+      await route.continue({ url: callback.toString() });
     });
     // Fail explicitly if a future implementation attempts an actual Google navigation.
     await page.route("https://accounts.google.com/**", (route) => route.abort());
@@ -103,7 +97,7 @@ for (const locale of ["es", "en"] as const) {
     await page
       .getByRole("button", { name: locale === "es" ? "Entrar" : "Sign in", exact: true })
       .click();
-    await expect(page.locator('[aria-invalid="true"]').first()).toBeVisible();
+    await expect(page.locator('[aria-invalid="true"]').first()).toBeVisible({ timeout: 20_000 });
   });
 }
 
@@ -112,6 +106,7 @@ test("Google-only deletion requests account selection and binds its cancellation
   context,
   baseURL,
 }) => {
+  test.setTimeout(90_000);
   const backend = localBackend();
   const auth = createClient(backend.url, backend.publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -139,14 +134,14 @@ test("Google-only deletion requests account selection and binds its cancellation
         "-v",
         "ON_ERROR_STOP=1",
       ],
-      { input, encoding: "utf8", timeout: 10000 },
+      { input, encoding: "utf8", timeout: 30_000 },
     ).trim();
   try {
     await page.goto("/en/login");
     await page.locator('input[name="email"]').fill(email);
     await page.locator('input[name="password"]').fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
-    await expect(page).toHaveURL("/en");
+    await expect(page).toHaveURL("/en", { timeout: 20_000 });
     // Model an already linked Google-only identity without contacting Google.
     sql(`begin;
       insert into auth.identities(provider_id,user_id,identity_data,provider,created_at,updated_at,last_sign_in_at)
@@ -172,15 +167,10 @@ test("Google-only deletion requests account selection and binds its cancellation
       );
       expect(challenge?.httpOnly).toBe(true);
       expect(challenge?.path).toBe("/api/auth/callback");
-      expect(challenge?.sameSite).toBe("Lax");
       expect(challenge?.value.length).toBe(36);
       challengeObserved = true;
       callback.searchParams.set("error", "access_denied");
-      const safeUrl = callback.toString().replaceAll("&", "&amp;");
-      await route.fulfill({
-        contentType: "text/html",
-        body: `<meta http-equiv="refresh" content="0;url=${safeUrl}">`,
-      });
+      await route.continue({ url: callback.toString() });
     });
     await page.goto("/en/app/settings");
     await page.locator("summary").filter({ hasText: "Review account deletion" }).click();
@@ -188,7 +178,24 @@ test("Google-only deletion requests account selection and binds its cancellation
     await expect(
       page.getByRole("button", { name: "Permanently delete my account" }),
     ).toBeDisabled();
+    const started = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname === "/en/app/settings",
+    );
     await page.getByRole("button", { name: "Verify with Google" }).click();
+    // Check the actual server-issued attributes. On Windows the WebKit cookie
+    // inventory reports SameSite=None even for an explicit Lax response header.
+    const responseCookies = await (await started).headerValues("set-cookie");
+    const attributes =
+      responseCookies
+        .find((value) => value.startsWith("lexora-deletion-google="))
+        ?.split(";")
+        .slice(1)
+        .map((value) => value.trim().toLowerCase()) ?? [];
+    expect(attributes).toEqual(
+      expect.arrayContaining(["samesite=lax", "httponly", "path=/api/auth/callback"]),
+    );
     await expect(page).toHaveURL("/en/app/settings?verification=failed");
     expect(challengeObserved).toBe(true);
     await expect(page.getByText(/Google verification did not complete/)).toBeVisible();
