@@ -149,11 +149,14 @@ test("Google-only deletion requests account selection and binds its cancellation
     await expect(page).toHaveURL("/en");
     // Model an already linked Google-only identity without contacting Google.
     sql(`begin;
-      insert into auth.identities(provider_id,user_id,identity_data,provider)
-      values('${owner}','${owner}','{"sub":"${owner}","email":"${email}"}','google');
+      insert into auth.identities(provider_id,user_id,identity_data,provider,created_at,updated_at,last_sign_in_at)
+      values('${owner}','${owner}','{"sub":"${owner}","email":"${email}"}','google',now(),now(),now());
       delete from auth.identities where user_id='${owner}' and provider='email';
       update auth.users set encrypted_password=null,raw_app_meta_data='{"provider":"google","providers":["google"]}' where id='${owner}' and email='${email}';
       commit;`);
+    const identity = await auth.auth.getUser();
+    expect(identity.error).toBeNull();
+    expect(identity.data.user?.identities?.map((item) => item.provider)).toEqual(["google"]);
     let challengeObserved = false;
     await page.route("https://accounts.google.com/**", (route) => route.abort());
     await page.route(`${backend.url}/auth/v1/authorize?*`, async (route) => {
@@ -180,7 +183,7 @@ test("Google-only deletion requests account selection and binds its cancellation
       });
     });
     await page.goto("/en/app/settings");
-    await page.getByText("Review account deletion", { exact: true }).click();
+    await page.locator("summary").filter({ hasText: "Review account deletion" }).click();
     await expect(page.getByLabel("Your current password")).toHaveCount(0);
     await expect(
       page.getByRole("button", { name: "Permanently delete my account" }),
