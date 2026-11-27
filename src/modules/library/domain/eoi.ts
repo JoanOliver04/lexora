@@ -75,7 +75,7 @@ export function parseEoiPack(input: string): EoiPack {
       throw Error("choices: " + c.key);
     if ((p.skill === "vocabulary") !== (c.type === "word")) throw Error("direction: " + c.key);
     if (c.type === "word") {
-      const front = canonical(c.prompt);
+      const front = vocabularyKey(c.prompt);
       if (words.has(front)) throw Error("duplicate-word: " + c.key);
       words.add(front);
     }
@@ -87,10 +87,11 @@ export function parseEoiPack(input: string): EoiPack {
   return p;
 }
 const canonical = (s: string) => s.normalize("NFKC").trim().replace(/\s+/gu, " ").toLowerCase();
+export const vocabularyKey = (s: string) => canonical(s).replace(/\s+\/[^/]+\/$/u, "");
 export function answerMatches(attempt: string, model: string, alternatives: string[]) {
   return [model, ...alternatives].some((s) => canonical(s) === canonical(attempt));
 }
-export const templatePack = (skill: Skill): EoiPack => {
+export const templatePack = (skill: Skill, draftId = "example"): EoiPack => {
   const c: EoiCard = {
     key: "q1",
     type: "short",
@@ -102,7 +103,7 @@ export const templatePack = (skill: Skill): EoiPack => {
     criteria: [],
   };
   const s: EoiSource = {
-    key: skill + "-notice",
+    key: skill + "-" + draftId + "-source",
     title: "Bus service",
     text: "Bus seven stops at the theatre. The last service is at nine.",
   };
@@ -169,7 +170,7 @@ export const templatePack = (skill: Skill): EoiPack => {
   }
   return {
     format: "lexora-eoi/1",
-    key: skill + "-example",
+    key: skill + "-" + draftId,
     title: skill.charAt(0).toUpperCase() + skill.slice(1) + " B1",
     skill,
     level: "B1",

@@ -1451,6 +1451,10 @@
     }
   },
   "Eoi": {
+    "removeCard": "Quitar tarjeta del mazo",
+    "removeSource": "Quitar fuente sin usar",
+    "audioCollision": "Dos audios diferentes tienen el mismo nombre. Cambia el nombre de uno y vuelve a seleccionarlo.",
+    "reverse": "Tarjeta inversa",
     "replaceDraft": "¿Sustituir los cambios de este borrador?",
     "back": "Volver a Importar",
     "studio": "Mazos de destrezas B1",

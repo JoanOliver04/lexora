@@ -1451,6 +1451,10 @@
     }
   },
   "Eoi": {
+    "removeCard": "Remove card from deck",
+    "removeSource": "Remove unused source",
+    "audioCollision": "Two different recordings have the same name. Rename one and select it again.",
+    "reverse": "Reverse card",
     "replaceDraft": "Replace your changes to this draft?",
     "back": "Back to Import",
     "studio": "B1 skills decks",

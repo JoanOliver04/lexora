@@ -78,12 +78,14 @@ function cardContent(card: EoiCard, source: EoiSource | undefined, hashes: Recor
 export function EoiStudio({
   initial,
   cardKey,
+  draftId,
 }: {
   initial: EoiLoaded | null;
+  draftId: string;
   cardKey?: string | undefined;
 }) {
   const t = useTranslations("Eoi"),
-    [pack, setPack] = useState<EoiPack>(initial?.pack ?? templatePack("reading")),
+    [pack, setPack] = useState<EoiPack>(initial?.pack ?? templatePack("reading", draftId)),
     [ci, setCi] = useState(
       Math.max(0, initial?.pack.cards.findIndex((c) => c.key === cardKey) ?? 0),
     ),
@@ -95,10 +97,11 @@ export function EoiStudio({
     [show, setShow] = useState(false),
     [exam, setExam] = useState(false);
   const [hashes, setHashes] = useState<Record<string, string>>(initial?.hashes ?? {});
-  const previewUrls = useRef<Record<string, string>>({});
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
+  const allocatedUrls = useRef<Record<string, string>>({});
   const dirty = useRef(false);
   useEffect(() => {
-    const urls = previewUrls.current;
+    const urls = allocatedUrls.current;
     return () => Object.values(urls).forEach((url) => URL.revokeObjectURL(url));
   }, []);
   const files = useRef(new Map<string, File>());
@@ -126,7 +129,14 @@ export function EoiStudio({
     const digest = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)), (b) =>
       b.toString(16).padStart(2, "0"),
     ).join("");
-    previewUrls.current[digest] ??= URL.createObjectURL(file);
+    if (
+      hashes[file.name] &&
+      hashes[file.name] !== digest &&
+      pack.sources.some((s) => s.key !== source?.key && s.audio === file.name)
+    )
+      throw Error(t("audioCollision"));
+    allocatedUrls.current[digest] ??= URL.createObjectURL(file);
+    setPreviewUrls({ ...allocatedUrls.current });
     files.current.set(file.name, file);
     setHashes((old) => ({ ...old, [file.name]: digest }));
     setPreview(null);
@@ -178,7 +188,7 @@ export function EoiStudio({
     }
   }
   const c = cardContent(card, usedSource, hashes);
-  const model = usedSource?.audio && previewUrls.current[hashes[usedSource.audio] ?? ""];
+  const model = usedSource?.audio && previewUrls[hashes[usedSource.audio] ?? ""];
   if (model) {
     if (c.exercise.audio) c.exercise.audio = model;
     c.solution.audio = model;
@@ -232,7 +242,7 @@ export function EoiStudio({
             disabled={!!initial}
             onChange={(e) => {
               if (dirty.current && !window.confirm(t("replaceDraft"))) return;
-              update(templatePack(e.target.value as Skill));
+              update(templatePack(e.target.value as Skill, draftId));
               dirty.current = false;
               setCi(0);
               setSi(0);
@@ -322,8 +332,8 @@ export function EoiStudio({
                         try {
                           const name = await audio(f);
                           updateSource({ audio: name });
-                        } catch {
-                          setError(t("audioSize"));
+                        } catch (err) {
+                          setError(err instanceof Error ? err.message : t("audioError"));
                         }
                     }}
                   />
@@ -333,7 +343,7 @@ export function EoiStudio({
                     className="underline"
                     download={source.audio}
                     href={
-                      previewUrls.current[hashes[source.audio]!] ??
+                      previewUrls[hashes[source.audio]!] ??
                       "/api/eoi/audio/" +
                         hashes[source.audio] +
                         "?download=" +
@@ -367,6 +377,19 @@ export function EoiStudio({
             >
               {t("addSource")}
             </button>
+            {source && !pack.cards.some((q) => q.source === source.key) && (
+              <button
+                type="button"
+                className={button}
+                onClick={() => {
+                  const sources = pack.sources.filter((_, i) => i !== si);
+                  setSi(Math.max(0, Math.min(si, sources.length - 1)));
+                  update({ ...pack, sources });
+                }}
+              >
+                {t("removeSource")}
+              </button>
+            )}
           </div>
         </details>
         <label>
@@ -506,6 +529,18 @@ export function EoiStudio({
           >
             {t("addCard")}
           </button>
+          <button
+            type="button"
+            className={button}
+            disabled={pack.cards.length < 2}
+            onClick={() => {
+              const cards = pack.cards.filter((_, index) => index !== ci);
+              setCi(Math.min(ci, cards.length - 1));
+              update({ ...pack, cards });
+            }}
+          >
+            {t("removeCard")}
+          </button>
           <button type="button" className={button} onClick={() => setShow((v) => !v)}>
             {t("showModel")}
           </button>
@@ -528,13 +563,20 @@ export function EoiStudio({
           <p>{card.prompt}</p>
           <EoiExercise key={ci + ":" + card.type} front={c} revealed={show ? c : null} />
           {show && <p>{card.answer}</p>}
+          {card.type === "word" && (
+            <div className="mt-3 border-t pt-2">
+              <p>{t("reverse")}</p>
+              <p>{card.answer}</p>
+              {show && <p>{card.prompt}</p>}
+            </div>
+          )}
         </section>
         {pack.skill === "listening" && (
           <button className={button} type="button" onClick={() => setExam(!exam)}>
             {t("exam")}
           </button>
         )}
-        {exam && <ListeningExam pack={pack} hashes={hashes} previews={previewUrls.current} />}
+        {exam && <ListeningExam pack={pack} hashes={hashes} previews={previewUrls} />}
         <button className={button} type="button" onClick={() => void submit(false)}>
           {t("preview")}
         </button>

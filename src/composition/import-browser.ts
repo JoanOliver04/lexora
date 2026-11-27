@@ -11,7 +11,7 @@ export {
 } from "@/modules/importing/application/run-browser-import";
 
 import { createPapaParseDelimitedFileParser } from "@/modules/importing/infrastructure/papaparse-delimited-file-parser";
-import { parseEoiPack, templatePack } from "@/modules/library/domain/eoi";
+import { parseEoiPack, templatePack, vocabularyKey } from "@/modules/library/domain/eoi";
 export async function eoiFromCsv(fileName: string, text: string, skill: "grammar" | "vocabulary") {
   const parsed = createPapaParseDelimitedFileParser().parse(text);
   if (parsed.issues.length)
@@ -39,7 +39,11 @@ export async function eoiFromCsv(fileName: string, text: string, skill: "grammar
     parsed.rows.map(async (r) => {
       const digest = await crypto.subtle.digest(
         "SHA-256",
-        new TextEncoder().encode(r.front.toLowerCase().trim().replace(/\s+/g, " ")),
+        new TextEncoder().encode(
+          skill === "vocabulary"
+            ? vocabularyKey(r.front)
+            : r.front.toLowerCase().trim().replace(/\s+/g, " "),
+        ),
       );
       return {
         ...pack.cards[0],

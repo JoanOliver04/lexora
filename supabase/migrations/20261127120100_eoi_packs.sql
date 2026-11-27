@@ -27,7 +27,7 @@ declare
  bindings jsonb; entry jsonb; slot text; cid uuid; m public.practice_mode; category public.deck_category;
  tag text; s jsonb; def text; combined text; primary_item uuid; reverse_item uuid; term text; nextpos int;
  new_count int:=0; linked_count int:=0; updated_count int:=0; variants jsonb:='[]'; plan jsonb:='[]'; digest text; media_hash text;
- old_binding jsonb; v_config jsonb; pos int;
+ other_senses text[]; base_sense text; match_count int; old_binding jsonb; v_config jsonb; pos int;
 begin
  if uid is null or p_pack->>'format' is distinct from 'lexora-eoi/1' or p_pack->>'level' is distinct from 'B1'
  or coalesce(p_pack->>'key','') !~ '^[a-z0-9][a-z0-9_-]{0,63}$' or jsonb_typeof(p_pack->'cards') is distinct from 'array'
@@ -60,23 +60,41 @@ begin
    if coalesce(slot,'') !~ '^[a-z0-9][a-z0-9_-]{0,63}$' or char_length(btrim(coalesce(entry->>'prompt',''))) not between 1 and 200 or char_length(btrim(coalesce(entry->>'answer',''))) not between 1 and 500 then raise exception 'invalid-card'; end if;
    if entry ? 'source' and not exists(select 1 from jsonb_array_elements(p_pack->'sources') sr where sr->>'key'=entry->>'source') then raise exception 'missing-source'; end if;
    if (entry->>'type'='word') is distinct from (category='vocabulary') then raise exception 'invalid-direction'; end if;
+   term:=regexp_replace(lower(btrim(regexp_replace(entry->>'prompt','\s+',' ','g'))),'\s+/[^/]+/$','');
    if old_binding is not null then
      select c.summary into strict def from public.concepts c where c.id=cid and c.course_id=p_course and c.owner_id=uid and c.archived_at is null;
-     if category='vocabulary' and not exists(select 1 from public.concepts c where c.id=cid and c.canonical_key=lower(btrim(regexp_replace(entry->>'prompt','\s+',' ','g')))) then raise exception 'linked-word-changed'; end if;
+     if category='vocabulary' and not exists(select 1 from public.concepts c where c.id=cid and c.kind='vocabulary' and regexp_replace(c.canonical_key,'\s+/[^/]+/$','')=term) then raise exception 'linked-word-changed'; end if;
      updated_count:=updated_count+1;
    elsif category='vocabulary' then
-     term:=lower(btrim(regexp_replace(entry->>'prompt','\s+',' ','g')));
-     select c.id,c.summary into cid,def from public.concepts c where c.course_id=p_course and c.owner_id=uid and c.archived_at is null and c.canonical_key=term order by c.created_at,c.id limit 1;
+     select (array_agg(c.id order by c.created_at,c.id))[1],(array_agg(c.summary order by c.created_at,c.id))[1],count(*)
+       into cid,def,match_count from public.concepts c where c.course_id=p_course and c.owner_id=uid and c.archived_at is null
+       and c.kind='vocabulary' and regexp_replace(c.canonical_key,'\s+/[^/]+/$','')=term
+       and not exists(select 1 from public.practice_items i where i.concept_id=c.id and i.config ? 'exercise')
+       and (not exists(select 1 from public.deck_concepts dc where dc.concept_id=c.id) or exists(select 1 from public.deck_concepts dc join public.decks vd on vd.id=dc.deck_id where dc.concept_id=c.id and (vd.category='vocabulary' or vd.category is null)));
+     if match_count>1 then raise exception 'ambiguous-word: %',slot; end if;
      if cid is not null then linked_count:=linked_count+1; end if;
    end if;
    combined:=entry->>'answer';
-   if category='vocabulary' and def is not null and def<>combined then
-     if coalesce(old_binding->>'answer','')=combined or combined=any(string_to_array(def,' · ')) then combined:=def;
-     else variants:=variants||jsonb_build_array(jsonb_build_object('front',entry->>'prompt','current',def,'incoming',combined)); combined:=def||' · '||combined; end if;
+   base_sense:=null;
+   if category='vocabulary' and cid is not null then
+     -- Keep the original answer of a classic concept and each live pack's own sense separately.
+     select (array_agg(b.value->>'baseline' order by x.created_at,x.id))[1] into base_sense
+       from public.decks x cross join lateral jsonb_each(x.eoi_bindings) b
+       where x.course_id=p_course and x.owner_id=uid and b.value->>'concept'=cid::text and b.value ? 'baseline';
+     if not exists(select 1 from public.decks x cross join lateral jsonb_each(x.eoi_bindings) b
+       where x.course_id=p_course and x.owner_id=uid and b.value->>'concept'=cid::text) then base_sense:=def; end if;
+     select array_agg(b.value->>'answer' order by x.created_at,x.id) into other_senses
+       from public.decks x cross join lateral jsonb_each(x.eoi_bindings) b
+       where x.course_id=p_course and x.owner_id=uid and x.id is distinct from d.id and b.value->>'concept'=cid::text
+       and exists(select 1 from jsonb_array_elements(x.eoi_manifest->'cards') q where q->>'key'=b.key);
+     select string_agg(sense,' · ' order by array_position(string_to_array(def,' · '),sense) nulls last, first_pos) into combined from (
+       select sense,min(ord) first_pos from unnest(array[base_sense]||coalesce(other_senses,array[]::text[])||array[entry->>'answer']) with ordinality u(sense,ord)
+       where sense is not null group by sense) senses;
+     if def is distinct from combined then variants:=variants||jsonb_build_array(jsonb_build_object('front',entry->>'prompt','current',coalesce(def,''),'incoming',entry->>'answer')); end if;
      if char_length(combined)>500 then raise exception 'review-meanings: %',slot; end if;
    end if;
    if cid is null then new_count:=new_count+1; end if;
-   plan:=plan||jsonb_build_array(jsonb_build_object('card',entry,'concept',cid,'existingAnswer',def,'answer',combined));
+   plan:=plan||jsonb_build_array(jsonb_build_object('card',entry,'concept',cid,'existingAnswer',def,'baseline',base_sense,'answer',combined));
  end loop;
  manifest:=jsonb_set(p_pack,'{sources}',coalesce((select jsonb_agg(value->>'key' order by idx) from jsonb_array_elements(p_pack->'sources') with ordinality x(value,idx)),'[]'));
  digest:=md5(jsonb_build_array(d.id,d.eoi_manifest,bindings,plan,proposed,manifest)::text);
@@ -92,7 +110,24 @@ begin
  for slot,old_binding in select * from jsonb_each(bindings) loop
    if not exists(select 1 from jsonb_array_elements(p_pack->'cards') cr where cr->>'key'=slot) then
      delete from public.deck_concepts where deck_id=d.id and owner_id=uid and concept_id=(old_binding->>'concept')::uuid;
-     -- Keep the stable identity if the author restores this question later.
+     -- Retain stable bindings while removing a retired word's contribution to other decks.
+     if category='vocabulary' and exists(select 1 from jsonb_array_elements(d.eoi_manifest->'cards') old where old->>'key'=slot) then
+       cid:=(old_binding->>'concept')::uuid;
+       select string_agg(sense,' · ' order by seq,sense) into combined from (
+         select sense,min(seq) seq from (
+           select old_binding->>'baseline' sense,0 seq
+           union all
+           select b.value->>'answer',1 from public.decks x cross join lateral jsonb_each(x.eoi_bindings) b
+           where x.owner_id=uid and x.course_id=p_course and x.id<>d.id and b.value->>'concept'=cid::text
+           and exists(select 1 from jsonb_array_elements(x.eoi_manifest->'cards') q where q->>'key'=b.key)
+         ) live where sense is not null group by sense
+       ) senses;
+       if combined is not null then
+         update public.concepts set summary=combined where id=cid and owner_id=uid;
+         update public.practice_items set answer_text=combined where id=(old_binding->>'item')::uuid and owner_id=uid;
+         update public.practice_items set prompt_text=combined where concept_id=cid and owner_id=uid and mode='basic_recall' and enabled and archived_at is null;
+       end if;
+     end if;
    end if;
  end loop;
  pos:=-1;
@@ -112,7 +147,7 @@ begin
    primary_item:=(bindings->slot->>'item')::uuid;
    if primary_item is null and category='vocabulary' then select id into primary_item from public.practice_items where concept_id=cid and owner_id=uid and mode='basic_recognition' and enabled and archived_at is null order by created_at,id limit 1; end if;
    if primary_item is null then insert into public.practice_items(concept_id,owner_id,mode,prompt_text,answer_text,config) values(cid,uid,m,term,combined,v_config) returning id into primary_item;
-   else update public.practice_items set mode=m,prompt_text=term,answer_text=combined,config=v_config where id=primary_item and concept_id=cid and owner_id=uid and archived_at is null and enabled;
+   else update public.practice_items set mode=m,prompt_text=term,answer_text=combined,config=case when category='vocabulary' then practice_items.config else v_config end where id=primary_item and concept_id=cid and owner_id=uid and archived_at is null and enabled;
      if not found then raise exception 'item-changed'; end if;
    end if;
    if category='vocabulary' then
@@ -120,7 +155,7 @@ begin
      if reverse_item is null then insert into public.practice_items(concept_id,owner_id,mode,prompt_text,answer_text,config) values(cid,uid,'basic_recall',combined,term,'{"mode":"basic_recall"}');
      else update public.practice_items set prompt_text=combined,answer_text=term where id=reverse_item and owner_id=uid; end if;
    end if;
-   bindings:=jsonb_set(bindings,array[slot],jsonb_build_object('concept',cid,'item',primary_item,'answer',entry->>'answer'));
+   bindings:=jsonb_set(bindings,array[slot],jsonb_build_object('concept',cid,'item',primary_item,'baseline',s->'baseline','answer',entry->>'answer'));
    for tag in select distinct lower(btrim(value)) from jsonb_array_elements_text(coalesce(entry->'tags','[]')||jsonb_build_array('level::b1',category::text)) loop
      insert into public.tags(owner_id,course_id,normalized_name,display_name) values(uid,p_course,tag,tag) on conflict(course_id,normalized_name) do nothing;
      insert into public.concept_tags(owner_id,concept_id,tag_id) select uid,cid,id from public.tags where course_id=p_course and owner_id=uid and normalized_name=tag on conflict do nothing;

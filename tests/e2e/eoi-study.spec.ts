@@ -19,17 +19,16 @@ test("imports a reading, preserves its second question and highlights its own ev
   });
   await page.goto("/es/import");
   await page.getByRole("link", { name: "Mazos de destrezas B1" }).click();
-  await page
-    .getByLabel(/Abrir mazo/)
-    .setInputFiles({
-      name: "reading.lexora.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(pack)),
-    });
+  await page.getByLabel(/Abrir mazo/).setInputFiles({
+    name: "reading.lexora.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(pack)),
+  });
   await page.getByRole("button", { name: "Revisar importación" }).click();
   await expect(page.getByText(/Nuevas: 2/)).toBeVisible();
   await page.getByRole("button", { name: "Guardar y vincular coincidencias" }).click();
   await page.getByRole("link", { name: "Abrir mazo guardado" }).click();
+  const id = new URL(page.url()).pathname.split("/").pop()!;
   await page.getByRole("link", { name: "Editar, exportar o practicar el mazo B1" }).click();
   await page.getByRole("combobox", { name: "Tarjeta", exact: true }).selectOption("1");
   const preview = page
@@ -42,6 +41,22 @@ test("imports a reading, preserves its second question and highlights its own ev
   await expect(preview.getByText(/coincide con una variante/)).toBeVisible();
   await page.getByRole("button", { name: "Revisar importación" }).click();
   await expect(page.getByText(/Nuevas: 0.*Actualizadas: 2/)).toBeVisible();
+  for (const [path, start] of [
+    ["/es/app/study/free", "Empezar estudio libre"],
+    ["/es/app/study", "Crear sesión"],
+  ]) {
+    await page.goto(path + "?deck=" + id);
+    await page.getByRole("button", { name: start! }).click();
+    await expect(
+      page.getByText("Bus seven stops at the theatre. The last service is at nine.", {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await page.getByRole("textbox", { name: "Tu respuesta", exact: true }).fill("9");
+    await expect(page.locator("mark")).toHaveCount(0);
+    await page.getByRole("button", { name: "Revelar respuesta", exact: true }).click();
+    await expect(page.locator("mark")).toHaveCount(1);
+  }
 });
 
 test("imports private audio and corrects a listening block after the attempt", async ({ page }) => {

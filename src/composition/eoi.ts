@@ -35,7 +35,7 @@ export async function saveEoi(input: string, media: Record<string, string>, toke
   });
   if (error) {
     const safe =
-      /^(preview-changed|missing-audio|title-in-use|shared-source-changed|linked-word-changed|review-meanings|deck-conflict|item-changed)/.exec(
+      /^(ambiguous-word|preview-changed|missing-audio|title-in-use|shared-source-changed|linked-word-changed|review-meanings|deck-conflict|item-changed)/.exec(
         error.message,
       )?.[1];
     throw Error(safe ?? "save-failed");

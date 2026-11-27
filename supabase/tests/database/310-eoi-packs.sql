@@ -1,5 +1,5 @@
 begin;
-select plan(20);
+select plan(25);
 
 insert into auth.users(id) values('a11ce000-0000-4000-8000-000000000001');
 insert into public.profiles(id) values('a11ce000-0000-4000-8000-000000000001');
@@ -35,6 +35,14 @@ select is((select i.prompt_text from public.practice_items i join public.concept
 select is((select count(*)::int from public.deck_concepts m join public.concepts c on c.id=m.concept_id where c.title='bridge'),2,'both memberships');
 select throws_ok($$select public.eoi_save_pack(course,pack,'{}',true,'stale') from second_vocab$$,'P0001','preview-changed','stale preview refused');
 select is((select count(*)::int from public.review_logs),0,'imports never review a card');
+create temp table collision as select course,jsonb_set(first_pack||'{"key":"words-c","title":"Words C"}','{cards,0,prompt}','"When is lunch?"') pack from vocab_cases;
+select is((select (public.eoi_save_pack(course,pack,'{}',false)->>'linked')::int from collision),0,'unrelated reading question is never a linked word');
+select lives_ok($$select public.eoi_save_pack(course,pack,'{}',true,public.eoi_save_pack(course,pack,'{}',false)->>'token') from collision$$,'new word can coexist with reading prompt');
+update vocab_cases set first_pack=jsonb_set(first_pack,'{cards,0,answer}','"pasarela"');
+select lives_ok($$select public.eoi_save_pack(course,first_pack,'{}',true,public.eoi_save_pack(course,first_pack,'{}',false)->>'token') from vocab_cases$$,'correct own sense');
+select ok((select summary like '%pasarela%' and summary like '%puente de mando%' and not ('puente'=any(string_to_array(summary,' · '))) from public.concepts where title='bridge'),'correction replaces own previous meaning and retains other deck meaning');
+update collision set pack=jsonb_set(jsonb_set(pack||'{"key":"words-phonetic","title":"Words D"}','{cards,0,prompt}','"bridge /brídj/"'),'{cards,0,answer}','"pasarela"');
+select is((select (public.eoi_save_pack(course,pack,'{}',false)->>'linked')::int from collision),1,'alternate pronunciation spelling links to the same vocabulary concept');
 select ok(not has_function_privilege('anon','public.eoi_save_pack(uuid,jsonb,jsonb,boolean,text)','EXECUTE'),'anonymous role cannot import');
 set local request.jwt.claims='{"sub":"b11ce000-0000-4000-8000-000000000002","role":"authenticated"}';
 select is(public.eoi_read_sources('c0a75e00-0000-4000-8000-00000000000a',array['s1']),'{}'::jsonb,'other account cannot read sources');
