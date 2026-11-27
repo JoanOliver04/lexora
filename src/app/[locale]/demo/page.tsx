@@ -78,6 +78,7 @@ export default async function DemoPage({ params }: PageProps) {
               <Image
                 src={station}
                 alt=""
+                loading="eager"
                 fill
                 sizes="(min-width: 60rem) 20rem, (min-width: 42rem) 14rem, 100vw"
               />

@@ -25,6 +25,10 @@ for (const locale of ["es", "en"] as const) {
     await start.click();
     await expect(page).toHaveURL(demo);
     await expect(page.locator("html")).toHaveAttribute("lang", locale);
+    const journeyPhoto = page.locator("aside img");
+    await expect
+      .poll(() => journeyPhoto.evaluate((image: HTMLImageElement) => image.naturalWidth))
+      .toBeGreaterThan(0);
     const vocab = heading(es ? "En la taquilla" : "At the ticket office");
     const meaning = page.getByText(
       es ? "un billete de ida y vuelta" : "a ticket for the journey there and back",
