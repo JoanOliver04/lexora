@@ -74,6 +74,7 @@ try {
       grant all on tables to anon, authenticated, service_role;
   `,
   );
+  sql(database, readFileSync(join(root, "scripts/fixtures/managed-storage.sql"), "utf8"));
   for (const migration of migrations) {
     sql(database, readFileSync(join(migrationDirectory, migration), "utf8"));
   }

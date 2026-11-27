@@ -30,14 +30,15 @@ import {
  * discriminante hasta su versión. §13.9 pide validarlo con una unión Zod en el
  * borde (LEX-3.4); aquí se describe la forma y se valida sin Zod externo.
  */
-export type PracticeItemConfig =
+export type PracticeItemConfig = (
   | { mode: "basic_recognition" }
   | { mode: "basic_recall" }
   | { mode: "cloze"; answers: string[] }
   | { mode: "listening_dictation" }
   | { mode: "guided_production" }
   | { mode: "free_production" }
-  | { mode: "pronunciation" };
+  | { mode: "pronunciation" }
+) & { exercise?: import("./eoi").Exercise; pack?: string };
 
 /** Ítem de práctica ya persistido. */
 export interface PracticeItem {

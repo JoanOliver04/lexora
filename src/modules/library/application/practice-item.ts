@@ -16,6 +16,8 @@
  */
 
 import { z } from "zod";
+import { exerciseSchema } from "../domain/eoi";
+import { PRACTICE_MODES } from "../domain/taxonomy";
 
 import {
   type PracticeItem,
@@ -49,6 +51,13 @@ export const practiceItemConfigSchema = z.discriminatedUnion("mode", [
  * dominio emita `practiceItem.config.modeMismatch` con precisión.
  */
 export function parsePracticeItemConfig(raw: unknown): PracticeItemConfig | undefined {
+  if (raw && typeof raw === "object" && "exercise" in raw) {
+    const rich = z
+      .object({ mode: z.enum(PRACTICE_MODES), exercise: exerciseSchema, pack: z.string().min(1) })
+      .safeParse(raw);
+    if (!rich.success || rich.data.mode === "cloze") return undefined;
+    return { ...rich.data, mode: rich.data.mode };
+  }
   const result = practiceItemConfigSchema.safeParse(raw);
   return result.success ? result.data : undefined;
 }

@@ -275,6 +275,11 @@ try {
   const migrations = readdirSync(join(root, "supabase/migrations"))
     .filter((n) => /^\d{14}_.+\.sql$/.test(n))
     .sort();
+  sql(
+    source,
+    "set role postgres;\n" +
+      readFileSync(join(root, "scripts/fixtures/managed-storage.sql"), "utf8"),
+  );
   phase = "replay application migrations";
   for (const file of migrations)
     sql(

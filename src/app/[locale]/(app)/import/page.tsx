@@ -7,6 +7,7 @@ import { hasCompletedOnboardingForCurrentUser } from "@/composition/onboarding";
 import { Link } from "@/i18n/navigation";
 import { courseLanguageNames } from "@/modules/courses/domain/course-language";
 import { importDeckTargetSchema } from "@/modules/importing/application/import-transfer";
+import { getEoiPack } from "@/composition/eoi";
 import { readDeckOptions } from "@/modules/library/application/library-options";
 import { TutorialHint } from "@/shared/presentation/components/tutorial-guides";
 
@@ -55,6 +56,8 @@ export default async function ImportPage({
   const library = await getLibraryContextForCurrentUser();
   if (!library) redirect(`/${locale}/login`);
   const destination = requested.data;
+  if (destination && (await getEoiPack(destination.deckId)))
+    redirect(`/${locale}/import/eoi?deck=${destination.deckId}`);
   const differentTarget =
     candidate &&
     destination &&
@@ -95,6 +98,9 @@ export default async function ImportPage({
           <p className="font-medium">{t(`target.${target.mode}Title`, { deck: target.title })}</p>
         )}
       </header>
+      <Link className="min-h-11 w-fit underline" href="/import/eoi">
+        {(await getTranslations("Eoi"))("studio")}
+      </Link>
       <TutorialHint topic="import" />
 
       {blockedBy ? (

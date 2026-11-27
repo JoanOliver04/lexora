@@ -10,6 +10,9 @@ interface Scope {
   deckIds: string[] | null;
 }
 
+// Keep old placeholder rows out of queues until they have authored exercise content.
+export const studyModeFilter = `mode.in.(${V1_PRACTICE_MODES.join(",")}),config->exercise.not.is.null`;
+
 const membership = "id, concepts!inner(deck_concepts!inner(decks!inner()))";
 const state = "id, due_at, phase, revision";
 const recall = "stability, last_reviewed_at, scheduler_version, config_version";
@@ -26,7 +29,7 @@ function eligiblePage<Fields extends string>(
     .select(fields)
     .eq("owner_id", ownerId)
     .eq("enabled", true)
-    .in("mode", [...V1_PRACTICE_MODES])
+    .or(studyModeFilter)
     .is("archived_at", null)
     .eq("concepts.course_id", courseId)
     .is("concepts.archived_at", null)

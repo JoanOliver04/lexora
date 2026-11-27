@@ -367,7 +367,11 @@
     "modes": {
       "basic_recognition": "Reconocimiento",
       "basic_recall": "Recuperación activa",
-      "cloze": "Completar huecos"
+      "cloze": "Completar huecos",
+      "listening_dictation": "Comprensión oral",
+      "guided_production": "Producción guiada",
+      "free_production": "Producción libre",
+      "pronunciation": "Pronunciación"
     }
   },
   "Today": {
@@ -561,7 +565,11 @@
     "modes": {
       "basic_recognition": "Reconocimiento básico",
       "basic_recall": "Recuperación básica",
-      "cloze": "Completar huecos"
+      "cloze": "Completar huecos",
+      "listening_dictation": "Comprensión oral",
+      "guided_production": "Producción guiada",
+      "free_production": "Producción libre",
+      "pronunciation": "Pronunciación"
     }
   },
   "SessionSummary": {
@@ -969,7 +977,12 @@
       "communicative_function": "Función comunicativa",
       "pronunciation": "Pronunciación",
       "professional": "Profesional",
-      "mixed": "Mixto"
+      "mixed": "Mixto",
+      "reading": "Lectura",
+      "writing": "Escritura",
+      "speaking": "Expresión oral",
+      "listening": "Comprensión oral",
+      "mediation": "Mediación"
     },
     "actions": {
       "create": "Crear mazo",
@@ -1138,7 +1151,11 @@
       "modes": {
         "basic_recognition": "Reconocimiento básico",
         "basic_recall": "Recuperación básica",
-        "cloze": "Completar huecos"
+        "cloze": "Completar huecos",
+        "listening_dictation": "Comprensión oral",
+        "guided_production": "Producción guiada",
+        "free_production": "Producción libre",
+        "pronunciation": "Pronunciación"
       },
       "actions": {
         "create": "Crear ítem",
@@ -1432,5 +1449,85 @@
       "unavailable": "Este curso o sus ajustes ya no están disponibles. Carga la versión actual.",
       "generic": "No se han podido guardar los ajustes. Tus cambios no se han confirmado; vuelve a intentarlo."
     }
+  },
+  "Eoi": {
+    "removeCard": "Quitar tarjeta del mazo",
+    "removeSource": "Quitar fuente sin usar",
+    "audioCollision": "Dos audios diferentes tienen el mismo nombre. Cambia el nombre de uno y vuelve a seleccionarlo.",
+    "reverse": "Tarjeta inversa",
+    "replaceDraft": "¿Sustituir los cambios de este borrador?",
+    "back": "Volver a Importar",
+    "studio": "Mazos de destrezas B1",
+    "intro": "Importa un archivo Lexora o prepara un mazo con las plantillas. Revisa las coincidencias antes de guardarlo en tu curso.",
+    "load": "Abrir mazo .lexora.json o CSV de gramática o vocabulario",
+    "template": "Plantilla de destreza",
+    "title": "Título",
+    "packKey": "Identificador estable del mazo",
+    "sources": "Textos y audios compartidos",
+    "source": "Fuente",
+    "sourceKey": "Identificador de la fuente",
+    "passage": "Texto visible",
+    "transcript": "Transcripción",
+    "audioFile": "Audio modelo",
+    "downloadAudio": "Descargar copia del audio modelo",
+    "addSource": "Añadir fuente",
+    "card": "Tarjeta",
+    "cardKey": "Identificador estable de la tarjeta",
+    "format": "Tipo de ejercicio",
+    "short": "Respuesta breve",
+    "choice": "Elección múltiple",
+    "written": "Producción escrita",
+    "oral": "Producción oral",
+    "imitate": "Imitación",
+    "produce": "Producción de pronunciación",
+    "word": "Palabra con reverso",
+    "prompt": "Pregunta o situación",
+    "model": "Respuesta modelo",
+    "alternatives": "Otras respuestas válidas (una por línea)",
+    "criteria": "Criterios de autoevaluación (uno por línea)",
+    "tags": "Etiquetas (una por línea)",
+    "options": "Opciones (una por línea)",
+    "evidence": "Fragmento literal que justifica la respuesta",
+    "emphasis": "Parte de la respuesta que lleva énfasis",
+    "from": "Inicio de pista (s)",
+    "to": "Fin de pista (s)",
+    "addCard": "Añadir tarjeta",
+    "showModel": "Mostrar u ocultar el modelo",
+    "download": "Descargar mazo JSON",
+    "previewCard": "Vista previa de la tarjeta",
+    "exam": "Simulacro de escucha",
+    "finishExam": "Corregir el bloque",
+    "preview": "Revisar importación",
+    "counts": "Nuevas: {created}. Vinculadas: {linked}. Actualizadas: {updated}. Se desvincularán del mazo: {removed}.",
+    "save": "Guardar y vincular coincidencias",
+    "problem": "Revisa el mazo.",
+    "openDeck": "Abrir mazo guardado",
+    "invalid": "El archivo o algún campo no es válido.",
+    "audioSize": "Elige un audio de hasta 4 MiB.",
+    "audioError": "No se ha podido cargar el audio. Puedes volver a intentarlo.",
+    "needAudio": "Guarda el mazo con su grabación antes de iniciar el simulacro.",
+    "stop": "Detener",
+    "clue": "Volver a escuchar la pista",
+    "listen": "Escuchar modelo",
+    "listens": "Escuchas: {count} de {limit}",
+    "finishRecording": "Terminar grabación",
+    "record": "Grabar intento local",
+    "listenSelf": "Escucharme",
+    "micError": "El micrófono no está disponible. Puedes practicar en voz alta.",
+    "discard": "Descartar intento",
+    "select": "Elige tu respuesta",
+    "answer": "Tu respuesta",
+    "speak": "Responde en voz alta.",
+    "match": "Tu respuesta coincide con una variante aceptada.",
+    "compare": "Compara tu respuesta con el modelo.",
+    "editPack": "Editar, exportar o practicar el mazo B1",
+    "reading": "Reading",
+    "speaking": "Speaking",
+    "writing": "Writing",
+    "listening": "Listening",
+    "mediation": "Mediación",
+    "pronunciation": "Speaking · Pronunciation",
+    "grammar": "Grammar",
+    "vocabulary": "Vocabulary"
   }
 }

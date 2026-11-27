@@ -21,7 +21,9 @@ import type { Database } from "@/shared/infrastructure/supabase/database.types";
  * `delete` físico de `decks`: se archiva con `archived_at`.
  */
 
-type DeckRow = Database["public"]["Tables"]["decks"]["Row"];
+const deckFields =
+  "id,course_id,owner_id,title,description,cefr_level,category,position,archived_at,created_at,updated_at";
+type DeckRow = Omit<Database["public"]["Tables"]["decks"]["Row"], "eoi_manifest" | "eoi_bindings">;
 type ConceptRow = Database["public"]["Tables"]["concepts"]["Row"];
 
 function toDeck(row: DeckRow): Deck {
@@ -88,7 +90,7 @@ export function createSupabaseDeckRepository(client: SupabaseClient<Database>): 
           category: draft.category,
           position: (last?.position ?? -1) + 1,
         })
-        .select("*")
+        .select(deckFields)
         .single();
       if (error) throw libraryErrorFrom(error, "no se pudo crear el mazo");
       return toDeck(data);
@@ -105,7 +107,7 @@ export function createSupabaseDeckRepository(client: SupabaseClient<Database>): 
         })
         .eq("id", deckId)
         .eq("owner_id", ownerId)
-        .select("*")
+        .select(deckFields)
         .single();
       if (error) throw libraryErrorFrom(error, "no se pudo actualizar el mazo");
       return toDeck(data);
@@ -117,7 +119,7 @@ export function createSupabaseDeckRepository(client: SupabaseClient<Database>): 
         .update({ archived_at: archived ? new Date().toISOString() : null })
         .eq("id", deckId)
         .eq("owner_id", ownerId)
-        .select("*")
+        .select(deckFields)
         .single();
       if (error) throw libraryErrorFrom(error, "no se pudo archivar el mazo");
       return toDeck(data);
@@ -126,7 +128,7 @@ export function createSupabaseDeckRepository(client: SupabaseClient<Database>): 
     async list({ ownerId, courseId, includeArchived }) {
       let query = client
         .from("decks")
-        .select("*")
+        .select(deckFields)
         .eq("owner_id", ownerId)
         .eq("course_id", courseId);
       if (!includeArchived) query = query.is("archived_at", null);
@@ -193,12 +195,13 @@ export function createSupabaseDeckRepository(client: SupabaseClient<Database>): 
       const filtered = (head = false) => {
         let query = client
           .from("decks")
-          .select("*", { count: "exact", head })
+          .select(deckFields, { count: "exact", head })
           .eq("owner_id", ownerId)
           .eq("course_id", courseId);
         if (!includeArchived) query = query.is("archived_at", null);
         if (search) query = query.ilike("title", `%${search}%`);
-        if (category) query = query.eq("category", category);
+        if (category === "speaking") query = query.in("category", ["speaking", "pronunciation"]);
+        else if (category) query = query.eq("category", category);
         if (cefrLevel) query = query.eq("cefr_level", cefrLevel);
         return query;
       };

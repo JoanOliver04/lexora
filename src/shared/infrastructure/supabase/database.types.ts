@@ -204,6 +204,7 @@ export type Database = {
           active: boolean
           created_at: string
           declared_level: Database["public"]["Enums"]["cefr_level"] | null
+          eoi_sources: Json | null
           id: string
           owner_id: string
           source_language_id: string
@@ -218,6 +219,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           declared_level?: Database["public"]["Enums"]["cefr_level"] | null
+          eoi_sources?: Json | null
           id?: string
           owner_id: string
           source_language_id: string
@@ -232,6 +234,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           declared_level?: Database["public"]["Enums"]["cefr_level"] | null
+          eoi_sources?: Json | null
           id?: string
           owner_id?: string
           source_language_id?: string
@@ -316,6 +319,8 @@ export type Database = {
           course_id: string
           created_at: string
           description: string | null
+          eoi_bindings: Json | null
+          eoi_manifest: Json | null
           id: string
           owner_id: string
           position: number
@@ -329,6 +334,8 @@ export type Database = {
           course_id: string
           created_at?: string
           description?: string | null
+          eoi_bindings?: Json | null
+          eoi_manifest?: Json | null
           id?: string
           owner_id: string
           position?: number
@@ -342,6 +349,8 @@ export type Database = {
           course_id?: string
           created_at?: string
           description?: string | null
+          eoi_bindings?: Json | null
+          eoi_manifest?: Json | null
           id?: string
           owner_id?: string
           position?: number
@@ -1023,6 +1032,20 @@ export type Database = {
         Args: { p_confirmation: string; p_email: string }
         Returns: boolean
       }
+      eoi_read_sources: {
+        Args: { p_course: string; p_keys: string[] }
+        Returns: Json
+      }
+      eoi_save_pack: {
+        Args: {
+          p_apply: boolean
+          p_course: string
+          p_media: Json
+          p_pack: Json
+          p_preview?: string
+        }
+        Returns: Json
+      }
       export_account_data: { Args: never; Returns: Json }
       preview_deck_import_duplicates: {
         Args: {
@@ -1151,6 +1174,11 @@ export type Database = {
         | "pronunciation"
         | "professional"
         | "mixed"
+        | "reading"
+        | "writing"
+        | "speaking"
+        | "listening"
+        | "mediation"
       import_error_code:
         | "too_few_columns"
         | "too_many_columns"
@@ -1325,6 +1353,11 @@ export const Constants = {
         "pronunciation",
         "professional",
         "mixed",
+        "reading",
+        "writing",
+        "speaking",
+        "listening",
+        "mediation",
       ],
       import_error_code: [
         "too_few_columns",

@@ -134,6 +134,21 @@ separador es tab. Fixture `quotes-in-tab.txt`.
   archivo» inicia un intento nuevo; recuperar uno completado solo devuelve su
   resultado, sin volver a crear contenido.
 
+## Mazos de destrezas B1
+
+En **Importar → Mazos de destrezas B1**, elige una plantilla o abre un archivo `.lexora.json`. La plantilla ya contiene un ejemplo editable. Para abrir un CSV de tres columnas (frente, reverso, etiquetas), selecciona primero Grammar o Vocabulary. El importador clásico también sigue disponible. La plantilla de Vocabulary vincula cada palabra a sus dos direcciones. Las demás crean una pregunta por tarjeta.
+
+Cada archivo JSON lleva `format` igual a `lexora-eoi/1`, un identificador estable `key`, `title`, `level` igual a `B1`, `skill`, `sources` y `cards`. Puedes descargar una plantilla directamente desde el editor. Conserva los identificadores al actualizar un mazo para mantener los mismos ejercicios y su historial. Antes de guardar, la vista previa indica altas, vínculos, actualizaciones y tarjetas que saldrían del mazo. Los significados de vocabulario que van a combinarse se muestran juntos.
+
+| Campo de tarjeta | Uso |
+| --- | --- |
+| `key`, `prompt`, `answer` | Identificador, consigna y solución o modelo. |
+| `type` | `short` para respuesta breve, `choice` para opciones, `written` u `oral` para producción, `imitate` o `produce` para pronunciación y `word` para vocabulario. |
+| `alternatives`, `options`, `criteria`, `tags` | Listas de variantes, opciones, hasta tres criterios de autoevaluación y etiquetas. En elección múltiple la solución debe coincidir con una opción. |
+| `source`, `evidence`, `clip`, `emphasis` | Clave de la fuente, cita literal del texto o la transcripción, par de segundos de inicio y fin y fragmento del modelo cuyo énfasis se resalta. |
+
+Una fuente contiene `key`, `title` y, según el ejercicio, `text`, `transcript` o `audio`. Varias preguntas pueden citar la misma fuente. Si dos mazos comparten una fuente, usa una clave nueva para una versión distinta. Elige archivos modelo de hasta 4 MiB en MP3, Ogg, M4A, WAV o WebM. El mazo guarda la referencia al archivo privado. Desde la edición del mazo puedes descargar el JSON y cada audio con su nombre original. Conserva ambos para poder importarlos en otra cuenta o recuperar los archivos de audio. El intento grabado por el estudiante permanece en el dispositivo y se descarta al salir.
+
 ## Fixtures
 
 `tests/fixtures/import/` — todas sintéticas, ninguna es contenido real del

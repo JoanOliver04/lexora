@@ -89,6 +89,19 @@ export default async function DeckDetailPage({
           {t("detailBack")}
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">{deck.title}</h1>
+        {detail.deck.eoiPack && deck.category === "listening" && (
+          <Link className="min-h-11 underline" href={"/decks/" + deck.id + "/listening"}>
+            {(await getTranslations("Eoi"))("exam")}
+          </Link>
+        )}
+        {detail.deck.eoiPack && (
+          <Link
+            className="min-h-11 underline"
+            href={{ pathname: "/import/eoi", query: { deck: deck.id } }}
+          >
+            {(await getTranslations("Eoi"))("editPack")}
+          </Link>
+        )}
         {deck.archivedAt ? (
           <p className="text-sm text-(--color-ink-subtle)">{t("archivedBadge")}</p>
         ) : null}
@@ -113,7 +126,7 @@ export default async function DeckDetailPage({
         </div>
       )}
 
-      {!deck.archivedAt && (
+      {!deck.archivedAt && !detail.deck.eoiPack && (
         <section aria-labelledby="deck-import-heading" className="flex flex-col gap-3">
           <h2 id="deck-import-heading" className="text-lg font-medium">
             {t("import.heading")}
@@ -136,10 +149,12 @@ export default async function DeckDetailPage({
         </section>
       )}
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium">{t("editHeading")}</h2>
-        <EditDeckForm locale={locale} deck={deck} returnQuery={listReturnQuery} />
-      </section>
+      {!detail.deck.eoiPack && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg font-medium">{t("editHeading")}</h2>
+          <EditDeckForm locale={locale} deck={deck} returnQuery={listReturnQuery} />
+        </section>
+      )}
 
       <section className="flex flex-col gap-3 border-t border-(--color-border) pt-8">
         <h2 id="deck-concepts" tabIndex={-1} className="text-lg font-medium">
@@ -194,15 +209,17 @@ export default async function DeckDetailPage({
                 >
                   {concept.title}
                 </Link>
-                <form action={unlinkConceptFromDeckAction} className="shrink-0">
-                  <input type="hidden" name="returnQuery" value={returnQuery} />
-                  <input type="hidden" name="locale" value={locale} />
-                  <input type="hidden" name="deckId" value={deck.id} />
-                  <input type="hidden" name="conceptId" value={concept.id} />
-                  <Button type="submit" variant="secondary">
-                    {t("unlinkConceptButton")}
-                  </Button>
-                </form>
+                {!detail.deck.eoiPack && (
+                  <form action={unlinkConceptFromDeckAction} className="shrink-0">
+                    <input type="hidden" name="returnQuery" value={returnQuery} />
+                    <input type="hidden" name="locale" value={locale} />
+                    <input type="hidden" name="deckId" value={deck.id} />
+                    <input type="hidden" name="conceptId" value={concept.id} />
+                    <Button type="submit" variant="secondary">
+                      {t("unlinkConceptButton")}
+                    </Button>
+                  </form>
+                )}
               </li>
             ))}
           </ul>
@@ -216,75 +233,82 @@ export default async function DeckDetailPage({
           label={t("membersPaginationLabel")}
         />
 
-        <h3 id="available-concepts" tabIndex={-1} className="pt-3 font-medium">
-          {t("availableHeading")}
-        </h3>
-        <form
-          method="get"
-          action={`/${locale}/decks/${deck.id}#available-concepts`}
-          aria-label={t("availableSearchLabel")}
-          className="flex flex-wrap items-end gap-3"
-        >
-          {listFields}
-          <input type="hidden" name="members" value={query.memberSearch} />
-          <input type="hidden" name="memberPage" value={String(memberPage)} />
-          <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <Label htmlFor="deck-available-search">{t("availableSearchLabel")}</Label>
-            <Input
-              id="deck-available-search"
-              name="available"
-              type="search"
-              maxLength={200}
-              defaultValue={query.availableSearch}
-            />
-          </div>
-          <Button type="submit" variant="secondary">
-            {t("detailSearchSubmit")}
-          </Button>
-        </form>
+        {!detail.deck.eoiPack && (
+          <>
+            <h3 id="available-concepts" tabIndex={-1} className="pt-3 font-medium">
+              {t("availableHeading")}
+            </h3>
+            <form
+              method="get"
+              action={`/${locale}/decks/${deck.id}#available-concepts`}
+              aria-label={t("availableSearchLabel")}
+              className="flex flex-wrap items-end gap-3"
+            >
+              {listFields}
+              <input type="hidden" name="members" value={query.memberSearch} />
+              <input type="hidden" name="memberPage" value={String(memberPage)} />
+              <div className="flex min-w-0 flex-1 flex-col gap-2">
+                <Label htmlFor="deck-available-search">{t("availableSearchLabel")}</Label>
+                <Input
+                  id="deck-available-search"
+                  name="available"
+                  type="search"
+                  maxLength={200}
+                  defaultValue={query.availableSearch}
+                />
+              </div>
+              <Button type="submit" variant="secondary">
+                {t("detailSearchSubmit")}
+              </Button>
+            </form>
 
-        {available.items.length > 0 ? (
-          <form action={linkConceptToDeckAction} className="flex flex-wrap items-end gap-3 pt-2">
-            <input type="hidden" name="returnQuery" value={returnQuery} />
-            <input type="hidden" name="locale" value={locale} />
-            <input type="hidden" name="deckId" value={deck.id} />
-            <div className="flex min-w-0 flex-1 flex-col gap-2">
-              <label
-                htmlFor="link-concept"
-                className="text-sm font-medium text-(--color-ink-muted)"
+            {available.items.length > 0 ? (
+              <form
+                action={linkConceptToDeckAction}
+                className="flex flex-wrap items-end gap-3 pt-2"
               >
-                {t("linkConceptLabel")}
-              </label>
-              <select
-                id="link-concept"
-                name="conceptId"
-                required
-                className="w-full min-w-0 max-w-full min-h-11 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-ink)"
-              >
-                {available.items.map((concept) => (
-                  <option key={concept.id} value={concept.id}>
-                    {concept.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <Button type="submit" variant="secondary">
-              {t("linkConceptButton")}
-            </Button>
-          </form>
-        ) : (
-          <p className="text-sm text-(--color-ink-subtle)">
-            {t(query.availableSearch ? "availableSearchEmpty" : "linkConceptEmpty")}
-          </p>
+                <input type="hidden" name="returnQuery" value={returnQuery} />
+                <input type="hidden" name="locale" value={locale} />
+                <input type="hidden" name="deckId" value={deck.id} />
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <label
+                    htmlFor="link-concept"
+                    className="text-sm font-medium text-(--color-ink-muted)"
+                  >
+                    {t("linkConceptLabel")}
+                  </label>
+                  <select
+                    id="link-concept"
+                    name="conceptId"
+                    required
+                    className="w-full min-w-0 max-w-full min-h-11 rounded-(--radius-control) border border-(--color-border-strong) bg-(--color-surface) px-3 text-(--color-ink)"
+                  >
+                    {available.items.map((concept) => (
+                      <option key={concept.id} value={concept.id}>
+                        {concept.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Button type="submit" variant="secondary">
+                  {t("linkConceptButton")}
+                </Button>
+              </form>
+            ) : (
+              <p className="text-sm text-(--color-ink-subtle)">
+                {t(query.availableSearch ? "availableSearchEmpty" : "linkConceptEmpty")}
+              </p>
+            )}
+            <DeckDetailNavigation
+              deckId={deck.id}
+              result={available}
+              pageSize={detail.pageSize}
+              pageKey="availablePage"
+              query={linkQuery}
+              label={t("availablePaginationLabel")}
+            />
+          </>
         )}
-        <DeckDetailNavigation
-          deckId={deck.id}
-          result={available}
-          pageSize={detail.pageSize}
-          pageKey="availablePage"
-          query={linkQuery}
-          label={t("availablePaginationLabel")}
-        />
       </section>
 
       <form action={setDeckArchivedAction} className="border-t border-(--color-border) pt-8">

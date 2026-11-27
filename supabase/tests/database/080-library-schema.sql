@@ -56,7 +56,7 @@ select enum_has_labels(
 select enum_has_labels(
   'public', 'deck_category',
   ARRAY['vocabulary', 'grammar', 'communicative_function', 'pronunciation',
-        'professional', 'mixed']
+        'professional', 'mixed','reading','writing','speaking','listening','mediation']
 );
 
 -- --- FK compuestas que sostienen la pertenencia ---------------------------

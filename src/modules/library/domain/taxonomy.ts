@@ -28,12 +28,27 @@ export type CefrLevel = (typeof CEFR_LEVELS)[number];
  * propietario.
  */
 export type DeckCategory =
-  "vocabulary" | "grammar" | "communicative_function" | "pronunciation" | "professional" | "mixed";
+  | "vocabulary"
+  | "grammar"
+  | "reading"
+  | "writing"
+  | "speaking"
+  | "listening"
+  | "mediation"
+  | "communicative_function"
+  | "pronunciation"
+  | "professional"
+  | "mixed";
 export const DECK_CATEGORIES: readonly DeckCategory[] = [
   "vocabulary",
   "grammar",
   "communicative_function",
   "pronunciation",
+  "reading",
+  "writing",
+  "speaking",
+  "listening",
+  "mediation",
   "professional",
   "mixed",
 ];
