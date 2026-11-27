@@ -19,7 +19,7 @@ export default async function ListeningBlock({
         {data.pack.title}
       </Link>
       <h1 className="text-2xl font-semibold">{t("exam")}</h1>
-      <ListeningExam pack={data.pack} hashes={data.hashes} />
+      <ListeningExam attemptId={deckId} pack={data.pack} hashes={data.hashes} />
     </main>
   );
 }

@@ -7,13 +7,13 @@ export type AccountDeletionFailure =
   | "unauthenticated"
   | "reauth-required"
   | "mfa-required"
+  | "cleanup-pending"
   | "cooldown"
   | "unavailable";
 export type AccountDeletionResult = { ok: true } | { ok: false; error: AccountDeletionFailure };
-export const deletionInputSchema = z
+const confirmationSchema = z
   .object({
     email: emailSchema,
-    password: passwordSchema,
     confirmation: z.literal("DELETE"),
     acknowledged: z.literal(true),
     factorId: z.uuid().optional(),
@@ -23,8 +23,15 @@ export const deletionInputSchema = z
       .optional(),
   })
   .strict();
+export const deletionInputSchema = z.union([
+  confirmationSchema.extend({ password: passwordSchema }),
+  confirmationSchema.extend({ method: z.literal("google") }),
+]);
 export type AccountDeletionInput = z.infer<typeof deletionInputSchema>;
 export interface AccountDeletionFactors {
+  google?: boolean;
+  password?: boolean;
+  googleVerified?: boolean;
   requiresMfa: boolean;
   factors: { id: string; label: string | null }[];
 }

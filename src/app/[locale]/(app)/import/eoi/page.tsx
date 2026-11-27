@@ -28,7 +28,13 @@ export default async function EoiPage({
         {session ? concepts("items.backToReview") : t("back")}
       </Link>
       <h1 className="text-2xl font-semibold">{t("studio")}</h1>
-      <EoiStudio courseId={course.id} draftId={crypto.randomUUID()} initial={data} cardKey={card} />
+      <EoiStudio
+        key={course.id + ":" + (deck ?? "new")}
+        courseId={course.id}
+        draftId={crypto.randomUUID()}
+        initial={data}
+        cardKey={card}
+      />
     </main>
   );
 }

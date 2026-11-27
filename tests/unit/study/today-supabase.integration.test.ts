@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { getDailyQueue } from "@/modules/study/application/daily-queue";
 import { getTodayOverview } from "@/modules/study/application/today-overview";
 import { saveSessionReview } from "@/modules/study/application/save-session-review";
 import { V1_SCHEDULER_CONFIG } from "@/modules/study/domain/scheduler-config";
@@ -46,6 +47,7 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
   let ownerA: string;
   let ownerB: string;
   let requests: number | null = null;
+  let queueResponseRows: number[] | null = null;
   const mainCourse = randomUUID();
   const otherCourse = randomUUID();
   const largeCourse = randomUUID();
@@ -93,9 +95,17 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
       createClient<Database>(url, key, {
         auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
         global: {
-          fetch: (input, init) => {
+          fetch: async (input, init) => {
             if (requests !== null) requests++;
-            return fetch(input, init);
+            const response = await fetch(input, init);
+            if (
+              queueResponseRows &&
+              new URL(String(input)).pathname.endsWith("/rpc/study_queue_items")
+            ) {
+              const rows: unknown = await response.clone().json();
+              if (Array.isArray(rows)) queueResponseRows.push(rows.length);
+            }
+            return response;
           },
         },
       });
@@ -346,36 +356,27 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
       },
     });
     const queue = createSupabaseDailyQueueRepository(clientA);
-    expect(
-      await queue.listEligibleItems({
-        ownerId: ownerA,
-        courseId: mainCourse,
-        deckIds: [mainDeck, mainDeck, extraDeck],
-      }),
-    ).toHaveLength(eligibleIds.length);
-    expect(
-      await queue.listEligibleItems({ ownerId: ownerA, courseId: mainCourse, deckIds: [] }),
-    ).toEqual([]);
+    for (const [deckIds, reviewsDue] of [
+      [[mainDeck, mainDeck, extraDeck], 3],
+      [[], 0],
+    ] as const) {
+      expect(
+        await queue.countEligibleItems(
+          { ownerId: ownerA, courseId: mainCourse, deckIds: [...deckIds], now: NOW },
+          true,
+        ),
+      ).toMatchObject({ reviewsDue });
+    }
   });
 
   it("finds the last three attempts beyond 1,000 rows and beyond the duration window", async () => {
-    const history = createSupabaseTodayOverviewRepository(clientA);
-    const signals = await history.getDifficultySignals({
-      ownerId: ownerA,
-      practiceItemIds: eligibleIds,
-      now: NOW,
-    });
-    expect(signals.find((row) => row.practiceItemId === reviews[0])?.recentRatings).toEqual([
-      "good",
-      "good",
-      "good",
-    ]);
-    expect(signals.find((row) => row.practiceItemId === reviews[2])?.recentRatings).toEqual([
-      "again",
-      "good",
-      "again",
-    ]);
-    expect(signals.find((row) => row.practiceItemId === futureDifficult)?.lapses).toBe(3);
+    const repo = createSupabaseDailyQueueRepository(clientA);
+    expect(
+      await repo.countEligibleItems(
+        { ownerId: ownerA, courseId: mainCourse, deckIds: null, now: NOW },
+        true,
+      ),
+    ).toMatchObject({ difficultItems: 2 });
     expect(
       await createSupabaseDailyQueueRepository(clientA).countTodayActivity({
         ownerId: ownerA,
@@ -387,34 +388,262 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
   });
 
   it("counts 1,101 eligible concepts, states and difficult items without truncation", async () => {
-    const result = await getTodayOverview(
-      createSupabaseDailyQueueRepository(clientA),
-      createSupabaseTodayOverviewRepository(clientA),
-      { ownerId: ownerA, courseId: largeCourse, now: NOW, timeZone: "Europe/Madrid" },
-    );
-    expect(result.ok && result.overview).toMatchObject({
-      dueReviews: 1101,
-      availableReviews: 1101,
-      availableCount: 1101,
-      difficultItems: 1101,
-      hiddenDueReviews: 0,
-    });
-  });
-
-  it("reads queue states in the same pages as the 1,101 eligible items", async () => {
-    const queue = createSupabaseDailyQueueRepository(clientA);
     requests = 0;
     try {
-      const items = await queue.listEligibleItems({
-        ownerId: ownerA,
-        courseId: largeCourse,
-        deckIds: null,
+      const result = await getTodayOverview(
+        createSupabaseDailyQueueRepository(clientA),
+        createSupabaseTodayOverviewRepository(clientA),
+        { ownerId: ownerA, courseId: largeCourse, now: NOW, timeZone: "Europe/Madrid" },
+      );
+      expect(result.ok && result.overview).toMatchObject({
+        dueReviews: 1101,
+        availableReviews: 1101,
+        availableCount: 1101,
+        difficultItems: 1101,
+        hiddenDueReviews: 0,
       });
-      expect(requests).toBe(3);
-      expect(items.map((item) => item.practiceItemId)).toEqual([...largeIds].sort());
-      expect(items.every((item) => item.phase === "review" && item.learningStateId)).toBe(true);
+      expect(requests).toBe(4);
     } finally {
       requests = null;
+    }
+  });
+
+  it("fetches exactly the selected entries and paginates unlimited reviews", async () => {
+    const repo = createSupabaseDailyQueueRepository(clientA);
+    const input = { ownerId: ownerA, courseId: largeCourse, now: NOW, timeZone: "Europe/Madrid" };
+    requests = 0;
+    try {
+      const full = await getDailyQueue(repo, input);
+      expect(full.ok && full.queue.entries.map((item) => item.practiceItemId)).toEqual(
+        [...largeIds].sort(),
+      );
+      expect(requests).toBe(6);
+      await checked(
+        clientA
+          .from("course_settings")
+          .update({ maximum_reviews_per_day: 1 })
+          .eq("course_id", largeCourse),
+      );
+      requests = 0;
+      const single = await getDailyQueue(repo, input);
+      expect(single.ok && single.queue).toMatchObject({
+        hiddenDueReviews: 1100,
+        entries: [{ practiceItemId: [...largeIds].sort()[0] }],
+      });
+      expect(requests).toBe(5);
+    } finally {
+      requests = null;
+      await checked(
+        clientA
+          .from("course_settings")
+          .update({ maximum_reviews_per_day: null })
+          .eq("course_id", largeCourse),
+      );
+    }
+  });
+
+  it("counts a 9,490-card library without transferring IDs and fetches only three session cards", async () => {
+    const courseId = randomUUID(),
+      deckId = randomUUID(),
+      conceptId = randomUUID();
+    const template = await checked(
+      clientA
+        .from("courses")
+        .select("source_language_id,target_language_id")
+        .eq("id", mainCourse)
+        .single(),
+    );
+    await checked(
+      clientA
+        .from("courses")
+        .insert({ id: courseId, owner_id: ownerA, title: "Synthetic queue volume", ...template! }),
+    );
+    try {
+      await checked(
+        clientA
+          .from("course_settings")
+          .insert({ user_id: ownerA, course_id: courseId, daily_new_limit: 3 }),
+      );
+      await checked(
+        clientA
+          .from("decks")
+          .insert({ id: deckId, owner_id: ownerA, course_id: courseId, title: "Scope" }),
+      );
+      await checked(
+        clientA.from("concepts").insert({
+          id: conceptId,
+          owner_id: ownerA,
+          course_id: courseId,
+          kind: "vocabulary",
+          title: "Synthetic",
+          summary: "Fixture",
+        }),
+      );
+      await checked(
+        clientA
+          .from("deck_concepts")
+          .insert({ deck_id: deckId, concept_id: conceptId, owner_id: ownerA }),
+      );
+      for (let from = 0; from < 9490; from += 500) {
+        await checked(
+          clientA.from("practice_items").insert(
+            Array.from({ length: Math.min(500, 9490 - from) }, () => ({
+              owner_id: ownerA,
+              concept_id: conceptId,
+              mode: "basic_recognition" as const,
+              prompt_text: "Synthetic",
+              answer_text: "Fixture",
+              config: { mode: "basic_recognition" },
+            })),
+          ),
+        );
+      }
+      const scope = { ownerId: ownerA, courseId, deckIds: null },
+        input = { ...scope, now: NOW, timeZone: "Europe/Madrid" };
+      const repo = createSupabaseDailyQueueRepository(clientA);
+      requests = 0;
+      const ids = await listEligibleStudyItemIds(clientA, scope);
+      expect(ids).toHaveLength(9490);
+      expect(requests).toBe(19);
+      requests = 0;
+      queueResponseRows = [];
+      const overview = await getTodayOverview(
+        repo,
+        createSupabaseTodayOverviewRepository(clientA),
+        input,
+      );
+      expect(overview.ok && overview.overview).toMatchObject({
+        availableCount: 3,
+        hiddenNew: 9487,
+      });
+      expect(requests).toBe(4);
+      expect(queueResponseRows).toEqual([]);
+      requests = 0;
+      const queue = await getDailyQueue(repo, input);
+      expect(queue.ok && queue.queue.entries.map((entry) => entry.practiceItemId)).toEqual(
+        ids.slice(0, 3),
+      );
+      expect(requests).toBe(4);
+      expect(queueResponseRows).toEqual([3]);
+      queueResponseRows = [];
+      const front = await getDailyQueue(repo, input, "first");
+      expect(front.ok && front.queue).toMatchObject({
+        availableCount: 3,
+        entries: [{ practiceItemId: ids[0] }],
+      });
+      expect(queueResponseRows).toEqual([1]);
+      queueResponseRows = [];
+      const summary = await getDailyQueue(repo, input, "counts");
+      expect(summary.ok && summary.queue).toMatchObject({ availableCount: 3, entries: [] });
+      expect(queueResponseRows).toEqual([]);
+    } finally {
+      requests = null;
+      queueResponseRows = null;
+      await checked(clientA.from("courses").delete().eq("owner_id", ownerA).eq("id", courseId));
+    }
+  }, 60_000);
+
+  it("matches chronological slots, FSRS ties and millisecond boundaries in a capped mixed queue", async () => {
+    const deckId = randomUUID(),
+      conceptId = randomUUID();
+    const itemIds = Array.from({ length: 7 }, () => randomUUID()).sort();
+    await checked(
+      clientA.from("decks").insert({
+        id: deckId,
+        owner_id: ownerA,
+        course_id: largeCourse,
+        title: "Capped review fixture",
+      }),
+    );
+    await checked(
+      clientA.from("concepts").insert({
+        id: conceptId,
+        owner_id: ownerA,
+        course_id: largeCourse,
+        kind: "vocabulary",
+        title: "Priority fixture",
+        summary: "Synthetic",
+      }),
+    );
+    await checked(
+      clientA
+        .from("deck_concepts")
+        .insert({ deck_id: deckId, concept_id: conceptId, owner_id: ownerA }),
+    );
+    await checked(
+      clientA.from("practice_items").insert(
+        itemIds.map((id) => ({
+          id,
+          owner_id: ownerA,
+          concept_id: conceptId,
+          mode: "basic_recognition",
+          config: { mode: "basic_recognition" },
+          prompt_text: "Synthetic",
+          answer_text: "Fixture",
+        })),
+      ),
+    );
+    // Index 1 keeps its chronological slot. The two fragile scores tie and sort by due date and ID.
+    const snapshots = itemIds.map((id, index) => ({
+      practice_item_id: id,
+      owner_id: ownerA,
+      phase: "review" as const,
+      stability: [90, 1, 90, 1, 1, 0, 90][index]!,
+      config_version: index === 1 ? "legacy" : "v1",
+      scheduler_version: "5.4.2",
+      last_reviewed_at: "2026-09-26T12:00:00.000Z",
+      due_at:
+        index < 3
+          ? "2026-10-06T09:00:00.000Z"
+          : index === 6
+            ? "2026-10-06T10:00:00.000250Z"
+            : NOW.toISOString(),
+    }));
+    await checked(clientA.from("learning_states").insert(snapshots));
+    try {
+      await checked(
+        clientA
+          .from("course_settings")
+          .update({ maximum_reviews_per_day: 3 })
+          .eq("course_id", largeCourse),
+      );
+      const result = await getDailyQueue(createSupabaseDailyQueueRepository(clientA), {
+        ownerId: ownerA,
+        courseId: largeCourse,
+        deckIds: [deckId],
+        now: NOW,
+        timeZone: "Europe/Madrid",
+      });
+      expect(result.ok && result.queue.hiddenDueReviews).toBe(4);
+      expect(result.ok && result.queue.entries.map((entry) => entry.practiceItemId)).toEqual([
+        itemIds[3],
+        itemIds[1],
+        itemIds[4],
+      ]);
+      const front = await getDailyQueue(
+        createSupabaseDailyQueueRepository(clientA),
+        {
+          ownerId: ownerA,
+          courseId: largeCourse,
+          deckIds: [deckId],
+          now: NOW,
+          timeZone: "Europe/Madrid",
+        },
+        "first",
+      );
+      expect(front.ok && front.queue).toMatchObject({
+        availableCount: 3,
+        entries: [{ practiceItemId: itemIds[3] }],
+      });
+    } finally {
+      await checked(
+        clientA
+          .from("course_settings")
+          .update({ maximum_reviews_per_day: null })
+          .eq("course_id", largeCourse),
+      );
+      await checked(clientA.from("concepts").delete().eq("owner_id", ownerA).eq("id", conceptId));
+      await checked(clientA.from("decks").delete().eq("owner_id", ownerA).eq("id", deckId));
     }
   });
 
@@ -518,12 +747,11 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
       }),
     ).toEqual({ ok: false, reason: "not-found" });
     expect(
-      await historyB.getDifficultySignals({
-        ownerId: ownerA,
-        practiceItemIds: eligibleIds,
-        now: NOW,
-      }),
-    ).toEqual([]);
+      await queueB.countEligibleItems(
+        { ownerId: ownerA, courseId: mainCourse, deckIds: null, now: NOW },
+        true,
+      ),
+    ).toMatchObject({ learningDue: 0, reviewsDue: 0, newItems: 0, difficultItems: 0 });
     expect(
       await historyB.listRecentDurations({
         ownerId: ownerA,
@@ -748,14 +976,11 @@ describe.skipIf(!enabled)("Today repositories against local Supabase", () => {
         ),
       ).toEqual({ ok: false, reason: "not-found" });
     }
-    const candidates = await queue.listEligibleItems({
-      ownerId: ownerA,
-      courseId: mainCourse,
-      deckIds: [mainDeck],
-    });
-    expect(candidates.map((candidate) => candidate.practiceItemId).sort()).toEqual(
-      [...eligibleIds].sort(),
+    const counts = await queue.countEligibleItems(
+      { ownerId: ownerA, courseId: mainCourse, deckIds: [mainDeck], now: NOW },
+      false,
     );
+    expect(counts).toMatchObject({ learningDue: 2, reviewsDue: 3, newItems: 3 });
     expect(
       await checked(
         clientA

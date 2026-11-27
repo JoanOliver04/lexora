@@ -9,6 +9,7 @@ async function target(params: Params["params"]) {
   const { client, owner, course } = await eoiContext();
   return {
     course,
+    client,
     store: client.storage.from(bucket),
     path: [owner, course, hash].join("/"),
     hash,
@@ -66,6 +67,8 @@ export async function PUT(req: Request, { params }: Params) {
     const body = Buffer.concat(chunks);
     if (size !== len || createHash("sha256").update(body).digest("hex") !== t.hash)
       return new Response(null, { status: 422 });
+    const lease = await t.client.rpc("eoi_audio_lease", { p_course: t.course, p_hash: t.hash });
+    if (lease.error || !lease.data) return new Response(null, { status: 409 });
     const { error } = await t.store.upload(t.path, body, { contentType: type, upsert: false });
     if (error && String(error.statusCode) !== "409" && !/already exists/i.test(error.message))
       return new Response(null, { status: 503 });

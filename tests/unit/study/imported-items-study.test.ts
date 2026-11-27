@@ -11,7 +11,8 @@ import type { Deck } from "@/modules/library/domain/deck";
 import type { PracticeItem, PracticeItemDraft } from "@/modules/library/domain/practice-item";
 import type { Tag } from "@/modules/library/domain/tag";
 import { confirmReview, type ReviewCommitter } from "@/modules/study/application/confirm-review";
-import { getDailyQueue, type DailyQueueRepository } from "@/modules/study/application/daily-queue";
+import { queueFixture } from "./queue-fixture";
+import { getDailyQueue } from "@/modules/study/application/daily-queue";
 import {
   ensureLearningState,
   type LearningStateRepository,
@@ -261,7 +262,7 @@ function createWorld(ownerId: string, dailyNewLimit = 5, bags: SharedBags = empt
     },
   };
 
-  const dailyQueue: DailyQueueRepository = {
+  const dailyQueue = queueFixture({
     async getCourseLimits() {
       return { dailyNewLimit, maximumReviewsPerDay: null };
     },
@@ -299,7 +300,7 @@ function createWorld(ownerId: string, dailyNewLimit = 5, bags: SharedBags = empt
       }
       return { newIntroduced: newIds.size, reviewsDone };
     },
-  };
+  });
 
   const ownedItems = () => items.filter((item) => item.ownerId === ownerId);
   const ownedConcepts = () => concepts.filter((concept) => concept.ownerId === ownerId);

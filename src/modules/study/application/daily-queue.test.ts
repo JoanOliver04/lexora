@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { getDailyQueue, type DailyQueueRepository } from "./daily-queue";
+import { queueFixture } from "../../../../tests/unit/study/queue-fixture";
+import { getDailyQueue } from "./daily-queue";
 import type { QueueCandidate } from "@/modules/study/domain/queue";
 
 const NOW = new Date("2026-09-11T10:00:00.000Z");
@@ -17,8 +18,8 @@ function candidate(id: string, phase: QueueCandidate["phase"]): QueueCandidate {
   };
 }
 
-function fakeRepository(overrides: Partial<DailyQueueRepository> = {}): DailyQueueRepository {
-  return {
+function fakeRepository(overrides: Partial<Parameters<typeof queueFixture>[0]> = {}) {
+  return queueFixture({
     getCourseLimits: vi.fn().mockResolvedValue({
       dailyNewLimit: 5,
       maximumReviewsPerDay: null,
@@ -26,7 +27,7 @@ function fakeRepository(overrides: Partial<DailyQueueRepository> = {}): DailyQue
     listEligibleItems: vi.fn().mockResolvedValue([]),
     countTodayActivity: vi.fn().mockResolvedValue({ newIntroduced: 0, reviewsDone: 0 }),
     ...overrides,
-  };
+  });
 }
 
 const baseInput = {
@@ -82,7 +83,6 @@ describe("getDailyQueue", () => {
       ownerId: "user-1",
       courseId: "course-1",
       deckIds: null,
-      reviewPriority: { at: MADRID_DAY_START, dueThrough: NOW },
     });
   });
 
@@ -92,15 +92,12 @@ describe("getDailyQueue", () => {
     });
     for (const now of [NOW, new Date(MADRID_DAY_END.getTime() - 1), MADRID_DAY_END]) {
       await getDailyQueue(repository, { ...baseInput, now });
-      expect(repository.listEligibleItems).toHaveBeenLastCalledWith({
-        ownerId: "user-1",
-        courseId: "course-1",
-        deckIds: null,
-        reviewPriority: {
-          at: now === MADRID_DAY_END ? MADRID_DAY_END : MADRID_DAY_START,
-          dueThrough: now,
-        },
-      });
+      expect(repository.listAvailableEntries).toHaveBeenLastCalledWith(
+        expect.objectContaining({ now, deckIds: null }),
+        expect.anything(),
+        now === MADRID_DAY_END ? MADRID_DAY_END : MADRID_DAY_START,
+        false,
+      );
     }
   });
 

@@ -1,31 +1,27 @@
-/**
- * Puerto y caso de uso de la cola diaria (LEX-5.7).
- *
- * El dominio ordena; aquí se cargan candidatos ya filtrados (curso, mazos
- * activos, conceptos e ítems no archivados, enabled) y los cupos de hoy.
- * No crea `LearningState`: un New sin fila aparece con `learningStateId`
- * nulo; `ensureLearningState` (LEX-5.6) llega al estudiar.
- *
- * Q-006 opción 1: archivar un concepto no cascada a sus ítems; la cola
- * los deja fuera leyendo `concepts.archived_at`.
- *
- * El día local lo calcula `studyDayWindow` (LEX-5.12) con la zona IANA
- * del perfil y el instante del reloj inyectado. Fin exclusivo, UTC.
- */
-
-import {
-  assembleDailyQueue,
-  type DailyQueue,
-  type QueueCandidate,
-} from "@/modules/study/domain/queue";
+import type { DailyQueue, QueueEntry } from "@/modules/study/domain/queue";
 import { isIanaTimeZone, studyDayWindow } from "@/modules/study/domain/study-day";
-
 export type {
   DailyQueue,
   QueueCandidate,
   QueueEntry,
   QueueGroup,
 } from "@/modules/study/domain/queue";
+
+export interface QueueInventory {
+  learningDue: number;
+  reviewsDue: number;
+  newItems: number;
+  difficultItems: number;
+  nextDueAt: Date | null;
+  nextLearningDueAt: Date | null;
+}
+
+export interface QueueScope {
+  ownerId: string;
+  courseId: string;
+  deckIds: string[] | null;
+  now: Date;
+}
 
 export interface CourseStudyLimits {
   dailyNewLimit: number;
@@ -39,25 +35,26 @@ export interface TodayStudyActivity {
 
 export interface DailyQueueRepository {
   getCourseLimits(input: { ownerId: string; courseId: string }): Promise<CourseStudyLimits | null>;
-  listEligibleItems(input: {
-    ownerId: string;
-    courseId: string;
-    deckIds: string[] | null;
-    reviewPriority?: { at: Date; dueThrough: Date };
-  }): Promise<QueueCandidate[]>;
   countTodayActivity(input: {
     ownerId: string;
     courseId: string;
     dayStart: Date;
     dayEnd: Date;
   }): Promise<TodayStudyActivity>;
+  countEligibleItems(scope: QueueScope, includeDifficulty: boolean): Promise<QueueInventory>;
+  listAvailableEntries(
+    scope: QueueScope,
+    selection: QueueSelection,
+    dayStart: Date,
+    firstOnly: boolean,
+  ): Promise<QueueEntry[]>;
 }
 
-export type GetDailyQueueResult =
-  { ok: true; queue: DailyQueue } | { ok: false; reason: "not-found" | "invalid-timezone" };
+export type QueueRead = "all" | "first" | "counts";
+export type AvailableDailyQueue = DailyQueue & { availableCount: number };
 
-export type LoadDailyQueueResult =
-  | { ok: true; queue: DailyQueue; candidates: QueueCandidate[] }
+export type GetDailyQueueResult =
+  | { ok: true; queue: AvailableDailyQueue }
   | { ok: false; reason: "not-found" | "invalid-timezone" };
 
 export interface DailyQueueInput {
@@ -68,68 +65,72 @@ export interface DailyQueueInput {
   timeZone: string;
 }
 
-function assertUserId(userId: string): void {
-  if (userId.trim() === "") {
+export interface QueueSelection {
+  learningDue: number;
+  availableReviews: number;
+  newAvailable: number;
+  hiddenDueReviews: number;
+  hiddenNew: number;
+  newRemaining: number;
+}
+
+export async function getQueueAvailability(
+  repository: DailyQueueRepository,
+  input: DailyQueueInput,
+  includeDifficulty: boolean,
+) {
+  if (!input.ownerId.trim())
     throw new Error("caso de uso de estudio invocado sin identificador de usuario");
-  }
+  if (!isIanaTimeZone(input.timeZone)) return { ok: false, reason: "invalid-timezone" } as const;
+  const { start: dayStart, end: dayEnd } = studyDayWindow(input.now, input.timeZone);
+  const course = { ownerId: input.ownerId, courseId: input.courseId };
+  const limits = await repository.getCourseLimits(course);
+  if (!limits) return { ok: false, reason: "not-found" } as const;
+  const scope = { ...course, deckIds: input.deckIds ?? null, now: input.now };
+  const [inventory, activity] = await Promise.all([
+    repository.countEligibleItems(scope, includeDifficulty),
+    repository.countTodayActivity({ ...course, dayStart, dayEnd }),
+  ]);
+
+  const newSlots = Math.max(0, limits.dailyNewLimit - activity.newIntroduced);
+  const newAvailable = Math.min(inventory.newItems, newSlots);
+  const reviewSlots =
+    limits.maximumReviewsPerDay === null
+      ? inventory.reviewsDue
+      : Math.max(0, limits.maximumReviewsPerDay - activity.reviewsDone);
+  const availableReviews = Math.min(inventory.reviewsDue, reviewSlots);
+  const selection = {
+    learningDue: inventory.learningDue,
+    newAvailable,
+    availableReviews,
+    hiddenNew: inventory.newItems - newAvailable,
+    hiddenDueReviews: inventory.reviewsDue - availableReviews,
+    newRemaining: newSlots - newAvailable,
+  };
+  return { ok: true, scope, dayStart, inventory, selection } as const;
 }
 
 export async function getDailyQueue(
   repository: DailyQueueRepository,
   input: DailyQueueInput,
+  read: QueueRead = "all",
 ): Promise<GetDailyQueueResult> {
-  const result = await loadDailyQueue(repository, input);
-  return result.ok ? { ok: true, queue: result.queue } : result;
-}
-
-/** Share eligibility and limits with Today without loading candidates twice. */
-export async function loadDailyQueue(
-  repository: DailyQueueRepository,
-  input: DailyQueueInput,
-): Promise<LoadDailyQueueResult> {
-  assertUserId(input.ownerId);
-
-  if (!isIanaTimeZone(input.timeZone)) {
-    return { ok: false, reason: "invalid-timezone" };
-  }
-  const { start: dayStart, end: dayEnd } = studyDayWindow(input.now, input.timeZone);
-
-  const limits = await repository.getCourseLimits({
-    ownerId: input.ownerId,
-    courseId: input.courseId,
-  });
-  if (!limits) {
-    return { ok: false, reason: "not-found" };
-  }
-
-  const deckIds = input.deckIds === undefined ? null : input.deckIds;
-  const [candidates, today] = await Promise.all([
-    repository.listEligibleItems({
-      ownerId: input.ownerId,
-      courseId: input.courseId,
-      deckIds,
-      ...((limits.maximumReviewsPerDay ?? 0) > 0
-        ? { reviewPriority: { at: dayStart, dueThrough: input.now } }
-        : {}),
-    }),
-    repository.countTodayActivity({
-      ownerId: input.ownerId,
-      courseId: input.courseId,
-      dayStart,
-      dayEnd,
-    }),
-  ]);
-
+  const availability = await getQueueAvailability(repository, input, false);
+  if (!availability.ok) return availability;
+  const { scope, selection, dayStart, inventory } = availability;
   return {
     ok: true,
-    candidates,
-    queue: assembleDailyQueue({
-      candidates,
-      now: input.now,
-      dailyNewLimit: limits.dailyNewLimit,
-      newIntroducedToday: today.newIntroduced,
-      maximumReviewsPerDay: limits.maximumReviewsPerDay,
-      reviewsDoneToday: today.reviewsDone,
-    }),
+    queue: {
+      availableCount: selection.learningDue + selection.availableReviews + selection.newAvailable,
+      entries:
+        read === "counts"
+          ? []
+          : await repository.listAvailableEntries(scope, selection, dayStart, read === "first"),
+      hiddenDueReviews: selection.hiddenDueReviews,
+      hiddenNew: selection.hiddenNew,
+      newRemaining: selection.newRemaining,
+      nextDueAt: inventory.nextDueAt,
+      nextLearningDueAt: inventory.nextLearningDueAt,
+    },
   };
 }

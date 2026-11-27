@@ -8,7 +8,11 @@ import {
   type RestoreFailure,
 } from "@/modules/data-management/application/restore-error";
 import {
-  loadRestoreTransfer,
+  transferBackup,
+  watchArchiveMedia,
+  pendingTransfer,
+  rememberTransfer,
+  cancelBackup,
   prepareBackup,
   type PreparedBackup,
 } from "@/composition/data-restore-browser";
@@ -29,6 +33,7 @@ export function RestoreControls({ ownerId }: { ownerId: string }) {
   const [progress, setProgress] = useState<number | null>(null);
   const [result, setResult] = useState<"success" | RestoreFailure | null>(null);
 
+  useEffect(watchArchiveMedia, [ownerId]);
   useEffect(
     () => () => {
       version.current++;
@@ -53,7 +58,11 @@ export function RestoreControls({ ownerId }: { ownerId: string }) {
     setChecking(true);
     try {
       const data = await prepareBackup(file, ownerId);
-      if (selection === version.current) setBackup({ id: crypto.randomUUID(), data });
+      if (selection === version.current) {
+        const previous = pendingTransfer(data);
+        started.current = previous !== null;
+        setBackup({ id: previous ?? crypto.randomUUID(), data });
+      }
     } catch (error) {
       if (selection === version.current)
         setResult(error instanceof RestoreError ? error.kind : "unavailable");
@@ -71,19 +80,14 @@ export function RestoreControls({ ownerId }: { ownerId: string }) {
     try {
       let outcome;
       if (restore || started.current) {
-        const { requestRestore, restorePreparedBackup } = await loadRestoreTransfer();
         if (controller.signal.aborted) return;
         if (restore) {
           started.current = true;
-          outcome = await restorePreparedBackup(
-            backup.id,
-            backup.data,
-            controller.signal,
-            setProgress,
-          );
+          rememberTransfer(backup.data, backup.id);
+          outcome = await transferBackup(backup.id, backup.data, controller.signal, setProgress);
         } else {
           try {
-            outcome = await requestRestore({ action: "cancel", id: backup.id }, controller.signal);
+            outcome = await cancelBackup(backup.id, backup.data, controller.signal);
           } catch (error) {
             // An absent or expired upload does not prevent discarding the preview.
             if (!(error instanceof RestoreError && error.kind === "conflict")) throw error;
@@ -91,6 +95,7 @@ export function RestoreControls({ ownerId }: { ownerId: string }) {
         }
       }
       if (controller.signal.aborted) return;
+      rememberTransfer(backup.data, null);
       setBackup(null);
       setConfirmation("");
       started.current = false;
@@ -123,7 +128,7 @@ export function RestoreControls({ ownerId }: { ownerId: string }) {
           id="restore-file"
           ref={fileInput}
           type="file"
-          accept=".json,.csv,application/json,text/csv"
+          accept=".lexora,.json,.csv,application/json,text/csv"
           className="max-w-full py-1 file:me-3 file:min-h-11 file:cursor-pointer file:rounded-(--radius-control) file:border-0 file:bg-(--color-accent) file:px-3 file:font-semibold file:text-(--color-on-accent)"
           disabled={checking || progress !== null}
           onChange={(event) => void select(event.target.files?.[0])}
@@ -147,6 +152,9 @@ export function RestoreControls({ ownerId }: { ownerId: string }) {
               reviews: backup.data.counts.review_logs,
             })}
           </p>
+          {"manifest" in backup.data && (
+            <p>{t("audioCount", { count: backup.data.audio.length })}</p>
+          )}
           <p id="restore-warning" className="text-sm font-medium">
             {t("warning")}
           </p>

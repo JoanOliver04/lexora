@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const { complete } = vi.hoisted(() => ({ complete: vi.fn() }));
 vi.mock("@/composition/identity", () => ({ completeAuthCallback: complete }));
+const { verify } = vi.hoisted(() => ({ verify: vi.fn() }));
+vi.mock("@/composition/account-deletion", () => ({ completeDeletionGoogleChallenge: verify }));
 vi.mock("@/env/client", () => ({ clientEnv: { NEXT_PUBLIC_SITE_URL: "https://lexora.example" } }));
 import { GET } from "./route";
 
@@ -43,6 +45,27 @@ describe("PKCE callback trust boundary", () => {
     );
     expect(response.headers.get("location")).toBe("https://lexora.example/en/app");
     expect(complete).toHaveBeenCalledWith("synthetic-code");
+  });
+  it("binds Google deletion returns to the pending browser and owner before showing confirmation", async () => {
+    const query = {
+      code: "synthetic-code",
+      flow: "deletion-google",
+      locale: "en",
+      next: "/en/app/library",
+    };
+    const missing = await GET(request(query));
+    expect(missing.headers.get("location")).toContain("/en/app/settings?verification=failed");
+    expect(complete).not.toHaveBeenCalled();
+    const callback = request(query);
+    callback.cookies.set("lexora-deletion-google", "synthetic-challenge");
+    verify.mockResolvedValueOnce(false);
+    expect((await GET(callback)).headers.get("location")).toContain("verification=failed");
+    verify.mockResolvedValueOnce(true);
+    const verified = await GET(callback);
+    expect(verify).toHaveBeenCalledWith("synthetic-code", "synthetic-challenge");
+    expect(complete).not.toHaveBeenCalled();
+    expect(verified.headers.get("location")).toBe("https://lexora.example/en/app/settings");
+    expect(verified.cookies.get("lexora-deletion-google")?.value).toBe("");
   });
   it("preserves an internal destination and ignores forged request hosts", async () => {
     const response = await GET(

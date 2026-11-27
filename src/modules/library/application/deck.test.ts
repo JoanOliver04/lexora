@@ -8,7 +8,7 @@ import {
   type DeckRepository,
   listDecks,
   removeConceptFromDeck,
-  reorderDecks,
+  moveDeck,
   restoreDeck,
   searchDecks,
   updateDeck,
@@ -46,7 +46,7 @@ function fakeRepository(overrides: Partial<DeckRepository> = {}): DeckRepository
     addConcept: vi.fn().mockResolvedValue(undefined),
     removeConcept: vi.fn().mockResolvedValue(undefined),
     listConcepts: vi.fn().mockResolvedValue([]),
-    reorder: vi.fn().mockResolvedValue(undefined),
+    move: vi.fn().mockResolvedValue(undefined),
     search: vi.fn().mockResolvedValue({ items: [persistedDeck], total: 1 }),
     countConceptsByDeck: vi.fn().mockResolvedValue({}),
     ...overrides,
@@ -160,21 +160,22 @@ describe("listDecks", () => {
   });
 });
 
-describe("reorderDecks", () => {
-  it("delega el orden completo en el repositorio", async () => {
+describe("moveDeck", () => {
+  it("delega el movimiento relativo en el repositorio", async () => {
     const repository = fakeRepository();
-    await reorderDecks(repository, "user-1", "course-1", ["deck-3", "deck-1", "deck-2"]);
-    expect(repository.reorder).toHaveBeenCalledWith({
+    await moveDeck(repository, "user-1", "course-1", "deck-3", "up");
+    expect(repository.move).toHaveBeenCalledWith({
       ownerId: "user-1",
       courseId: "course-1",
-      deckIds: ["deck-3", "deck-1", "deck-2"],
+      deckId: "deck-3",
+      direction: "up",
     });
   });
 
   it("rechaza un identificador de usuario vacío", async () => {
     const repository = fakeRepository();
-    await expect(reorderDecks(repository, "  ", "course-1", ["deck-1"])).rejects.toThrow();
-    expect(repository.reorder).not.toHaveBeenCalled();
+    await expect(moveDeck(repository, "  ", "course-1", "deck-1", "down")).rejects.toThrow();
+    expect(repository.move).not.toHaveBeenCalled();
   });
 });
 

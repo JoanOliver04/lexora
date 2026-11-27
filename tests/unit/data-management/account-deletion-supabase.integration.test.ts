@@ -6,6 +6,7 @@ vi.mock("server-only", () => ({}));
 import {
   createSupabaseAccountDeletionGateway,
   readOwnDeletionFactors,
+  drainConfirmedDeletion,
 } from "@/modules/data-management/infrastructure/supabase-account-deletion";
 import { createSupabaseProfileRepository } from "@/modules/identity/infrastructure/supabase-profile-repository";
 import { MissingAuthOwnerError } from "@/modules/identity/application/ensure-profile";
@@ -67,6 +68,7 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
     let a: SupabaseClient<Database>,
       b: SupabaseClient<Database>,
       mfa: SupabaseClient<Database>,
+      media: SupabaseClient<Database>,
       anon: SupabaseClient<Database>,
       make: () => SupabaseClient<Database>;
     const users: { id: string; email: string; password: string }[] = [];
@@ -83,8 +85,9 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
       a = make();
       b = make();
       mfa = make();
+      media = make();
       anon = make();
-      for (const client of [a, b, mfa]) {
+      for (const client of [a, b, mfa, media]) {
         const email = `delete-${randomUUID()}@example.com`,
           password = randomUUID();
         const auth = await checked(client.auth.signUp({ email, password }));
@@ -110,7 +113,7 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
           throw new Error("Unsafe fixture cleanup");
         sql(`delete from auth.users where id='${user.id}' and email='${user.email}';`);
       }
-      for (const client of [a, b, mfa, anon]) await client?.auth.signOut();
+      for (const client of [a, b, mfa, media, anon]) await client?.auth.signOut();
     });
     it("does not invoke deletion for an unauthenticated caller, another email or wrong password", async () => {
       const user = users[0]!,
@@ -254,7 +257,7 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
       ).toEqual({ ok: true });
       expect(sql(`select count(*) from auth.users where id='${owner}';`)).toBe("0");
       expect(sql(`select count(*) from auth.sessions where user_id='${owner}';`)).toBe("0");
-      for (const entity of [
+      const ownedTables = [
         "courses",
         "decks",
         "concepts",
@@ -268,8 +271,13 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
         "import_jobs",
         "import_job_errors",
         "account_export_requests",
-      ] as const)
-        expect(sql(`select count(*) from public.${entity} where owner_id='${owner}';`)).toBe("0");
+      ] as const;
+      const counts = sql(
+        ownedTables
+          .map((table) => `select count(*) from public.${table} where owner_id='${owner}'`)
+          .join(" union all "),
+      ).split(/\r?\n/);
+      expect(counts).toEqual(ownedTables.map(() => "0"));
       expect(sql(`select count(*) from public.course_settings where user_id='${owner}';`)).toBe(
         "0",
       );
@@ -287,6 +295,70 @@ describe.skipIf(process.env["LEXORA_DB_TESTS"] !== "1")(
         (await a.auth.signInWithPassword({ email: user.email, password: user.password })).error,
       ).not.toBeNull();
       await stale.auth.signOut();
+    });
+    it("interrupts physical cleanup after the first object and resumes from a new session", async () => {
+      const user = users[3]!;
+      const course = (await checked(media.from("courses").select("id").single()))!.id;
+      const paths = ["a", "b"].map((letter) => `${user.id}/${course}/${letter.repeat(64)}`);
+      const bucket = media.storage.from("study-audio");
+      try {
+        for (const path of paths)
+          await checked(
+            bucket.upload(path, new Uint8Array([1, 2, 3]), { contentType: "audio/mpeg" }),
+          );
+        const input = { ...user, confirmation: "DELETE" as const, acknowledged: true as const };
+        await createSupabaseAccountDeletionGateway(media).reauthenticateAndDelete({
+          ...input,
+          password: "Incorrect-password-123",
+        });
+        expect((await bucket.download(paths[0]!)).error).toBeNull();
+        expect((await bucket.download(paths[1]!)).error).toBeNull();
+        const originalRemove = bucket.remove.bind(bucket);
+        const bucketSelection = vi.spyOn(media.storage, "from").mockReturnValue(bucket);
+        const partial = vi.spyOn(bucket, "remove").mockImplementation(async (names) => {
+          await checked(originalRemove(names.slice(0, 1)));
+          throw new Error("Synthetic disconnect after first physical deletion");
+        });
+        try {
+          expect(
+            await createSupabaseAccountDeletionGateway(media).reauthenticateAndDelete(input),
+          ).toEqual({ ok: false, error: "cleanup-pending" });
+        } finally {
+          partial.mockRestore();
+          bucketSelection.mockRestore();
+        }
+        expect(await checked(media.rpc("own_account_deletion_pending"))).toBe(true);
+        expect(await checked(media.rpc("pending_own_account_audio"))).toEqual([paths[1]]);
+        expect(await checked(media.from("profiles").select("id"))).toEqual([]);
+        expect(await checked(media.from("courses").select("id"))).toEqual([]);
+        await checked(
+          media
+            .from("profiles")
+            .upsert({ id: user.id }, { onConflict: "id", ignoreDuplicates: true }),
+        );
+        expect(await checked(media.from("profiles").select("id"))).toEqual([]);
+        expect(
+          (await bucket.upload(paths[0]!, new Uint8Array([4]), { contentType: "audio/mpeg" }))
+            .error,
+        ).not.toBeNull();
+        expect(await checked(b.rpc("pending_own_account_audio"))).toEqual([]);
+        expect((await b.rpc("finish_own_account_deletion")).error?.code).toBe("22023");
+        const resumed = make();
+        const login = await resumed.auth.signInWithPassword({
+          email: user.email,
+          password: user.password,
+        });
+        expect(login.error).toBeNull();
+        expect(await drainConfirmedDeletion(resumed)).toEqual({ ok: true });
+        expect(sql(`select count(*) from auth.users where id='${user.id}'`)).toBe("0");
+        expect(
+          sql(
+            `select count(*) from storage.objects where bucket_id='study-audio' and name like '${user.id}/%'`,
+          ),
+        ).toBe("0");
+      } finally {
+        await bucket.remove(paths);
+      }
     });
     it("requires MFA and deletes using the second of two real verified TOTP factors", async () => {
       const user = users[2]!;

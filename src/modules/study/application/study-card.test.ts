@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { DailyQueueRepository } from "./daily-queue";
+import { queueFixture } from "../../../../tests/unit/study/queue-fixture";
 import type { StudySession, StudySessionRepository } from "./study-session";
 import { StudyError } from "./study-error";
 import {
@@ -27,7 +27,7 @@ function repositories() {
     get: vi.fn().mockResolvedValue(session),
     create: vi.fn(),
   };
-  const queue: DailyQueueRepository = {
+  const queue = queueFixture({
     getCourseLimits: vi.fn().mockResolvedValue({ dailyNewLimit: 2, maximumReviewsPerDay: 1 }),
     listEligibleItems: vi.fn().mockResolvedValue([
       { practiceItemId: "new", phase: null, dueAt: null, learningStateId: null, revision: null },
@@ -40,7 +40,7 @@ function repositories() {
       },
     ]),
     countTodayActivity: vi.fn().mockResolvedValue({ newIntroduced: 0, reviewsDone: 0 }),
-  };
+  });
   const cards: StudyCardRepository = {
     findContent: vi.fn().mockResolvedValue({
       conceptId: "review-concept",
@@ -112,10 +112,6 @@ describe("getStudySessionCard", () => {
       ownerId: "owner",
       courseId: "saved-course",
       deckIds: ["saved-deck"],
-      reviewPriority: {
-        at: new Date("2026-10-05T22:00:00Z"),
-        dueThrough: new Date("2026-10-06T10:00:00Z"),
-      },
     });
     expect(JSON.stringify(result)).not.toContain("Secret");
     expect(sessions.create).not.toHaveBeenCalled();

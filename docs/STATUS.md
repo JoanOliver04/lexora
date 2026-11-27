@@ -1,5 +1,12 @@
 # Lexora — Estado actual
 
+## Correcciones de integridad de noviembre de 2026
+
+Los mazos EOI distinguen una pregunta nueva de una pregunta recuperada y comprueban la versión del mazo antes de aceptar una edición. En el editor se recupera el borrador de la pestaña y en Listening se conserva el intento hasta reiniciarlo. Los CSV piden confirmar si son de Grammar o Vocabulary. Las fuentes de un curso se pueden buscar y compartir.
+
+Ajustes ofrece una copia por partes con audios verificables, accesible desde el primer inicio de sesión. La baja puede reanudarse si se interrumpe y admite confirmación con Google. Hoy calcula los totales en PostgreSQL y la biblioteca reordena mazos en una transacción. Las instrucciones de recuperación están en la [guía de copias](DATA_EXPORT.md).
+
+
 **Mazos de destrezas B1.** El estudio programado y la práctica libre admiten preguntas con variantes, lecturas compartidas, producción oral y escrita y modelos de audio privados. El editor permite previsualizar, importar y actualizar un mazo por sus identificadores. El simulacro de Listening agrupa preguntas por grabación y ofrece dos escuchas por bloque. [Guía de importación](IMPORT_FORMAT.md#mazos-de-destrezas-b1).
 
 **LEX-23.15 · Corregir una tarjeta durante el repaso.** Tras revelar la

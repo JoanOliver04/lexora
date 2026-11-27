@@ -1,11 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { QueueCandidate } from "@/modules/study/domain/queue";
-import type { DailyQueueRepository } from "./daily-queue";
+import { queueFixture } from "../../../../tests/unit/study/queue-fixture";
 import { getTodayOverview, type TodayOverviewRepository } from "./today-overview";
 
 const NOW = new Date("2026-10-06T10:00:00.000Z");
-const REVIEW_PRIORITY = { at: new Date("2026-10-05T22:00:00Z"), dueThrough: NOW };
 const input = { ownerId: "owner-a", courseId: "course-a", now: NOW, timeZone: "Europe/Madrid" };
 
 function candidate(
@@ -23,13 +22,12 @@ function candidate(
 }
 
 function repositories() {
-  const queue: DailyQueueRepository = {
+  const queue = queueFixture({
     getCourseLimits: vi.fn().mockResolvedValue({ dailyNewLimit: 2, maximumReviewsPerDay: 2 }),
     listEligibleItems: vi.fn().mockResolvedValue([]),
     countTodayActivity: vi.fn().mockResolvedValue({ newIntroduced: 0, reviewsDone: 0 }),
-  };
+  });
   const history: TodayOverviewRepository = {
-    getDifficultySignals: vi.fn().mockResolvedValue([]),
     listRecentDurations: vi.fn().mockResolvedValue([]),
   };
   return { queue, history };
@@ -39,24 +37,15 @@ describe("getTodayOverview", () => {
   it("uses the same eligible queue and limits, including hidden work", async () => {
     const { queue, history } = repositories();
     const future = new Date("2026-10-06T10:10:00.000Z");
-    vi.mocked(queue.listEligibleItems).mockResolvedValue([
-      candidate("learning", "learning"),
-      candidate("relearning", "relearning"),
-      candidate("future", "learning", future),
-      candidate("r1", "review"),
-      candidate("r2", "review"),
-      candidate("r3", "review"),
-      candidate("recognition", null, null),
-      candidate("recall", "new"),
-      candidate("n3", null, null),
-    ]);
     vi.mocked(queue.countTodayActivity).mockResolvedValue({ newIntroduced: 1, reviewsDone: 1 });
-    vi.mocked(history.getDifficultySignals).mockResolvedValue([
-      { practiceItemId: "future", lapses: 3, recentRatings: [] },
-      { practiceItemId: "r3", lapses: 0, recentRatings: ["again", "good", "again"] },
-      { practiceItemId: "r1", lapses: 0, recentRatings: ["hard", "hard", "hard"] },
-      { practiceItemId: "outside-scope", lapses: 10, recentRatings: [] },
-    ]);
+    vi.mocked(queue.countEligibleItems).mockResolvedValue({
+      learningDue: 2,
+      reviewsDue: 3,
+      newItems: 3,
+      difficultItems: 2,
+      nextDueAt: future,
+      nextLearningDueAt: future,
+    });
     const result = await getTodayOverview(queue, history, { ...input, deckIds: ["deck-a"] });
     expect(result).toEqual({
       ok: true,
@@ -73,27 +62,11 @@ describe("getTodayOverview", () => {
         estimate: { source: "fallback", sampleSize: 0, perReviewMs: 30_000, totalMs: 120_000 },
       },
     });
-    expect(queue.listEligibleItems).toHaveBeenCalledExactlyOnceWith({
-      ownerId: "owner-a",
-      courseId: "course-a",
-      deckIds: ["deck-a"],
-      reviewPriority: REVIEW_PRIORITY,
-    });
-    expect(history.getDifficultySignals).toHaveBeenCalledWith({
-      ownerId: "owner-a",
-      practiceItemIds: [
-        "learning",
-        "relearning",
-        "future",
-        "r1",
-        "r2",
-        "r3",
-        "recognition",
-        "recall",
-        "n3",
-      ],
-      now: NOW,
-    });
+    expect(queue.countEligibleItems).toHaveBeenCalledExactlyOnceWith(
+      { ownerId: input.ownerId, courseId: input.courseId, deckIds: ["deck-a"], now: NOW },
+      true,
+    );
+    expect(queue.listAvailableEntries).not.toHaveBeenCalled();
   });
 
   it("does not claim all work is finished when limits exhaust the queue", async () => {
@@ -115,21 +88,16 @@ describe("getTodayOverview", () => {
     });
   });
 
-  it("counts separate competencies and avoids double-counting a difficult item", async () => {
+  it("uses the scoped difficulty count independently of available work", async () => {
     const { queue, history } = repositories();
-    vi.mocked(queue.listEligibleItems).mockResolvedValue([
-      candidate("recognition", null),
-      candidate("recall", null),
-    ]);
-    const signal = {
-      practiceItemId: "recall",
-      lapses: 3,
-      recentRatings: ["again", "again"] as const,
-    };
-    vi.mocked(history.getDifficultySignals).mockResolvedValue([
-      { ...signal, recentRatings: [...signal.recentRatings] },
-      { ...signal, recentRatings: [...signal.recentRatings] },
-    ]);
+    vi.mocked(queue.countEligibleItems).mockResolvedValue({
+      learningDue: 0,
+      reviewsDue: 0,
+      newItems: 2,
+      difficultItems: 1,
+      nextDueAt: null,
+      nextLearningDueAt: null,
+    });
     const result = await getTodayOverview(queue, history, input);
     expect(result.ok && result.overview).toMatchObject({ newAvailable: 2, difficultItems: 1 });
   });
@@ -168,9 +136,8 @@ describe("getTodayOverview", () => {
       ownerId: "owner-a",
       courseId: "course-a",
       deckIds: [],
-      reviewPriority: REVIEW_PRIORITY,
     });
-    expect(history.getDifficultySignals).not.toHaveBeenCalled();
+    expect(queue.listAvailableEntries).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -203,7 +170,7 @@ describe("getTodayOverview", () => {
       ok: false,
       reason: "not-found",
     });
-    expect(history.getDifficultySignals).not.toHaveBeenCalled();
+    expect(queue.listAvailableEntries).not.toHaveBeenCalled();
     expect(history.listRecentDurations).not.toHaveBeenCalled();
   });
 

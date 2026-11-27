@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { LearningState, ReviewRating } from "@/modules/study/domain/memory";
 import { V1_SCHEDULER_CONFIG } from "@/modules/study/domain/scheduler-config";
 import type { CommitReviewResult, ReplayLookup, ReviewCommitter } from "./confirm-review";
-import type { DailyQueueRepository } from "./daily-queue";
+import { queueFixture } from "../../../../tests/unit/study/queue-fixture";
 import type { LearningStateRepository, StoredLearningState } from "./learning-state";
 import { saveSessionReview } from "./save-session-review";
 import type { SpacedRepetitionScheduler } from "./spaced-repetition-scheduler";
@@ -55,7 +55,7 @@ function fixture() {
     get: vi.fn().mockResolvedValue(session),
     create: vi.fn(),
   };
-  const queue: DailyQueueRepository = {
+  const queue = queueFixture({
     getCourseLimits: vi.fn().mockResolvedValue({ dailyNewLimit: 5, maximumReviewsPerDay: null }),
     listEligibleItems: vi.fn(async () => [
       {
@@ -67,7 +67,7 @@ function fixture() {
       },
     ]),
     countTodayActivity: vi.fn(async () => ({ newIntroduced: logs.size, reviewsDone: 0 })),
-  };
+  });
   const cards: StudyCardRepository = {
     findContent: vi.fn().mockResolvedValue({
       mode: "basic_recall",

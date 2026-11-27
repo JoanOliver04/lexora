@@ -136,6 +136,7 @@ export interface ImportDuplicateMatch {
   rowNumber: number;
   canonicalKey: string;
   existingTitles: string[];
+  independentVocabulary?: boolean | undefined;
 }
 export interface ImportPersistenceRecordValid {
   kind: "valid";
@@ -230,6 +231,7 @@ export const importTransferResponseSchema = z.union([
               rowNumber,
               canonicalKey: text(400),
               existingTitles: z.array(text(200)).max(3),
+              independentVocabulary: z.boolean().optional(),
             })
             .strict(),
         )

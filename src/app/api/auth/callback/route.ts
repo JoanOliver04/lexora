@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+import { completeDeletionGoogleChallenge } from "@/composition/account-deletion";
 import { completeAuthCallback } from "@/composition/identity";
 import { resolveSafeRedirect } from "@/modules/identity/application/safe-redirect";
 import { routing } from "@/i18n/routing";
@@ -19,7 +20,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const flow = url.searchParams.get("flow");
-  const google = flow === "google";
+  const deletion = flow === "deletion-google";
+  const google = flow === "google" || deletion;
   const signup = flow === "signup";
 
   const rawLocale = url.searchParams.get("locale") ?? routing.defaultLocale;
@@ -33,6 +35,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   );
   const origin = clientEnv.NEXT_PUBLIC_SITE_URL;
   const failure = () => {
+    if (deletion) return deletionReturn(origin, locale, true);
     if (signup) {
       const register = new URL(`/${locale}/signup`, origin);
       register.searchParams.set("error", "confirmation-invalid");
@@ -47,6 +50,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   if (url.searchParams.has("error") || !code || code.length > 2048) return failure();
   try {
+    const nonce = request.cookies.get("lexora-deletion-google")?.value;
+    if (deletion) {
+      if (!nonce || !(await completeDeletionGoogleChallenge(code, nonce))) return failure();
+      return deletionReturn(origin, locale, false);
+    }
     if (!(await completeAuthCallback(code))) return failure();
   } catch {
     return failure();
@@ -59,5 +67,13 @@ function redirectWithoutCache(destination: URL): NextResponse {
   const response = NextResponse.redirect(destination);
   response.headers.set("Cache-Control", "no-store, max-age=0");
   response.headers.set("Referrer-Policy", "no-referrer");
+  return response;
+}
+
+function deletionReturn(origin: string, locale: string, failed: boolean): NextResponse {
+  const destination = new URL(`/${locale}/app/settings`, origin);
+  if (failed) destination.searchParams.set("verification", "failed");
+  const response = redirectWithoutCache(destination);
+  response.cookies.set("lexora-deletion-google", "", { path: "/api/auth/callback", maxAge: 0 });
   return response;
 }

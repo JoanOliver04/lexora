@@ -6,23 +6,31 @@
 
 ## Decisión
 
-Una RPC pública SECURITY INVOKER llama a una única función privada SECURITY
-DEFINER. Esta es una excepción deliberada al uso ordinario de INVOKER: necesita
-eliminar exclusivamente la fila de `auth.users` identificada por `auth.uid()`.
-No admite un ID de propietario ni SQL dinámico. Fija `search_path` vacío y nombres
-de esquema explícitos; solo `authenticated` puede ejecutarla. No se concede
-DELETE sobre Auth ni CREATE en el esquema privado a clientes.
+Las RPC de borrado se ejecutan como SECURITY INVOKER y delegan las operaciones
+privilegiadas en funciones privadas con `search_path` vacío. Obtienen el
+propietario de `auth.uid()`. La aplicación utiliza la sesión de la propia cuenta
+para acceder a Storage.
 
-Exige confirmación literal, correo propio y una sesión de Auth existente, del
-mismo usuario, no vencida y creada hace menos de cinco minutos. No usa el `iat`
-de un token renovado como prueba de reautenticación. Con un factor verificado
-exige `aal2`. El flujo web verifica la contraseña otra vez y, si corresponde,
-un código TOTP antes de llamar a la RPC. Otros métodos MFA no se omiten.
+La confirmación exige el correo propio, la palabra `DELETE` y una sesión de Auth
+vigente creada en los últimos cinco minutos. Una cuenta con contraseña vuelve a
+introducirla. Para Google, la app abre el selector del proveedor con PKCE y
+vincula un desafío de un solo uso al propietario y a su sesión inicial. El
+retorno debe aportar la cookie del desafío, el mismo propietario y una sesión
+OAuth nueva. Cuando hay un factor verificado, la interfaz pide TOTP y la base
+de datos exige `aal2` al confirmar.
 
-Auth y todos los datos de aplicación se eliminan en una transacción mediante
-las FK existentes. Una repetición con un JWT firmado de la identidad ya borrada
-devuelve éxito sin tocar ninguna otra identidad. Los JWT antiguos no recuperan
-el perfil: la FK hacia Auth rechaza su recreación y el layout termina en login.
+La confirmación registra la operación y elimina el perfil y sus datos
+relacionados en una transacción. Un bloqueo del curso coordina las subidas
+concurrentes. Si ya no hay objetos físicos, se elimina también la identidad de
+Auth. Si quedan audios, el propietario puede usar la identidad para terminar
+la limpieza. Un trigger impide recrear su perfil mientras tanto.
+
+La API de Storage retira los objetos en lotes. Cada reintento consulta los
+objetos restantes. La pantalla de cuenta pendiente permite reanudar el borrado
+después de cerrar el navegador o iniciar una nueva sesión. La última fase
+confirma que el prefijo del propietario está vacío y elimina su identidad y el
+registro pendiente. La FK hacia Auth sigue impidiendo que un JWT antiguo
+recree el perfil de una cuenta eliminada.
 
 ## Alternativas
 
@@ -41,8 +49,8 @@ sintéticas locales y comprueba primero una exportación. Se valida el rollback
 ante un fallo de cascada, el aislamiento A/B, sesiones antiguas/ajenas/vencidas,
 MFA y una pestaña con token anterior al borrado.
 
-Retirar la interfaz y las dos funciones revierte la capacidad. Una eliminación
-confirmada por el propietario es irreversible desde la app; no se presenta la
-exportación JSON/CSV como restauración completa de Auth. Backups y logs de los
-proveedores siguen su política independiente. No se borran cuentas reales para
-probar el despliegue ni se implanta una purga automática de contenido.
+La comprobación local incluye una interrupción después de retirar el primer
+audio, la reanudación desde una sesión nueva y el cierre de Auth. Las pruebas
+de Google comprueban el desafío, la caducidad y el segundo factor con
+identidades sintéticas. Los registros técnicos y las copias de los proveedores
+siguen sus propios plazos de conservación.

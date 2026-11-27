@@ -10,11 +10,17 @@ import type {
 export async function readOwnDeletionFactors(
   client: SupabaseClient<Database>,
 ): Promise<AccountDeletionFactors | null> {
-  // listFactors uses a live Auth getUser; only the session owner's factors return.
-  const result = await client.auth.mfa.listFactors();
-  if (result.error) return null;
-  const verified = result.data.all.filter((f) => f.status === "verified");
+  const { data, error } = await client.auth.getUser();
+  if (error || !data.user) return null;
+  const identities = data.user.identities ?? [];
+  const google = identities.some((identity) => identity.provider === "google");
+  const proof = google ? await client.rpc("own_deletion_google_verified") : null;
+  if (proof?.error) return null;
+  const verified = (data.user.factors ?? []).filter((factor) => factor.status === "verified");
   return {
+    google,
+    password: identities.some((identity) => identity.provider === "email"),
+    googleVerified: proof?.data === true,
     requiresMfa: verified.length > 0,
     factors: verified
       .filter((f) => f.factor_type === "totp")
@@ -33,22 +39,29 @@ export function createSupabaseAccountDeletionGateway(
       if (current.error || !user?.email) return { ok: false, error: "unauthenticated" };
       if (user.email.toLowerCase() !== input.email)
         return { ok: false, error: "invalid-credentials" };
-      const reauth = await client.auth.signInWithPassword({
-        email: user.email,
-        password: input.password,
-      });
-      if (reauth.error)
-        return {
-          ok: false,
-          error:
-            reauth.error.status === 429
-              ? "cooldown"
-              : reauth.error.status === 400
-                ? "invalid-credentials"
-                : "unavailable",
-        };
-      if (reauth.data.user.id !== user.id || !reauth.data.session)
-        return { ok: false, error: "unauthenticated" };
+      if ("method" in input) {
+        if (!user.identities?.some((identity) => identity.provider === "google"))
+          return { ok: false, error: "reauth-required" };
+        const proof = await client.rpc("own_deletion_google_verified");
+        if (proof.error || !proof.data) return { ok: false, error: "reauth-required" };
+      } else {
+        const reauth = await client.auth.signInWithPassword({
+          email: user.email,
+          password: input.password,
+        });
+        if (reauth.error)
+          return {
+            ok: false,
+            error:
+              reauth.error.status === 429
+                ? "cooldown"
+                : reauth.error.status === 400
+                  ? "invalid-credentials"
+                  : "unavailable",
+          };
+        if (reauth.data.user.id !== user.id || !reauth.data.session)
+          return { ok: false, error: "unauthenticated" };
+      }
       const factors = await client.auth.mfa.listFactors();
       if (factors.error) return { ok: false, error: "unavailable" };
       const verified = factors.data.all.filter((f) => f.status === "verified");
@@ -67,21 +80,6 @@ export function createSupabaseAccountDeletionGateway(
         if (challenge.error)
           return { ok: false, error: challenge.error.status === 429 ? "cooldown" : "mfa-required" };
       }
-      // Storage objects must be removed through its API to delete the backing bytes.
-      // Reauthentication and the optional second factor have both completed.
-      const audio = client.storage.from("study-audio");
-      for (;;) {
-        const folders = await audio.list(user.id, { limit: 100 });
-        if (folders.error) return { ok: false, error: "unavailable" };
-        if (!folders.data.length) break;
-        for (const folder of folders.data) {
-          const prefix = user.id + "/" + folder.name;
-          const objects = await audio.list(prefix, { limit: 100 });
-          if (objects.error || !objects.data.length) return { ok: false, error: "unavailable" };
-          const removed = await audio.remove(objects.data.map((o) => prefix + "/" + o.name));
-          if (removed.error) return { ok: false, error: "unavailable" };
-        }
-      }
       const result = await client
         .rpc("delete_own_account", {
           p_email: input.email,
@@ -98,15 +96,43 @@ export function createSupabaseAccountDeletionGateway(
                 ? "mfa-required"
                 : "unavailable",
         };
+      if (result.data === false) return drainConfirmedDeletion(client);
       if (result.data !== true) return { ok: false, error: "unavailable" };
-      // Deletion has committed. A stale Auth logout response must not turn it into
-      // an apparent failed delete; signOut removes the local SSR session as well.
-      try {
-        await client.auth.signOut({ scope: "local" });
-      } catch {
-        /* already deleted */
-      }
-      return { ok: true };
+      return signedOutAfterDeletion(client);
     },
   };
+}
+
+// The HTTP caller can only resume the durable, already confirmed deletion of its
+// own identity. Stop after a bounded batch run so later requests can resume.
+export async function drainConfirmedDeletion(
+  client: SupabaseClient<Database>,
+): Promise<AccountDeletionResult> {
+  try {
+    for (let batch = 0; batch < 8; batch++) {
+      const remaining = await client.rpc("pending_own_account_audio");
+      if (remaining.error || !remaining.data) break;
+      if (!remaining.data.length) {
+        const finished = await client.rpc("finish_own_account_deletion");
+        if (!finished.error && finished.data === true) return signedOutAfterDeletion(client);
+        break;
+      }
+      const removed = await client.storage.from("study-audio").remove(remaining.data);
+      if (removed.error || !removed.data?.length) break;
+    }
+  } catch {
+    // The next request rereads Storage metadata, including partially removed batches.
+  }
+  return { ok: false, error: "cleanup-pending" };
+}
+
+async function signedOutAfterDeletion(
+  client: SupabaseClient<Database>,
+): Promise<AccountDeletionResult> {
+  try {
+    await client.auth.signOut({ scope: "local" });
+  } catch {
+    // Auth deletion has already committed.
+  }
+  return { ok: true };
 }

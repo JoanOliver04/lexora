@@ -14,6 +14,26 @@ for (const locale of ["es", "en"] as const)
     // Backup, four layout variants, two Auth attempts, stale context and login.
     test.setTimeout(60000);
     const email = await signUp(page);
+    await page.goto(`/${locale}/onboarding`);
+    await page
+      .getByRole("link", {
+        name: locale === "es" ? "Gestionar mi cuenta y mis datos" : "Manage my account and data",
+      })
+      .click();
+    await expect(page).toHaveURL(`/${locale}/app/settings`);
+    await expect(
+      page.getByRole("heading", {
+        name: locale === "es" ? "Eliminar tu cuenta" : "Delete your account",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: locale === "es" ? "Curso activo" : "Active course" }),
+    ).toHaveCount(0);
+    await page
+      .getByRole("link", {
+        name: locale === "es" ? "Volver a la configuración del curso" : "Back to course setup",
+      })
+      .click();
     await completeOnboarding(page, { uiLocale: locale });
     const { url, publishableKey } = localBackend();
     const client = createClient(url, publishableKey, {
@@ -121,3 +141,45 @@ for (const locale of ["es", "en"] as const)
       await client.auth.signOut();
     }
   });
+
+test("a fresh browser session resumes an interrupted media deletion", async ({ page }) => {
+  const { url, publishableKey } = localBackend();
+  const client = createClient(url, publishableKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const email = await signUp(page);
+  await completeOnboarding(page, { uiLocale: "en" });
+  const { data, error } = await client.auth.signInWithPassword({ email, password: PASSWORD });
+  if (error || !data.user) throw new Error("Local synthetic session required");
+  const course = await client.from("courses").select("id").single();
+  if (course.error || !course.data) throw new Error("Expected a local synthetic course");
+  const path = `${data.user.id}/${course.data.id}/${"a".repeat(64)}`;
+  const bucket = client.storage.from("study-audio");
+  try {
+    expect(
+      (await bucket.upload(path, new Uint8Array([1, 2, 3]), { contentType: "audio/mpeg" })).error,
+    ).toBeNull();
+    // Simulate interruption between committed confirmation and Storage cleanup.
+    const confirmed = await client.rpc("delete_own_account", {
+      p_email: email,
+      p_confirmation: "DELETE",
+    });
+    expect(confirmed).toMatchObject({ error: null, data: false });
+    await page.context().clearCookies();
+    await page.goto("/en/login");
+    await page.getByLabel("Email", { exact: true }).fill(email);
+    await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await expect(page).toHaveURL("/en");
+    await page.goto("/en/app/settings");
+    await expect(page.getByRole("heading", { name: "Finish deleting your account" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Download JSON" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Resume deletion" }).click();
+    await expect(page).toHaveURL("/en/login?deleted=1");
+    expect((await client.auth.getUser()).error).not.toBeNull();
+  } finally {
+    await bucket.remove([path]);
+    await client.rpc("finish_own_account_deletion");
+    await client.auth.signOut();
+  }
+});

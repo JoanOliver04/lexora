@@ -213,11 +213,11 @@
     },
     "providers": {
       "title": "Services Lexora uses",
-      "body": "Vercel hosts the website and Supabase manages accounts and the database. If you choose Google, we use the basic identity information you authorize to sign you in."
+      "body": "Vercel hosts Lexora. Supabase manages accounts, the database and private storage for model audio that you upload. If you choose Google, we use the basic identity information you authorize to sign you in."
     },
     "retention": {
       "title": "Retention and deletion",
-      "body": "Your courses, preferences and history are kept while you have an account. Lexora stores import results and diagnostics and removes your active data when you delete your account. Operational backups follow their own retention cycle. Downloads you save stay under your control."
+      "body": "Your courses, preferences and history stay in your account. Lexora keeps imported cards and bounded diagnostics from CSV imports. Uploaded model audio is kept in private storage. Microphone recordings for pronunciation practice stay in your browser and are discarded when you leave the exercise. Account deletion removes active account data. Provider backups follow their own retention cycles. Downloads stay under your control."
     },
     "rights": {
       "title": "Your options and rights",
@@ -815,14 +815,17 @@
     "plan": {
       "counts": "{fresh, plural, one {# new} other {# new}} · {duplicates, plural, =0 {no duplicates} one {# possible duplicate} other {# possible duplicates}}",
       "heading": "Duplicates",
-      "intro": "If the front matches a concept you already have (same key), we do not merge them. You choose what to do with those rows; nothing is imported yet.",
+      "intro": "The preview compares each front with the course and the other rows. Vocabulary matching ignores case, repeated spaces and a final pronunciation between slashes. Choose what to do with matches.",
       "skip": "Skip duplicate rows",
       "copy": "Create an independent copy",
-      "updateNote": "We do not update an existing concept: a matching title is not enough to know it is the same card with a different field, and touching what you already study is not safe.",
+      "updateNote": "An independent copy has its own study history.",
       "hitsHeading": "Possible duplicates",
       "hitRow": "Row {row}: {front}",
       "hitExisting": "(already exists: {title})",
-      "hitFile": "(also in rows {rows})"
+      "hitFile": "(also in rows {rows})",
+      "sharedVocabulary": "To share a word between decks and keep its reviews, use the EOI vocabulary editor. You can review its meanings there too.",
+      "openEoi": "Open the EOI editor",
+      "independentVocabulary": "{count, plural, one {One expression already exists in your course and will be imported as an independent copy} other {# expressions already exist in your course and will be imported as independent copies}}. Examples include {examples}."
     },
     "separator": {
       "tab": "tab",
@@ -874,8 +877,8 @@
       "appendTitle": "Add content to {deck}",
       "replaceTitle": "Replace the contents of {deck}",
       "unavailable": "The deck for this import is no longer available.",
-      "appendDuplicates": "Rows with the same front in the file or this deck are skipped.",
-      "replaceDuplicates": "If several rows in the file have the same front, only the first is imported.",
+      "appendDuplicates": "Repeated fronts in the file or this deck are skipped. Vocabulary matching ignores a final pronunciation between slashes.",
+      "replaceDuplicates": "The first occurrence of each front in the file is kept. Vocabulary matching ignores a final pronunciation between slashes.",
       "appendSubmit": "Add to deck",
       "replaceSubmit": "Replace contents",
       "replaceNotice": "When the import finishes, this deck will contain the valid cards from the file. The previous cards and their review history will remain in your library and any other decks they are already in.",
@@ -943,7 +946,8 @@
       "startLevel_invalid": "Choose which level to start from.",
       "dailyNewLimit_notInteger": "Enter a whole number of new items.",
       "dailyNewLimit_outOfRange": "New items per day must be between 0 and 100."
-    }
+    },
+    "accountSettings": "Manage my account and data"
   },
   "Library": {
     "studyDeck": "Review this deck",
@@ -1198,7 +1202,7 @@
     },
     "private": {
       "title": "Personal access",
-      "description": "Lexora is for personal use for now. New account registration is closed."
+      "description": "New accounts can be created with Google when registration is open. Existing accounts can use their usual sign-in method."
     },
     "errors": {
       "email-required": "Enter your email.",
@@ -1208,7 +1212,7 @@
       "invalid-credentials": "That email or password is not correct.",
       "weak-password": "That password is too weak. Try a longer one.",
       "missing-recovery-session": "This recovery link has expired. Request a new one.",
-      "registration-closed": "New account registration is closed.",
+      "registration-closed": "Email registration is unavailable. The sign-up page shows which methods are open.",
       "preview-disabled": "Personal access is disabled in this preview.",
       "auth-unavailable": "We couldn't complete that. Please try again in a moment.",
       "google-unavailable": "We couldn't sign you in with Google. Try again or use your email and password."
@@ -1277,7 +1281,10 @@
   "DataExport": {
     "title": "Keep your data with you",
     "description": "Download your courses, content and saved activity, including archived records. Passwords and credentials are excluded.",
-    "jsonNote": "Restorable backup of your decks, cards, progress, history and preferences.",
+    "archiveName": "Complete Lexora backup",
+    "archiveNote": "Includes your data and the model audio files referenced by your courses. Parts are transferred separately to support larger accounts. Practice recordings stay on your device.",
+    "archive": "Download complete backup",
+    "jsonNote": "Decks, cards, progress, history and preferences. JSON and CSV contain audio references only.",
     "csvNote": "Restorable backup you can also read in a spreadsheet. Keep the original file for restoration.",
     "privacy": "Files contain your unencrypted data. Keep them somewhere private. You can request an export once a minute; a failed download does not produce a partial file.",
     "format": "Download format",
@@ -1292,7 +1299,7 @@
       "unauthenticated": "Sign in again to download your data.",
       "invalid-input": "This download format is invalid. Reload settings and try again.",
       "cooldown": "Wait one minute before requesting another export.",
-      "too-large": "Your data exceeds this version's export limit. No partial file has been downloaded.",
+      "too-large": "Your data exceeds the limit for this format. For JSON or CSV, try Download complete backup.",
       "unavailable": "The download could not be prepared. Your data is still saved; please try again.",
       "interrupted": "Download cancelled. No file has been downloaded.",
       "integrity": "The download did not pass its integrity check. No file has been saved; please try again."
@@ -1300,8 +1307,9 @@
   },
   "DataRestore": {
     "title": "Restore a backup",
-    "description": "Select a JSON or CSV downloaded from Lexora for this account.",
+    "description": "Select the complete backup (.lexora), JSON or CSV downloaded from this account.",
     "file": "Backup file",
+    "audioCount": "{count, plural, one {# audio file} other {# audio files}}",
     "checking": "Checking the backup…",
     "date": "Backup from {date}",
     "counts": "{decks, plural, one {# deck} other {# decks}} · {cards, plural, one {# card} other {# cards}} · {reviews, plural, one {# review} other {# reviews}}",
@@ -1316,7 +1324,7 @@
     "errors": {
       "unauthenticated": "Sign in to your account to restore the backup.",
       "reauthenticate": "To confirm this operation, sign out and sign in again. Then select the backup again.",
-      "invalid": "This file is not a valid restorable backup. Select the original JSON or CSV downloaded from Lexora.",
+      "invalid": "This file is not a valid restorable backup. Select the original file downloaded from Lexora.",
       "integrity": "The backup contents don't match the integrity check. Use the original file.",
       "version": "This version of Lexora doesn't support the backup format.",
       "wrongAccount": "This backup belongs to another account.",
@@ -1342,26 +1350,26 @@
   "DataInformation": {
     "title": "Your data in Lexora",
     "back": "Back to settings",
-    "intro": "This is a personal workspace with public registration closed. Here is what is stored, where it lives and what deletion means.",
+    "intro": "New accounts can be created with Google when registration is open. Existing password accounts can still sign in. Here is what Lexora stores and what happens when you delete your account.",
     "content": {
       "title": "Content and history",
       "body": "Your profile, preferences, courses, cards and review history stay in your account until you change them or delete the account. Archiving hides content without destroying its relationships or history. Reviews are preserved during the life of the account."
     },
     "imports": {
       "title": "Imported files",
-      "body": "The original file is not stored on the server. Import records keep the filename, hash, mapping, counters and bounded error diagnostics for the life of the account. A diagnostic may include up to 500 characters from a row. They are private and deleted with the account."
+      "body": "Lexora imports the rows of a CSV file and keeps its name, hash, column mapping, counters and error details, including up to 500 characters from an affected row. The CSV file itself is discarded. Model audio you upload stays in private Supabase Storage. Pronunciation recordings made with your microphone stay in your browser until you leave the exercise."
     },
     "exports": {
       "title": "Downloads you control",
-      "body": "JSON and CSV backups are checked before download and stored unencrypted on your device. You can restore them to the same account with a recent session. After confirmation, the server stages the data and replaces the contents in one transaction. Pending card imports are stopped. Downloaded copies remain on your device after account deletion."
+      "body": "The complete backup (.lexora) also includes the model audio files in your courses. JSON and CSV store audio references only. All three files are checked before download and stored unencrypted on your device. You can restore them to the same account with a recent session. After confirmation, the server stages the data and replaces the contents in one transaction. Pending card imports are stopped. Downloaded copies remain on your device after account deletion."
     },
     "deletion": {
       "title": "Deleting an account",
-      "body": "Deletion requires your current password, explicit acknowledgment and a recent live Auth session. An enabled second factor must also be verified. The transaction removes the Auth identity and all its application data, including archived content, imports and review events. A failed transaction rolls back. Public registration remains closed afterwards."
+      "body": "Confirm your email and permanent deletion after verifying your password or linked Google account. If you use a second factor, verify it too. Once confirmed, your profile, courses, imports and reviews are deleted. Lexora then removes any uploaded audio and closes your sign-in account. If interrupted, sign in again to finish deletion."
     },
     "providers": {
       "title": "Where the app runs",
-      "body": "Supabase provides authentication and the PostgreSQL database. Vercel hosts and runs the web application. If you choose Google, your identity and basic profile are used to sign in through Supabase, without requesting Gmail or Drive permissions. No learning content is sent to an AI service. This personal delivery adds no content analytics, Sentry or new email provider."
+      "body": "Supabase provides authentication, the PostgreSQL database and private storage for uploaded model audio. Vercel hosts Lexora. Google sign-in uses your basic identity and profile. Lexora does not request Gmail or Drive access or send learning content to an AI service."
     },
     "limits": {
       "title": "Backups and technical logs",
@@ -1372,7 +1380,7 @@
     "title": "Delete your account",
     "description": "Permanently remove your identity and all your Lexora data. Archived content and review history are included.",
     "open": "Review account deletion",
-    "warning": "This cannot be undone in the app. Download anything you want to keep first. Public registration is closed: deleting your personal account does not let you create a replacement here.",
+    "warning": "Download anything you want to keep before confirming. Deletion is permanent. A new account starts with an empty workspace.",
     "email": "Confirm your account email",
     "password": "Your current password",
     "otp": "Authenticator code, if you use two-factor authentication",
@@ -1387,15 +1395,24 @@
     "deleting": "Verifying and deleting…",
     "deleted": "Your account and its active application data have been deleted.",
     "errors": {
-      "invalid-input": "Check your email, password and confirmation. Type DELETE exactly and tick the acknowledgment.",
+      "invalid-input": "Check your email and verification method, type DELETE exactly and tick the acknowledgment.",
       "invalid-credentials": "The email or password could not be verified. No deletion was requested.",
       "unauthenticated": "Sign in again before deleting your account.",
-      "reauth-required": "A recent live session is required. Enter your password again.",
+      "reauth-required": "Verify your account again using your password or the linked Google account.",
       "mfa-required": "A valid authenticator code is required. Accounts using another second-factor method must verify that method before deletion; it will not be bypassed.",
       "cooldown": "Too many verification attempts. Wait a minute before trying again.",
       "unavailable": "Deletion could not be confirmed. Check whether you can still sign in before trying again.",
-      "uncertain": "The connection was interrupted. Deletion may have completed. Check whether you can still sign in before trying again."
-    }
+      "uncertain": "The connection was interrupted. Deletion may have completed. Check whether you can still sign in before trying again.",
+      "cleanup-pending": "Your study data has been deleted. Resume deletion to finish removing uploaded audio and close your account. You can sign in again to continue."
+    },
+    "googleHint": "Verify the Google account linked to Lexora. You will return here to confirm deletion.",
+    "googleVerified": "Google verification is complete. Confirm below within five minutes to delete your account.",
+    "verifyGoogle": "Verify with Google",
+    "googleFailed": "Google verification did not complete for this account. Choose the Google account linked to Lexora and try again.",
+    "pendingTitle": "Finish deleting your account",
+    "resume": "Resume deletion",
+    "retryCleanup": "Cleanup is still pending. Try again to continue from the last completed file.",
+    "signOut": "Sign out"
   },
   "Courses": {
     "title": "My courses",
@@ -1448,7 +1465,9 @@
       "conflict": "Settings changed in another tab or device. Load the current version before saving again.",
       "unavailable": "This course or its settings are no longer available. Load the current version.",
       "generic": "Settings could not be saved. Your changes have not been confirmed; please try again."
-    }
+    },
+    "onboarding": "Back to course setup",
+    "accountIntro": "You can download your data or delete your account before creating a course."
   },
   "Eoi": {
     "removeCard": "Remove card from deck",
@@ -1528,6 +1547,40 @@
     "mediation": "Mediation",
     "pronunciation": "Speaking · Pronunciation",
     "grammar": "Grammar",
-    "vocabulary": "Vocabulary"
+    "vocabulary": "Vocabulary",
+    "draftRestored": "Your draft was recovered in this tab. Check your attachments before saving.",
+    "discardDraft": "Discard draft and open saved version",
+    "restart": "Start a new attempt",
+    "restartConfirm": "Clear your answers and reset the play counts for this attempt?",
+    "csvCategory": "What type of deck is in {file}?",
+    "csvGrammar": "Grammar · question and answer only",
+    "csvVocabulary": "Vocabulary · include reverse cards",
+    "cancelCsv": "Cancel selection",
+    "invalidPrompt": "Check the prompt on card {n}. Enter between 1 and 200 characters.",
+    "invalidAnswer": "Check the answer on card {n}. Enter between 1 and 500 characters.",
+    "errors": {
+      "editor-conflict": "This deck changed in another editor. Download your draft and reopen the saved version.",
+      "preview-changed": "The content changed after preview. Review it again.",
+      "missing-audio": "Attach the audio file for this source before saving.",
+      "audio": "Choose the audio file for the question.",
+      "audioError": "Audio upload failed. Keep your file and try again.",
+      "media-busy": "The file is being updated. Wait a moment and attach it again.",
+      "title-in-use": "A deck in this course already uses that title.",
+      "shared-source-changed": "Another deck uses this source. Use a new key for a different version.",
+      "ambiguous-word": "This word matches multiple concepts. Check its library entries.",
+      "choices": "Check the options and make one of them match the answer.",
+      "evidence": "The evidence must appear in the passage or transcript.",
+      "clip": "Check the start and end of the audio clip.",
+      "duplicate-key": "Each question and source needs its own key.",
+      "duplicate-word": "The same expression occurs more than once in the deck.",
+      "linked-word-changed": "Add a new card for a different word.",
+      "review-meanings": "Shorten the combined definitions before saving.",
+      "course-changed": "The active course changed. Reopen the editor in the correct course."
+    },
+    "restoreKeys": "This will restore {n} retired questions and their study history because their keys match. Change their keys to create new questions.",
+    "confirmRestore": "Restore questions and save",
+    "findSource": "Find a passage or audio from another deck",
+    "searchSources": "Search sources in this course",
+    "noSources": "No sources found."
   }
 }

@@ -53,6 +53,43 @@ describe("Account deletion factor choice and secrets", () => {
     await waitFor(() => expect(password).toHaveValue(""));
     expect(otp).toHaveValue("");
   });
+  it("requires Google verification before a Google-only user can confirm without a password", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(Response.json({ ok: false, error: "mfa-required" }, { status: 403 }));
+    vi.stubGlobal("fetch", fetch);
+    const factors = {
+      google: true,
+      googleVerified: false,
+      requiresMfa: true,
+      factors: [{ id: first, label: "Authenticator" }],
+    };
+    const { rerender } = render(view(factors));
+    const user = userEvent.setup();
+    await user.click(screen.getByText("Review account deletion", { selector: "summary" }));
+    expect(screen.getByText("Verify with Google")).toBeEnabled();
+    expect(screen.queryByText("Your current password")).toBeNull();
+    expect(screen.getByRole("button", { name: "Permanently delete my account" })).toBeDisabled();
+    rerender(view({ ...factors, googleVerified: true }));
+    await user.type(screen.getByLabelText("Confirm your account email"), "google@example.com");
+    await user.type(
+      screen.getByLabelText("Authenticator code, if you use two-factor authentication"),
+      "123456",
+    );
+    await user.type(screen.getByLabelText("Type DELETE to confirm"), "DELETE");
+    await user.click(screen.getByRole("checkbox"));
+    await user.click(screen.getByRole("button", { name: "Permanently delete my account" }));
+    await screen.findByRole("alert");
+    const sent = JSON.parse(fetch.mock.calls[0]![1].body);
+    expect(sent).toMatchObject({
+      email: "google@example.com",
+      method: "google",
+      factorId: first,
+      otp: "123456",
+      acknowledged: true,
+    });
+    expect(sent).not.toHaveProperty("password");
+  });
   it("does not enable deletion when factors cannot be loaded or use an unsupported method", async () => {
     const { rerender } = render(view(null));
     await userEvent.click(screen.getByText("Review account deletion", { selector: "summary" }));

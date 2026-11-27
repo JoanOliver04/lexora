@@ -82,7 +82,7 @@ export default async function StudySessionPage({
           <div className="flex flex-wrap items-baseline gap-x-5">
             {result.queue && (
               <p className="font-semibold" data-testid="session-available">
-                {t("availableNow", { count: result.queue.entries.length })}
+                {t("availableNow", { count: result.queue.availableCount })}
               </p>
             )}
             <details open={!result.card} className="min-w-0 text-sm text-(--color-ink-muted)">
@@ -137,18 +137,18 @@ export default async function StudySessionPage({
           initialShowIntervals={initialShowIntervals}
           session={{
             status: result.session.status,
-            canComplete: result.queue?.entries.length === 0,
+            canComplete: result.queue?.availableCount === 0,
           }}
         />
       )}
-      {result.ok && result.queue?.entries.length === 0 && result.queue.nextLearningDueAt && (
+      {result.ok && result.queue?.availableCount === 0 && result.queue.nextLearningDueAt && (
         <StudyStepWait
           sessionId={sessionId}
           remainingMs={result.queue.nextLearningDueAt.getTime() - now.getTime()}
         />
       )}
       {showSummary && <SessionSummaryView summary={summary} />}
-      {result.ok && result.queue && result.queue.entries.length > 0 && !result.card && (
+      {result.ok && result.queue && result.queue.availableCount > 0 && !result.card && (
         <div className="flex flex-col gap-3">
           <p role="status">{tCard("unavailable")}</p>
           <Link

@@ -61,18 +61,21 @@ export type Database = {
         Row: {
           concept_id: string
           created_at: string
+          eoi_managed: boolean | null
           owner_id: string
           tag_id: string
         }
         Insert: {
           concept_id: string
           created_at?: string
+          eoi_managed?: boolean | null
           owner_id: string
           tag_id: string
         }
         Update: {
           concept_id?: string
           created_at?: string
+          eoi_managed?: boolean | null
           owner_id?: string
           tag_id?: string
         }
@@ -962,6 +965,7 @@ export type Database = {
         }
         Returns: Json
       }
+      begin_own_deletion_google: { Args: never; Returns: string }
       commit_import_batch: {
         Args: {
           p_job_id: string
@@ -1007,6 +1011,10 @@ export type Database = {
         }
         Returns: string
       }
+      confirm_own_deletion_google: {
+        Args: { p_nonce: string }
+        Returns: boolean
+      }
       count_library_deck_concepts: {
         Args: { p_deck_ids: string[]; p_owner_id: string }
         Returns: Json
@@ -1032,6 +1040,31 @@ export type Database = {
         Args: { p_confirmation: string; p_email: string }
         Returns: boolean
       }
+      eoi_audio_lease: {
+        Args: { p_course: string; p_hash: string }
+        Returns: boolean
+      }
+      eoi_collect_audio: {
+        Args: { p_course: string }
+        Returns: {
+          hash: string
+        }[]
+      }
+      eoi_find_sources: {
+        Args: { p_course: string; p_filter?: string }
+        Returns: {
+          key: string
+          title: string
+        }[]
+      }
+      eoi_finish_audio_gc: {
+        Args: { p_course: string; p_hashes: string[] }
+        Returns: undefined
+      }
+      eoi_media_busy: {
+        Args: { p_course: string; p_hash: string }
+        Returns: boolean
+      }
       eoi_read_sources: {
         Args: { p_course: string; p_keys: string[] }
         Returns: Json
@@ -1046,7 +1079,36 @@ export type Database = {
         }
         Returns: Json
       }
+      eoi_save_versioned: {
+        Args: {
+          p_apply: boolean
+          p_course: string
+          p_media: Json
+          p_pack: Json
+          p_preview?: string
+          p_version?: string
+        }
+        Returns: Json
+      }
       export_account_data: { Args: never; Returns: Json }
+      finish_own_account_deletion: { Args: never; Returns: boolean }
+      keep_manual_tag: {
+        Args: { p_concept: string; p_tag: string }
+        Returns: undefined
+      }
+      manage_account_archive_media: { Args: { p_request: Json }; Returns: Json }
+      move_library_deck: {
+        Args: {
+          p_course_id: string
+          p_deck_id: string
+          p_direction: string
+          p_owner_id: string
+        }
+        Returns: undefined
+      }
+      own_account_deletion_pending: { Args: never; Returns: boolean }
+      own_deletion_google_verified: { Args: never; Returns: boolean }
+      pending_own_account_audio: { Args: never; Returns: string[] }
       preview_deck_import_duplicates: {
         Args: {
           p_course_id: string
@@ -1059,6 +1121,15 @@ export type Database = {
       preview_import_duplicates: {
         Args: { p_course_id: string; p_rows: Json }
         Returns: Json
+      }
+      read_account_archive_page: {
+        Args: {
+          p_after: string[]
+          p_entity: string
+          p_offset: number
+          p_rows: number
+        }
+        Returns: string
       }
       read_library_concept_options: {
         Args: {
@@ -1097,6 +1168,7 @@ export type Database = {
         Args: { p_concept_ids: string[]; p_owner_id: string }
         Returns: Json
       }
+      restore_account_archive: { Args: { p_request: Json }; Returns: Json }
       restore_account_backup: { Args: { p_request: Json }; Returns: Json }
       save_preferences: {
         Args: {
@@ -1145,6 +1217,87 @@ export type Database = {
       set_active_course: {
         Args: { p_course_id: string; p_profile_version: string }
         Returns: undefined
+      }
+      start_account_archive: { Args: never; Returns: Json }
+      study_day_activity: {
+        Args: {
+          p_course_id: string
+          p_end: string
+          p_owner_id: string
+          p_start: string
+        }
+        Returns: {
+          new_introduced: number
+          reviews_done: number
+        }[]
+      }
+      study_queue_counts: {
+        Args: {
+          p_course_id: string
+          p_deck_ids?: string[]
+          p_include_difficulty?: boolean
+          p_now: string
+          p_owner_id: string
+        }
+        Returns: {
+          difficult_items: number
+          learning_due: number
+          new_items: number
+          next_due: string
+          next_learning_due: string
+          reviews_due: number
+        }[]
+      }
+      study_queue_items: {
+        Args: { p_course_id: string; p_deck_ids?: string[]; p_owner_id: string }
+        Returns: {
+          config_version: string
+          due_at: string
+          item_id: string
+          lapses: number
+          last_reviewed_at: string
+          phase: Database["public"]["Enums"]["memory_phase"]
+          revision: number
+          scheduler_version: string
+          stability: number
+          state_id: string
+        }[]
+      }
+      study_ranked_reviews: {
+        Args: {
+          p_config: string
+          p_course_id: string
+          p_deck_ids?: string[]
+          p_limit: number
+          p_now: string
+          p_owner_id: string
+          p_reference: string
+          p_scheduler: string
+          p_scores: Json
+        }
+        Returns: {
+          due_at: string
+          item_id: string
+          phase: Database["public"]["Enums"]["memory_phase"]
+          revision: number
+          slot: number
+          state_id: string
+        }[]
+      }
+      study_review_priority_inputs: {
+        Args: {
+          p_config: string
+          p_course_id: string
+          p_deck_ids?: string[]
+          p_now: string
+          p_owner_id: string
+          p_reference: string
+          p_scheduler: string
+        }
+        Returns: {
+          elapsed_days: number
+          stability: number
+        }[]
       }
       study_statistics: {
         Args: {

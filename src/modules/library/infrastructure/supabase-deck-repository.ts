@@ -126,17 +126,25 @@ export function createSupabaseDeckRepository(client: SupabaseClient<Database>): 
     },
 
     async list({ ownerId, courseId, includeArchived }) {
-      let query = client
-        .from("decks")
-        .select(deckFields)
-        .eq("owner_id", ownerId)
-        .eq("course_id", courseId);
-      if (!includeArchived) query = query.is("archived_at", null);
-      const { data, error } = await query
-        .order("position", { ascending: true })
-        .order("created_at", { ascending: true });
-      if (error) throw libraryErrorFrom(error, "no se pudieron leer los mazos");
-      return (data ?? []).map(toDeck);
+      const decks: Deck[] = [];
+      const pageSize = 500;
+      for (let offset = 0; ; offset += pageSize) {
+        let query = client
+          .from("decks")
+          .select(deckFields)
+          .eq("owner_id", ownerId)
+          .eq("course_id", courseId);
+        if (!includeArchived) query = query.is("archived_at", null);
+        const { data, error } = await query
+          .order("position")
+          .order("created_at")
+          .order("id")
+          .range(offset, offset + pageSize - 1);
+        if (error?.code === "PGRST103" && offset > 0) return decks;
+        if (error) throw libraryErrorFrom(error, "no se pudieron leer los mazos");
+        decks.push(...(data ?? []).map(toDeck));
+        if ((data ?? []).length < pageSize) return decks;
+      }
     },
 
     async addConcept({ ownerId, deckId, conceptId, position }) {
@@ -161,25 +169,14 @@ export function createSupabaseDeckRepository(client: SupabaseClient<Database>): 
       if (error) throw libraryErrorFrom(error, "no se pudo quitar el concepto del mazo");
     },
 
-    async reorder({ ownerId, courseId, deckIds }) {
-      // `decks.position` no tiene índice único (LEX-3.2), así que N `update`
-      // sueltos no colisionan entre sí. No hay transacción: un fallo a mitad
-      // deja el orden a medias (deuda anotada en la evidencia de LEX-3.5). Los
-      // `.eq` acotan cada escritura a una fila del propio usuario y curso.
-      const results = await Promise.all(
-        deckIds.map((deckId, index) =>
-          client
-            .from("decks")
-            .update({ position: index })
-            .eq("id", deckId)
-            .eq("owner_id", ownerId)
-            .eq("course_id", courseId),
-        ),
-      );
-      const failure = results.find((result) => result.error);
-      if (failure?.error) {
-        throw libraryErrorFrom(failure.error, "no se pudieron reordenar los mazos");
-      }
+    async move({ ownerId, courseId, deckId, direction }) {
+      const { error } = await client.rpc("move_library_deck", {
+        p_owner_id: ownerId,
+        p_course_id: courseId,
+        p_deck_id: deckId,
+        p_direction: direction,
+      });
+      if (error) throw libraryErrorFrom(error, "no se pudo mover el mazo");
     },
 
     async search({
@@ -208,6 +205,7 @@ export function createSupabaseDeckRepository(client: SupabaseClient<Database>): 
       const { data, error, count } = await filtered()
         .order("position", { ascending: true })
         .order("created_at", { ascending: true })
+        .order("id")
         .range(offset, offset + limit - 1);
       // PostgREST rejects a stale range before returning its exact count.
       // A count-only read retains all filters and RLS; valid pages need no retry.

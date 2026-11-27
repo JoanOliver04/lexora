@@ -20,7 +20,8 @@
  */
 
 import { type ColumnMapping, applyColumnMapping } from "@/modules/importing/domain/column-mapping";
-import { type DuplicateStrategy, classifyImportRows } from "@/modules/importing/domain/duplicates";
+import { classifyVocabularyImport } from "./duplicates";
+import { type DuplicateStrategy } from "@/modules/importing/domain/duplicates";
 import { MAX_ROWS } from "@/modules/importing/domain/limits";
 import type {
   ImportRowIssueCode,
@@ -33,7 +34,7 @@ import { type DeckRepository } from "@/modules/library/application/deck";
 import { LibraryError } from "@/modules/library/application/library-error";
 import { type PracticeItemRepository } from "@/modules/library/application/practice-item";
 import { type TagRepository } from "@/modules/library/application/tag";
-import { canonicalKey, validateConceptDraft } from "@/modules/library/domain/concept";
+import { validateConceptDraft } from "@/modules/library/domain/concept";
 import { reverseOf, validatePracticeItemDraft } from "@/modules/library/domain/practice-item";
 import { normalizeTagName, validateTagDraft } from "@/modules/library/domain/tag";
 
@@ -138,11 +139,7 @@ export async function executeImport(
     ownerId: input.ownerId,
     courseId: input.courseId,
   });
-  const existingKeys = new Set(existing.map((concept) => concept.canonicalKey));
-  const classified = classifyImportRows(
-    mapped.rows.map((row) => ({ rowNumber: row.rowNumber, key: canonicalKey(row.front) })),
-    existingKeys,
-  );
+  const { classified } = classifyVocabularyImport(mapped.rows, existing);
 
   const knownTags = await repos.tags.list({
     ownerId: input.ownerId,

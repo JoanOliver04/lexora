@@ -7,19 +7,17 @@ import type {
   PracticeItemPromptContent,
 } from "../application/practice-item-content";
 
-export function ModelAudio({
-  url,
-  clip,
-  limit,
-  onStarted,
-  played,
-}: {
+type AudioProps = {
   url: string;
   clip?: [number, number] | undefined;
   limit?: number;
   onStarted?: () => void;
   played?: number;
-}) {
+};
+export function ModelAudio(props: AudioProps) {
+  return <AudioPlayer key={props.url} {...props} />;
+}
+function AudioPlayer({ url, clip, limit, onStarted, played }: AudioProps) {
   const t = useTranslations("Eoi");
   const el = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false),
