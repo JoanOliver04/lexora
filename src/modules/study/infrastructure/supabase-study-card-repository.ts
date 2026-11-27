@@ -5,7 +5,7 @@ import {
   practiceItemContentFrom,
   type PracticeItemContent,
 } from "@/modules/library/application/practice-item-content";
-import { PRACTICE_MODES } from "@/modules/library/domain/taxonomy";
+import { studyModeFilter } from "./supabase-eligible-study-items";
 import type { FreeStudyCard } from "@/modules/study/application/free-study";
 import type { StudyCardRepository } from "@/modules/study/application/study-card";
 import { StudyError, studyErrorFrom } from "@/modules/study/application/study-error";
@@ -63,7 +63,7 @@ function studyContentQuery<Fields extends string>(
     .eq("owner_id", ownerId)
     .eq("enabled", true)
     .is("archived_at", null)
-    .in("mode", [...PRACTICE_MODES])
+    .or(studyModeFilter)
     .eq("concepts.course_id", courseId)
     .is("concepts.archived_at", null);
 }

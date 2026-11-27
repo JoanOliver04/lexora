@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { PRACTICE_MODES } from "@/modules/library/domain/taxonomy";
+import { V1_PRACTICE_MODES } from "@/modules/library/domain/taxonomy";
 import { studyErrorFrom } from "@/modules/study/application/study-error";
 import type { Database } from "@/shared/infrastructure/supabase/database.types";
 import { STUDY_PAGE_SIZE, studyIdBatches } from "./read-study-rows";
@@ -9,6 +9,9 @@ interface Scope {
   courseId: string;
   deckIds: string[] | null;
 }
+
+// Keep old placeholder rows out of queues until they have authored exercise content.
+export const studyModeFilter = `mode.in.(${V1_PRACTICE_MODES.join(",")}),config->exercise.not.is.null`;
 
 const membership = "id, concepts!inner(deck_concepts!inner(decks!inner()))";
 const state = "id, due_at, phase, revision";
@@ -26,7 +29,7 @@ function eligiblePage<Fields extends string>(
     .select(fields)
     .eq("owner_id", ownerId)
     .eq("enabled", true)
-    .in("mode", [...PRACTICE_MODES])
+    .or(studyModeFilter)
     .is("archived_at", null)
     .eq("concepts.course_id", courseId)
     .is("concepts.archived_at", null)
