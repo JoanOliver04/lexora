@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getPrivacyContact } from "@/env/server";
 import { Link } from "@/i18n/navigation";
+import { StudioCredit } from "../studio-credit";
 
 const sections = ["purpose", "providers", "retention", "rights"] as const;
 
@@ -51,6 +52,9 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
           </p>
         </section>
       ))}
+      <footer>
+        <StudioCredit />
+      </footer>
     </main>
   );
 }

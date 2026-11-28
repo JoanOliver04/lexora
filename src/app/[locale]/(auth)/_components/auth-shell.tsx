@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { PublicPolicyLinks } from "../../public-policy-links";
+import { StudioCredit } from "../../studio-credit";
 
 /**
  * Marco visual común de las pantallas de autenticación: una tarjeta centrada,
@@ -46,7 +47,10 @@ export function AuthShell({
             {demoLabel}
           </Link>
         )}
-        <PublicPolicyLinks />
+        <footer className="space-y-2">
+          <PublicPolicyLinks />
+          <StudioCredit />
+        </footer>
       </section>
     </main>
   );

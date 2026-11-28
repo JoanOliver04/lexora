@@ -12,6 +12,20 @@ test("Search Console receives the verification file directly at the root", async
 });
 
 for (const locale of ["es", "en"] as const)
+  test(`public footers credit the studio in the selected language (${locale})`, async ({
+    page,
+  }) => {
+    const notice =
+      locale === "es"
+        ? "© 2026 JVOR Studios. Todos los derechos reservados."
+        : "© 2026 JVOR Studios. All rights reserved.";
+    for (const path of ["", "/demo", "/login", "/signup", "/privacy", "/terms"]) {
+      await page.goto(`/${locale}${path}`);
+      await expect(page.locator("footer").getByText(notice, { exact: true })).toBeVisible();
+    }
+  });
+
+for (const locale of ["es", "en"] as const)
   test(`the public home offers a keyboard flashcard and links to privacy (${locale})`, async ({
     page,
   }, info) => {
