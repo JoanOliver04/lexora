@@ -12,7 +12,9 @@ test("Search Console receives the verification file directly at the root", async
 });
 
 for (const locale of ["es", "en"] as const)
-  test(`public footers credit the studio in the selected language (${locale})`, async ({ page }) => {
+  test(`public footers credit the studio in the selected language (${locale})`, async ({
+    page,
+  }) => {
     const notice =
       locale === "es"
         ? "© 2026 JVOR Studios. Todos los derechos reservados."
