@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { StudioCredit } from "../studio-credit";
 
 const updatedOn = "2026-11-21";
 const sections = ["service", "account", "materials", "use", "availability"] as const;
@@ -72,6 +73,9 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
           {t("data.privacy")}
         </Link>
       </section>
+      <footer>
+        <StudioCredit />
+      </footer>
     </main>
   );
 }

@@ -12,6 +12,7 @@ import { Brand } from "@/shared/presentation/components/brand";
 import { ThemeToggle } from "@/shared/presentation/theme/theme-toggle";
 import { LocaleSwitcher } from "../locale-switcher";
 import { PublicPolicyLinks } from "../public-policy-links";
+import { StudioCredit } from "../studio-credit";
 import { SessionControls } from "../session-controls";
 import station from "../station.webp";
 import { demoCopy } from "./demo-copy";
@@ -97,6 +98,7 @@ export default async function DemoPage({ params }: PageProps) {
         </div>
       </main>
       <footer className={styles["footer"]}>
+        <StudioCredit />
         <Link href="/" className={styles["back"]}>
           <span aria-hidden="true">←</span> {t.home}
         </Link>

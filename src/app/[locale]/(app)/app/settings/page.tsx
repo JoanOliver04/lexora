@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getPreferencesForCurrentUser } from "@/composition/preferences";
 import { getCurrentUserId } from "@/composition/identity";
 import { Link } from "@/i18n/navigation";
+import { StudioCredit } from "../../../studio-credit";
 import { courseChoiceLabels } from "@/modules/courses/presentation/language-names";
 import { FormStatus } from "@/shared/presentation/components";
 import { PreferencesForm } from "./preferences-form";
@@ -110,6 +111,9 @@ export default async function SettingsPage({
         verifyGoogle={startGoogleDeletionAction.bind(null, locale)}
         googleFailed={query.verification === "failed"}
       />
+      <footer>
+        <StudioCredit />
+      </footer>
     </main>
   );
 }

@@ -15,6 +15,7 @@ import { getLandingCopy } from "./landing-copy";
 import styles from "./landing.module.css";
 import { LocaleSwitcher } from "./locale-switcher";
 import { PublicPolicyLinks } from "./public-policy-links";
+import { StudioCredit } from "./studio-credit";
 import { SessionControls } from "./session-controls";
 import station from "./station.webp";
 
@@ -154,7 +155,7 @@ export default async function Home({ params }: HomeProps) {
         </main>
 
         <footer className={styles["footer"]}>
-          <p>{t("credit")}</p>
+          <StudioCredit />
           <PublicPolicyLinks />
           <ThemeToggle />
         </footer>
